@@ -22,7 +22,7 @@ The :mod:`pipeline` provides automatic support for
 .. _Installation:
 
 Installation
-************
+==================
 
 In order to install the extension, download the latest sources from *TODO*
 or check out the latest code from svn::
@@ -40,7 +40,7 @@ To install, type::
 
 
 Whence the name "Ruffus"?
-*****************************
+=============================
 
 .. image:: images/cyl_ruffus.jpg
 
@@ -48,7 +48,7 @@ Whence the name "Ruffus"?
 `red-tailed pipe snake <http://en.wikipedia.org/wiki/Cylindrophis_ruffus>`_ (bad pythony pun)
 which can be found in Hong Kong where the author comes from.
 
-The original image is from `here <http://en.wikipedia.org/wiki/File:Cyl_ruffus_061212_2025_tdp.jpg>_`
+The original image is from `here <http://upload.wikimedia.org/wikipedia/commons/a/a1/Cyl_ruffus_061212_2025_tdp.jpg>`_
 
 
 
