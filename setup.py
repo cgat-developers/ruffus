@@ -9,7 +9,7 @@ if not sys.version_info[0:2] >= (2,4):
 
 from setuptools import setup, find_packages
 setup(
-        name='pyper',
+        name='ruffus',
         version='1.0.0',            #major.minor[.patch[.sub]]
         description='Light-weight Python Computational Pipeline Management',
         long_description=\
@@ -19,7 +19,7 @@ Overview
 ***************************************
 
 
-    The :mod:`pyper` module is a lightweight way to add support 
+    The :mod:`ruffus` module is a lightweight way to add support 
     for running computational pipelines.
 
     Computational pipelines are often conceptually quite simple, especially
@@ -45,7 +45,7 @@ Background
 ***************************************
 Design
 ***************************************
-    The pyper module has the following design goals:
+    The ruffus module has the following design goals:
 
         * Simplicity. Can be picked up in 10 minutes
         * Elegance
@@ -72,7 +72,7 @@ A Simple example
 
         Use the **@follows(...)** python decorator before the function definitions::
 
-            from pyper import *
+            from ruffus import *
             import sys
 
             def first_task():
@@ -101,7 +101,7 @@ Usage
     
     1. Import module::
             
-            import pyper
+            import ruffus
     
 
     1. Annotate functions with python decorators
@@ -158,13 +158,13 @@ Usage
         pipeline_run(list_of_target_tasks, [list_of_tasks_forced_to_rerun, multiprocess = N_PARALLEL_JOBS])
 
 
-    See the `Tutorial <http://pyper.googlecode.com/svn/trunk/doc/_build/html/Tutorial.html>` for a more complete introduction to pyper.
+    See the `Tutorial <http://ruffus.googlecode.com/svn/trunk/doc/_build/html/Tutorial.html>` for a more complete introduction to ruffus.
 
 """,
         author='Leo Goodstadt',
-        author_email='pyper@llew.org.uk',
-        url='http://pyper.googlecode.com',
-        #download_url = "http://http://code.google.com/p/pyper/download",
+        author_email='ruffus@llew.org.uk',
+        url='http://ruffus.googlecode.com',
+        #download_url = "http://http://code.google.com/p/ruffus/download",
     
         install_requires = ['multiprocessing>=1.0', 'python>=2.6'],
         setup_requires = ['multiprocessing>=1.0', 'python>=2.6'],
@@ -192,8 +192,8 @@ Usage
 
         #packages = find_packages('src'),    # include all packages under src
         #package_dir = {'':'src'},           #packages are under src
-        packages=['pyper'],
-        package_dir={'pyper': 'src/pyper'},
+        packages=['ruffus'],
+        package_dir={'ruffus': 'src/ruffus'},
         include_package_data = True,    # include everything in source control
         #package_data = {
         #    # If any package contains *.txt files, include them:
@@ -205,11 +205,12 @@ Usage
 
 #setup.py
 #   src/
-#       pyper/
+#       ruffus/
 #           __init__.py
-#           pyper.py
+#           adjacent_pairs.py
 #           graph.py
-#   examples/
+#           print_dependencies.py
+#           task.py
 #   doc/
 #   CHANGES.txt
 #   README.txt
