@@ -4,7 +4,7 @@
 Introduction
 ************
 
-The :mod:`pipeline` module is a lightweight way to add support 
+The :mod:`ruffus` module is a lightweight way to add support 
 for running computational pipelines.
 
 Features
@@ -38,6 +38,17 @@ To install, type::
    python setup.py build
    python setup.py install
 
+
+Whence the name "Ruffus"?
+*****************************
+
+.. image:: images/cyl_ruffus.jpg
+
+**Cylindrophis ruffus** is the name of the 
+`red-tailed pipe snake <http://en.wikipedia.org/wiki/Cylindrophis_ruffus>`_ (bad pythony pun)
+which can be found in Hong Kong where the author comes from.
+
+The original image is from `here <http://en.wikipedia.org/wiki/File:Cyl_ruffus_061212_2025_tdp.jpg>_`
 
 
 
