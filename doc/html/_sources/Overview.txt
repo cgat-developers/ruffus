@@ -69,7 +69,7 @@ Each python function can be called in parallel to run multiple **jobs**.
 
 
 See the :ref:`Tutorial` for a more complete introduction on how to add support
-for pyper.
+for ruffus.
 
 .. _Background:
 
@@ -86,7 +86,7 @@ to maintain, perhaps because the right tools are not available.
  
 Design
 ======
-The pyper module has the following design goals:
+The ruffus module has the following design goals:
 
     * Simplicity. Can be picked up in 10 minutes
     * Elegance
@@ -99,20 +99,20 @@ Features
 
 Automatic support for
  
-	* Managing dependencies
-	* Parallel jobs
-	* Re-starting from arbitrary points, especially after errors
-	* Display of the pipeline as a flowchart
-	* Reporting
+        * Managing dependencies
+        * Parallel jobs
+        * Re-starting from arbitrary points, especially after errors
+        * Display of the pipeline as a flowchart
+        * Reporting
 
 Alternatives
 ============
 Often, tools used to build executables can be used to manage computational pipelines.
 These include
 
-	* GNU make
-	* scons
-	* ant
+        * GNU make
+        * scons
+        * ant
 
 It is often necessary to learn a specialised (domain-specific) language. 
 GNU make syntax, for example, is much critised because of limited support for
@@ -120,7 +120,7 @@ abstraction compared with modern programming languages like
 C, Perl, python etc. GNU makefiles can quickly become unmaintainable
 
 Pipeline specifications are usually written in a "declarative" rather than "imperative"
-manner.	You write a specification that describes the dependencies, and the tool 
+manner. You write a specification that describes the dependencies, and the tool 
 figures out how to perform the computations in the correct order. However, because
 GNU make and its kin depend entirely on file dependencies, the links between pipeline
 stages can be difficult to trace, and nigh impossible to debug when there are problems.

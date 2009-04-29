@@ -53,20 +53,20 @@
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<p>The <tt class="xref docutils literal"><span class="pre">pyper</span></tt> module is a lightweight way to add support
+<p>The <tt class="xref docutils literal"><span class="pre">ruffus</span></tt> module is a lightweight way to add support
 for running computational pipelines.</p>
 <p>Computational pipelines are often conceptually quite simple, especially
 if we breakdown the process into simple stages, or separate <strong>tasks</strong>.</p>
 <p>Each <strong>task</strong> is represented by a python function</p>
 </blockquote>
-<span class="target" id="index-14"></span></div>
+<span class="target" id="index-28"></span></div>
 <div class="section" id="follows">
 <span id="id2"></span><h2><strong>&#64;follows</strong><a class="headerlink" href="#follows" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="a-simple-example">
 <h3>A Simple example<a class="headerlink" href="#a-simple-example" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <p>Use the <strong>&#64;follows(...)</strong> python decorator before the function definitions:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 
 <span class="k">def</span> <span class="nf">first_task</span><span class="p">():</span>
@@ -117,7 +117,7 @@ function name. This is also a way of referring to tasks in other modules:</p>
 </pre></div>
 </div>
 </blockquote>
-<span class="target" id="follow-mkdir"></span><span class="target" id="index-15"></span></div>
+<span class="target" id="follow-mkdir"></span><span class="target" id="index-29"></span></div>
 <div class="section" id="follows-and-mkdir">
 <h3><strong>&#64;follows</strong> and <strong>mkdir</strong><a class="headerlink" href="#follows-and-mkdir" title="Permalink to this headline">¶</a></h3>
 <blockquote>
@@ -130,7 +130,7 @@ directories exist. As a shortcut, we can define a special <tt class="docutils li
 </div>
 <p>will make sure that <tt class="docutils literal"><span class="pre">output/results/here</span></tt> exists before <cite>second_task</cite> is run.</p>
 </blockquote>
-<span class="target" id="index-16"></span></div>
+<span class="target" id="index-30"></span></div>
 </div>
 <div class="section" id="parallel">
 <span id="id3"></span><h2><strong>&#64;parallel</strong><a class="headerlink" href="#parallel" title="Permalink to this headline">¶</a></h2>
@@ -139,7 +139,7 @@ directories exist. As a shortcut, we can define a special <tt class="docutils li
 run concurrently.</p>
 <p>Each <strong>job</strong> is a separate call to the same task function but with different parameters.
 Let us try to add up (1+2), (3+4) and (5+6) in parallel:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span>
                  <span class="p">[</span><span class="s">&#39;A&#39;</span><span class="p">,</span> <span class="mf">1</span><span class="p">,</span> <span class="mf">2</span><span class="p">],</span> <span class="c"># 1st job</span>
                  <span class="p">[</span><span class="s">&#39;B&#39;</span><span class="p">,</span> <span class="mf">3</span><span class="p">,</span> <span class="mf">4</span><span class="p">],</span> <span class="c"># 2nd job</span>
@@ -176,7 +176,7 @@ Task hierachies are, of course, inviolate: upstream tasks run before downstream,
 </div>
 <p>if <tt class="docutils literal"><span class="pre">multiprocess</span></tt> is set to 1, then jobs will be run on a single process.</p>
 </blockquote>
-<span class="target" id="index-17"></span></div>
+<span class="target" id="index-31"></span></div>
 <div class="section" id="errors">
 <h3>Errors<a class="headerlink" href="#errors" title="Permalink to this headline">¶</a></h3>
 <blockquote>
@@ -184,7 +184,7 @@ Task hierachies are, of course, inviolate: upstream tasks run before downstream,
 being reraised as an aggregate Exception. A full stack trace is provided so that you can
 see where errors occurred.</p>
 <p>In the previous example, if the number of parameters is incorrect:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="nd">@parallel</span><span class="p">([[</span><span class="s">&#39;A&#39;</span><span class="p">,</span> <span class="mf">1</span><span class="p">],</span> <span class="p">[</span><span class="s">&#39;B&#39;</span><span class="p">,</span><span class="mf">3</span><span class="p">]])</span>
 <span class="k">def</span> <span class="nf">parallel_task</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">):</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;    Parallel task </span><span class="si">%s</span><span class="s">: &quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
@@ -220,12 +220,12 @@ see where errors occurred.</p>
 </div>
 <p>(Parts of the traceback have been removed for brevity)</p>
 </blockquote>
-<span class="target" id="index-18"></span></div>
+<span class="target" id="index-32"></span></div>
 <div class="section" id="interrupting-the-pipeline">
 <span id="interrupting"></span><h3>Interrupting the pipeline<a class="headerlink" href="#interrupting-the-pipeline" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <p>If your task function returns false, this will halt the pipeline at that point.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="nd">@parallel</span><span class="p">([[</span><span class="s">&#39;A&#39;</span><span class="p">,</span> <span class="mf">1</span><span class="p">],</span> <span class="p">[</span><span class="s">&#39;B&#39;</span><span class="p">,</span><span class="mf">3</span><span class="p">]])</span>
 <span class="k">def</span> <span class="nf">parallel_task</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">param1</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s">&#39;A&#39;</span><span class="p">:</span> <span class="k">return</span> <span class="bp">False</span>
@@ -258,7 +258,7 @@ that is going to fail anyway.</p>
 <p>Pypeline always exits concurrent task operations as soon as possible if the
 pipeline is interrupted by a job returning false (see <a class="reference internal" href="#interrupting"><em>previous section</em></a>).</p>
 </blockquote>
-<span class="target" id="index-19"></span></div>
+<span class="target" id="index-33"></span></div>
 <div class="section" id="generating-parameters-on-the-fly">
 <h3>Generating parameters on the fly<a class="headerlink" href="#generating-parameters-on-the-fly" title="Permalink to this headline">¶</a></h3>
 <blockquote>
@@ -267,7 +267,7 @@ Sometimes, it is necessary, or perhaps more convenient, to generate parameters o
 at runtime.</p>
 <p>All this requires is a function which generate one list (or any sequence) of
 parameters per job. For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="k">def</span> <span class="nf">generate_parameters_on_the_fly</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    returns one list of parameters per job</span>
@@ -300,7 +300,7 @@ parameters per job. For example:</p>
 <p>The parameters often need to be generated more than once (see
 <a class="reference internal" href="#checking-multiple-times"><em>below</em></a>).</p>
 </blockquote>
-<span class="target" id="index-20"></span></div>
+<span class="target" id="index-34"></span></div>
 </div>
 <div class="section" id="files">
 <span id="id4"></span><h2><strong>&#64;files</strong><a class="headerlink" href="#files" title="Permalink to this headline">¶</a></h2>
@@ -319,7 +319,7 @@ and checks timestamps for you.</p>
 &gt; echo "start 2" &gt; a.2</pre>
 </div>
 <p>Then run the following python code:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span>
                     <span class="p">[</span> <span class="s">&#39;a.1&#39;</span><span class="p">,</span> <span class="s">&#39;a.2&#39;</span><span class="p">,</span> <span class="s">&#39;A file&#39;</span><span class="p">],</span> <span class="c"># 1st job</span>
                     <span class="p">[</span> <span class="s">&#39;b.1&#39;</span><span class="p">,</span> <span class="s">&#39;b.2&#39;</span><span class="p">,</span> <span class="s">&#39;B file&#39;</span><span class="p">],</span> <span class="c"># 2nd job</span>
@@ -353,7 +353,7 @@ and checks timestamps for you.</p>
 </div>
 <p>The 2nd job is up to date and will be skipped.</p>
 </blockquote>
-<span class="target" id="index-21"></span></div>
+<span class="target" id="index-35"></span></div>
 <div class="section" id="caveats-timestamp-resolution">
 <h3>Caveats: Timestamp resolution<a class="headerlink" href="#caveats-timestamp-resolution" title="Permalink to this headline">¶</a></h3>
 <blockquote>
@@ -388,7 +388,7 @@ for Job = ["a.1" -&gt; "a.2", "A file"]</pre>
 <blockquote>
 <p>If you are specifying the parameters for only one job, you can leave off the brackets,
 greatly improving clarity:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="nd">@files</span><span class="p">(</span><span class="s">&#39;a.1&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;a.2&#39;</span><span class="p">,</span> <span class="s">&#39;b.2&#39;</span><span class="p">],</span> <span class="s">&#39;A file&#39;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">single_job_io_task</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
     <span class="n">infile_text</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
@@ -409,7 +409,7 @@ greatly improving clarity:</p>
 <div class="section" id="running-all-out-of-date-tasks-and-dependents">
 <h3>Running all out-of-date tasks and dependents<a class="headerlink" href="#running-all-out-of-date-tasks-and-dependents" title="Permalink to this headline">¶</a></h3>
 <blockquote>
-<p>By default, pyper will</p>
+<p>By default, ruffus will</p>
 <blockquote>
 <ul class="simple">
 <li>build a flow chart,</li>
@@ -417,13 +417,13 @@ greatly improving clarity:</p>
 <li>find all the most upstream out-of-date tasks,</li>
 <li>start running from there.</li>
 </ul>
-<p id="checking-multiple-times">This means that pyper <em>may</em> ask any task if their jobs are out of date more than once:</p>
+<p id="checking-multiple-times">This means that ruffus <em>may</em> ask any task if their jobs are out of date more than once:</p>
 <ul class="simple">
 <li>once when deciding whether/how to run the pipeline</li>
 <li>once when actually executing the task.</li>
 </ul>
 </blockquote>
-<p>pyper tries to be clever / efficient, and does the minimal amount of querying.</p>
+<p>ruffus tries to be clever / efficient, and does the minimal amount of querying.</p>
 </blockquote>
 </div>
 <div class="section" id="simple-example">
@@ -489,7 +489,7 @@ in the immediate dependencies of <tt class="docutils literal"><span class="pre">
 </div>
 <p>and only <tt class="docutils literal"><span class="pre">task4</span></tt> will rerun.</p>
 <p>This rather dangerous option is useful if you don&#8217;t want to keep all the intermediate
-files/results from upstream tasks. The pyper code will iterate up the flowchart and
+files/results from upstream tasks. The pipeline code will iterate up the flowchart and
 stop at the first up to date task.</p>
 </blockquote>
 </div>
@@ -507,7 +507,7 @@ changes (rather than the data).</p>
 <p>Both the &#8220;target&#8221; and the &#8220;forced&#8221; lists can include as many tasks as you wish. All dependencies
 are still carried out and out-of-date jobs rerun.</p>
 </blockquote>
-<span class="target" id="index-22"></span></div>
+<span class="target" id="index-36"></span></div>
 </div>
 <div class="section" id="files-re">
 <span id="id7"></span><h2><strong>&#64;files_re</strong><a class="headerlink" href="#files-re" title="Permalink to this headline">¶</a></h2>
@@ -528,7 +528,7 @@ them into different directories, giving them different names.</p>
 <div class="section" id="id8">
 <h3>A simple example<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
 <blockquote>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="c">#</span>
 <span class="c">#   convert all files ending in &quot;.1&quot; into files ending in &quot;.2&quot;</span>
 <span class="c">#</span>
@@ -613,7 +613,7 @@ to do this but let us keep this example simple.):</p>
 <div class="highlight-python"><pre>&gt; mkdir -p tiger lion dog</pre>
 </div>
 <p>Then, the following:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="nd">@files_re</span><span class="p">(</span><span class="s">&#39;*.animals&#39;</span><span class="p">,</span>
             <span class="s">r&#39;mammals\.(.+)\.(.+)\.animals&#39;</span><span class="p">,</span>    <span class="c"># save species and &#39;wild&#39;/&#39;tame&#39;</span>
             <span class="s">r&#39;\1/\1.\2.in_my_zoo&#39;</span><span class="p">)</span>
@@ -658,7 +658,7 @@ job, so long as</p>
 &gt; mkdir -p tiger lion dog</pre>
 </div>
 <p>Then, the following:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="nd">@files_re</span><span class="p">(</span><span class="s">&#39;*.animals&#39;</span><span class="p">,</span> <span class="s">r&#39;mammals\.(.+)\.(.+)\.animals&#39;</span><span class="p">,</span>      <span class="c"># save species and &#39;wild&#39;/&#39;tame&#39;</span>
                        <span class="s">r&#39;\g&lt;0&gt;&#39;</span><span class="p">,</span>                             <span class="c"># input:  entire match unchanged</span>
                        <span class="p">[</span><span class="s">r&#39;\1/\1.\2.in_my_zoo&#39;</span><span class="p">,</span>               <span class="c"># output file names</span>
@@ -681,7 +681,7 @@ job, so long as</p>
 </div>
 <p>Note the third <tt class="docutils literal"><span class="pre">species</span></tt> parameter for <tt class="docutils literal"><span class="pre">capture_mammals(...)</span></tt>.</p>
 </blockquote>
-<span class="target" id="index-23"></span></div>
+<span class="target" id="index-37"></span></div>
 </div>
 <div class="section" id="check-if-uptodate">
 <span id="id9"></span><h2><strong>&#64;check_if_uptodate</strong><a class="headerlink" href="#check-if-uptodate" title="Permalink to this headline">¶</a></h2>
@@ -696,7 +696,7 @@ if a task does not rely on or produce files (i.e. with <a class="reference inter
 This takes as many parameters as your task function, and needs to return True if an
 update is needed.</p>
 <p>This simple example which create <tt class="docutils literal"><span class="pre">a.1</span></tt> if it does not exist:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="nd">@files</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s">&quot;a.1&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">create_if_necessary</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
     <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
@@ -705,7 +705,7 @@ update is needed.</p>
 </pre></div>
 </div>
 <p>Could be rewritten as:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="k">def</span> <span class="nf">check_file_exists</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
     <span class="k">return</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output_file</span><span class="p">)</span>
@@ -727,10 +727,10 @@ update is needed.</p>
 <p class="first admonition-title">Note</p>
 <p>The function specified by <a class="reference internal" href="#check-if-uptodate"><em>&#64;check_if_uptodate</em></a> can be called
 more than once for each job.</p>
-<p class="last">See the discussion of how pyper decides which tasks
+<p class="last">See the discussion of how ruffus decides which tasks
 to run in <a class="reference internal" href="#automatic-dependency-checking"><em>&#64;automatic dependency checking</em></a></p>
 </div>
-<span class="target" id="index-24"></span></div>
+<span class="target" id="index-38"></span></div>
 </div>
 <div class="section" id="posttask">
 <span id="id10"></span><h2><strong>&#64;posttask</strong><a class="headerlink" href="#posttask" title="Permalink to this headline">¶</a></h2>
@@ -739,7 +739,7 @@ to run in <a class="reference internal" href="#automatic-dependency-checking"><e
 <blockquote>
 <p>It is often useful to signal the completion of each task by specifying
 one or more function(s) using <tt class="docutils literal"><span class="pre">&#64;posttask</span></tt></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 
 <span class="k">def</span> <span class="nf">task_finished</span><span class="p">():</span>
     <span class="k">print</span> <span class="s">&quot;hooray&quot;</span>
@@ -755,12 +755,12 @@ one or more function(s) using <tt class="docutils literal"><span class="pre">&#6
 </blockquote>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The function(s) provided to <tt class="docutils literal"><span class="pre">&#64;posttask</span></tt> will be called if the pyper passes
+<p class="last">The function(s) provided to <tt class="docutils literal"><span class="pre">&#64;posttask</span></tt> will be called if the pipeline passes
 through a task, even if none of its jobs are run because they are up-to-date.
 This happens when a upstream task is out-of-date, and the execution passes through
 this point in the pipeline</p>
 </div>
-<span class="target" id="index-25"></span></div>
+<span class="target" id="index-39"></span></div>
 <div class="section" id="touch-file">
 <h3>touch_file<a class="headerlink" href="#touch-file" title="Permalink to this headline">¶</a></h3>
 <blockquote>
@@ -768,7 +768,7 @@ this point in the pipeline</p>
 &#8220;flag&#8221; file. Each stage in a traditional <tt class="docutils literal"><span class="pre">make</span></tt> pipeline would contain a
 <tt class="docutils literal"><span class="pre">touch</span> <span class="pre">completed.flag</span></tt>.</p>
 <p>This is such a common use that there is a special shortcut for posttask:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 
 <span class="nd">@posttask</span><span class="p">(</span><span class="n">touch_file</span><span class="p">(</span><span class="s">&quot;task_completed.flag&quot;</span><span class="p">))</span>
 <span class="nd">@files</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s">&quot;a.1&quot;</span><span class="p">)</span>
@@ -779,7 +779,7 @@ this point in the pipeline</p>
 </pre></div>
 </div>
 </blockquote>
-<span class="target" id="index-26"></span></div>
+<span class="target" id="index-40"></span></div>
 </div>
 <div class="section" id="logging">
 <span id="logging-tasks"></span><h2>Logging<a class="headerlink" href="#logging" title="Permalink to this headline">¶</a></h2>
@@ -791,37 +791,37 @@ of the examples in this tutorial were produced by default logging to stderr.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">logging.handlers</span>
 
-<span class="n">LOG_FILENAME</span> <span class="o">=</span> <span class="s">&#39;/tmp/pyper.log&#39;</span>
+<span class="n">LOG_FILENAME</span> <span class="o">=</span> <span class="s">&#39;/tmp/ruffus.log&#39;</span>
 
 <span class="c"># Set up a specific logger with our desired output level</span>
-<span class="n">my_pyper_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;My_Pypeline_logger&#39;</span><span class="p">)</span>
-<span class="n">my_pyper_logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+<span class="n">my_ruffus_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;My_Pypeline_logger&#39;</span><span class="p">)</span>
+<span class="n">my_ruffus_logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
 
 <span class="c"># Add the log message handler to the logger</span>
 <span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">RotatingFileHandler</span><span class="p">(</span>
               <span class="n">LOG_FILENAME</span><span class="p">,</span> <span class="n">maxBytes</span><span class="o">=</span><span class="mf">2000</span><span class="p">,</span> <span class="n">backupCount</span><span class="o">=</span><span class="mf">5</span><span class="p">)</span>
 
-<span class="n">my_pyper_logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+<span class="n">my_ruffus_logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
 
 
-<span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 
 <span class="nd">@files</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s">&quot;a.1&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">create_if_necessary</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Description: Create the file if it does not exists&quot;&quot;&quot;</span>
     <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
 
-<span class="n">pipeline_run</span><span class="p">([</span><span class="n">create_if_necessary</span><span class="p">],</span> <span class="p">[</span><span class="n">create_if_necessary</span><span class="p">],</span> <span class="n">logger</span><span class="o">=</span><span class="n">my_pyper_logger</span><span class="p">)</span>
-<span class="k">print</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;/tmp/pyper.log&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="n">pipeline_run</span><span class="p">([</span><span class="n">create_if_necessary</span><span class="p">],</span> <span class="p">[</span><span class="n">create_if_necessary</span><span class="p">],</span> <span class="n">logger</span><span class="o">=</span><span class="n">my_ruffus_logger</span><span class="p">)</span>
+<span class="k">print</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;/tmp/ruffus.log&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>The contents of <tt class="docutils literal"><span class="pre">/tmp/pyper.log</span></tt> are, as expected:</p>
+<p>The contents of <tt class="docutils literal"><span class="pre">/tmp/ruffus.log</span></tt> are, as expected:</p>
 <div class="highlight-python"><pre>Task = create_if_necessary
     Description: Create the file if it does not exists
     Job = [null -&gt; "a.1"] completed</pre>
 </div>
 </blockquote>
-<span class="target" id="index-27"></span></div>
+<span class="target" id="index-41"></span></div>
 <div class="section" id="cleaning-up">
 <span id="cleanup"></span><h2>Cleaning up<a class="headerlink" href="#cleaning-up" title="Permalink to this headline">¶</a></h2>
 <p>To be implemented later!!</p>

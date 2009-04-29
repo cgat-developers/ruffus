@@ -1,4 +1,4 @@
-.. pyper documentation master file, created by
+.. ruffus documentation master file, created by
    sphinx-quickstart on Tue Apr 21 16:55:56 2009.
 
 
