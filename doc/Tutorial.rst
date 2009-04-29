@@ -9,7 +9,7 @@ Overview
 ***************************************
 
 
-    The :mod:`pyper` module is a lightweight way to add support 
+    The :mod:`ruffus` module is a lightweight way to add support 
     for running computational pipelines.
     
     Computational pipelines are often conceptually quite simple, especially
@@ -35,7 +35,7 @@ A Simple example
 
     Use the **@follows(...)** python decorator before the function definitions::
     
-        from pyper import *
+        from ruffus import *
         import sys
         
         def first_task():
@@ -155,7 +155,7 @@ More to **@follows**
     Each **job** is a separate call to the same task function but with different parameters.
     Let us try to add up (1+2), (3+4) and (5+6) in parallel::
     
-        from pyper import *
+        from ruffus import *
         parameters = [
                          ['A', 1, 2], # 1st job
                          ['B', 3, 4], # 2nd job
@@ -214,7 +214,7 @@ Errors
     
     In the previous example, if the number of parameters is incorrect::
     
-        from pyper import *
+        from ruffus import *
         @parallel([['A', 1], ['B',3]])
         def parallel_task(name, param1, param2):
             sys.stderr.write("    Parallel task %s: " % name)
@@ -269,7 +269,7 @@ Interrupting the pipeline
 
     If your task function returns false, this will halt the pipeline at that point.::
     
-        from pyper import *
+        from ruffus import *
         @parallel([['A', 1], ['B',3]])
         def parallel_task(name, param1):
             if name == 'A': return False
@@ -326,7 +326,7 @@ Generating parameters on the fly
     All this requires is a function which generate one list (or any sequence) of
     parameters per job. For example::
     
-        from pyper import *
+        from ruffus import *
         def generate_parameters_on_the_fly():
             """
             returns one list of parameters per job
@@ -402,7 +402,7 @@ Skip jobs which are up to date
 
     Then run the following python code::
     
-        from pyper import *
+        from ruffus import *
         parameters = [
                             [ 'a.1', 'a.2', 'A file'], # 1st job
                             [ 'b.1', 'b.2', 'B file'], # 2nd job
@@ -495,7 +495,7 @@ Short cut for single jobs
     If you are specifying the parameters for only one job, you can leave off the brackets,
     greatly improving clarity::
     
-        from pyper import *
+        from ruffus import *
         @files('a.1', ['a.2', 'b.2'], 'A file')
         def single_job_io_task(infile, outfile, text):
             infile_text = open(infile).read()
@@ -525,21 +525,21 @@ Automatic dependency checking
 Running all out-of-date tasks and dependents
 =============================================
 
-    By default, pyper will 
+    By default, ruffus will 
     
         * build a flow chart,
         * look upstream (among the antecedents) of the specified target(s),
         * find all the most upstream out-of-date tasks,
         * start running from there.
     
-	.. _checking-multiple-times:
+        .. _checking-multiple-times:
     
-	This means that pyper *may* ask any task if their jobs are out of date more than once:
+        This means that ruffus *may* ask any task if their jobs are out of date more than once:
     
         * once when deciding whether/how to run the pipeline
         * once when actually executing the task.
         
-    pyper tries to be clever / efficient, and does the minimal amount of querying.
+    ruffus tries to be clever / efficient, and does the minimal amount of querying.
     
     
 .. _simple-example:
@@ -653,7 +653,7 @@ Minimal Reruns
     and only ``task4`` will rerun.
     
     This rather dangerous option is useful if you don't want to keep all the intermediate 
-    files/results from upstream tasks. The pyper code will iterate up the flowchart and 
+    files/results from upstream tasks. The pipeline code will iterate up the flowchart and 
     stop at the first up to date task. 
         
 
@@ -710,7 +710,7 @@ A simple example
 
     ::
     
-        from pyper import *
+        from ruffus import *
         #
         #   convert all files ending in ".1" into files ending in ".2"
         #
@@ -814,7 +814,7 @@ More ambitious **@files_re**
 
     Then, the following::     
     
-        from pyper import *
+        from ruffus import *
         @files_re('*.animals', 
                     r'mammals\.(.+)\.(.+)\.animals',    # save species and 'wild'/'tame'
                     r'\1/\1.\2.in_my_zoo')
@@ -871,7 +871,7 @@ Multiple parameters with **@files_re**
      
     Then, the following::     
 
-        from pyper import *
+        from ruffus import *
         @files_re('*.animals', r'mammals\.(.+)\.(.+)\.animals',      # save species and 'wild'/'tame'
                                r'\g<0>',                             # input:  entire match unchanged
                                [r'\1/\1.\2.in_my_zoo',               # output file names
@@ -927,7 +927,7 @@ Manual dependency checking
     
     This simple example which create ``a.1`` if it does not exist::
         
-        from pyper import *
+        from ruffus import *
         @files(None, "a.1")
         def create_if_necessary(input_file, output_file):
             open(output_file, "w")
@@ -941,7 +941,7 @@ Manual dependency checking
     Could be rewritten as::
     
         
-        from pyper import *
+        from ruffus import *
         import os
         def check_file_exists(input_file, output_file):
             return not os.path.exists(output_file)
@@ -970,7 +970,7 @@ Manual dependency checking
     The function specified by :ref:`@check_if_uptodate <check_if_uptodate>` can be called
     more than once for each job. 
 
-    See the discussion of how pyper decides which tasks
+    See the discussion of how ruffus decides which tasks
     to run in :ref:`@automatic dependency checking <automatic-dependency-checking>`
         
         
@@ -994,7 +994,7 @@ Signalling the completion of each task
     It is often useful to signal the completion of each task by specifying
     one or more function(s) using ``@posttask`` ::
     
-        from pyper import *
+        from ruffus import *
         
         def task_finished():
             print "hooray"
@@ -1012,7 +1012,7 @@ Signalling the completion of each task
     
 .. note::
 
-    The function(s) provided to ``@posttask`` will be called if the pyper passes 
+    The function(s) provided to ``@posttask`` will be called if the pipeline passes 
     through a task, even if none of its jobs are run because they are up-to-date.
     This happens when a upstream task is out-of-date, and the execution passes through
     this point in the pipeline
@@ -1035,7 +1035,7 @@ touch_file
     
     This is such a common use that there is a special shortcut for posttask::
     
-        from pyper import *
+        from ruffus import *
         
         @posttask(touch_file("task_completed.flag"))
         @files(None, "a.1")
@@ -1066,33 +1066,33 @@ Logging
         import logging
         import logging.handlers
         
-        LOG_FILENAME = '/tmp/pyper.log'
+        LOG_FILENAME = '/tmp/ruffus.log'
         
         # Set up a specific logger with our desired output level
-        my_pyper_logger = logging.getLogger('My_Pypeline_logger')
-        my_pyper_logger.setLevel(logging.DEBUG)
+        my_ruffus_logger = logging.getLogger('My_Pypeline_logger')
+        my_ruffus_logger.setLevel(logging.DEBUG)
         
         # Add the log message handler to the logger
         handler = logging.handlers.RotatingFileHandler(
                       LOG_FILENAME, maxBytes=2000, backupCount=5)
         
-        my_pyper_logger.addHandler(handler)
+        my_ruffus_logger.addHandler(handler)
         
         
-        from pyper import *
+        from ruffus import *
         
         @files(None, "a.1")
         def create_if_necessary(input_file, output_file):
             """Description: Create the file if it does not exists"""
             open(output_file, "w")
         
-        pipeline_run([create_if_necessary], [create_if_necessary], logger=my_pyper_logger)
-        print open("/tmp/pyper.log").read()
+        pipeline_run([create_if_necessary], [create_if_necessary], logger=my_ruffus_logger)
+        print open("/tmp/ruffus.log").read()
 
         
     .. ???
 
-    The contents of ``/tmp/pyper.log`` are, as expected::
+    The contents of ``/tmp/ruffus.log`` are, as expected::
     
         Task = create_if_necessary
             Description: Create the file if it does not exists
