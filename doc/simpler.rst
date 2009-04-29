@@ -10,13 +10,13 @@
 
 .. module:: simpler
    :synopsis: A simple example
-.. moduleauthor:: Leo Goodstadt <pyper@llew.org.uk>
+.. moduleauthor:: Leo Goodstadt <ruffus@llew.org.uk>
 
 
 
-The code for this example is in the test subdirectory of the pyper module:
+The code for this example is in the test subdirectory of the ruffus module:
 
-    ``pyper/test/simpler.py``
+    ``ruffus/test/simpler.py``
 
 
 .. program:: simpler.py

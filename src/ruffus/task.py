@@ -4,10 +4,10 @@
 """
 
 ********************************************
-:mod:`pyper.task` -- Overview
+:mod:`ruffus.task` -- Overview
 ********************************************
 
-.. moduleauthor:: Leo Goodstadt <pyper@llew.org.uk>
+.. moduleauthor:: Leo Goodstadt <ruffus@llew.org.uk>
 
 
 ============================
@@ -801,7 +801,7 @@ class files(task_decorator):
         
     Example::
 
-        from pyper import *
+        from ruffus import *
         parameters = [
                             [ 'a.1', 'a.2', 'A file'], # 1st job
                             [ 'b.1', 'b.2', 'B file'], # 2nd job
@@ -818,7 +818,7 @@ class files(task_decorator):
     Parameters can be generated on the fly as well.
     Example::
 
-        from pyper import *
+        from ruffus import *
         def generate_parameters_on_the_fly():
             parameters = [
                                 ['input_file1', 'output_file1', 1, 2], # 1st job
@@ -878,7 +878,7 @@ class files_re(task_decorator):
        
     Example::
     
-        from pyper import *
+        from ruffus import *
         #
         #   convert all files ending in ".1" into files ending in ".2"
         #
@@ -903,7 +903,7 @@ class check_if_uptodate(task_decorator):
     the same output.
     Example 1: Automatic::
 
-        from pyper import *
+        from ruffus import *
         @files(None, "a.1")
         def create_if_necessary(input_file, output_file):
             open(output_file, "w")
@@ -914,7 +914,7 @@ class check_if_uptodate(task_decorator):
     Could be rewritten as::
     Example 2: Manual::
         
-        from pyper import *
+        from ruffus import *
         import os
         def check_file_exists(input_file, output_file):
             return not os.path.exists(output_file)
@@ -948,7 +948,7 @@ class parallel(task_decorator):
     
     Example::
     
-        from pyper import *
+        from ruffus import *
         parameters = [
                          ['A', 1, 2], # 1st job
                          ['B', 3, 4], # 2nd job
@@ -968,7 +968,7 @@ class posttask(task_decorator):
     """
     Calls functions to signal the completion of each task::
     
-        from pyper import *
+        from ruffus import *
         
         def task_finished():
             print "hooray"
@@ -982,7 +982,7 @@ class posttask(task_decorator):
 
     .. note::
 
-        The function(s) provided to ``@posttask`` will be called if the pyper passes 
+        The function(s) provided to ``@posttask`` will be called if the ruffus passes 
         through a task, even if none of its jobs are run because they are up-to-date.
         This happens when a upstream task is out-of-date, and the execution passes through
         this point in the pipeline
@@ -990,7 +990,7 @@ class posttask(task_decorator):
 
     If ``touch_file`` is specified, the enclosed files(s) will be ``touch``\ -ed::
 
-        from pyper import *
+        from ruffus import *
 
         @posttask(touch_file("task_completed.flag"))
         @files(None, "a.1")
