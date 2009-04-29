@@ -1,0 +1,236 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>complicated_example – A more ambitious real-world example &mdash; ruffus v1.0 beta documentation</title>
+    <link rel="stylesheet" href="_static/ruffus.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0 beta',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="ruffus v1.0 beta documentation" href="index.html" />
+    <link rel="next" title="ruffus.Task" href="task.html" />
+    <link rel="prev" title="simpler – A simple example" href="simpler.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="task.html" title="ruffus.Task"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="simpler.html" title="simpler – A simple example"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">ruffus v1.0 beta documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-complicated_example">
+<span id="code-for-complicated-pipeline-example"></span><h1><tt class="xref docutils literal"><span class="pre">complicated_example</span></tt> &#8211; A more ambitious real-world example<a class="headerlink" href="#module-complicated_example" title="Permalink to this headline">¶</a></h1>
+<p>See <a class="reference external" href="complicated_example.html#complicated-pipelines"><em>here</em></a> for an overview and explanations for this code.</p>
+<p>The code for this example is in the test subdirectory of the <tt class="docutils literal"><span class="pre">ruffus</span></tt> module:</p>
+<blockquote>
+<tt class="docutils literal"><span class="pre">ruffus/test/complicated_example.py</span></tt></blockquote>
+<p>The data is at:</p>
+<blockquote>
+<tt class="docutils literal"><span class="pre">ruffus/test/data_forcomplicated_example</span></tt></blockquote>
+<div class="section" id="programme-options">
+<h2>Programme options:<a class="headerlink" href="#programme-options" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<dl class="cmdoption">
+<dt id="cmdoption-complicated_example.py--help">
+<tt class="descname">--help</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">-h</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-complicated_example.py--help" title="Permalink to this definition">¶</a></dt>
+<dd>show help message</dd></dl>
+
+</blockquote>
+<div class="section" id="to-specify-tasks">
+<h3>To specify tasks:<a class="headerlink" href="#to-specify-tasks" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<dl class="cmdoption">
+<dt id="cmdoption-complicated_example.py--target_tasks">
+<tt class="descname">--target_tasks</tt><tt class="descclassname"> TARGET_TASK</tt><tt class="descclassname">, </tt><tt class="descname">-t</tt><tt class="descclassname"> TARGET_TASK</tt><a class="headerlink" href="#cmdoption-complicated_example.py--target_tasks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Target task(s) of pipeline. TARGET_TASK can be</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">split_unknown_gene_setdef</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">split_per_species_gene_sets</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">all_vs_all_comparisons</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">combine_into_gene_familes</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">split_gene_family_for_evolutionary_analysis</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">evolution_analysis</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">combine_evolution_analysis</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">summarise_evolution_analysis</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">summarise_all</span></tt></li>
+</ul>
+<p>For example:</p>
+<div class="highlight-python"><pre>complicated_example.py -t evolution_analysis -t summarise_all</pre>
+</div>
+</dd></dl>
+
+<dl class="cmdoption">
+<dt id="cmdoption-complicated_example.py--forced_tasks">
+<tt class="descname">--forced_tasks</tt><tt class="descclassname"> FORCED_TASK</tt><tt class="descclassname">, </tt><tt class="descname">-f</tt><tt class="descclassname"> FORCED_TASK</tt><a class="headerlink" href="#cmdoption-complicated_example.py--forced_tasks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pipeline task(s) which will be run even if they are up to date.</p>
+<p>See above for a list of pipelined tasks</p>
+</dd></dl>
+
+<dl class="cmdoption">
+<dt id="cmdoption-complicated_example.py--jobs">
+<tt class="descname">--jobs</tt><tt class="descclassname"> N</tt><tt class="descclassname">, </tt><tt class="descname">-j</tt><tt class="descclassname"> N</tt><a class="headerlink" href="#cmdoption-complicated_example.py--jobs" title="Permalink to this definition">¶</a></dt>
+<dd>N specifies number of concurrent process running jobs in parallel</dd></dl>
+
+</blockquote>
+</div>
+<div class="section" id="to-specify-paths">
+<h3>To specify paths:<a class="headerlink" href="#to-specify-paths" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<dl class="cmdoption">
+<dt id="cmdoption-complicated_example.py--data_dir">
+<tt class="descname">--data_dir</tt><tt class="descclassname"> PATH</tt><tt class="descclassname">, </tt><tt class="descname">-d</tt><tt class="descclassname"> PATH</tt><a class="headerlink" href="#cmdoption-complicated_example.py--data_dir" title="Permalink to this definition">¶</a></dt>
+<dd>Directory with input data.</dd></dl>
+
+<dl class="cmdoption">
+<dt id="cmdoption-complicated_example.py--working_dir">
+<tt class="descname">--working_dir</tt><tt class="descclassname"> PATH</tt><tt class="descclassname">, </tt><tt class="descname">-d</tt><tt class="descclassname"> PATH</tt><a class="headerlink" href="#cmdoption-complicated_example.py--working_dir" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</blockquote>
+</div>
+<div class="section" id="to-print-flowchart">
+<h3>To print flowchart:<a class="headerlink" href="#to-print-flowchart" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<dl class="cmdoption">
+<dt id="cmdoption-complicated_example.py--dependency">
+<tt class="descname">--dependency</tt><tt class="descclassname"> FILE</tt><tt class="descclassname">, </tt><tt class="descname">-d</tt><tt class="descclassname"> file</tt><a class="headerlink" href="#cmdoption-complicated_example.py--dependency" title="Permalink to this definition">¶</a></dt>
+<dd>Print a dependency graph of the pipeline that would be
+executed to FILE, but do not execute it.</dd></dl>
+
+<dl class="cmdoption">
+<dt id="cmdoption-complicated_example.py--dependency_graph_format">
+<tt class="descname">--dependency_graph_format</tt><tt class="descclassname"> FORMAT</tt><tt class="descclassname">, </tt><tt class="descname">-F</tt><tt class="descclassname"> FORMAT</tt><a class="headerlink" href="#cmdoption-complicated_example.py--dependency_graph_format" title="Permalink to this definition">¶</a></dt>
+<dt>
+<tt class="descname">Format of dependency graph file.</tt></dt>
+<dd><p>Can be:</p>
+<div class="highlight-python"><pre>* 'ps'
+    (PostScript)
+
+* 'svg'
+
+* 'svgz'
+    (Structured Vector Graphics),
+
+* 'png'
+
+* 'gif'
+     (bitmap  graphics)</pre>
+</div>
+</dd></dl>
+
+<dl class="cmdoption">
+<dt id="cmdoption-complicated_example.py--just_print">
+<tt class="descname">--just_print</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">-n</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-complicated_example.py--just_print" title="Permalink to this definition">¶</a></dt>
+<dd>Print a description of the jobs that would be
+executed, but do not execute them.</dd></dl>
+
+</blockquote>
+</div>
+</div>
+<div class="section" id="code">
+<h2>Code:<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href=""><tt class="docutils literal"><span class="pre">complicated_example</span></tt> &#8211; A more ambitious real-world example</a><ul>
+<li><a class="reference external" href="#programme-options">Programme options:</a><ul>
+<li><a class="reference external" href="#to-specify-tasks">To specify tasks:</a></li>
+<li><a class="reference external" href="#to-specify-paths">To specify paths:</a></li>
+<li><a class="reference external" href="#to-print-flowchart">To print flowchart:</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#code">Code:</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="simpler.html"
+                                  title="previous chapter"><tt class="docutils literal docutils literal"><span class="pre">simpler</span></tt> &#8211; A simple example</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="task.html"
+                                  title="next chapter">ruffus.Task</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/complicated_example_code.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="task.html" title="ruffus.Task"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="simpler.html" title="simpler – A simple example"
+             >previous</a> |</li>
+        <li><a href="index.html">ruffus v1.0 beta documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Leo Goodstadt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
+    </div>
+  </body>
+</html>
