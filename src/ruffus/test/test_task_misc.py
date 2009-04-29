@@ -76,27 +76,23 @@ class Test_needs_update_check_directory_missing(unittest.TestCase):
         self.tempfile = test_file.name
         test_file.close()
         self.directory = tempfile.mkdtemp(prefix='testing_tmp')
-        print >>sys.stderr, "\nMake " + self.directory
         
     def tearDown (self):
         """
         delete files
         """
         os.unlink(self.tempfile)
-        print >>sys.stderr, "\nRemove " + self.directory
         os.removedirs(self.directory)        
         
     def test_up_to_date (self):
         #
         #   lists of files
         # 
-        print >>sys.stderr, "\nCheck " + self.directory
-        print >>sys.stderr, "\nexists " , os.path.exists(self.directory)
         
-        self.assert_(not task.needs_update_check_directory_missing (self.directory))
-        self.assert_(    task.needs_update_check_directory_missing ("missing directory"))
+        self.assert_(not task.needs_update_check_directory_missing ([self.directory]))
+        self.assert_(    task.needs_update_check_directory_missing (["missing directory"]))
         self.assertRaises(task.error_not_a_directory,
-                            task.needs_update_check_directory_missing, self.tempfile)
+                            task.needs_update_check_directory_missing, [self.tempfile])
 
         
        
