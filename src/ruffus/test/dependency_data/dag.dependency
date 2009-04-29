@@ -1,0 +1,42 @@
+digraph graphname
+{
+        root=task25;
+	size="5,6";
+	
+       
+        // The whole pipeline starts from a single task 
+        // 2 tasks depend on it
+        task1->task2;
+        task1->task7;
+        
+        // then two chains of five on each of them
+        // which all end up producing a single output
+        task7->task8 ->task9 ->task10 ->task11->task12;
+        task2->task3 ->task4 ->task5 ->task6->task12;
+        
+        // which split up again into the work of two tasks
+        task12->task13;
+        task12->task18;
+        
+        // each of which has a chain of five
+        task13->task14 ->task15 ->task16 ->task17 ->task24;
+        task18-> task19 -> task20 -> task21 ->task22 ->task23;
+        
+        // which end up in the final task which makes our target
+        task23 -> task25;
+        task24 -> task25;
+        
+		# @name::@decorator
+		#@task25::@task_files([["1.from", "1.to"], ["2.from", "2.to"]])		
+        //DAG breaking
+        //task5->task3[constraint=false];
+        //task2->task1[constraint=false];
+        //task12->task10[constraint=false];
+        //task10->task5[constraint=false];
+
+	// extra loop
+	task9->task15[constraint=false];
+	task11->task16[constraint=false];
+	task3->task21[constraint=false];
+}
+

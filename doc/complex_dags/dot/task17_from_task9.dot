@@ -1,0 +1,83 @@
+digraph tree
+{
+size="8,11!";
+splines=true;
+fontsize=30;
+ranksep = 0.3;
+subgraph clustertasks
+{
+label = "Pipeline:";
+edge[minlen=2];
+node[fontsize=20];
+t0[fontcolor=blue, shape=plaintext, label="task1"];
+t2[color=olivedrab, fontcolor=blue, shape=tripleoctagon, label="task7"];
+t0 -> t2[color=blue];
+t3[color=olivedrab, fontcolor=blue, shape=tripleoctagon, label="task8"];
+t2 -> t3[color=blue];
+t4[color=blue, fontcolor=blue, shape=tripleoctagon, label="task9"];
+t3 -> t4[color=blue];
+t5[fontcolor=blue, shape=plaintext, label="task10"];
+t4 -> t5[color=blue];
+t6[color=olivedrab, fontcolor=blue, shape=tripleoctagon, label="task11"];
+t5 -> t6[color=blue];
+t1[fontcolor=blue, shape=plaintext, label="task2"];
+t0 -> t1[color=blue];
+t8[fontcolor=blue, shape=plaintext, label="task3"];
+t1 -> t8[color=blue];
+t9[fontcolor=blue, shape=plaintext, label="task4"];
+t8 -> t9[color=blue];
+t10[fontcolor=blue, shape=plaintext, label="task5"];
+t9 -> t10[color=blue];
+t11[fontcolor=blue, shape=plaintext, label="task6"];
+t10 -> t11[color=blue];
+t7[fontcolor=blue, shape=plaintext, label="task12"];
+t11 -> t7[color=blue];
+t6 -> t7[color=blue];
+t12[fontcolor=blue, shape=plaintext, label="task13"];
+t7 -> t12[color=blue];
+t14[color=olivedrab, fontcolor=blue, shape=tripleoctagon, label="task14"];
+t12 -> t14[color=blue];
+t15[fontcolor=blue, shape=plaintext, label="task15"];
+t14 -> t15[color=blue];
+t4 -> t15[color=blue];
+t16[fontcolor=blue, shape=plaintext, label="task16"];
+t15 -> t16[color=blue];
+t6 -> t16[color=blue];
+t17[color=orange, fontcolor=orange, shape=tripleoctagon, label="task17"];
+t16 -> t17[color=blue];
+t13[style=filled, color=gray, label="task18", shape=octagon, fillcolor=white, fontcolor=gray];
+t7 -> t13[color=gray, arrowtype=normal];
+t19[style=filled, color=gray, label="task19", shape=octagon, fillcolor=white, fontcolor=gray];
+t13 -> t19[color=gray, arrowtype=normal];
+t20[style=filled, color=gray, label="task20", shape=octagon, fillcolor=white, fontcolor=gray];
+t19 -> t20[color=gray, arrowtype=normal];
+t21[style=filled, color=gray, label="task21", shape=octagon, fillcolor=white, fontcolor=gray];
+t20 -> t21[color=gray, arrowtype=normal];
+t8 -> t21[color=gray, arrowtype=normal];
+t22[style=filled, color=gray, label="task22", shape=octagon, fillcolor=white, fontcolor=gray];
+t21 -> t22[color=gray, arrowtype=normal];
+t23[style=filled, color=gray, label="task23", shape=octagon, fillcolor=white, fontcolor=gray];
+t22 -> t23[color=gray, arrowtype=normal];
+t18[style=filled, color=gray, label="task24", shape=octagon, fillcolor=white, fontcolor=gray];
+t17 -> t18[color=gray, arrowtype=normal];
+t24[style=filled, color=gray, label="task25", shape=octagon, fillcolor=white, fontcolor=gray];
+t23 -> t24[color=gray, arrowtype=normal];
+t18 -> t24[color=gray, arrowtype=normal];
+}
+subgraph clusterkey
+{
+style=filled;
+fontsize=30;
+color=gray90;
+label = "Key:";
+node[fontsize=10];
+k1[color=orange, fontcolor=orange, shape=tripleoctagon, fontsize=15, label="Final target"];
+k2[shape=box, style=filled, fontsize=15, fillcolor=red, label="Vicious cycle"];
+k3[fontcolor=blue, shape=plaintext, fontsize=15, label="Task to run"];
+k4[color=blue, fontcolor=blue, shape=tripleoctagon, fontsize=15, label="Force pipeline run from this task"];
+k5[color=gray, fontcolor=gray, shape=tripleoctagon, fontsize=15, label="Up-to-date Final target"];
+k6[color=olivedrab, fontcolor=blue, shape=tripleoctagon, fontsize=15, label="Up-to-date task forced to rerun"];
+k7[style=filled, color=olivedrab, label="Up-to-date task", shape=octagon, fontsize=15, fillcolor=olivedrab, fontcolor=black];
+k8[style=filled, color=gray, label="Up-to-date dependence", shape=octagon, fontsize=15, fillcolor=white, fontcolor=gray];
+k1->k2[color=red];k2->k1 [color=red];k2->k3->k4->k5[color=blue];k5->k6->k7->k8[color=gray];}
+}

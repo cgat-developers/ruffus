@@ -1,0 +1,686 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ruffus.Task &mdash; ruffus v1.0 beta documentation</title>
+    <link rel="stylesheet" href="_static/ruffus.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0 beta',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="ruffus v1.0 beta documentation" href="index.html" />
+    <link rel="prev" title="complicated_example – A more ambitious real-world example" href="complicated_example_code.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="complicated_example_code.html" title="complicated_example – A more ambitious real-world example"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">ruffus v1.0 beta documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-ruffus.task">
+<h1>ruffus.Task<a class="headerlink" href="#module-ruffus.task" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="pyper-task-overview">
+<h2><tt class="xref docutils literal"><span class="pre">pyper.task</span></tt> &#8211; Overview<a class="headerlink" href="#pyper-task-overview" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="decorator-syntax">
+<h3>Decorator syntax:<a class="headerlink" href="#decorator-syntax" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p>Pipelined tasks are created by &#8220;decorating&#8221; a function with the following syntax:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">func_a</span><span class="p">():</span>
+    <span class="k">pass</span>
+    
+<span class="nd">@follows</span><span class="p">(</span><span class="n">func_a</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">func_b</span> <span class="p">():</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>Each task is a single function which is applied one or more times to a list of parameters
+(typically input files to produce a list of output files).</p>
+<p>Each of these is a separate, independent job (sharing the same code) which can be
+run in parallel.</p>
+</blockquote>
+</div>
+<div class="section" id="running-the-pipeline">
+<h3>Running the pipeline<a class="headerlink" href="#running-the-pipeline" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p>To run the pipeline:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">pipeline_run</span><span class="p">(</span><span class="n">target_tasks</span><span class="p">,</span> <span class="n">forcedtorun_tasks</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">multiprocess</span> <span class="o">=</span> <span class="mf">1</span><span class="p">,</span> 
+                <span class="n">logger</span> <span class="o">=</span> <span class="n">stderr_logger</span><span class="p">,</span>
+                <span class="n">gnu_make_maximal_rebuild_mode</span>  <span class="o">=</span> <span class="bp">True</span><span class="p">,</span>
+                <span class="n">cleanup_log</span> <span class="o">=</span> <span class="s">&quot;../cleanup.log&quot;</span><span class="p">)</span>
+
+<span class="n">pipeline_cleanup</span><span class="p">(</span><span class="n">cleanup_log</span> <span class="o">=</span> <span class="s">&quot;../cleanup.log&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</blockquote>
+</div>
+</div>
+<div class="section" id="decorators">
+<h2>Decorators<a class="headerlink" href="#decorators" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<p>Task decorators include:</p>
+<blockquote>
+<p><a class="reference internal" href="#task-follows"><em>&#64;follows()</em></a></p>
+<p><a class="reference internal" href="#task-files"><em>&#64;files()</em></a></p>
+<p><a class="reference internal" href="#task-files-re"><em>&#64;files_re()</em></a></p>
+<p><a class="reference internal" href="#task-parallel"><em>&#64;parallel()</em></a></p>
+<p><a class="reference internal" href="#task-check-if-uptodate"><em>&#64;check_if_uptodate()</em></a></p>
+</blockquote>
+</blockquote>
+<div class="section" id="follows">
+<span id="task-follows"></span><h3>&#64;follows<a class="headerlink" href="#follows" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="ruffus.task.follows">
+<em class="property">
+class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">follows</tt><big>(</big><em>parent_task1</em>, <em>&quot;module_X.parent_task2&quot;</em><big>)</big><a class="headerlink" href="#ruffus.task.follows" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>&#64;follows</strong> (parent_task1, &#8220;module_X.parent_task2&#8221;)</p>
+<blockquote>
+<p>Takes a list of tasks which have to be run <em>before</em> this function
+Dependencies can be quoted or unquoted function names.
+Quoted function names allow dependencies to be added before the function is defined</p>
+<p>Functions in other modules need to be fully qualified</p>
+<p>For convenience, <tt class="docutils literal"><span class="pre">mkdir</span></tt> can be used to specify 
+directories which need to be created (if they don&#8217;t exist) before
+the task is run.</p>
+<p>e.g:</p>
+<div class="highlight-python"><pre>@follows(task_x, mkdir("/output/directory") ...)</pre>
+</div>
+</blockquote>
+</dd></dl>
+
+</div>
+<div class="section" id="parallel">
+<span id="task-parallel"></span><h3>&#64;parallel<a class="headerlink" href="#parallel" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="ruffus.task.parallel">
+<em class="property">
+class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">parallel</tt><big>(</big><span class="optional">[</span><span class="optional">[</span><em>job1_params</em>, <em>...</em><span class="optional">]</span><span class="optional">[</span>, <em>job2_params</em>, <em>...</em><span class="optional">]</span>, <em>...</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ruffus.task.parallel" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>&#64;parallel</strong> ([[job1_params, ...], [job2_params, ...]...])</p>
+<p><strong>&#64;parallel</strong> (parameter_generating_func)</p>
+<blockquote>
+<p>The task function will be called iteratively 
+with each set of parameters (possibly in parallel)</p>
+<p>No dependency checking is carried out.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span>
+                 <span class="p">[</span><span class="s">&#39;A&#39;</span><span class="p">,</span> <span class="mf">1</span><span class="p">,</span> <span class="mf">2</span><span class="p">],</span> <span class="c"># 1st job</span>
+                 <span class="p">[</span><span class="s">&#39;B&#39;</span><span class="p">,</span> <span class="mf">3</span><span class="p">,</span> <span class="mf">4</span><span class="p">],</span> <span class="c"># 2nd job</span>
+                 <span class="p">[</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mf">5</span><span class="p">,</span> <span class="mf">6</span><span class="p">],</span> <span class="c"># 3rd job</span>
+             <span class="p">]</span>
+<span class="nd">@parallel</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>                                                     
+<span class="k">def</span> <span class="nf">parallel_task</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">):</span>                                  
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;    Parallel task </span><span class="si">%s</span><span class="s">: &quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>                     
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%d</span><span class="s"> + </span><span class="si">%d</span><span class="s"> = </span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">,</span> <span class="n">param1</span> <span class="o">+</span> <span class="n">param2</span><span class="p">))</span>
+
+<span class="n">pipeline_run</span><span class="p">([</span><span class="n">parallel_task</span><span class="p">])</span>
+</pre></div>
+</div>
+</blockquote>
+</dd></dl>
+
+</div>
+<div class="section" id="files">
+<span id="task-files"></span><h3>&#64;files<a class="headerlink" href="#files" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="ruffus.task.files">
+<em class="property">
+class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">files</tt><big>(</big><span class="optional">[</span><span class="optional">[</span><em>input_files</em>, <em>output_files...</em><span class="optional">]</span>, <em>...</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ruffus.task.files" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>&#64;files</strong> ([[job1.input, job1.output, job1.optional_extra_parameters], ...])</p>
+<p><strong>&#64;files</strong> (input_file, output_file, optional_extra_parameters)</p>
+<p><strong>&#64;files</strong> (custom_function)</p>
+<p>The first two parameters in each set represent the input and output of the each job.
+Only out of date jobs will be run.
+By default, this is by checking input/output file timestamps.
+(On some file systems, timestamps have a resolution in seconds.)</p>
+<dl class="docutils">
+<dt>The input and output files for each job can be </dt>
+<dd><ul class="first last simple">
+<li>A single file name</li>
+<li>A list of files</li>
+<li><tt class="xref docutils literal"><span class="pre">None</span></tt></li>
+</ul>
+</dd>
+</dl>
+<p>If the input file is <tt class="xref docutils literal"><span class="pre">None</span></tt>, the job will run if any output file is missing.</p>
+<p>If the output file is <tt class="xref docutils literal"><span class="pre">None</span></tt>, the job will always run.</p>
+<p>If any of the output files is missing, the job will run.</p>
+<p>If any of the input files is missing when the job is run, a
+<tt class="docutils literal"><span class="pre">MissingInputFileError</span></tt> exception will be raised.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="p">[</span> <span class="s">&#39;a.1&#39;</span><span class="p">,</span> <span class="s">&#39;a.2&#39;</span><span class="p">,</span> <span class="s">&#39;A file&#39;</span><span class="p">],</span> <span class="c"># 1st job</span>
+                    <span class="p">[</span> <span class="s">&#39;b.1&#39;</span><span class="p">,</span> <span class="s">&#39;b.2&#39;</span><span class="p">,</span> <span class="s">&#39;B file&#39;</span><span class="p">],</span> <span class="c"># 2nd job</span>
+              <span class="p">]</span>
+
+<span class="nd">@files</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">parallel_io_task</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+    <span class="n">infile_text</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">infile_text</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">+</span> <span class="n">text</span><span class="p">)</span>
+
+<span class="n">pipeline_run</span><span class="p">([</span><span class="n">parallel_io_task</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Parameters can be generated on the fly as well.
+Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="k">def</span> <span class="nf">generate_parameters_on_the_fly</span><span class="p">():</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="p">[</span><span class="s">&#39;input_file1&#39;</span><span class="p">,</span> <span class="s">&#39;output_file1&#39;</span><span class="p">,</span> <span class="mf">1</span><span class="p">,</span> <span class="mf">2</span><span class="p">],</span> <span class="c"># 1st job</span>
+                        <span class="p">[</span><span class="s">&#39;input_file2&#39;</span><span class="p">,</span> <span class="s">&#39;output_file2&#39;</span><span class="p">,</span> <span class="mf">3</span><span class="p">,</span> <span class="mf">4</span><span class="p">],</span> <span class="c"># 2nd job</span>
+                        <span class="p">[</span><span class="s">&#39;input_file3&#39;</span><span class="p">,</span> <span class="s">&#39;output_file3&#39;</span><span class="p">,</span> <span class="mf">5</span><span class="p">,</span> <span class="mf">6</span><span class="p">],</span> <span class="c"># 3rd job</span>
+                 <span class="p">]</span>
+    <span class="k">for</span> <span class="n">job_parameters</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">job_parameters</span>
+
+<span class="nd">@files</span><span class="p">(</span><span class="n">generate_parameters_on_the_fly</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">parallel_io_task</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">):</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;    Parallel task </span><span class="si">%s</span><span class="s">: &quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%d</span><span class="s"> + </span><span class="si">%d</span><span class="s"> = </span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">,</span> <span class="n">param1</span> <span class="o">+</span> <span class="n">param2</span><span class="p">))</span>
+
+<span class="n">pipeline_run</span><span class="p">([</span><span class="n">parallel_task</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="files-re">
+<span id="task-files-re"></span><h3>&#64;files_re<a class="headerlink" href="#files-re" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="ruffus.task.files_re">
+<em class="property">
+class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">files_re</tt><big>(</big><em>glob/file_list</em>, <em>matching_regex</em>, <em>input_file</em>, <em>output_file</em><span class="optional">[</span>, <em>extra_parameters</em>, <em>...</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ruffus.task.files_re" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>&#64;files_re</strong> (glob/file_list, matching_regex, output_file)</p>
+<p><strong>&#64;files_re</strong> (glob/file_list, matching_regex, input_file, output_file, [extra_parameters,...] )</p>
+<p>Generates a list of i/o files for each job in the task:
+Only out of date jobs will be run (See &#64;files).</p>
+<ol class="arabic simple">
+<li><tt class="docutils literal"><span class="pre">matching_regex</span></tt> is a python regular expression.</li>
+<li>The first parameter are input file(s)</li>
+<li>The second parameter are output file(s)</li>
+</ol>
+<p>These are used to check if jobs are up to date.</p>
+<p>All parameters can be:</p>
+<blockquote>
+<ol class="arabic simple">
+<li><tt class="xref docutils literal"><span class="pre">None</span></tt></li>
+<li>A string</li>
+<li>A sequence of strings</li>
+<li>Anything else</li>
+</ol>
+</blockquote>
+<p>Strings and sequences of strings will be treated as regular expression substitution
+patterns, using matches from <tt class="docutils literal"><span class="pre">matching_regex</span></tt>.</p>
+<p>See python <a class="reference external" href="http://docs.python.org/library/re.html">regular expression (re)</a> 
+documentation for details of the syntax</p>
+<p><cite>None</cite> and all other types of objects are passed through unchanged.</p>
+<p>Operation:</p>
+<blockquote>
+<ol class="arabic simple">
+<li>For each file in the <tt class="docutils literal"><span class="pre">glob</span></tt> (See <a class="reference external" href="http://docs.python.org/library/glob.html">glob</a>) 
+results or <tt class="docutils literal"><span class="pre">file_list</span></tt>.</li>
+<li>Discard all file names those which don&#8217;t matching <tt class="docutils literal"><span class="pre">matching_regex</span></tt></li>
+<li>Generate parameters using regular expression pattern substitution</li>
+</ol>
+</blockquote>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="c">#</span>
+<span class="c">#   convert all files ending in &quot;.1&quot; into files ending in &quot;.2&quot;</span>
+<span class="c">#</span>
+<span class="nd">@files_re</span><span class="p">(</span><span class="s">&#39;*.1&#39;</span><span class="p">,</span> <span class="s">&#39;(.*).1&#39;</span><span class="p">,</span> <span class="s">r&#39;\1.2&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">task_re</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+    <span class="nb">open</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">converted</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+
+<span class="n">pipeline_run</span><span class="p">([</span><span class="n">task_re</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="check-if-uptodate">
+<span id="task-check-if-uptodate"></span><h3>&#64;check_if_uptodate<a class="headerlink" href="#check-if-uptodate" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="ruffus.task.check_if_uptodate">
+<em class="property">
+class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">check_if_uptodate</tt><big>(</big><em>custom_function</em><big>)</big><a class="headerlink" href="#ruffus.task.check_if_uptodate" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>&#64;check_if_uptodate</strong> (dependency_checking_func)</p>
+<p>Checks to see if a job is up to date, and needs to be run.
+dependency_checking_func() needs to handle the same number of parameters as the
+task function</p>
+<p>These two examples, using automatic and manual dependency checking produce
+the same output.
+Example 1: Automatic:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="nd">@files</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s">&quot;a.1&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">create_if_necessary</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
+    <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+            
+<span class="n">pipeline_run</span><span class="p">([</span><span class="n">create_if_necessary</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Could be rewritten as::
+Example 2: Manual:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="k">def</span> <span class="nf">check_file_exists</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
+    <span class="k">return</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output_file</span><span class="p">)</span>
+
+<span class="nd">@parallel</span><span class="p">([[</span><span class="bp">None</span><span class="p">,</span> <span class="s">&quot;a.1&quot;</span><span class="p">]])</span>
+<span class="nd">@check_if_uptodate</span><span class="p">(</span><span class="n">check_file_exists</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">create_if_necessary</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
+    <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+
+<span class="n">pipeline_run</span><span class="p">([</span><span class="n">create_if_necessary</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Both produce the same output:</p>
+<div class="highlight-python"><pre>Task = create_if_necessary
+    Job = [null, "a.1"] completed</pre>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="posttask">
+<span id="task-posttask"></span><h3>&#64;posttask<a class="headerlink" href="#posttask" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="ruffus.task.posttask">
+<em class="property">
+class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">posttask</tt><big>(</big><em>custom_function</em><span class="optional">[</span>, <em>touch_file(&quot;a.file&quot;)</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ruffus.task.posttask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calls functions to signal the completion of each task:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">def</span> <span class="nf">task_finished</span><span class="p">():</span>
+    <span class="k">print</span> <span class="s">&quot;hooray&quot;</span>
+    
+<span class="nd">@posttask</span><span class="p">(</span><span class="n">task_finished</span><span class="p">)</span>
+<span class="nd">@files</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s">&quot;a.1&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">create_if_necessary</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
+    <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+            
+<span class="n">pipeline_run</span><span class="p">([</span><span class="n">create_if_necessary</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The function(s) provided to <tt class="docutils literal"><span class="pre">&#64;posttask</span></tt> will be called if the pyper passes 
+through a task, even if none of its jobs are run because they are up-to-date.
+This happens when a upstream task is out-of-date, and the execution passes through
+this point in the pipeline</p>
+</div>
+<p>If <tt class="docutils literal"><span class="pre">touch_file</span></tt> is specified, the enclosed files(s) will be <tt class="docutils literal"><span class="pre">touch</span></tt>-ed:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="nd">@posttask</span><span class="p">(</span><span class="n">touch_file</span><span class="p">(</span><span class="s">&quot;task_completed.flag&quot;</span><span class="p">))</span>
+<span class="nd">@files</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s">&quot;a.1&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">create_if_necessary</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
+    <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+
+<span class="n">pipeline_run</span><span class="p">([</span><span class="n">create_if_necessary</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="pipeline-functions">
+<h2>Pipeline functions<a class="headerlink" href="#pipeline-functions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="pipeline-run">
+<h3>pipeline_run<a class="headerlink" href="#pipeline-run" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="ruffus.task.pipeline_run">
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">pipeline_run</tt><big>(</big><em>target_tasks</em>, <em>forcedtorun_tasks=</em><span class="optional">[</span><span class="optional">]</span>, <em>multiprocess=1</em>, <em>logger=stderr_logger</em>, <em>gnu_make_maximal_rebuild_mode=True</em><big>)</big><a class="headerlink" href="#ruffus.task.pipeline_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run pipelines.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><em>target_tasks</em> &#8211; targets task functions which will be run if they are out-of-date</li>
+<li><em>forcedtorun_tasks</em> &#8211; task functions which will be run whether or not they are out-of-date</li>
+<li><em>multiprocess</em> &#8211; The number of concurrent jobs</li>
+<li><em>logger</em> (<a class="reference external" href="http://docs.python.org/library/logging.html">logging</a> objects) &#8211; Where progress will be logged. Defaults to stderr output.</li>
+<li><em>gnu_make_maximal_rebuild_mode</em> &#8211; Defaults to re-running <em>all</em> out-of-date tasks. Runs minimal
+set to build targets if set to <tt class="xref docutils literal"><span class="pre">True</span></tt>. Use with caution.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="pipeline-printout">
+<h3>pipeline_printout<a class="headerlink" href="#pipeline-printout" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="ruffus.task.pipeline_printout">
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">pipeline_printout</tt><big>(</big><em>output_stream</em>, <em>target_tasks</em>, <em>forcedtorun_tasks=</em><span class="optional">[</span><span class="optional">]</span>, <em>long_winded=False</em>, <em>indent=4</em>, <em>gnu_make_maximal_rebuild_mode=True</em>, <em>test_all_task_for_update=True</em><big>)</big><a class="headerlink" href="#ruffus.task.pipeline_printout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Printouts the parts of the pipeline which will be run</p>
+<p>Because the parameters of some jobs depend on the results of previous tasks, this function
+produces only the current snap-shot of task jobs. In particular, tasks which generate 
+variable number of inputs into following tasks will not produce the full range of jobs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><em>output_stream</em> (file-like object with <tt class="docutils literal"><span class="pre">write()</span></tt> function) &#8211; where to print to</li>
+<li><em>target_tasks</em> &#8211; targets task functions which will be run if they are out-of-date</li>
+<li><em>forcedtorun_tasks</em> &#8211; task functions which will be run whether or not they are out-of-date</li>
+<li><em>long_winded</em> &#8211; More verbose output</li>
+<li><em>indent</em> &#8211; How much indentation for pretty format.</li>
+<li><em>gnu_make_maximal_rebuild_mode</em> &#8211; Defaults to re-running <em>all</em> out-of-date tasks. Runs minimal
+set to build targets if set to <tt class="xref docutils literal"><span class="pre">True</span></tt>. Use with caution.</li>
+<li><em>test_all_task_for_update</em> &#8211; Ask all task functions if they are up-to-date</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="pipeline-printout-graph">
+<h3>pipeline_printout_graph<a class="headerlink" href="#pipeline-printout-graph" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="ruffus.task.pipeline_printout_graph">
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">pipeline_printout_graph</tt><big>(</big><em>stream</em>, <em>output_format</em>, <em>target_tasks</em>, <em>forcedtorun_tasks=</em><span class="optional">[</span><span class="optional">]</span>, <em>draw_vertically=True</em>, <em>ignore_upstream_of_target=False</em>, <em>skip_uptodate_tasks=False</em>, <em>gnu_make_maximal_rebuild_mode=True</em>, <em>test_all_task_for_update=True</em>, <em>no_key_legend=False</em><big>)</big><a class="headerlink" href="#ruffus.task.pipeline_printout_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>print out pipeline dependencies in various formats</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><em>stream</em> (file-like object with <tt class="docutils literal"><span class="pre">write()</span></tt> function) &#8211; where to print to</li>
+<li><em>output_format</em> &#8211; [&#8220;dot&#8221;, &#8220;jpg&#8221;, &#8220;svg&#8221;, &#8220;ps&#8221;, &#8220;png&#8221;]. All but the first depends on the <a class="reference external" href="http://www.graphviz.org">dot</a> program.</li>
+<li><em>target_tasks</em> &#8211; targets task functions which will be run if they are out-of-date.</li>
+<li><em>forcedtorun_tasks</em> &#8211; task functions which will be run whether or not they are out-of-date.</li>
+<li><em>draw_vertically</em> &#8211; Top to bottom instead of left to right.</li>
+<li><em>ignore_upstream_of_target</em> &#8211; Don&#8217;t draw upstream tasks of targets.</li>
+<li><em>skip_uptodate_tasks</em> &#8211; Don&#8217;t draw up-to-date tasks if possible.</li>
+<li><em>gnu_make_maximal_rebuild_mode</em> &#8211; Defaults to re-running <em>all</em> out-of-date tasks. Runs minimal
+set to build targets if set to <tt class="xref docutils literal"><span class="pre">True</span></tt>. Use with caution.</li>
+<li><em>test_all_task_for_update</em> &#8211; Ask all task functions if they are up-to-date.</li>
+<li><em>no_key_legend</em> &#8211; Don&#8217;t draw key/legend for graph.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="id1">
+<h2>Logging<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ruffus.task.t_black_hole_logger">
+<em class="property">
+class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">t_black_hole_logger</tt><a class="headerlink" href="#ruffus.task.t_black_hole_logger" title="Permalink to this definition">¶</a></dt>
+<dd>Does nothing!</dd></dl>
+
+<dl class="class">
+<dt id="ruffus.task.t_stderr_logger">
+<em class="property">
+class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">t_stderr_logger</tt><a class="headerlink" href="#ruffus.task.t_stderr_logger" title="Permalink to this definition">¶</a></dt>
+<dd>Everything to stderr</dd></dl>
+
+</div>
+<div class="section" id="implementation">
+<h2>Implementation:<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="parameter-factories">
+<h3>Parameter factories:<a class="headerlink" href="#parameter-factories" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="ruffus.task.file_list_io_param_factory">
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">file_list_io_param_factory</tt><big>(</big><em>orig_args</em><big>)</big><a class="headerlink" href="#ruffus.task.file_list_io_param_factory" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Factory for functions which </dt>
+<dd>yield tuples of input_file_name, output_file_name</dd>
+</dl>
+<p>Examples of orig_args:</p>
+<p>1.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">orig_args</span> <span class="o">=</span> <span class="s">&quot;input1&quot;</span><span class="p">,</span> <span class="s">&quot;output1&quot;</span><span class="p">,</span> <span class="n">any_other_parameters1</span><span class="p">,</span> <span class="o">...</span>       <span class="c"># files for job 1 </span>
+</pre></div>
+</div>
+<p>2.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">orig_args</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>     <span class="s">&quot;output1&quot;</span><span class="p">,</span> <span class="n">any_other_parameters2</span><span class="p">,</span> <span class="o">...</span>       <span class="c"># files for job 1 </span>
+</pre></div>
+</div>
+<p>3.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">orig_args</span> <span class="o">=</span> <span class="p">[</span>                                                               
+              <span class="p">[</span><span class="s">&quot;input0&quot;</span><span class="p">,</span>               <span class="s">&quot;output0&quot;</span><span class="p">,</span>                <span class="o">...</span><span class="p">]</span> <span class="c"># files for job 1</span>
+              <span class="p">[[</span><span class="s">&quot;input1a&quot;</span><span class="p">,</span> <span class="s">&quot;input1b&quot;</span><span class="p">],</span> <span class="s">&quot;output1&quot;</span><span class="p">,</span>                <span class="o">...</span><span class="p">]</span> <span class="c"># files for job 2 </span>
+              <span class="p">[</span><span class="s">&quot;input2&quot;</span><span class="p">,</span>               <span class="p">[</span><span class="s">&quot;output2a&quot;</span><span class="p">,</span> <span class="s">&quot;output2b&quot;</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="c"># files for job 3 </span>
+              <span class="p">[</span><span class="s">&quot;input3&quot;</span><span class="p">,</span>               <span class="s">&quot;output3&quot;</span><span class="p">,</span>                <span class="o">...</span><span class="p">]</span> <span class="c"># files for job 4 </span>
+            <span class="p">]</span>                                                                 
+</pre></div>
+</div>
+<p>Usage:</p>
+<blockquote>
+<p>param_func = file_list_io_param_factory(orig_args)</p>
+<dl class="docutils">
+<dt>for params in param_func():                                                                          </dt>
+<dd>i,o = params[0:2]
+print &#8221; input file name = &#8221; , i                                                                
+print &#8220;output file name = &#8221; , o</dd>
+</dl>
+</blockquote>
+<p>..Note:</p>
+<div class="highlight-python"><pre>1. Each job requires input/output file names
+2. Input/output file names can be a string, a list of strings or None
+3. Either Input or output file name must be non-None</pre>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="ruffus.task.glob_regex_io_param_factory">
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">glob_regex_io_param_factory</tt><big>(</big><em>glob_str_or_list</em>, <em>matching_regex</em>, <em>*parameters</em><big>)</big><a class="headerlink" href="#ruffus.task.glob_regex_io_param_factory" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Factory for functions which in turn</dt>
+<dd>yield tuples of input_file_name, output_file_name</dd>
+</dl>
+<p>Usage:</p>
+<p>1.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">param_func</span> <span class="o">=</span> <span class="n">glob_regex_io_param_factory</span><span class="p">(</span><span class="s">&quot;/etc/*&quot;</span><span class="p">,</span>          <span class="c"># glob                                  </span>
+                                         <span class="s">&quot;(file_)(\d+)&quot;</span><span class="p">,</span>    <span class="c"># which match this regex                </span>
+                                         <span class="s">&quot;input_file_&quot;</span><span class="p">,</span>   <span class="c"># pattern to generate input file names    </span>
+                                         <span class="s">&quot;output_file_&quot;</span><span class="p">)</span>  <span class="c"># pattern to generate output file names  </span>
+</pre></div>
+</div>
+<p>or                                                                                                 
+2.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">param_func</span> <span class="o">=</span> <span class="n">glob_regex_io_param_factory</span><span class="p">(</span><span class="s">&quot;/etc/*&quot;</span><span class="p">,</span>         <span class="c"># glob                                  </span>
+                                         <span class="s">&quot;(file_)(\d+)&quot;</span><span class="p">,</span>   <span class="c"># which match this regex                </span>
+                                         <span class="bp">None</span><span class="p">,</span>             <span class="c"># use originals as input file names     </span>
+                                         <span class="s">&quot;output_file_&quot;</span><span class="p">)</span> <span class="c"># pattern to generate output file names   </span>
+</pre></div>
+</div>
+<p>or 
+3.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">param_func</span> <span class="o">=</span> <span class="n">glob_regex_io_param_factory</span><span class="p">(</span><span class="n">file_list</span><span class="p">,</span>        <span class="c"># list of files</span>
+                                         <span class="s">&quot;(file_)(\d+)&quot;</span><span class="p">,</span>   <span class="c"># which match this regex                </span>
+                                         <span class="bp">None</span><span class="p">,</span>             <span class="c"># use originals as input file names     </span>
+                                         <span class="s">&quot;output_file_&quot;</span><span class="p">)</span> <span class="c"># pattern to generate output file names   </span>
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">param_func</span><span class="p">():</span>                                                                          
+    <span class="k">print</span> <span class="s">&quot; input file name = &quot;</span> <span class="p">,</span> <span class="n">i</span>                                                                
+    <span class="k">print</span> <span class="s">&quot;output file name = &quot;</span> <span class="p">,</span> <span class="n">o</span>                                                                
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>..Note::</dt>
+<dd><ol class="first last arabic simple">
+<li><cite>param_func</cite> has to be called each time</li>
+<li><cite>glob</cite> is called each time.
+So do not expect the file lists in <cite>param_func()</cite> to be the same for each invocation</li>
+<li>A &#8220;deepcopy&#8221; of the file list is saved
+So do not expect to modify your copy of the original list and expect changes
+to the input/export files</li>
+</ol>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="wrappers-around-jobs">
+<h3>Wrappers around jobs:<a class="headerlink" href="#wrappers-around-jobs" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="ruffus.task.job_wrapper_generic">
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">job_wrapper_generic</tt><big>(</big><em>param</em>, <em>user_defined_work_func</em>, <em>register_cleanup</em><big>)</big><a class="headerlink" href="#ruffus.task.job_wrapper_generic" title="Permalink to this definition">¶</a></dt>
+<dd>run func</dd></dl>
+
+<dl class="function">
+<dt id="ruffus.task.job_wrapper_io_files">
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">job_wrapper_io_files</tt><big>(</big><em>param</em>, <em>user_defined_work_func</em>, <em>register_cleanup</em><big>)</big><a class="headerlink" href="#ruffus.task.job_wrapper_io_files" title="Permalink to this definition">¶</a></dt>
+<dd>run func on any i/o if not up to date</dd></dl>
+
+<dl class="function">
+<dt id="ruffus.task.job_wrapper_mkdir">
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">job_wrapper_mkdir</tt><big>(</big><em>param</em>, <em>user_defined_work_func</em>, <em>register_cleanup</em><big>)</big><a class="headerlink" href="#ruffus.task.job_wrapper_mkdir" title="Permalink to this definition">¶</a></dt>
+<dd>make directories if not exists</dd></dl>
+
+</div>
+<div class="section" id="checking-if-job-is-update">
+<h3>Checking if job is update:<a class="headerlink" href="#checking-if-job-is-update" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="ruffus.task.needs_update_check_modify_time">
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">needs_update_check_modify_time</tt><big>(</big><em>i</em>, <em>o</em>, <em>*other</em><big>)</big><a class="headerlink" href="#ruffus.task.needs_update_check_modify_time" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Given input and output files</dt>
+<dd>see if all exist and whether output files are later than input files
+Each can be None, &#8220;file1&#8221; or [&#8220;file1&#8221;, &#8220;file2&#8221;, &#8220;file3&#8221;]
+None means always make</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ruffus.task.needs_update_check_directory_missing">
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">needs_update_check_directory_missing</tt><big>(</big><em>dirs</em><big>)</big><a class="headerlink" href="#ruffus.task.needs_update_check_directory_missing" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Called per directory:</dt>
+<dd>Does it exist?
+Is it an ordinary file not a directory? (throw exception</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="exceptions-and-errors">
+<h2>Exceptions and Errors<a class="headerlink" href="#exceptions-and-errors" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">ruffus.Task</a><ul>
+<li><a class="reference external" href="#pyper-task-overview"><tt class="docutils literal"><span class="pre">pyper.task</span></tt> &#8211; Overview</a><ul>
+<li><a class="reference external" href="#decorator-syntax">Decorator syntax:</a></li>
+<li><a class="reference external" href="#running-the-pipeline">Running the pipeline</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#decorators">Decorators</a><ul>
+<li><a class="reference external" href="#follows">&#64;follows</a></li>
+<li><a class="reference external" href="#parallel">&#64;parallel</a></li>
+<li><a class="reference external" href="#files">&#64;files</a></li>
+<li><a class="reference external" href="#files-re">&#64;files_re</a></li>
+<li><a class="reference external" href="#check-if-uptodate">&#64;check_if_uptodate</a></li>
+<li><a class="reference external" href="#posttask">&#64;posttask</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#pipeline-functions">Pipeline functions</a><ul>
+<li><a class="reference external" href="#pipeline-run">pipeline_run</a></li>
+<li><a class="reference external" href="#pipeline-printout">pipeline_printout</a></li>
+<li><a class="reference external" href="#pipeline-printout-graph">pipeline_printout_graph</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#id1">Logging</a></li>
+<li><a class="reference external" href="#implementation">Implementation:</a><ul>
+<li><a class="reference external" href="#parameter-factories">Parameter factories:</a></li>
+<li><a class="reference external" href="#wrappers-around-jobs">Wrappers around jobs:</a></li>
+<li><a class="reference external" href="#checking-if-job-is-update">Checking if job is update:</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#exceptions-and-errors">Exceptions and Errors</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="complicated_example_code.html"
+                                  title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">complicated_example</span></tt> &#8211; A more ambitious real-world example</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/task.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="complicated_example_code.html" title="complicated_example – A more ambitious real-world example"
+             >previous</a> |</li>
+        <li><a href="index.html">ruffus v1.0 beta documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Leo Goodstadt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
+    </div>
+  </body>
+</html>

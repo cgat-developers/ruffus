@@ -1,0 +1,24 @@
+# Sphinx inventory version 1
+# Project: ruffus
+# Version: 1.0
+complicated_example mod complicated_example_code.html
+ruffus.task mod task.html
+simpler mod simpler.html
+ruffus.task.needs_update_check_modify_time function task.html
+ruffus.task.check_if_uptodate class task.html
+ruffus.task.job_wrapper_generic function task.html
+ruffus.task.needs_update_check_directory_missing function task.html
+ruffus.task.file_list_io_param_factory function task.html
+ruffus.task.parallel class task.html
+ruffus.task.pipeline_printout_graph function task.html
+ruffus.task.follows class task.html
+ruffus.task.glob_regex_io_param_factory function task.html
+ruffus.task.job_wrapper_io_files function task.html
+ruffus.task.pipeline_printout function task.html
+ruffus.task.files class task.html
+ruffus.task.t_black_hole_logger class task.html
+ruffus.task.files_re class task.html
+ruffus.task.pipeline_run function task.html
+ruffus.task.t_stderr_logger class task.html
+ruffus.task.job_wrapper_mkdir function task.html
+ruffus.task.posttask class task.html

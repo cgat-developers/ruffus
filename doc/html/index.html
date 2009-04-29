@@ -1,0 +1,201 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Pypeline documentation &mdash; ruffus v1.0 beta documentation</title>
+    <link rel="stylesheet" href="_static/ruffus.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0 beta',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="ruffus v1.0 beta documentation" href="" />
+    <link rel="next" title="Introduction" href="Introduction.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="Introduction.html" title="Introduction"
+             accesskey="N">next</a> |</li>
+        <li><a href="">ruffus v1.0 beta documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pypeline-documentation">
+<h1>Pypeline documentation<a class="headerlink" href="#pypeline-documentation" title="Permalink to this headline">¶</a></h1>
+<p>The <tt class="xref docutils literal"><span class="pre">task</span></tt> module is a lightweight way to add support
+for running pipelined tasks.</p>
+<p>Contents:</p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="Introduction.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference external" href="Introduction.html#features">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="Overview.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference external" href="Overview.html#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference external" href="Overview.html#background">Background</a></li>
+<li class="toctree-l2"><a class="reference external" href="Overview.html#design">Design</a></li>
+<li class="toctree-l2"><a class="reference external" href="Overview.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference external" href="Overview.html#alternatives">Alternatives</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="Tutorial.html">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference external" href="Tutorial.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference external" href="Tutorial.html#follows"><strong>&#64;follows</strong></a></li>
+<li class="toctree-l2"><a class="reference external" href="Tutorial.html#parallel"><strong>&#64;parallel</strong></a></li>
+<li class="toctree-l2"><a class="reference external" href="Tutorial.html#files"><strong>&#64;files</strong></a></li>
+<li class="toctree-l2"><a class="reference external" href="Tutorial.html#automatic-dependency-checking">Automatic dependency checking</a></li>
+<li class="toctree-l2"><a class="reference external" href="Tutorial.html#files-re"><strong>&#64;files_re</strong></a></li>
+<li class="toctree-l2"><a class="reference external" href="Tutorial.html#check-if-uptodate"><strong>&#64;check_if_uptodate</strong></a></li>
+<li class="toctree-l2"><a class="reference external" href="Tutorial.html#posttask"><strong>&#64;posttask</strong></a></li>
+<li class="toctree-l2"><a class="reference external" href="Tutorial.html#logging">Logging</a></li>
+<li class="toctree-l2"><a class="reference external" href="Tutorial.html#cleaning-up">Cleaning up</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="complicated_example.html">A more ambitious real-world example</a><ul>
+<li class="toctree-l2"><a class="reference external" href="complicated_example.html#python-code">Python Code</a></li>
+<li class="toctree-l2"><a class="reference external" href="complicated_example.html#understanding-newly-discovered-genes">Understanding newly discovered genes</a></li>
+<li class="toctree-l2"><a class="reference external" href="complicated_example.html#pypeline-flow-chart">Pypeline Flow chart</a></li>
+</ul>
+</li>
+</ul>
+<p>Example code:</p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="simpler.html"><tt class="docutils literal"><span class="pre">simpler</span></tt> &#8211; A simple example</a><ul>
+<li class="toctree-l2"><a class="reference external" href="simpler.html#programme-options">Programme options:</a></li>
+<li class="toctree-l2"><a class="reference external" href="simpler.html#code">Code:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="complicated_example_code.html"><tt class="docutils literal"><span class="pre">complicated_example</span></tt> &#8211; A more ambitious real-world example</a><ul>
+<li class="toctree-l2"><a class="reference external" href="complicated_example_code.html#programme-options">Programme options:</a></li>
+<li class="toctree-l2"><a class="reference external" href="complicated_example_code.html#code">Code:</a></li>
+</ul>
+</li>
+</ul>
+<p>Modules:</p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="task.html">ruffus.Task</a><ul>
+<li class="toctree-l2"><a class="reference external" href="task.html#pyper-task-overview"><tt class="docutils literal"><span class="pre">pyper.task</span></tt> &#8211; Overview</a><ul>
+<li class="toctree-l3"><a class="reference external" href="task.html#decorator-syntax">Decorator syntax:</a></li>
+<li class="toctree-l3"><a class="reference external" href="task.html#running-the-pipeline">Running the pipeline</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference external" href="task.html#decorators">Decorators</a><ul>
+<li class="toctree-l3"><a class="reference external" href="task.html#follows">&#64;follows</a></li>
+<li class="toctree-l3"><a class="reference external" href="task.html#parallel">&#64;parallel</a></li>
+<li class="toctree-l3"><a class="reference external" href="task.html#files">&#64;files</a></li>
+<li class="toctree-l3"><a class="reference external" href="task.html#files-re">&#64;files_re</a></li>
+<li class="toctree-l3"><a class="reference external" href="task.html#check-if-uptodate">&#64;check_if_uptodate</a></li>
+<li class="toctree-l3"><a class="reference external" href="task.html#posttask">&#64;posttask</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference external" href="task.html#pipeline-functions">Pipeline functions</a><ul>
+<li class="toctree-l3"><a class="reference external" href="task.html#pipeline-run">pipeline_run</a></li>
+<li class="toctree-l3"><a class="reference external" href="task.html#pipeline-printout">pipeline_printout</a></li>
+<li class="toctree-l3"><a class="reference external" href="task.html#pipeline-printout-graph">pipeline_printout_graph</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference external" href="task.html#id1">Logging</a></li>
+<li class="toctree-l2"><a class="reference external" href="task.html#implementation">Implementation:</a><ul>
+<li class="toctree-l3"><a class="reference external" href="task.html#parameter-factories">Parameter factories:</a></li>
+<li class="toctree-l3"><a class="reference external" href="task.html#wrappers-around-jobs">Wrappers around jobs:</a></li>
+<li class="toctree-l3"><a class="reference external" href="task.html#checking-if-job-is-update">Checking if job is update:</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference external" href="task.html#exceptions-and-errors">Exceptions and Errors</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference external" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference external" href="modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference external" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Pypeline documentation</a><ul>
+</ul>
+</li>
+<li><a class="reference external" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+            <h4>Next topic</h4>
+            <p class="topless"><a href="Introduction.html"
+                                  title="next chapter">Introduction</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/index.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="Introduction.html" title="Introduction"
+             >next</a> |</li>
+        <li><a href="">ruffus v1.0 beta documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Leo Goodstadt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
+    </div>
+  </body>
+</html>
