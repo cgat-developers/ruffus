@@ -46,8 +46,8 @@
             
   <div class="section" id="module-ruffus.task">
 <h1>ruffus.Task<a class="headerlink" href="#module-ruffus.task" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="pyper-task-overview">
-<h2><tt class="xref docutils literal"><span class="pre">pyper.task</span></tt> &#8211; Overview<a class="headerlink" href="#pyper-task-overview" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="ruffus-task-overview">
+<h2><tt class="xref docutils literal"><span class="pre">ruffus.task</span></tt> &#8211; Overview<a class="headerlink" href="#ruffus-task-overview" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="decorator-syntax">
 <h3>Decorator syntax:<a class="headerlink" href="#decorator-syntax" title="Permalink to this headline">¶</a></h3>
 <blockquote>
@@ -128,7 +128,7 @@ class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">paral
 with each set of parameters (possibly in parallel)</p>
 <p>No dependency checking is carried out.</p>
 <p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span>
                  <span class="p">[</span><span class="s">&#39;A&#39;</span><span class="p">,</span> <span class="mf">1</span><span class="p">,</span> <span class="mf">2</span><span class="p">],</span> <span class="c"># 1st job</span>
                  <span class="p">[</span><span class="s">&#39;B&#39;</span><span class="p">,</span> <span class="mf">3</span><span class="p">,</span> <span class="mf">4</span><span class="p">],</span> <span class="c"># 2nd job</span>
@@ -174,7 +174,7 @@ By default, this is by checking input/output file timestamps.
 <p>If any of the input files is missing when the job is run, a
 <tt class="docutils literal"><span class="pre">MissingInputFileError</span></tt> exception will be raised.</p>
 <p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span>
                     <span class="p">[</span> <span class="s">&#39;a.1&#39;</span><span class="p">,</span> <span class="s">&#39;a.2&#39;</span><span class="p">,</span> <span class="s">&#39;A file&#39;</span><span class="p">],</span> <span class="c"># 1st job</span>
                     <span class="p">[</span> <span class="s">&#39;b.1&#39;</span><span class="p">,</span> <span class="s">&#39;b.2&#39;</span><span class="p">,</span> <span class="s">&#39;B file&#39;</span><span class="p">],</span> <span class="c"># 2nd job</span>
@@ -190,7 +190,7 @@ By default, this is by checking input/output file timestamps.
 </div>
 <p>Parameters can be generated on the fly as well.
 Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="k">def</span> <span class="nf">generate_parameters_on_the_fly</span><span class="p">():</span>
     <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span>
                         <span class="p">[</span><span class="s">&#39;input_file1&#39;</span><span class="p">,</span> <span class="s">&#39;output_file1&#39;</span><span class="p">,</span> <span class="mf">1</span><span class="p">,</span> <span class="mf">2</span><span class="p">],</span> <span class="c"># 1st job</span>
@@ -251,7 +251,7 @@ results or <tt class="docutils literal"><span class="pre">file_list</span></tt>.
 </ol>
 </blockquote>
 <p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="c">#</span>
 <span class="c">#   convert all files ending in &quot;.1&quot; into files ending in &quot;.2&quot;</span>
 <span class="c">#</span>
@@ -278,7 +278,7 @@ task function</p>
 <p>These two examples, using automatic and manual dependency checking produce
 the same output.
 Example 1: Automatic:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="nd">@files</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s">&quot;a.1&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">create_if_necessary</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
     <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
@@ -288,7 +288,7 @@ Example 1: Automatic:</p>
 </div>
 <p>Could be rewritten as::
 Example 2: Manual:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="k">def</span> <span class="nf">check_file_exists</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
     <span class="k">return</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output_file</span><span class="p">)</span>
@@ -315,7 +315,7 @@ Example 2: Manual:</p>
 <em class="property">
 class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">posttask</tt><big>(</big><em>custom_function</em><span class="optional">[</span>, <em>touch_file(&quot;a.file&quot;)</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ruffus.task.posttask" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calls functions to signal the completion of each task:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 
 <span class="k">def</span> <span class="nf">task_finished</span><span class="p">():</span>
     <span class="k">print</span> <span class="s">&quot;hooray&quot;</span>
@@ -330,13 +330,13 @@ class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">postt
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The function(s) provided to <tt class="docutils literal"><span class="pre">&#64;posttask</span></tt> will be called if the pyper passes 
+<p class="last">The function(s) provided to <tt class="docutils literal"><span class="pre">&#64;posttask</span></tt> will be called if the ruffus passes 
 through a task, even if none of its jobs are run because they are up-to-date.
 This happens when a upstream task is out-of-date, and the execution passes through
 this point in the pipeline</p>
 </div>
 <p>If <tt class="docutils literal"><span class="pre">touch_file</span></tt> is specified, the enclosed files(s) will be <tt class="docutils literal"><span class="pre">touch</span></tt>-ed:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyper</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
 
 <span class="nd">@posttask</span><span class="p">(</span><span class="n">touch_file</span><span class="p">(</span><span class="s">&quot;task_completed.flag&quot;</span><span class="p">))</span>
 <span class="nd">@files</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s">&quot;a.1&quot;</span><span class="p">)</span>
@@ -606,7 +606,7 @@ Is it an ordinary file not a directory? (throw exception</dd>
             <h3><a href="index.html">Table Of Contents</a></h3>
             <ul>
 <li><a class="reference external" href="">ruffus.Task</a><ul>
-<li><a class="reference external" href="#pyper-task-overview"><tt class="docutils literal"><span class="pre">pyper.task</span></tt> &#8211; Overview</a><ul>
+<li><a class="reference external" href="#ruffus-task-overview"><tt class="docutils literal"><span class="pre">ruffus.task</span></tt> &#8211; Overview</a><ul>
 <li><a class="reference external" href="#decorator-syntax">Decorator syntax:</a></li>
 <li><a class="reference external" href="#running-the-pipeline">Running the pipeline</a></li>
 </ul>
@@ -640,7 +640,7 @@ Is it an ordinary file not a directory? (throw exception</dd>
 
             <h4>Previous topic</h4>
             <p class="topless"><a href="complicated_example_code.html"
-                                  title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">complicated_example</span></tt> &#8211; A more ambitious real-world example</a></p>
+                                  title="previous chapter"><tt class="docutils literal docutils literal"><span class="pre">complicated_example</span></tt> &#8211; A more ambitious real-world example</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/task.txt"
