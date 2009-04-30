@@ -107,12 +107,16 @@ Challenges:
             simulation_data_file) = input_files
         
             simulation_res_file = open(result_file, "w")
+
+
     
 =============================================
 2. Mean simulated probability per gene
 =============================================
     Now all we have to do is gather all the simulation results, and caculate a
     mean probability per gene.
+    
+    .. _intermediate-pipelines-combining_files:
     
     Parameters for this "many -> 1" operation can be generated using a simple call to
     the `glob <docs.python.org/library/glob.html>`_ module::

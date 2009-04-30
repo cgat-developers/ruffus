@@ -1112,6 +1112,4 @@ Cleaning up
 ***************************************
 
 To be implemented later!!
-
-
-
+See :ref:`todo-combining`
