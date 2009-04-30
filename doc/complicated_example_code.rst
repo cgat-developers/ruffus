@@ -21,7 +21,7 @@ The code for this example is in the test subdirectory of the ``ruffus`` module:
 
 The data is at:
 
-    ``ruffus/test/data_forcomplicated_example``
+    ``ruffus/test/data_for_complicated_example``
 
 .. program:: complicated_example.py
 
@@ -76,6 +76,7 @@ To specify paths:
         
     .. cmdoption:: --working_dir PATH, -d PATH
     
+        Direction in which ruffus will run.
 
 
 ==================================
