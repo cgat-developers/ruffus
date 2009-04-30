@@ -1,1 +1,0 @@
-svn propset svn:ignore -F svn.ignored.files .

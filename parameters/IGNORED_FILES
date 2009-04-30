@@ -1,0 +1,7 @@
+doc/_build
+doc/_static
+*.egg
+build
+*.egg-info
+dist
+
