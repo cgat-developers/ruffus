@@ -2,14 +2,12 @@
 FAQ
 ******
 
-=========
- Ruffus
-=========
 
-Some jobs rerun even when they seem up-to-date
-************************************************
+=========================================================
+Q. Some jobs rerun even when they seem up-to-date
+=========================================================
 
-You might have fallen foul of coarse timestamp precision in some
+A. You might have fallen foul of coarse timestamp precision in some
 operating systems.
 
 If you are using ``@files`` or ``files_re``, ruffus uses

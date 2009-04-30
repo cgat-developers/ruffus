@@ -20,8 +20,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="ruffus v1.0 beta documentation" href="index.html" />
-    <link rel="next" title="A more ambitious real-world example" href="complicated_example.html" />
-    <link rel="prev" title="Overview" href="Overview.html" /> 
+    <link rel="next" title="A real-world example" href="intermediate_example.html" />
+    <link rel="prev" title="Design" href="Design.html" /> 
   </head>
   <body>
     <div class="related">
@@ -34,10 +34,10 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="complicated_example.html" title="A more ambitious real-world example"
+          <a href="intermediate_example.html" title="A real-world example"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="Overview.html" title="Overview"
+          <a href="Design.html" title="Design"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">ruffus v1.0 beta documentation</a> &raquo;</li> 
       </ul>
@@ -59,7 +59,7 @@ for running computational pipelines.</p>
 if we breakdown the process into simple stages, or separate <strong>tasks</strong>.</p>
 <p>Each <strong>task</strong> is represented by a python function</p>
 </blockquote>
-<span class="target" id="index-28"></span></div>
+<span class="target" id="index-42"></span></div>
 <div class="section" id="follows">
 <span id="id2"></span><h2><strong>&#64;follows</strong><a class="headerlink" href="#follows" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="a-simple-example">
@@ -117,7 +117,7 @@ function name. This is also a way of referring to tasks in other modules:</p>
 </pre></div>
 </div>
 </blockquote>
-<span class="target" id="follow-mkdir"></span><span class="target" id="index-29"></span></div>
+<span class="target" id="follow-mkdir"></span><span class="target" id="index-43"></span></div>
 <div class="section" id="follows-and-mkdir">
 <h3><strong>&#64;follows</strong> and <strong>mkdir</strong><a class="headerlink" href="#follows-and-mkdir" title="Permalink to this headline">¶</a></h3>
 <blockquote>
@@ -130,7 +130,7 @@ directories exist. As a shortcut, we can define a special <tt class="docutils li
 </div>
 <p>will make sure that <tt class="docutils literal"><span class="pre">output/results/here</span></tt> exists before <cite>second_task</cite> is run.</p>
 </blockquote>
-<span class="target" id="index-30"></span></div>
+<span class="target" id="index-44"></span></div>
 </div>
 <div class="section" id="parallel">
 <span id="id3"></span><h2><strong>&#64;parallel</strong><a class="headerlink" href="#parallel" title="Permalink to this headline">¶</a></h2>
@@ -176,7 +176,7 @@ Task hierachies are, of course, inviolate: upstream tasks run before downstream,
 </div>
 <p>if <tt class="docutils literal"><span class="pre">multiprocess</span></tt> is set to 1, then jobs will be run on a single process.</p>
 </blockquote>
-<span class="target" id="index-31"></span></div>
+<span class="target" id="index-45"></span></div>
 <div class="section" id="errors">
 <h3>Errors<a class="headerlink" href="#errors" title="Permalink to this headline">¶</a></h3>
 <blockquote>
@@ -220,7 +220,7 @@ see where errors occurred.</p>
 </div>
 <p>(Parts of the traceback have been removed for brevity)</p>
 </blockquote>
-<span class="target" id="index-32"></span></div>
+<span class="target" id="index-46"></span></div>
 <div class="section" id="interrupting-the-pipeline">
 <span id="interrupting"></span><h3>Interrupting the pipeline<a class="headerlink" href="#interrupting-the-pipeline" title="Permalink to this headline">¶</a></h3>
 <blockquote>
@@ -258,7 +258,7 @@ that is going to fail anyway.</p>
 <p>Pypeline always exits concurrent task operations as soon as possible if the
 pipeline is interrupted by a job returning false (see <a class="reference internal" href="#interrupting"><em>previous section</em></a>).</p>
 </blockquote>
-<span class="target" id="index-33"></span></div>
+<span class="target" id="index-47"></span></div>
 <div class="section" id="generating-parameters-on-the-fly">
 <h3>Generating parameters on the fly<a class="headerlink" href="#generating-parameters-on-the-fly" title="Permalink to this headline">¶</a></h3>
 <blockquote>
@@ -300,7 +300,7 @@ parameters per job. For example:</p>
 <p>The parameters often need to be generated more than once (see
 <a class="reference internal" href="#checking-multiple-times"><em>below</em></a>).</p>
 </blockquote>
-<span class="target" id="index-34"></span></div>
+<span class="target" id="index-48"></span></div>
 </div>
 <div class="section" id="files">
 <span id="id4"></span><h2><strong>&#64;files</strong><a class="headerlink" href="#files" title="Permalink to this headline">¶</a></h2>
@@ -353,7 +353,7 @@ and checks timestamps for you.</p>
 </div>
 <p>The 2nd job is up to date and will be skipped.</p>
 </blockquote>
-<span class="target" id="index-35"></span></div>
+<span class="target" id="index-49"></span></div>
 <div class="section" id="caveats-timestamp-resolution">
 <h3>Caveats: Timestamp resolution<a class="headerlink" href="#caveats-timestamp-resolution" title="Permalink to this headline">¶</a></h3>
 <blockquote>
@@ -507,7 +507,7 @@ changes (rather than the data).</p>
 <p>Both the &#8220;target&#8221; and the &#8220;forced&#8221; lists can include as many tasks as you wish. All dependencies
 are still carried out and out-of-date jobs rerun.</p>
 </blockquote>
-<span class="target" id="index-36"></span></div>
+<span class="target" id="index-50"></span></div>
 </div>
 <div class="section" id="files-re">
 <span id="id7"></span><h2><strong>&#64;files_re</strong><a class="headerlink" href="#files-re" title="Permalink to this headline">¶</a></h2>
@@ -681,7 +681,7 @@ job, so long as</p>
 </div>
 <p>Note the third <tt class="docutils literal"><span class="pre">species</span></tt> parameter for <tt class="docutils literal"><span class="pre">capture_mammals(...)</span></tt>.</p>
 </blockquote>
-<span class="target" id="index-37"></span></div>
+<span class="target" id="index-51"></span></div>
 </div>
 <div class="section" id="check-if-uptodate">
 <span id="id9"></span><h2><strong>&#64;check_if_uptodate</strong><a class="headerlink" href="#check-if-uptodate" title="Permalink to this headline">¶</a></h2>
@@ -730,7 +730,7 @@ more than once for each job.</p>
 <p class="last">See the discussion of how ruffus decides which tasks
 to run in <a class="reference internal" href="#automatic-dependency-checking"><em>&#64;automatic dependency checking</em></a></p>
 </div>
-<span class="target" id="index-38"></span></div>
+<span class="target" id="index-52"></span></div>
 </div>
 <div class="section" id="posttask">
 <span id="id10"></span><h2><strong>&#64;posttask</strong><a class="headerlink" href="#posttask" title="Permalink to this headline">¶</a></h2>
@@ -760,7 +760,7 @@ through a task, even if none of its jobs are run because they are up-to-date.
 This happens when a upstream task is out-of-date, and the execution passes through
 this point in the pipeline</p>
 </div>
-<span class="target" id="index-39"></span></div>
+<span class="target" id="index-53"></span></div>
 <div class="section" id="touch-file">
 <h3>touch_file<a class="headerlink" href="#touch-file" title="Permalink to this headline">¶</a></h3>
 <blockquote>
@@ -779,7 +779,7 @@ this point in the pipeline</p>
 </pre></div>
 </div>
 </blockquote>
-<span class="target" id="index-40"></span></div>
+<span class="target" id="index-54"></span></div>
 </div>
 <div class="section" id="logging">
 <span id="logging-tasks"></span><h2>Logging<a class="headerlink" href="#logging" title="Permalink to this headline">¶</a></h2>
@@ -821,10 +821,11 @@ of the examples in this tutorial were produced by default logging to stderr.</p>
     Job = [null -&gt; "a.1"] completed</pre>
 </div>
 </blockquote>
-<span class="target" id="index-41"></span></div>
+<span class="target" id="index-55"></span></div>
 <div class="section" id="cleaning-up">
 <span id="cleanup"></span><h2>Cleaning up<a class="headerlink" href="#cleaning-up" title="Permalink to this headline">¶</a></h2>
-<p>To be implemented later!!</p>
+<p>To be implemented later!!
+See <a class="reference external" href="Todo.html#todo-combining"><em>Combining files</em></a></p>
 </div>
 </div>
 
@@ -898,11 +899,11 @@ of the examples in this tutorial were produced by default logging to stderr.</p>
 </ul>
 
             <h4>Previous topic</h4>
-            <p class="topless"><a href="Overview.html"
-                                  title="previous chapter">Overview</a></p>
+            <p class="topless"><a href="Design.html"
+                                  title="previous chapter">Design</a></p>
             <h4>Next topic</h4>
-            <p class="topless"><a href="complicated_example.html"
-                                  title="next chapter">A more ambitious real-world example</a></p>
+            <p class="topless"><a href="intermediate_example.html"
+                                  title="next chapter">A real-world example</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/Tutorial.txt"
@@ -935,10 +936,10 @@ of the examples in this tutorial were produced by default logging to stderr.</p>
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="complicated_example.html" title="A more ambitious real-world example"
+          <a href="intermediate_example.html" title="A real-world example"
              >next</a> |</li>
         <li class="right" >
-          <a href="Overview.html" title="Overview"
+          <a href="Design.html" title="Design"
              >previous</a> |</li>
         <li><a href="index.html">ruffus v1.0 beta documentation</a> &raquo;</li> 
       </ul>

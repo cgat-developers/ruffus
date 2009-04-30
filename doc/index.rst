@@ -23,7 +23,7 @@ Contents:
    
    Glossary.rst
    FAQ.rst
-   TODO.rst
+   Todo.rst
    
 Example code:
 
