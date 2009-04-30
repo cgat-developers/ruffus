@@ -15,9 +15,15 @@ Contents:
 
    Introduction.rst   
    Overview.rst
+   Design.rst
 
    Tutorial.rst
+   intermediate_example.rst
    complicated_example.rst
+   
+   Glossary.rst
+   FAQ.rst
+   TODO.rst
    
 Example code:
 
@@ -25,6 +31,7 @@ Example code:
    :maxdepth: 2
    
    simpler.rst
+   intermediate_example_code.rst
    complicated_example_code.rst
     
 Modules:
@@ -35,12 +42,6 @@ Modules:
    task.rst
    
 .. comment
-   Glossary.rst
-   FAQ.rst
-   Modules:
-
-   task.rst
-
    graph.rst
    print_dependencies.rst
    adjacent_pairs_iterate.rst
