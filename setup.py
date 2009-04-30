@@ -19,16 +19,23 @@ Overview
 ***************************************
 
 
-    The :mod:`ruffus` module is a lightweight way to add support 
+    The ruffus module is a lightweight way to add support 
     for running computational pipelines.
-
+    
     Computational pipelines are often conceptually quite simple, especially
     if we breakdown the process into simple stages, or separate **tasks**.
-
+    
     Each stage or **task** in a computational pipeline is represented by a python function
     Each python function can be called in parallel to run multiple **jobs**.
 
-    .. _Background:
+***************************************
+Documentation
+***************************************
+    
+    Ruffus documentation can be found `here <http://ruffus.googlecode.com/svn/trunk/doc/html/index.html>`_ ,
+    as well as an `overview <http://ruffus.googlecode.com/svn/trunk/doc/html/Overview.html>`_ and
+    an in-depth `tutorial <http://ruffus.googlecode.com/svn/trunk/doc/html/Tutorial.html>`_ .
+
 
 ***************************************
 Background
@@ -106,38 +113,6 @@ Usage
 
     1. Annotate functions with python decorators
 
-         +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+
-         | Decorator              | Purpose                             |    Example                                                                                          |
-         +========================+=====================================+=====================================================================================================+
-         |**@follows**            | - Indicate task dependency          | ``@follows(task1, "task2")``                                                                        |
-         |                        |                                     |                                                                                                     |
-         |                        | - mkdir prerequisite shorthand      | ``@follows(task1, mkdir("my/directory/for/results"))``                                              |
-         +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+
-         |**@parallel**           | - Parameters for parallel jobs      | ``@parallel(parameter_list)``                                                                       |
-         |                        |                                     | ``@parallel(parameter_generating_function)``                                                        |
-         +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+
-         |**@files**              | - I/O parameters                    | ``@files(parameter_list)``                                                                          |
-         |                        |                                     |                                                                                                     |
-         |                        | - skips up-to-date jobs             | ``@files(parameter_generating_function)``                                                           |
-         |                        |                                     |                                                                                                     |
-         |                        |                                     | ``@files(input, output, other_params_for_a_single_job)``                                            |
-         +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+
-         |**@files_re**           | - I/O file names via regular        | ``@files_re(glob_str, matching_regex, pattern_for_output_filenames)``                               |
-         |                        |   expressions                       |                                                                                                     |
-         |                        | - start from lists of file names    | ``@files_re(file_names, matching_regex, pattern_for_output_filenames)``                             |
-         |                        |   or ``glob`` results               |                                                                                                     |
-         |                        | - skips up-to-date jobs             | ``@files_re(glob_str, matching_regex, pattern_for_input_filenames, pattern_for_output_filenames)``  | 
-         |                        |                                     |                                                                                                     |
-         |                        |                                     | ``@files_re(file_names, matching_regex, pattern_for_input_filenames, pattern_for_output_filenames)``| 
-         |                        |                                     |                                                                                                     |
-         +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+
-         |**@check_if_uptodate**  | - Checks if task needs to be run    | ``@check_if_uptodate(is_task_up_to_date_function)``                                                 |
-         +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+
-         |**@posttask**           | - Call function after task          | ``@posttask(signal_task_completion_function)``                                                      |
-         |                        |                                     |                                                                                                     |
-         |                        | - touch file shorthand              | ``@posttask(touch_file("task1.completed")``                                                         |
-         +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+
-
     2. Print dependency graph if you necessary
 
         - For a graphical flowchart in ``jpg``, ``svg``, ``dot``, ``png``, ``ps``, ``gif`` formats::
@@ -157,8 +132,6 @@ Usage
 
         pipeline_run(list_of_target_tasks, [list_of_tasks_forced_to_rerun, multiprocess = N_PARALLEL_JOBS])
 
-
-    See the `Tutorial <http://ruffus.googlecode.com/svn/trunk/doc/_build/html/Tutorial.html>` for a more complete introduction to ruffus.
 
 """,
         author='Leo Goodstadt',
@@ -220,5 +193,8 @@ Usage
 # 
 # python setup.py sdist  --formats=gztar,zip
 # python setup.py bdist --format=rpm, wininst
-# 
-# 
+#  http://pypi.python.org/pypi
+#  http://docs.python.org/distutils/packageindex.html
+#   python setup.py register
+#   python setup.py sdist --formats=gztar,zip
+#   python setup.py sdist upload
