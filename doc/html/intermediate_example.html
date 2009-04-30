@@ -152,7 +152,7 @@ In pseudo code:</p>
 <blockquote>
 <p>Now all we have to do is gather all the simulation results, and caculate a
 mean probability per gene.</p>
-<p>Parameters for this &#8220;many -&gt; 1&#8221; operation can be generated using a simple call to
+<p id="intermediate-pipelines-combining-files">Parameters for this &#8220;many -&gt; 1&#8221; operation can be generated using a simple call to
 the <a class="reference external" href="docs.python.org/library/glob.html">glob</a> module:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">generate_statistical_summary_params</span><span class="p">():</span>
     <span class="k">for</span> <span class="n">gene</span><span class="p">,</span> <span class="n">gwas</span> <span class="ow">in</span> <span class="n">get_gene_gwas_file_pairs</span><span class="p">():</span>
