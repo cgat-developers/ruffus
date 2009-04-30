@@ -104,7 +104,7 @@ Flow chart of file dependencies:
 
 
 ***************************************
-Pypeline Flow chart
+Ruffus Flow chart
 ***************************************
 
     Our pipeline flow chart is built around these 9 steps: 
@@ -310,7 +310,5 @@ Conclusions
 This may seem a long-winded example but without
 ruffus to help abstract away some of the complexity, the
 code would have been quite unmanageable.
-
-.. comment .. literalinclude:: filename
 
 

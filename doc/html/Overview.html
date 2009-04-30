@@ -20,7 +20,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="ruffus v1.0 beta documentation" href="index.html" />
-    <link rel="next" title="Tutorial" href="Tutorial.html" />
+    <link rel="next" title="Design" href="Design.html" />
     <link rel="prev" title="Introduction" href="Introduction.html" /> 
   </head>
   <body>
@@ -34,7 +34,7 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="Tutorial.html" title="Tutorial"
+          <a href="Design.html" title="Design"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="Introduction.html" title="Introduction"
@@ -177,109 +177,6 @@ or <tt class="docutils literal"><span class="pre">glob</span></tt> results</li>
 <p>See the <a class="reference external" href="Tutorial.html#tutorial"><em>Tutorial</em></a> for a more complete introduction on how to add support
 for ruffus.</p>
 </div>
-<div class="section" id="background">
-<span id="id1"></span><h2>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
-<p>The purpose of a pipeline is to determine automatically which parts of a multistage
-process needs to be run and in what order in order to reach an objective (&#8220;targets&#8221;)</p>
-<p>Computational pipelines, especially for analysing large scientific datasets are
-in widespread use.
-However, even a conceptually simple series of steps can be difficult to set up and
-to maintain, perhaps because the right tools are not available.</p>
-</div>
-<div class="section" id="design">
-<h2>Design<a class="headerlink" href="#design" title="Permalink to this headline">¶</a></h2>
-<p>The ruffus module has the following design goals:</p>
-<blockquote>
-<ul class="simple">
-<li>Simplicity. Can be picked up in 10 minutes</li>
-<li>Elegance</li>
-<li>Lightweight</li>
-<li>Unintrusive</li>
-<li>Flexible/Powerful</li>
-</ul>
-</blockquote>
-</div>
-<div class="section" id="features">
-<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
-<p>Automatic support for</p>
-<blockquote>
-<ul class="simple">
-<li>Managing dependencies</li>
-<li>Parallel jobs</li>
-<li>Re-starting from arbitrary points, especially after errors</li>
-<li>Display of the pipeline as a flowchart</li>
-<li>Reporting</li>
-</ul>
-</blockquote>
-</div>
-<div class="section" id="alternatives">
-<h2>Alternatives<a class="headerlink" href="#alternatives" title="Permalink to this headline">¶</a></h2>
-<p>Often, tools used to build executables can be used to manage computational pipelines.
-These include</p>
-<blockquote>
-<ul class="simple">
-<li>GNU make</li>
-<li>scons</li>
-<li>ant</li>
-</ul>
-</blockquote>
-<p>It is often necessary to learn a specialised (domain-specific) language.
-GNU make syntax, for example, is much critised because of limited support for
-abstraction compared with modern programming languages like
-C, Perl, python etc. GNU makefiles can quickly become unmaintainable</p>
-<p>Pipeline specifications are usually written in a &#8220;declarative&#8221; rather than &#8220;imperative&#8221;
-manner. You write a specification that describes the dependencies, and the tool
-figures out how to perform the computations in the correct order. However, because
-GNU make and its kin depend entirely on file dependencies, the links between pipeline
-stages can be difficult to trace, and nigh impossible to debug when there are problems.</p>
-<p>There are also complete workload managements systems such as Condor.
-Various bioinformatics pipelines are also available, including that used by the
-leading genome annotation website Ensembl, Pegasys, GPIPE, Taverna, Wildfire, MOWserv,
-Triana, Cyrille2 etc. These all are either hardwired to specific databases, and tasks,
-or have steep learning curves for both the scientist/developer and the IT system
-administrators</p>
-<div class="admonition-see-also admonition seealso">
-<p class="first admonition-title">See also</p>
-<p><strong>Make like tools</strong></p>
-<dl class="last docutils">
-<dt>GNU Make:</dt>
-<dd><a class="reference external" href="http://www.gnu.org/software/make/">http://www.gnu.org/software/make/</a></dd>
-<dt>SCONS:</dt>
-<dd><a class="reference external" href="http://www.scons.org/">http://www.scons.org/</a></dd>
-<dt>Apache Ant:</dt>
-<dd><a class="reference external" href="http://ant.apache.org/">http://ant.apache.org/</a></dd>
-</dl>
-</div>
-<div class="section" id="id2">
-<h3><a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
-<div class="admonition-see-also admonition seealso">
-<p class="first admonition-title">See also</p>
-<p><strong>Bioinformatics pipelines</strong></p>
-<blockquote class="last">
-<dl class="docutils">
-<dt>Condor:</dt>
-<dd><a class="reference external" href="http://www.cs.wisc.edu/condor/description.html">http://www.cs.wisc.edu/condor/description.html</a></dd>
-<dt>Ensembl Analysis pipeline:</dt>
-<dd><a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/15123589">http://www.ncbi.nlm.nih.gov/pubmed/15123589</a></dd>
-<dt>Pegasys:</dt>
-<dd><a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/15096276">http://www.ncbi.nlm.nih.gov/pubmed/15096276</a></dd>
-<dt>GPIPE:</dt>
-<dd><a class="reference external" href="http://www.biomedcentral.com/pubmed/15096276">http://www.biomedcentral.com/pubmed/15096276</a></dd>
-<dt>Taverna:</dt>
-<dd><a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/15201187">http://www.ncbi.nlm.nih.gov/pubmed/15201187</a></dd>
-<dt>Wildfire:</dt>
-<dd><a class="reference external" href="http://www.biomedcentral.com/pubmed/15788106">http://www.biomedcentral.com/pubmed/15788106</a></dd>
-<dt>MOWserv:</dt>
-<dd><a class="reference external" href="http://www.biomedcentral.com/pubmed/16257987">http://www.biomedcentral.com/pubmed/16257987</a></dd>
-<dt>Triana:</dt>
-<dd><a class="reference external" href="http://dx.doi.org/10.1007/s10723-005-9007-3">http://dx.doi.org/10.1007/s10723-005-9007-3</a></dd>
-<dt>Cyrille2:</dt>
-<dd><a class="reference external" href="http://www.biomedcentral.com/1471-2105/9/96">http://www.biomedcentral.com/1471-2105/9/96</a></dd>
-</dl>
-</blockquote>
-</div>
-</div>
-</div>
 </div>
 
 
@@ -292,13 +189,6 @@ administrators</p>
             <ul>
 <li><a class="reference external" href="">Overview</a><ul>
 <li><a class="reference external" href="#usage">Usage</a></li>
-<li><a class="reference external" href="#background">Background</a></li>
-<li><a class="reference external" href="#design">Design</a></li>
-<li><a class="reference external" href="#features">Features</a></li>
-<li><a class="reference external" href="#alternatives">Alternatives</a><ul>
-<li><a class="reference external" href="#id2"></a></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -307,8 +197,8 @@ administrators</p>
             <p class="topless"><a href="Introduction.html"
                                   title="previous chapter">Introduction</a></p>
             <h4>Next topic</h4>
-            <p class="topless"><a href="Tutorial.html"
-                                  title="next chapter">Tutorial</a></p>
+            <p class="topless"><a href="Design.html"
+                                  title="next chapter">Design</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/Overview.txt"
@@ -341,7 +231,7 @@ administrators</p>
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="Tutorial.html" title="Tutorial"
+          <a href="Design.html" title="Design"
              >next</a> |</li>
         <li class="right" >
           <a href="Introduction.html" title="Introduction"

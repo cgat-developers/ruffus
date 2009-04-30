@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Glossary &mdash; ruffus v1.0 beta documentation</title>
+    <link rel="stylesheet" href="_static/ruffus.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0 beta',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="ruffus v1.0 beta documentation" href="index.html" />
+    <link rel="next" title="FAQ" href="FAQ.html" />
+    <link rel="prev" title="A real-world example" href="intermediate_example.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="FAQ.html" title="FAQ"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="intermediate_example.html" title="A real-world example"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">ruffus v1.0 beta documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="glossary">
+<h1>Glossary<a class="headerlink" href="#glossary" title="Permalink to this headline">¶</a></h1>
+<dl class="glossary docutils">
+<dt id="term-decorator">decorator</dt>
+<dd><dl class="first docutils">
+<dt>Quoting from the <a class="reference external" href="http://wiki.python.org/moin/PythonDecorators">python wiki</a>:</dt>
+<dd><p class="first">A Python decorator is a specific change to the Python syntax that
+allows us to more conveniently alter functions and methods.</p>
+<p class="last">Decorators dynamically alter the functionality of a function, method, or
+class without having to directly use subclasses or change the source code
+of the function being decorated.</p>
+</dd>
+</dl>
+<p class="last">Ruffus decorators allow functions to be incorporated into a computational
+pipeline, with automatic generation of parameters, dependency checking etc.,
+without modifying any code within the function.</p>
+</dd>
+<dt id="term-generator">generator</dt>
+<dd><p class="first">python generators are new to python 2.2
+(see <a class="reference external" href="http://www.ibm.com/developerworks/library/l-pycon.html">Charming Python: Iterators and simple generators</a>).
+They allow iterable data to be generated on the fly.</p>
+<p>Ruffus asks for generators when you want to generate <strong>job</strong> parameters dynamically.</p>
+<p>Each set of job parameters is returned by the <tt class="docutils literal"><span class="pre">yield</span></tt> keyword for
+greater clarity. For example,:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">generate_job_parameters</span><span class="p">():</span>
+
+    <span class="k">for</span> <span class="n">file_index</span><span class="p">,</span> <span class="n">file_name</span> <span class="ow">in</span> <span class="n">iterate</span><span class="p">(</span><span class="n">all_file_names</span><span class="p">):</span>
+
+        <span class="c"># parameter for each job</span>
+        <span class="k">yield</span> <span class="n">file_index</span><span class="p">,</span> <span class="n">file_name</span>
+</pre></div>
+</div>
+<p class="last">Each job takes the parameters <tt class="docutils literal"><span class="pre">file_index</span></tt> and <tt class="docutils literal"><span class="pre">file_name</span></tt></p>
+</dd>
+<dt id="term-job">job</dt>
+<dd><p class="first">Any number of operations which can be run in parallel and make up
+the work in a stage of a computional pipeline.</p>
+<p>Each <strong>task</strong> in ruffus is a separate call to the <strong>task</strong> function.</p>
+<p>For example, if a task is to find products of numbers, each of these will be a separate job.</p>
+<blockquote>
+<p>Job1:</p>
+<div class="highlight-python"><pre>4 x 5 = 20</pre>
+</div>
+<p>Job2:</p>
+<div class="highlight-python"><pre>5 x 6 = 30</pre>
+</div>
+<p>Job3:</p>
+<div class="highlight-python"><pre>2 x 7 = 14</pre>
+</div>
+</blockquote>
+<p class="last">Jobs need not complete in order.</p>
+</dd>
+<dt id="term-task">task</dt>
+<dd><p class="first">A stage in a computational pipeline.</p>
+<p>Each <strong>task</strong> in ruffus is represented by a python function.</p>
+<p>For example, a task might be to find the products of a sets of two numbers:</p>
+<div class="last highlight-python"><pre>4 x 5 = 20
+5 x 6 = 30
+2 x 7 = 14</pre>
+</div>
+</dd>
+</dl>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="intermediate_example.html"
+                                  title="previous chapter">A real-world example</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="FAQ.html"
+                                  title="next chapter">FAQ</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/Glossary.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="FAQ.html" title="FAQ"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="intermediate_example.html" title="A real-world example"
+             >previous</a> |</li>
+        <li><a href="index.html">ruffus v1.0 beta documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Leo Goodstadt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>A real-world example &mdash; ruffus v1.0 beta documentation</title>
+    <link rel="stylesheet" href="_static/ruffus.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0 beta',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="ruffus v1.0 beta documentation" href="index.html" />
+    <link rel="next" title="A more ambitious real-world example" href="complicated_example.html" />
+    <link rel="prev" title="Tutorial" href="Tutorial.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="complicated_example.html" title="A more ambitious real-world example"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="Tutorial.html" title="Tutorial"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">ruffus v1.0 beta documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="a-real-world-example">
+<span id="intermediate-pipelines"></span><h1>A real-world example<a class="headerlink" href="#a-real-world-example" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="python-code">
+<h2>Python Code<a class="headerlink" href="#python-code" title="Permalink to this headline">¶</a></h2>
+<p>The full code is available <a class="reference external" href="intermediate_example_code.html#code-for-intermediate-pipeline-example"><em>here</em></a>.</p>
+</div>
+<div class="section" id="running-simulation-studies-with-genes-and-gwas-data">
+<h2>Running simulation studies with genes and GWAS data<a class="headerlink" href="#running-simulation-studies-with-genes-and-gwas-data" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="background">
+<h3>Background:<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p><a class="reference external" href="http://en.wikipedia.org/wiki/Genome-wide_association_study">Genome-wide association studies</a>
+allow the underlying genetic factors behind common conditions like schizophrenia, obesity
+and heart disease to be identified.</p>
+<p>However, it is very import to make sure that the associations are statistically
+sound. This study uses 100 simulated data per gene / GWAS data to test
+the statistical significance.</p>
+</blockquote>
+</div>
+<div class="section" id="aim">
+<h3>Aim:<a class="headerlink" href="#aim" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p>For each gene / GWAS data pair, we need to</p>
+<ul class="simple">
+<li>run a simulation study 100 times against a reference set of (100) simulated data</li>
+<li>calculate the mean probability for each gene</li>
+</ul>
+</blockquote>
+</div>
+<div class="section" id="conceptual-flow-chart">
+<h3>Conceptual Flow chart:<a class="headerlink" href="#conceptual-flow-chart" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p>Our pipeline has just 2 steps:</p>
+<ol class="arabic">
+<li><p class="first">Simulation.
+In pseudo code:</p>
+<div class="highlight-python"><pre>for n_file in NNN genes:
+     for m_file in MMM simulations:
+
+         [n_file.gene,
+          n_file.gwas,
+          m_file.simulation] -&gt; n_file.m_file.simulation_res</pre>
+</div>
+</li>
+<li><p class="first">Summarise the simulations as a mean.
+In pseudo code:</p>
+<div class="highlight-python"><pre>for n_file in NNN genes:
+
+    n_file.*.simulation_res -&gt; n_file.mean</pre>
+</div>
+</li>
+</ol>
+</blockquote>
+</div>
+<div class="section" id="challenges">
+<h3>Challenges:<a class="headerlink" href="#challenges" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p>The first step involves an N x M operation.</p>
+<p>These are unnecessary tricky to get right in <tt class="docutils literal"><span class="pre">gmake</span></tt> and like-minded build tools.</p>
+<p>In normal computer languages, this is just a pair of for loops:</p>
+<div class="highlight-python"><pre>for n in NNN:
+    for m in MMM:
+        do n x m</pre>
+</div>
+<p>The ruffus code is as simple.</p>
+</blockquote>
+</div>
+<div class="section" id="simulations-per-gene">
+<h3>1. Simulations per gene<a class="headerlink" href="#simulations-per-gene" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p>Notice the nested pair of for loops when generating the simulation parameters:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">generate_simulation_params</span> <span class="p">():</span>
+
+    <span class="k">for</span> <span class="n">sim_file</span> <span class="ow">in</span> <span class="n">get_simulation_files</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">gene</span><span class="p">,</span> <span class="n">gwas</span> <span class="ow">in</span> <span class="n">get_gene_gwas_file_pairs</span><span class="p">():</span>
+
+            <span class="n">result_file</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">.simulation_res&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">gene</span><span class="p">,</span> <span class="n">sim_file</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="p">[</span><span class="n">gene</span><span class="p">,</span> <span class="n">gwas</span><span class="p">,</span> <span class="n">sim_file</span><span class="p">],</span> <span class="n">result_file</span>
+</pre></div>
+</div>
+<p>This has been edited for clarity. The full function is available <a class="reference external" href="code-for-intermediate-pipeline-example">here</a>.</p>
+<p>These parameters are passed to the python function calculating the simulations.</p>
+<p>We represent this with the following dummy function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@follows</span><span class="p">(</span><span class="n">mkdir</span><span class="p">(</span><span class="n">output_dir</span><span class="p">))</span>
+<span class="nd">@files</span><span class="p">(</span><span class="n">generate_simulation_params</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">gwas_simulation</span><span class="p">(</span><span class="n">input_files</span><span class="p">,</span> <span class="n">result_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dummy calculation of gene gwas vs simulation data</span>
+<span class="sd">    Normally runs in parallel on a computational cluster</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="p">(</span><span class="n">gene_file</span><span class="p">,</span>
+    <span class="n">gwas_file</span><span class="p">,</span>
+    <span class="n">simulation_data_file</span><span class="p">)</span> <span class="o">=</span> <span class="n">input_files</span>
+
+    <span class="n">simulation_res_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">result_file</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</blockquote>
+</div>
+<div class="section" id="mean-simulated-probability-per-gene">
+<h3>2. Mean simulated probability per gene<a class="headerlink" href="#mean-simulated-probability-per-gene" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p>Now all we have to do is gather all the simulation results, and caculate a
+mean probability per gene.</p>
+<p>Parameters for this &#8220;many -&gt; 1&#8221; operation can be generated using a simple call to
+the <a class="reference external" href="docs.python.org/library/glob.html">glob</a> module:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">generate_statistical_summary_params</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">gene</span><span class="p">,</span> <span class="n">gwas</span> <span class="ow">in</span> <span class="n">get_gene_gwas_file_pairs</span><span class="p">():</span>
+        <span class="n">result_files</span>     <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">.*.simulation_res&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">gene</span><span class="p">))</span>
+        <span class="n">summary_file</span>     <span class="o">=</span> <span class="n">gene</span> <span class="o">+</span> <span class="s">&quot;.mean&quot;</span>
+
+        <span class="k">yield</span> <span class="n">result_files</span><span class="p">,</span> <span class="n">summary_file</span>
+</pre></div>
+</div>
+<p>The function for calculating means would resemble this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@follows</span><span class="p">(</span><span class="n">gwas_simulation</span><span class="p">)</span>
+<span class="nd">@files</span><span class="p">(</span><span class="n">generate_statistical_summary_params</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">statistical_summary</span> <span class="p">(</span><span class="n">result_files</span><span class="p">,</span> <span class="n">summary_file</span><span class="p">):</span>
+    <span class="n">summary_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">summary_file</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+
+    <span class="c"># ... more code to parse probabilities from results and calculate their mean</span>
+</pre></div>
+</div>
+</blockquote>
+</div>
+<div class="section" id="conclusions">
+<h3>Conclusions<a class="headerlink" href="#conclusions" title="Permalink to this headline">¶</a></h3>
+<p>What would be spaghetti in makefile format looks just like normal python code with ruffus.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">A real-world example</a><ul>
+<li><a class="reference external" href="#python-code">Python Code</a></li>
+<li><a class="reference external" href="#running-simulation-studies-with-genes-and-gwas-data">Running simulation studies with genes and GWAS data</a><ul>
+<li><a class="reference external" href="#background">Background:</a></li>
+<li><a class="reference external" href="#aim">Aim:</a></li>
+<li><a class="reference external" href="#conceptual-flow-chart">Conceptual Flow chart:</a></li>
+<li><a class="reference external" href="#challenges">Challenges:</a></li>
+<li><a class="reference external" href="#simulations-per-gene">1. Simulations per gene</a></li>
+<li><a class="reference external" href="#mean-simulated-probability-per-gene">2. Mean simulated probability per gene</a></li>
+<li><a class="reference external" href="#conclusions">Conclusions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="Tutorial.html"
+                                  title="previous chapter">Tutorial</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="complicated_example.html"
+                                  title="next chapter">A more ambitious real-world example</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/intermediate_example.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="complicated_example.html" title="A more ambitious real-world example"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="Tutorial.html" title="Tutorial"
+             >previous</a> |</li>
+        <li><a href="index.html">ruffus v1.0 beta documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Leo Goodstadt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
+    </div>
+  </body>
+</html>
