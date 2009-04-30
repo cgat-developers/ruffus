@@ -1,0 +1,251 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Design &mdash; ruffus v1.0 beta documentation</title>
+    <link rel="stylesheet" href="_static/ruffus.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0 beta',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="ruffus v1.0 beta documentation" href="index.html" />
+    <link rel="next" title="Tutorial" href="Tutorial.html" />
+    <link rel="prev" title="Overview" href="Overview.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="Tutorial.html" title="Tutorial"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="Overview.html" title="Overview"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">ruffus v1.0 beta documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="design">
+<h1>Design<a class="headerlink" href="#design" title="Permalink to this headline">¶</a></h1>
+<p>The ruffus module has the following design goals:</p>
+<blockquote>
+<ul class="simple">
+<li>Simplicity. Can be picked up in 10 minutes</li>
+<li>Elegance</li>
+<li>Lightweight</li>
+<li>Unintrusive</li>
+<li>Flexible/Powerful</li>
+</ul>
+</blockquote>
+<div class="section" id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<p>Automatic support for</p>
+<blockquote>
+<ul class="simple">
+<li>Managing dependencies</li>
+<li>Parallel jobs</li>
+<li>Re-starting from arbitrary points, especially after errors</li>
+<li>Display of the pipeline as a flowchart</li>
+<li>Reporting</li>
+</ul>
+</blockquote>
+</div>
+<div class="section" id="alternatives">
+<h2>Alternatives<a class="headerlink" href="#alternatives" title="Permalink to this headline">¶</a></h2>
+<p>Often, tools used to build executables can be used to manage computational pipelines.
+These include</p>
+<blockquote>
+<ul class="simple">
+<li>GNU make</li>
+<li>scons</li>
+<li>ant</li>
+</ul>
+</blockquote>
+<p>It is often necessary to learn a specialised (domain-specific) language.
+GNU make syntax, for example, is much critised because of limited support for
+abstraction compared with modern programming languages like
+C, Perl, python etc. GNU makefiles can quickly become unmaintainable</p>
+<p>Pipeline specifications are usually written in a &#8220;declarative&#8221; rather than &#8220;imperative&#8221;
+manner. You write a specification that describes the dependencies, and the tool
+figures out how to perform the computations in the correct order. However, because
+GNU make and its kin depend entirely on file dependencies, the links between pipeline
+stages can be difficult to trace, and nigh impossible to debug when there are problems.</p>
+<p>There are also complete workload managements systems such as Condor.
+Various bioinformatics pipelines are also available, including that used by the
+leading genome annotation website Ensembl, Pegasys, GPIPE, Taverna, Wildfire, MOWserv,
+Triana, Cyrille2 etc. These all are either hardwired to specific databases, and tasks,
+or have steep learning curves for both the scientist/developer and the IT system
+administrators</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p><strong>Make like tools</strong></p>
+<dl class="last docutils">
+<dt>GNU Make:</dt>
+<dd><a class="reference external" href="http://www.gnu.org/software/make/">http://www.gnu.org/software/make/</a></dd>
+<dt>SCONS:</dt>
+<dd><a class="reference external" href="http://www.scons.org/">http://www.scons.org/</a></dd>
+<dt>Apache Ant:</dt>
+<dd><a class="reference external" href="http://ant.apache.org/">http://ant.apache.org/</a></dd>
+</dl>
+</div>
+<div class="section" id="id1">
+<h3><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p><strong>Bioinformatics pipelines</strong></p>
+<blockquote class="last">
+<dl class="docutils">
+<dt>Condor:</dt>
+<dd><a class="reference external" href="http://www.cs.wisc.edu/condor/description.html">http://www.cs.wisc.edu/condor/description.html</a></dd>
+<dt>Ensembl Analysis pipeline:</dt>
+<dd><a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/15123589">http://www.ncbi.nlm.nih.gov/pubmed/15123589</a></dd>
+<dt>Pegasys:</dt>
+<dd><a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/15096276">http://www.ncbi.nlm.nih.gov/pubmed/15096276</a></dd>
+<dt>GPIPE:</dt>
+<dd><a class="reference external" href="http://www.biomedcentral.com/pubmed/15096276">http://www.biomedcentral.com/pubmed/15096276</a></dd>
+<dt>Taverna:</dt>
+<dd><a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/15201187">http://www.ncbi.nlm.nih.gov/pubmed/15201187</a></dd>
+<dt>Wildfire:</dt>
+<dd><a class="reference external" href="http://www.biomedcentral.com/pubmed/15788106">http://www.biomedcentral.com/pubmed/15788106</a></dd>
+<dt>MOWserv:</dt>
+<dd><a class="reference external" href="http://www.biomedcentral.com/pubmed/16257987">http://www.biomedcentral.com/pubmed/16257987</a></dd>
+<dt>Triana:</dt>
+<dd><a class="reference external" href="http://dx.doi.org/10.1007/s10723-005-9007-3">http://dx.doi.org/10.1007/s10723-005-9007-3</a></dd>
+<dt>Cyrille2:</dt>
+<dd><a class="reference external" href="http://www.biomedcentral.com/1471-2105/9/96">http://www.biomedcentral.com/1471-2105/9/96</a></dd>
+</dl>
+</blockquote>
+</div>
+</div>
+</div>
+<div class="section" id="acknowledgements">
+<h2>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<ul>
+<li><p class="first">Bruce Eckel&#8217;s insightful article on
+<a class="reference external" href="http://www.artima.com/weblogs/viewpost.jsp?thread=241209">A Decorator Based Build System</a>
+was the obvious inspiration for the use of decorators in Ruffus.</p>
+<dl class="docutils">
+<dt>The rest of the Ruffus takes uses a different approach. In particular:</dt>
+<dd><ol class="first last arabic">
+<li><p class="first">Ruffus uses task-based not file-based dependencies</p>
+</li>
+<li><p class="first">Ruffus tries to have minimal impact on the functions it decorates.</p>
+<p>Bruce Eckel&#8217;s design wraps functions in &#8220;rule&#8221; objects.</p>
+<p>Ruffus tasks are added as attributes of the functions which can be still be
+called normally. This is how Ruffus decorators can be layered in any order
+onto the same task.</p>
+</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p class="first">Languages like c++ and Java would probably use a &#8220;mixin&#8221; approach.
+Python&#8217;s easy support for reflection and function references,
+as well as the necessity of marshalling over process boundaries, dictated the
+internal architecture of Ruffus.</p>
+</li>
+<li><p class="first">The <a class="reference external" href="www.boost.org">Boost Graph library</a> for text book implementations of directed
+graph traversals.</p>
+</li>
+<li><p class="first"><a class="reference external" href="http://www.graphviz.org/">Graphviz</a>. Just works. Wonderful.</p>
+</li>
+</ul>
+</blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Design</a><ul>
+<li><a class="reference external" href="#features">Features</a></li>
+<li><a class="reference external" href="#alternatives">Alternatives</a><ul>
+<li><a class="reference external" href="#id1"></a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#acknowledgements">Acknowledgements</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="Overview.html"
+                                  title="previous chapter">Overview</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="Tutorial.html"
+                                  title="next chapter">Tutorial</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/Design.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="Tutorial.html" title="Tutorial"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="Overview.html" title="Overview"
+             >previous</a> |</li>
+        <li><a href="index.html">ruffus v1.0 beta documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Leo Goodstadt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
+    </div>
+  </body>
+</html>

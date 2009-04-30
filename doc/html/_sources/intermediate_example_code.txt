@@ -1,29 +1,29 @@
-.. _code-for-complicated-pipeline-example:
+.. _code-for-intermediate-pipeline-example:
 
 
 #######################################################################
-:mod:`complicated_example` -- A more ambitious real-world example
+:mod:`intermediate_example` -- A real-world example
 #######################################################################
 
 
-See :ref:`here <complicated-pipelines>` for an overview and explanations for this code.
+See :ref:`here <intermediate-pipelines>` for an overview and explanations for this code.
 
 
-.. module:: complicated_example
-   :synopsis: A more ambitious real-world Example.
+.. module:: intermediate_example
+   :synopsis: A real-world Example.
 .. moduleauthor:: Leo Goodstadt <ruffus@llew.org.uk>
 
 
 
 The code for this example is in the test subdirectory of the ``ruffus`` module:
 
-    ``ruffus/test/complicated_example.py``
+    ``ruffus/test/intermediate_example.py``
 
 The data is at:
 
-    ``ruffus/test/data_for_complicated_example``
+    ``ruffus/test/data_for_intermediate_example``
 
-.. program:: complicated_example.py
+.. program:: intermediate_example.py
 
 ****************************
 Programme options:
@@ -42,25 +42,20 @@ To specify tasks:
     
         Target task(s) of pipeline. TARGET_TASK can be
            
-        * ``split_unknown_gene_setdef``
-        * ``split_per_species_gene_sets``
-        * ``all_vs_all_comparisons``
-        * ``combine_into_gene_familes``
-        * ``split_gene_family_for_evolutionary_analysis``
-        * ``evolution_analysis``
-        * ``combine_evolution_analysis``
-        * ``summarise_evolution_analysis``
-        * ``summarise_all``
+        * ``gwas_simulation``
+        * ``statistical_summary``
         
         For example::
     
-            complicated_example.py -t evolution_analysis -t summarise_all
+            intermediate_example.py -t statistical_summary
         
     .. cmdoption:: --forced_tasks FORCED_TASK, -f FORCED_TASK
     
         Pipeline task(s) which will be run even if they are up to date.
 
-        See above for a list of pipelined tasks
+        For example::
+    
+            intermediate_example.py -t gwas_simulation
         
     .. cmdoption:: --jobs N, -j N
         
@@ -70,14 +65,17 @@ To specify tasks:
 To specify paths:
 =================
 
-    .. cmdoption:: --data_dir PATH, -d PATH
+    .. cmdoption:: --gene_data_dir PATH, -d PATH
+        
+        Directory with input data.
+
+    .. cmdoption:: --simulation_data_dir PATH, -s PATH
         
         Directory with input data.
         
     .. cmdoption:: --working_dir PATH, -d PATH
     
         Direction in which ruffus will run.
-
 
 ==================================
 To print flowchart:
@@ -114,5 +112,6 @@ To print flowchart:
 ****************************
 Code:
 ****************************
-.. literalinclude:: _static/example_scripts/complicated_example.py
+.. literalinclude:: _static/example_scripts/intermediate_example.py
+
 
