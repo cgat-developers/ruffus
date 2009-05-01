@@ -4,7 +4,7 @@
 Overview
 ********
 
-The :mod:`task` module is a lightweight way to add support 
+The ``ruffus`` module is a lightweight way to add support 
 for running computational pipelines.
 
 
