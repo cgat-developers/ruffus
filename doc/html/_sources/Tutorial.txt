@@ -186,7 +186,7 @@ More to **@follows**
 Multi Processing
 =====================
 
-    Pypeline uses python `multiprocessing <http://docs.python.org/library/multiprocessing.html>`_ to run
+    Ruffus uses python `multiprocessing <http://docs.python.org/library/multiprocessing.html>`_ to run
     each job in a separate process.
     
     This means that jobs do *not* necessarily complete in the order of the defined parameters.
@@ -298,13 +298,13 @@ Interrupting the pipeline
 =====================
 Multiple Errors
 =====================
-    For any task where exceptions are thrown, Pypeline will continue executing until
+    For any task where exceptions are thrown, Ruffus will continue executing until
     the number of exceptions is equal to the number of concurrent jobs (``multiprocess``) set in
     ``pipeline_run``. This seems a fair tradeoff between being able to gather detailed
     error information for running jobs, and not wasting too much time for a task
     that is going to fail anyway.
     
-    Pypeline always exits concurrent task operations as soon as possible if the
+    Ruffus always exits concurrent task operations as soon as possible if the
     pipeline is interrupted by a job returning false (see :ref:`previous section <interrupting>`).
 
 
@@ -388,7 +388,7 @@ Skip jobs which are up to date
     and output files of a job. The job will only be rerun if the input file has changed
     since the output file was produced.
     
-    Pypeline treats the first two parameters of each job as the input and output files
+    Ruffus treats the first two parameters of each job as the input and output files
     and checks timestamps for you.
     
     From the command prompt, make our starting files::
@@ -1057,7 +1057,7 @@ touch_file
 Logging
 ***************************************
 
-    Pypeline logs each task and each job as it is completed. The results of each
+    Ruffus logs each task and each job as it is completed. The results of each
     of the examples in this tutorial were produced by default logging to stderr.
     
     You can specify your own logging by providing a python 
@@ -1069,7 +1069,7 @@ Logging
         LOG_FILENAME = '/tmp/ruffus.log'
         
         # Set up a specific logger with our desired output level
-        my_ruffus_logger = logging.getLogger('My_Pypeline_logger')
+        my_ruffus_logger = logging.getLogger('My_Ruffus_logger')
         my_ruffus_logger.setLevel(logging.DEBUG)
         
         # Add the log message handler to the logger
