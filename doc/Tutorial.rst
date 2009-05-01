@@ -138,6 +138,8 @@ More to **@follows**
             print "Second task"
             
     will make sure that ``output/results/here`` exists before `second_task` is run.
+    
+    In other words, it will make the ``output/results/here`` directory if it does not exist.
 
 .. index:: @parallel
 
