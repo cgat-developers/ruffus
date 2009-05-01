@@ -9,7 +9,7 @@ Overview
 ***************************************
 
 
-    The :mod:`ruffus` module is a lightweight way to add support 
+    The ``ruffus`` module is a lightweight way to add support 
     for running computational pipelines.
     
     Computational pipelines are often conceptually quite simple, especially

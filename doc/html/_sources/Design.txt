@@ -30,7 +30,7 @@ To be written
 
 Alternatives
 ============
-Often, tools used to build executables can be used to manage computational pipelines.
+Tools used to build executables can be used to manage computational pipelines.
 These include
 
         * GNU make
@@ -38,9 +38,9 @@ These include
         * ant
 
 It is often necessary to learn a specialised (domain-specific) language. 
-GNU make syntax, for example, is much critised because of limited support for
+GNU make syntax, for example, is much criticised because of limited support for
 abstraction compared with modern programming languages like 
-C, Perl, python etc. GNU makefiles can quickly become unmaintainable
+C, Perl, python etc. GNU makefiles can quickly become unmaintainable.
 
 Pipeline specifications are usually written in a "declarative" rather than "imperative"
 manner. You write a specification that describes the dependencies, and the tool 
