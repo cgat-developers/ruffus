@@ -10,7 +10,7 @@ for running computational pipelines.
 Features
 ============
 
-The :mod:`pipeline` provides automatic support for
+The :mod:`ruffus` provides automatic support for
  
         * Managing dependencies
         * Parallel jobs

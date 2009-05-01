@@ -2,7 +2,7 @@
    sphinx-quickstart on Tue Apr 21 16:55:56 2009.
 
 
-Pypeline documentation
+Ruffus documentation
 ======================
 
 The :mod:`task` module is a lightweight way to add support 
