@@ -1,15 +1,27 @@
 .. ruffus documentation master file, created by
    sphinx-quickstart on Tue Apr 21 16:55:56 2009.
 
-
+*********************
 Ruffus documentation
-======================
+*********************
+
 
 The :mod:`task` module is a lightweight way to add support 
 for running pipelined tasks.
 
-Contents:
+=====================
+Start Here:
+=====================
 
+.. toctree::
+   :maxdepth: 1
+
+   Introduction.rst   
+   simple_tutorial.rst
+
+=====================
+Contents:
+=====================
 .. toctree::
    :maxdepth: 2
 
@@ -48,8 +60,9 @@ Modules:
    adjacent_pairs_iterate.rst
 
 
+=====================
 Indices and tables
-==================
+=====================
 
 * :ref:`genindex`
 * :ref:`modindex`
