@@ -33,7 +33,7 @@ Contents:
    intermediate_example.rst
    complicated_example.rst
    
-   Overview.rst
+   cheatsheet.rst
    Glossary.rst
    FAQ.rst
    Todo.rst
