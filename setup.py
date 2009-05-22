@@ -27,21 +27,25 @@ Overview
     
     Each stage or **task** in a computational pipeline is represented by a python function
     Each python function can be called in parallel to run multiple **jobs**.
+    
+    ruffus was original designed for use in bioinformatics to analyse multiple genome
+    data sets.
 
 ***************************************
 Documentation
 ***************************************
     
     Ruffus documentation can be found `here <http://ruffus.googlecode.com/svn/trunk/doc/html/index.html>`_ ,
-    as well as an `overview <http://ruffus.googlecode.com/svn/trunk/doc/html/Overview.html>`_ and
-    an in-depth `tutorial <http://ruffus.googlecode.com/svn/trunk/doc/html/Tutorial.html>`_ .
+    with an`introduction / installation notes <http://ruffus.googlecode.com/svn/trunk/doc/html/Introduction.html>`_,
+    a `short 5 minute tutorial <http://ruffus.googlecode.com/svn/trunk/doc/html/simple_tutorial.html>`_ and
+    an `in-depth tutorial <http://ruffus.googlecode.com/svn/trunk/doc/html/Tutorial.html>`_ .
 
 
 ***************************************
 Background
 ***************************************
 
-    The purpose of a pipeline is to determine automatically which parts of a multistage 
+    The purpose of a pipeline is to determine automatically which parts of a multi-stage 
     process needs to be run and in what order in order to reach an objective ("targets")
 
     Computational pipelines, especially for analysing large scientific datasets are
