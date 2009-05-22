@@ -6,8 +6,8 @@ Ruffus documentation
 *********************
 
 
-The :mod:`task` module is a lightweight way to add support 
-for running pipelined tasks.
+The :mod:`ruffus` module is a lightweight way to add support 
+for running computational pipelines.
 
 =====================
 Start Here:
@@ -16,7 +16,7 @@ Start Here:
 .. toctree::
    :maxdepth: 1
 
-   Introduction.rst   
+   * Introduction.rst *
    simple_tutorial.rst
 
 =====================
