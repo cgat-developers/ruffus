@@ -16,7 +16,7 @@ Start Here:
 .. toctree::
    :maxdepth: 1
 
-   *Introduction.rst*
+   Introduction.rst
    simple_tutorial.rst
 
 =====================
