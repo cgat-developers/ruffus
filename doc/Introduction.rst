@@ -26,14 +26,16 @@ The :mod:`ruffus` provides automatic support for
 Installation
 ==================
 
-In order to install the extension:
-
 The easy way 
 ============
 
     ::
    
         easy_install ruffus
+
+    or, to upgrade::
+    
+        easy_install -u ruffus
 
 The most up-to-date code:
 ==============================
@@ -62,8 +64,14 @@ Whence the name "Ruffus"?
 .. image:: images/cyl_ruffus.jpg
 
 **Cylindrophis ruffus** is the name of the 
-`red-tailed pipe snake <http://en.wikipedia.org/wiki/Cylindrophis_ruffus>`_ (bad pythony pun)
+`red-tailed pipe snake <http://en.wikipedia.org/wiki/Cylindrophis_ruffus>`_ (bad python-y pun)
 which can be found in `Hong Kong <http://www.hkras.org/eng/info/hkspp.htm>`_ where the author comes from.
+Be careful not to step on one when running down country park lanes at full speed 
+in Hong Kong: this snake is a rare breed!
+
+Ruffus is a shy creature, and pretends to be a cobra by putting up its red tail and ducking its
+head in its coils when startled. It does most of its work at night and sleeps during the day:
+typical of many python programmers!
 
 The original image is from `wikimedia <http://upload.wikimedia.org/wikipedia/commons/a/a1/Cyl_ruffus_061212_2025_tdp.jpg>`_
 

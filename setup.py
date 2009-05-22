@@ -28,7 +28,7 @@ Overview
     Each stage or **task** in a computational pipeline is represented by a python function
     Each python function can be called in parallel to run multiple **jobs**.
     
-    ruffus was original designed for use in bioinformatics to analyse multiple genome
+    Ruffus was originally designed for use in bioinformatics to analyse multiple genome
     data sets.
 
 ***************************************
@@ -36,7 +36,7 @@ Documentation
 ***************************************
     
     Ruffus documentation can be found `here <http://ruffus.googlecode.com/svn/trunk/doc/html/index.html>`_ ,
-    with an`introduction / installation notes <http://ruffus.googlecode.com/svn/trunk/doc/html/Introduction.html>`_,
+    with an `introduction and installation notes <http://ruffus.googlecode.com/svn/trunk/doc/html/Introduction.html>`_ ,
     a `short 5 minute tutorial <http://ruffus.googlecode.com/svn/trunk/doc/html/simple_tutorial.html>`_ and
     an `in-depth tutorial <http://ruffus.googlecode.com/svn/trunk/doc/html/Tutorial.html>`_ .
 
@@ -192,13 +192,13 @@ Usage
 #   CHANGES.txt
 #   README.txt
 #   USAGE.txt
+#
+#  http://pypi.python.org/pypi
+#  http://docs.python.org/distutils/packageindex.html
 #   
 # 
 # 
-# python setup.py sdist  --formats=gztar,zip
-# python setup.py bdist --format=rpm, wininst
-#  http://pypi.python.org/pypi
-#  http://docs.python.org/distutils/packageindex.html
 #   python setup.py register
-#   python setup.py sdist --formats=gztar,zip
-#   python setup.py sdist upload
+# python setup.py sdist  upload --formats=gztar,zip
+## python setup.py bdist --format=rpm, wininst
+
