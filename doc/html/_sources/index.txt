@@ -27,13 +27,14 @@ Contents:
 
    Introduction.rst   
    simple_tutorial.rst
-   Design.rst
+   cheatsheet.rst
 
+   Design.rst
    Tutorial.rst
+
    intermediate_example.rst
    complicated_example.rst
    
-   cheatsheet.rst
    Glossary.rst
    FAQ.rst
    Todo.rst
