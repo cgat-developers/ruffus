@@ -1,8 +1,8 @@
 .. _Tutorial:
 
-############
-Tutorial
-############
+########################
+Full Tutorial
+########################
 
 ***************************************
 Overview
@@ -65,7 +65,6 @@ Running
         
         pipeline_run([final_task])
     
-.. Comment. End of literal block???
     
     Because ``final_task`` depends on ``second_task`` which depends on ``first_task`` , all 
     three functions will be executed in order.
@@ -183,6 +182,7 @@ More to **@follows**
             Job = ["C", 5, 6] completed
         
 .. ???
+.. _multi_processing:
 
 =====================
 Multi Processing
@@ -207,8 +207,10 @@ Multi Processing
 
 .. ???
 
+.. _exceptions:
+
 =====================
-Errors
+Exceptions
 =====================
     Python exceptions or syntax errors are gathered from all the parallel jobs before
     being reraised as an aggregate Exception. A full stack trace is provided so that you can
@@ -316,6 +318,7 @@ Multiple Errors
 
 .. ???
 
+.. _on_the_fly:
     
 =======================================
 Generating parameters on the fly

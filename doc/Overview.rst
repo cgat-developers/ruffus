@@ -1,8 +1,8 @@
 .. _Overwiew:
 
-********
-Overview
-********
+***************
+Cheat Sheet
+***************
 
 The ``ruffus`` module is a lightweight way to add support 
 for running computational pipelines.
