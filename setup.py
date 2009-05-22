@@ -10,7 +10,7 @@ if not sys.version_info[0:2] >= (2,4):
 from setuptools import setup, find_packages
 setup(
         name='ruffus',
-        version='1.0.0',            #major.minor[.patch[.sub]]
+        version='1.0.1',            #major.minor[.patch[.sub]]
         description='Light-weight Python Computational Pipeline Management',
         long_description=\
 """     
