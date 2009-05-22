@@ -14,13 +14,14 @@ Contents:
    :maxdepth: 2
 
    Introduction.rst   
-   Overview.rst
+   simple_tutorial.rst
    Design.rst
 
    Tutorial.rst
    intermediate_example.rst
    complicated_example.rst
    
+   Overview.rst
    Glossary.rst
    FAQ.rst
    Todo.rst

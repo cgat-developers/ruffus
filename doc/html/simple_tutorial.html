@@ -1,0 +1,283 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Simple 5 minute Tutorial &mdash; ruffus v1.0 beta documentation</title>
+    <link rel="stylesheet" href="_static/ruffus.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0 beta',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="ruffus v1.0 beta documentation" href="index.html" />
+    <link rel="next" title="Design" href="Design.html" />
+    <link rel="prev" title="Introduction" href="Introduction.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="Design.html" title="Design"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="Introduction.html" title="Introduction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">ruffus v1.0 beta documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="simple-5-minute-tutorial">
+<span id="simple-tutorial"></span><h1>Simple 5 minute Tutorial<a class="headerlink" href="#simple-5-minute-tutorial" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<p>The <tt class="docutils literal"><span class="pre">ruffus</span></tt> module is a lightweight way to add support
+for running computational pipelines.</p>
+<p>Computational pipelines are often conceptually quite simple, especially
+if we breakdown the process into simple stages, or separate <strong>tasks</strong>.</p>
+<p>Each <strong>task</strong> is represented by a python function</p>
+</blockquote>
+</div>
+<div class="section" id="a-simple-example">
+<h2>A Simple example<a class="headerlink" href="#a-simple-example" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="follows">
+<h3><strong>&#64;follows</strong><a class="headerlink" href="#follows" title="Permalink to this headline">¶</a></h3>
+<p>The <strong>&#64;follows(. . .)</strong> python decorator indicates the order in which tasks
+should be run:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">def</span> <span class="nf">first_task</span><span class="p">():</span>
+    <span class="k">print</span> <span class="s">&quot;First task&quot;</span>
+
+<span class="nd">@follows</span><span class="p">(</span><span class="n">first_task</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">second_task</span><span class="p">():</span>
+    <span class="k">print</span> <span class="s">&quot;Second task&quot;</span>
+</pre></div>
+</div>
+<p>the <tt class="docutils literal"><span class="pre">&#64;follows</span></tt> decorators indicate that the <tt class="docutils literal"><span class="pre">first_task</span></tt> function precedes <tt class="docutils literal"><span class="pre">second_task</span></tt> in
+the pipeline.</p>
+</div>
+<div class="section" id="running">
+<h3>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p>Now we can run the pipeline by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline_run</span><span class="p">([</span><span class="n">second_task</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Which gives:</p>
+<div class="highlight-python"><pre>Task = first_task
+First task
+    Job completed
+Task = second_task
+Second task
+    Job completed</pre>
+</div>
+<p>Because <tt class="docutils literal"><span class="pre">second_task</span></tt> depends on <tt class="docutils literal"><span class="pre">first_task</span></tt> , both
+functions will be executed in order.</p>
+</blockquote>
+</div>
+<div class="section" id="files">
+<h3><strong>&#64;files</strong><a class="headerlink" href="#files" title="Permalink to this headline">¶</a></h3>
+<p>The <strong>&#64;files(. . .)</strong> decorator provides parameters to a task.
+The task function is called in parallel with each set of parameters.</p>
+<p>(We describe each task function call as a separate <strong>job</strong>.)</p>
+<p>The first two parameters of each job are the input and output files (respectively).
+A job will be run only if the file timestamps are out of date.</p>
+<p>Let us add i/o parameters to the previous python code:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="c">#---------------------------------------------------------------</span>
+<span class="c">#</span>
+<span class="c">#   first task</span>
+<span class="c">#</span>
+<span class="n">task1_param</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="p">[</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&#39;a.1&#39;</span><span class="p">],</span> <span class="c"># 1st job</span>
+                    <span class="p">[</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&#39;b.1&#39;</span><span class="p">],</span> <span class="c"># 2nd job</span>
+              <span class="p">]</span>
+
+<span class="nd">@files</span><span class="p">(</span><span class="n">task1_param</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">first_task</span><span class="p">(</span><span class="n">no_input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
+    <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+
+    <span class="c"># pretend we have worked hard</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1</span><span class="p">)</span>
+
+
+<span class="c">#---------------------------------------------------------------</span>
+<span class="c">#</span>
+<span class="c">#   second task</span>
+<span class="c">#</span>
+<span class="n">task2_param</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="p">[</span> <span class="s">&#39;a.1&#39;</span><span class="p">,</span> <span class="s">&quot;a.2&quot;</span><span class="p">,</span> <span class="s">&quot;    1st_job&quot;</span><span class="p">],</span> <span class="c"># 1st job</span>
+                    <span class="p">[</span> <span class="s">&#39;b.1&#39;</span><span class="p">,</span> <span class="s">&quot;b.2&quot;</span><span class="p">,</span> <span class="s">&quot;    2nd_job&quot;</span><span class="p">],</span> <span class="c"># 2nd job</span>
+              <span class="p">]</span>
+
+<span class="nd">@follows</span><span class="p">(</span><span class="n">first_task</span><span class="p">)</span>
+<span class="nd">@files</span><span class="p">(</span><span class="n">task2_param</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">second_task</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">extra_parameter</span><span class="p">):</span>
+    <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">extra_parameter</span>
+
+<span class="c">#---------------------------------------------------------------</span>
+<span class="c">#</span>
+<span class="c">#       Run</span>
+<span class="c">#</span>
+<span class="n">pipeline_run</span><span class="p">([</span><span class="n">second_task</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Gives:</p>
+<div class="highlight-python"><pre>Task = first_task
+    Job = [null -&gt; "a.1"] completed
+    Job = [null -&gt; "b.1"] completed
+Task = second_task
+    1st_job
+    Job = ["a.1" -&gt; "a.2", "1st_job"] completed
+    2nd_job
+    Job = ["b.1" -&gt; "b.2", "2nd_job"] completed</pre>
+</div>
+<p>If you ran the same code a second time, nothing would happen because
+<tt class="docutils literal"><span class="pre">a.2</span></tt> is more recent than <tt class="docutils literal"><span class="pre">a.1</span></tt> and
+<tt class="docutils literal"><span class="pre">b.2</span></tt> is more recent than <tt class="docutils literal"><span class="pre">b.1</span></tt> .</p>
+<p>However, if you subsequently modified <tt class="docutils literal"><span class="pre">a.1</span></tt> again:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">open</span><span class="p">(</span><span class="s">&quot;a.1&quot;</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You would see the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline_run</span><span class="p">([</span><span class="n">parallel_io_task</span><span class="p">])</span>
+<span class="go">Task = second_task</span>
+<span class="go">    1st_job</span>
+<span class="go">    Job = [&quot;a.1&quot; -&gt; &quot;a.2&quot;, &quot;    1st_job&quot;] completed</span>
+<span class="go">    Job = [&quot;b.1&quot; -&gt; &quot;b.2&quot;, &quot;    2nd_job&quot;] unnecessary: already up to date</span>
+</pre></div>
+</div>
+<p>The 2nd job is up to date and will be skipped.</p>
+</div>
+<div class="section" id="displaying">
+<h3>Displaying<a class="headerlink" href="#displaying" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p>We can see a flowchart of our fledgling pipeline by executing:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">graph_printout</span> <span class="p">(</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;flowchart.svg&quot;</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">),</span>
+                 <span class="s">&quot;svg&quot;</span><span class="p">,</span>
+                 <span class="p">[</span><span class="n">second_task</span><span class="p">])</span>
+</pre></div>
+</div>
+</blockquote>
+</div>
+</div>
+<div class="section" id="more">
+<h2>More<a class="headerlink" href="#more" title="Permalink to this headline">¶</a></h2>
+<p>See the <a class="reference external" href="Tutorial.html#tutorial"><em>full tutorial</em></a> for more detail on:</p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference external" href="Tutorial.html#follows"><em>Ordering tasks</em></a></li>
+<li><a class="reference external" href="Tutorial.html#files"><em>Using files as parameters</em></a></li>
+<li><a class="reference external" href="Tutorial.html#on-the-fly"><em>Generating parameters on the fly</em></a></li>
+<li><a class="reference external" href="Tutorial.html#multi-processing"><em>Multi Processing</em></a></li>
+<li><a class="reference external" href="Tutorial.html#parallel"><em>Run jobs in parallel</em></a></li>
+<li><a class="reference external" href="Tutorial.html#exceptions"><em>Handling errors and exceptions</em></a></li>
+<li><a class="reference external" href="Tutorial.html#files-re"><em>Generating parameters using regular expressions</em></a></li>
+<li><a class="reference external" href="Tutorial.html#check-if-uptodate"><em>Manual dependency checking</em></a></li>
+<li><a class="reference external" href="Tutorial.html#posttask"><em>Signalling the completion of each task</em></a></li>
+<li><a class="reference external" href="Tutorial.html#logging-tasks"><em>Logging messages</em></a></li>
+</ul>
+</blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Simple 5 minute Tutorial</a><ul>
+<li><a class="reference external" href="#overview">Overview</a></li>
+<li><a class="reference external" href="#a-simple-example">A Simple example</a><ul>
+<li><a class="reference external" href="#follows"><strong>&#64;follows</strong></a></li>
+<li><a class="reference external" href="#running">Running</a></li>
+<li><a class="reference external" href="#files"><strong>&#64;files</strong></a></li>
+<li><a class="reference external" href="#displaying">Displaying</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#more">More</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="Introduction.html"
+                                  title="previous chapter">Introduction</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="Design.html"
+                                  title="next chapter">Design</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/simple_tutorial.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="Design.html" title="Design"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="Introduction.html" title="Introduction"
+             >previous</a> |</li>
+        <li><a href="index.html">ruffus v1.0 beta documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Leo Goodstadt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
+    </div>
+  </body>
+</html>

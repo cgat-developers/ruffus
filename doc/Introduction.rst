@@ -7,6 +7,7 @@ Introduction
 The :mod:`ruffus` module is a lightweight way to add support 
 for running computational pipelines.
 
+============
 Features
 ============
 
@@ -21,24 +22,40 @@ The :mod:`ruffus` provides automatic support for
 
 .. _Installation:
 
+==================
 Installation
 ==================
 
-In order to install the extension, download the latest sources from *TODO*
-or check out the latest code from svn::
+In order to install the extension:
 
-    svn checkout http://ruffus.googlecode.com/svn/trunk/ ruffus-read-only
+The easy way 
+============
+
+    ::
+   
+        easy_install ruffus
+
+The most up-to-date code:
+==============================
+
+      * download the latest sources from 
+        `here <http://code.google.com/p/ruffus/downloads/list>`_ 
+
+        or check out the latest code from svn::
+
+            svn checkout http://ruffus.googlecode.com/svn/trunk/ ruffus-read-only
     
-or ask to be a project member and enter your google name::
+        or ask to be a project member and enter your google name::
 
-    svn checkout https://ruffus.googlecode.com/svn/trunk/ ruffus --username yourname
+            svn checkout https://ruffus.googlecode.com/svn/trunk/ ruffus --username yourname
 
-To install, type::
+      * To install, type::
+        
+           python setup.py build
+           python setup.py install
 
-   python setup.py build
-   python setup.py install
 
-
+=============================
 Whence the name "Ruffus"?
 =============================
 
@@ -48,7 +65,7 @@ Whence the name "Ruffus"?
 `red-tailed pipe snake <http://en.wikipedia.org/wiki/Cylindrophis_ruffus>`_ (bad pythony pun)
 which can be found in Hong Kong where the author comes from.
 
-The original image is from `here <http://upload.wikimedia.org/wikipedia/commons/a/a1/Cyl_ruffus_061212_2025_tdp.jpg>`_
+The original image is from `wikimedia <http://upload.wikimedia.org/wikipedia/commons/a/a1/Cyl_ruffus_061212_2025_tdp.jpg>`_
 
 
 
