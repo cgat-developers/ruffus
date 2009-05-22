@@ -63,7 +63,7 @@ Whence the name "Ruffus"?
 
 **Cylindrophis ruffus** is the name of the 
 `red-tailed pipe snake <http://en.wikipedia.org/wiki/Cylindrophis_ruffus>`_ (bad pythony pun)
-which can be found in Hong Kong where the author comes from.
+which can be found in `Hong Kong <http://www.hkras.org/eng/info/hkspp.htm>`_ where the author comes from.
 
 The original image is from `wikimedia <http://upload.wikimedia.org/wikipedia/commons/a/a1/Cyl_ruffus_061212_2025_tdp.jpg>`_
 
