@@ -1,7 +1,7 @@
 .. Design:
 
 ****************************
-Design
+Design & Architecture
 ****************************
 The ruffus module has the following design goals:
 
@@ -10,17 +10,6 @@ The ruffus module has the following design goals:
     * Lightweight
     * Unintrusive
     * Flexible/Powerful
-
-Features
-============
-
-Automatic support for
- 
-        * Managing dependencies
-        * Parallel jobs
-        * Re-starting from arbitrary points, especially after errors
-        * Display of the pipeline as a flowchart
-        * Reporting
 
 Task-based rather than file-based work flow
 ================================================
