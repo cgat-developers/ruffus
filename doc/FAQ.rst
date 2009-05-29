@@ -53,6 +53,7 @@ However, when run within ruffus, ``qrsh`` seems to spin idly, polling for input,
 all the CPU resources in that process.
 
 An interim solution is to close the ``STDIN`` for the ``qrsh`` invocation::
+
     from subprocess import Popen, PIPE
     qrsh_cmd = ["qrsh", 
                 "-now", "n", 
@@ -65,4 +66,3 @@ An interim solution is to close the ``STDIN`` for the ``qrsh`` invocation::
     sts = os.waitpid(p.pid, 0)
 
                                       
-
