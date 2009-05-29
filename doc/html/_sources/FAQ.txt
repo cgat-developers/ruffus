@@ -66,4 +66,3 @@ An interim solution is to close the ``STDIN`` for the ``qrsh`` invocation::
     sts = os.waitpid(p.pid, 0)
 
                                       
------------------------
