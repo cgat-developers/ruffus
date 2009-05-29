@@ -1,6 +1,6 @@
 # Sphinx inventory version 1
 # Project: ruffus
-# Version: 1.01
+# Version: 1.02
 complicated_example mod complicated_example_code.html
 intermediate_example mod intermediate_example_code.html
 ruffus.task mod task.html
