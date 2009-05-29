@@ -29,6 +29,9 @@ Installation
 The easy way 
 ============
 
+    rufus is available as an 
+    `easy-install <http://peak.telecommunity.com/DevCenter/EasyInstall>`_ -able package 
+    on the `Python Package Index <http://pypi.python.org/pypi/Sphinx>`_.
     ::
    
         easy_install ruffus
@@ -39,6 +42,7 @@ The easy way
 
 The most up-to-date code:
 ==============================
+    More rarely, the most up-to-date code can be found from 
 
       * download the latest sources from 
         `here <http://code.google.com/p/ruffus/downloads/list>`_ 
