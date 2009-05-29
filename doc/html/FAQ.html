@@ -62,6 +62,45 @@ Windows, Unix, linux or NFS do not record file times with
 sub-second precision.</p>
 <p>In the worse case, you might try adding some <tt class="docutils literal"><span class="pre">time.sleep(1)</span></tt> judiciously.</p>
 </div>
+<div class="section" id="q-ruffus-seems-to-be-hanging-in-the-same-place">
+<h2>Q. Ruffus seems to be hanging in the same place<a class="headerlink" href="#q-ruffus-seems-to-be-hanging-in-the-same-place" title="Permalink to this headline">¶</a></h2>
+<p>A. If ruffus is interrupted, for example, by a Ctrl-C,
+you will find the following lines of code highlighted:</p>
+<div class="highlight-python"><pre>File "build/bdist.linux-x86_64/egg/ruffus/task.py", line 1904, in pipeline_run
+File "build/bdist.linux-x86_64/egg/ruffus/task.py", line 1380, in run_all_jobs_in_task
+File "/xxxx/python2.6/multiprocessing/pool.py", line 507, in next
+  self._cond.wait(timeout)
+File "/xxxxx/python2.6/threading.py", line 237, in wait
+  waiter.acquire()</pre>
+</div>
+<p>This is <em>not</em> where ruffus is hanging but the boundary between the main programme process
+and the sub-processes which run ruffus jobs in parallel.</p>
+<p>This is naturally where broken execution threads get washed up onto.</p>
+</div>
+<div class="section" id="q-qrsh-eats-up-all-my-processor-time-under-ruffus">
+<h2>Q. <em>qrsh</em> eats up all my processor time under ruffus<a class="headerlink" href="#q-qrsh-eats-up-all-my-processor-time-under-ruffus" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="http://gridengine.sunsource.net/">Sun Grid Engine</a> provides the
+<a class="reference external" href="http://gridengine.sunsource.net/nonav/source/browse/~checkout~/gridengine/doc/htmlman/manuals.html?content-type=text/html">qrsh</a>
+command to run an interactive rsh session. <tt class="docutils literal"><span class="pre">qrsh</span></tt> can
+be used to run commands/scripts in a compute farm or grid cluster.</p>
+<p>However, when run within ruffus, <tt class="docutils literal"><span class="pre">qrsh</span></tt> seems to spin idly, polling for input, consuming
+all the CPU resources in that process.</p>
+<dl class="docutils">
+<dt>An interim solution is to close the <tt class="docutils literal"><span class="pre">STDIN</span></tt> for the <tt class="docutils literal"><span class="pre">qrsh</span></tt> invocation::</dt>
+<dd><p class="first">from subprocess import Popen, PIPE
+qrsh_cmd = [&#8220;qrsh&#8221;,</p>
+<blockquote>
+&#8220;-now&#8221;, &#8220;n&#8221;,
+&#8220;-cwd&#8221;,
+&#8220;-p&#8221;, &#8220;-%d&#8221; % priority,
+&#8220;-q&#8221;,  queue_name,
+&#8220;little_script.py&#8221;]</blockquote>
+<p class="last">p = Popen(qrsh_cmd, stdin = PIPE)
+p.stdin.close()
+sts = os.waitpid(p.pid, 0)</p>
+</dd>
+</dl>
+</div>
 </div>
 
 
@@ -74,6 +113,8 @@ sub-second precision.</p>
             <ul>
 <li><a class="reference external" href="">FAQ</a><ul>
 <li><a class="reference external" href="#q-some-jobs-rerun-even-when-they-seem-up-to-date">Q. Some jobs rerun even when they seem up-to-date</a></li>
+<li><a class="reference external" href="#q-ruffus-seems-to-be-hanging-in-the-same-place">Q. Ruffus seems to be hanging in the same place</a></li>
+<li><a class="reference external" href="#q-qrsh-eats-up-all-my-processor-time-under-ruffus">Q. <em>qrsh</em> eats up all my processor time under ruffus</a></li>
 </ul>
 </li>
 </ul>

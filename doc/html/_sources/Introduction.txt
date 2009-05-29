@@ -42,6 +42,7 @@ The easy way
 
 The most up-to-date code:
 ==============================
+    More rarely, the most up-to-date code can be found from 
 
       * download the latest sources from 
         `here <http://code.google.com/p/ruffus/downloads/list>`_ 
