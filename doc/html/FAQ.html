@@ -85,21 +85,20 @@ command to run an interactive rsh session. <tt class="docutils literal"><span cl
 be used to run commands/scripts in a compute farm or grid cluster.</p>
 <p>However, when run within ruffus, <tt class="docutils literal"><span class="pre">qrsh</span></tt> seems to spin idly, polling for input, consuming
 all the CPU resources in that process.</p>
-<dl class="docutils">
-<dt>An interim solution is to close the <tt class="docutils literal"><span class="pre">STDIN</span></tt> for the <tt class="docutils literal"><span class="pre">qrsh</span></tt> invocation::</dt>
-<dd><p class="first">from subprocess import Popen, PIPE
-qrsh_cmd = [&#8220;qrsh&#8221;,</p>
-<blockquote>
-&#8220;-now&#8221;, &#8220;n&#8221;,
-&#8220;-cwd&#8221;,
-&#8220;-p&#8221;, &#8220;-%d&#8221; % priority,
-&#8220;-q&#8221;,  queue_name,
-&#8220;little_script.py&#8221;]</blockquote>
-<p class="last">p = Popen(qrsh_cmd, stdin = PIPE)
-p.stdin.close()
-sts = os.waitpid(p.pid, 0)</p>
-</dd>
-</dl>
+<p>An interim solution is to close the <tt class="docutils literal"><span class="pre">STDIN</span></tt> for the <tt class="docutils literal"><span class="pre">qrsh</span></tt> invocation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">PIPE</span>
+<span class="n">qrsh_cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;qrsh&quot;</span><span class="p">,</span>
+            <span class="s">&quot;-now&quot;</span><span class="p">,</span> <span class="s">&quot;n&quot;</span><span class="p">,</span>
+            <span class="s">&quot;-cwd&quot;</span><span class="p">,</span>
+            <span class="s">&quot;-p&quot;</span><span class="p">,</span> <span class="s">&quot;-</span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">priority</span><span class="p">,</span>
+            <span class="s">&quot;-q&quot;</span><span class="p">,</span>  <span class="n">queue_name</span><span class="p">,</span>
+            <span class="s">&quot;little_script.py&quot;</span><span class="p">]</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">(</span><span class="n">qrsh_cmd</span><span class="p">,</span> <span class="n">stdin</span> <span class="o">=</span> <span class="n">PIPE</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="n">sts</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">waitpid</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">pid</span><span class="p">,</span> <span class="mf">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<hr class="docutils" />
 </div>
 </div>
 
