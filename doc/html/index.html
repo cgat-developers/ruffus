@@ -54,6 +54,10 @@
 <I>Ruffus</I> is a lightweight python module for writing computational pipelines.
 
 
+
+
+
+
 <p>
 It is designed to allow scientific analyses and other computational pipelines to 
 be automated with the minimum of fuss and the least effort.
@@ -64,13 +68,20 @@ This means that <I>ruffus</I> should be suitable for the simplest of tasks.
 <p>
 On the other hand, because it leaverages the full power of python, it should scale up to 
 even fiendishly <A href= "complicated_example.html" complicated pipelines></A> 
-which would otherwise be very difficult to manage.
-</p>
+which would cause makefile/ scons to go all cross-eyed and recursive, E.g. 
+<ul class="simple">
+<li>Multiply forking and rejoining dependencies </li>
+<li>Indeterminate number of intermediate files</li>
+<li>Sub-directories based on regular expression matches</li>
+</ul>
+    </p>
 
 <p> Using <I>ruffus</I> requires only standard python syntax. Your 
-    pipelined programmes can run in the same way without any "clever magic" you 
-    have to code around if you wish to customise anything. <I>Ruffus</I> tries
-    very hard to be unintrusive.
+    pipelined programmes can run in the same way without any "clever magic" 
+    that you have to code around to customise. </p>
+
+<p><I>Ruffus</I> tries very hard to be unintrusive. It has unambitiously 
+lightweight syntax which tries to do one small thing well.
 </p>
 
 <p>I will be slowly adding in <a href="Todo.html"> more features 
