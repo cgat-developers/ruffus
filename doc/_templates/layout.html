@@ -1,9 +1,12 @@
 {% extends "!layout.html" %}
 
 {% block rootrellink %}
-        <li><a href="{{ pathto('index') }}">home</a>| </li>
-        <li><a href="{{ pathto('search') }}">search</a>| </li>
-        <li><a href="{{ pathto('contents') }}">contents</a> &raquo;</li>
+        Ruffus v. {{ release }}
+        <li><a href="{{ pathto('index') }}">Home</a>| </li>
+        <li><a href="{{ pathto('search') }}">Search</a>| </li>
+        <li><a href="{{ pathto('contents') }}">Contents</a> &raquo;</li>
+        <li><a href="{{ pathto('cheatsheet') }}">Cheat sheet</a> &raquo;</li>
+        <li><a href="{{ pathto('tutorial') }}">Full tutorial</a> &raquo;</li>
 {% endblock %}
 
 
