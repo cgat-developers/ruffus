@@ -1,0 +1,90 @@
+{% extends "layout.html" %}
+{% set title = 'Ruffus' %}
+
+{% block body %}
+
+<p> <img src="_static/logo.jpg" alt="logo"></p>
+
+<h1>Welcome</h1>
+
+<I>Ruffus</I> is a lightweight python module for writing computational pipelines.
+
+
+<p>
+It is designed to allow scientific analyses and other computational pipelines to 
+be automated with the minimum of fuss.
+</p>    
+<p>
+This means that <I>ruffus</I> should be suitable for the simplest of tasks.
+</p>
+On the other hand, because it uses standard python, it should scale up to even fiendishly complicated pipelines which would otherwise be very difficult to manage.
+
+<p>I will be slowly adding in <a href="Todo.html"> more features 
+    </a> while hopefully retaining the simple design. Please join me (email: ruffus at 
+    llew.org.uk) in setting the direction of this project if you are 
+    interested.
+</p>
+
+<h1>Features</h1>
+<p><I>Ruffus</I> provides automatic support for:</p>
+<ul class="simple">
+<li>Managing dependencies</li>
+<li>Parallel jobs</li>
+<li>Re-starting from arbitrary points, especially after errors</li>
+<li>Display of the pipeline as a flowchart</li>
+<li>Reporting</li>
+</ul>
+
+<h2> Documentation</h2>
+
+<table class="contentstable" align="center" style="margin-left: 30px"><tr>
+  <td width="50%">
+    <p class="biglink"><a class="biglink" 
+        href="Introduction.html">Introduction</a><br/>
+    <span class="linkdescr">for an overview of <I>Ruffus</I></span></p>
+
+    <p class="biglink"><a class="biglink" 
+        href="contents.html">Contents</a><br/>
+    <span class="linkdescr">for an overview of all the documentation</span></p>
+    <p class="biglink"><a class="biglink" 
+        href="Design.html">Design</a><br/>
+    <span class="linkdescr">to understand the design of <I>Ruffus</I></span></p>
+  </td>
+  
+  <td width="50%">
+       <p class="biglink"><a class="biglink" 
+        href="simple_tutorial.html">Simple Tutorial</a><br/>
+    <span class="linkdescr">for a quick introduction</span></p>
+    <p class="biglink"><a class="biglink" 
+        href="tutorial.html">Full tutorial</a><br/>
+    <span class="linkdescr">for an-depth demonstration of all 
+        <I>Ruffus</I> features</span></p>
+    <p class="biglink"><a class="biglink" 
+        href="cheatsheet.html">Cheat Sheet</a><br/>
+    <span class="linkdescr">for Ruffus syntax</span></p>
+  </td>
+                                                                          
+</tr>
+</table>
+
+<h2>Get <I>Ruffus</I></h2>
+
+<p>
+    <i>Ruffus</i> is available as an <a 
+    href="http://peak.telecommunity.com/DevCenter/EasyInstall">easy-install</a>able package on the <a href="http://pypi.python.org/pypi/Sphinx">Python Package
+    Index</a>.
+  </p>
+
+<div class="highlight-python"><pre>easy_install ruffus</pre>
+</div>
+<p>or, to upgrade:</p>
+<div class="highlight-python"><pre>easy_install -u ruffus</pre>
+</div>
+  
+  
+  <p>The <I>Ruffus</I> project is hosted at <a 
+      href="http://code.google.com/p/ruffus">Google 
+    Code</a></p>
+
+{% endblock %}
+
