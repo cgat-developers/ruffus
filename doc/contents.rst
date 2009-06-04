@@ -39,7 +39,9 @@ Contents:
    FAQ.rst
    Todo.rst
    
+=====================
 Example code:
+=====================
 
 .. toctree::
    :maxdepth: 2
@@ -48,7 +50,9 @@ Example code:
    intermediate_example_code.rst
    complicated_example_code.rst
     
+=====================
 Modules:
+=====================
    
 .. toctree::
    :maxdepth: 3
