@@ -79,8 +79,16 @@ from collections import defaultdict
 from graph import *
 from print_dependencies import *
 import types
-from json import dumps
-import json
+
+# use simplejson in place of json for python < 2.6
+try:
+    import json
+except ImportError:
+    import simplejson
+    json = simplejson
+
+
+dumps = json.dumps
 from multiprocessing import Pool
 import traceback
 
@@ -1777,10 +1785,12 @@ def task_names_to_tasks (task_description, task_names):
         # Is this already a function, don't do mapping if already is task
         if type(task_name) == types.FunctionType:
             if task_name.pipeline_task:
+                task_nodes.append(task_name.pipeline_task)
                 continue
-            # blow up for unwrapped function
-            raise error_function_is_not_a_task("Function %s is not a pipelined task" % 
-                                                task_name.__name__)
+            else:
+                # blow up for unwrapped function
+                raise error_function_is_not_a_task("Function %s is not a pipelined task" % 
+                                                    task_name.__name__)
             
         # assumes is some kind of string
         if not node.is_node(task_name):

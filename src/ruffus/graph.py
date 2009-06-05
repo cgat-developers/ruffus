@@ -6,7 +6,15 @@
         with topological_sort
 
 """
-import sys, re, json, os
+import sys, re, os
+
+# use simplejson in place of json for python < 2.6
+try:
+    import json
+except ImportError:
+    import simplejson
+    json = simplejson
+    
 from collections import defaultdict
 from itertools import chain 
 from print_dependencies import *
@@ -917,7 +925,10 @@ def graph_printout (  stream,
         return
         
     # print to dot file
-    temp_dot_file = tempfile.NamedTemporaryFile(suffix='.dot', delete=False)
+    #temp_dot_file = tempfile.NamedTemporaryFile(suffix='.dot', delete=False)
+    fh, temp_dot_file_name = tempfile.mkstemp(suffix='.dot')
+    temp_dot_file = os.fdopen(fh, "w")
+    
     graph_printout_in_dot_format (  temp_dot_file, 
                                     to_leaves, 
                                     force_start_from, 
@@ -927,7 +938,6 @@ def graph_printout (  stream,
                                     gather_all_non_signalled,
                                     test_all_signals,
                                     no_key_legend)
-    temp_dot_file_name = temp_dot_file.name
     temp_dot_file.close()
     
     run_dot = os.popen("dot -Gsize='6,8' -T%s < %s" % (output_format, temp_dot_file_name))

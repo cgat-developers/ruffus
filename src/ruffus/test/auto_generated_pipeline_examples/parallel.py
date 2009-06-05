@@ -97,7 +97,12 @@ from graph import *
 from task import *
 import task
 from print_dependencies import *
-import json
+# use simplejson in place of json for python < 2.6
+try:
+    import json
+except ImportError:
+    import simplejson
+    json = simplejson
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
