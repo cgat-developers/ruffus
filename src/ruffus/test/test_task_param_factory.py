@@ -3,7 +3,12 @@
     test_task_misc.py
 """
 
-import json
+# use simplejson in place of json for python < 2.6
+try:
+    import json
+except ImportError:
+    import simplejson
+    json = simplejson
 import unittest, os,sys
 if __name__ != '__main__':
     raise Exception ("This is not a callable module [%s]"  % __main__)

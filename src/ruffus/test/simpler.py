@@ -20,6 +20,7 @@ import StringIO
 
 # add self to search path for testing
 exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
+sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
 if __name__ == '__main__':
     module_name = os.path.split(sys.argv[0])[1]
     module_name = os.path.splitext(module_name)[0];
@@ -97,12 +98,18 @@ parameters = [
 import StringIO
 import re
 import operator
-import sys
+import sys,os
 from collections import defaultdict
 
 sys.path.append(os.path.abspath(os.path.join(exe_path,"..", "..")))
 from ruffus import *
-import json
+
+# use simplejson in place of json for python < 2.6
+try:
+    import json
+except ImportError:
+    import simplejson
+    json = simplejson
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -119,16 +126,13 @@ def create_custom_file_func(params):
         for job_param in params:
             yield job_param
     return cust_func
-    
-    
+
 def is_job_uptodate (infiles, outfiles, *extra_params):
     """
     assumes first two parameters are files, checks if they are up to date
     """
     return task.needs_update_check_modify_time (infiles, outfiles, *extra_params)
-    
-    
-    
+
 def test_post_task_function ():
     print "Hooray"
 
@@ -141,9 +145,7 @@ def test_job_io(infiles, outfiles, extra_params):
     # dump parameters
     params = (infiles, outfiles) + extra_params
     sys.stdout.write('    job = %s\n' % json.dumps(params))
-
     
-        
     if isinstance(infiles, str):
         infiles = [infiles]
     elif infiles == None:
@@ -159,6 +161,7 @@ def test_job_io(infiles, outfiles, extra_params):
         open(f, "w").write(output_text)
     time.sleep(1)
 
+    
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
