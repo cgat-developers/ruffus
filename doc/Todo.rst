@@ -125,4 +125,13 @@ Is the syntactic convenience worthwhile?
 
 
     
+=========================================================
+Return values
+=========================================================
+Have a system for allowing values to be passed back from jobs
 
+
+=========================================================
+Multiprocessing
+=========================================================
+Can we run jobs on remote processes / SGE / Hadoop?

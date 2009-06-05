@@ -3,8 +3,8 @@
 # Version: 1.03
 complicated_example mod complicated_example_code.html
 intermediate_example mod intermediate_example_code.html
-ruffus.task mod task.html
 simpler mod simpler.html
+ruffus.task mod task.html
 ruffus.task.t_stderr_logger class task.html
 ruffus.task.job_wrapper_generic function task.html
 ruffus.task.check_if_uptodate class task.html

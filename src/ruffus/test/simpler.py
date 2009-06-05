@@ -44,7 +44,7 @@ parser.add_option("-f", "--forced_tasks", dest="forced_tasks",
                   type="string",
                   help="Pipeline task(s) which will be included even if they are up to date.")
 parser.add_option("-j", "--jobs", dest="jobs",
-                  default=5,
+                  default=1,
                   metavar="jobs", 
                   type="int",
                   help="Specifies  the number of jobs (commands) to run simultaneously.")
@@ -241,23 +241,27 @@ def task4(infiles, outfiles, *extra_params):
     """
     test_job_io(infiles, outfiles, extra_params)
 
-
-
+# 
+#   Necessary to protect the "entry point" of the program under windows.
+#       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
+#
+if __name__ == '__main__':
+    try:
+        if options.just_print:
+            pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks, 
+                                long_winded=True, 
+                                gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode)
         
-if options.just_print:
-    pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks, 
-                        long_winded=True, 
-                        gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode)
-
-elif options.dependency_file:
-    pipeline_printout_graph (     open(options.dependency_file, "w"),
-                         options.dependency_graph_format,
-                         options.target_tasks, 
-                         options.forced_tasks,
-                         draw_vertically = not options.draw_horizontally,
-                         gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                         no_key_legend  = options.no_key_legend_in_graph)
-else:    
-    pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, 
-                    gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode)
-    
+        elif options.dependency_file:
+            pipeline_printout_graph (     open(options.dependency_file, "w"),
+                                 options.dependency_graph_format,
+                                 options.target_tasks, 
+                                 options.forced_tasks,
+                                 draw_vertically = not options.draw_horizontally,
+                                 gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
+                                 no_key_legend  = options.no_key_legend_in_graph)
+        else:    
+            pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, 
+                            gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode)
+    except Exception, e:
+        print e.args
