@@ -3,7 +3,12 @@
     test_task_misc.py
 """
 
-import json
+# use simplejson in place of json for python < 2.6
+try:
+    import json
+except ImportError:
+    import simplejson
+    json = simplejson
 import unittest, os,sys
 if __name__ != '__main__':
     raise Exception ("This is not a callable module [%s]"  % __main__)
@@ -22,9 +27,13 @@ class Test_needs_update_check_modify_time(unittest.TestCase):
         import tempfile,time
         self.files  = list()
         for i in xrange(6):
-            test_file =tempfile.NamedTemporaryFile(delete=False, prefix='testing_tmp')
-            self.files.append (test_file.name)
-            test_file.close()
+            #test_file =tempfile.NamedTemporaryFile(delete=False, prefix='testing_tmp')
+            #self.files.append (test_file.name)
+            #test_file.close()
+            
+            fh, temp_file_name = tempfile.mkstemp(suffix='.dot')
+            self.files.append (temp_file_name)
+            os.fdopen(fh, "w").close()
             time.sleep(1.1)
         
     def tearDown (self):

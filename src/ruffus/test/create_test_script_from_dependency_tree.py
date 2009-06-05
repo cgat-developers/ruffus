@@ -76,7 +76,15 @@ import sys
 from collections import defaultdict
 
 import random
-from json import dumps  
+
+# use simplejson in place of json for python < 2.6
+try:
+    import json
+except ImportError:
+    import simplejson
+    json = simplejson
+    
+dumps = json.dumps
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
