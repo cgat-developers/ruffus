@@ -30,4 +30,12 @@ def parallel_task(name, param1, param2):
     p.stdin.close()
     sts = os.waitpid(p.pid, 0)
 
-pipeline_run([parallel_task], multiprocess = 5)
+# 
+#   Necessary to protect the "entry point" of the program under windows.
+#       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
+#
+if __name__ == '__main__':
+    try:
+        pipeline_run([parallel_task], multiprocess = 5)
+except Exception, e:
+    print e.args

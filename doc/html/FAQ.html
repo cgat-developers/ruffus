@@ -56,8 +56,10 @@
             
   <div class="section" id="faq">
 <h1>FAQ<a class="headerlink" href="#faq" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="general">
+<h2>General<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="q-some-jobs-rerun-even-when-they-seem-up-to-date">
-<h2>Q. Some jobs rerun even when they seem up-to-date<a class="headerlink" href="#q-some-jobs-rerun-even-when-they-seem-up-to-date" title="Permalink to this headline">¶</a></h2>
+<h3>Q. Some jobs rerun even when they seem up-to-date<a class="headerlink" href="#q-some-jobs-rerun-even-when-they-seem-up-to-date" title="Permalink to this headline">¶</a></h3>
 <p>A. You might have fallen foul of coarse timestamp precision in some
 operating systems.</p>
 <p>If you are using <tt class="docutils literal"><span class="pre">&#64;files</span></tt> or <tt class="docutils literal"><span class="pre">files_re</span></tt>, ruffus uses
@@ -69,7 +71,7 @@ sub-second precision.</p>
 <p>In the worse case, you might try adding some <tt class="docutils literal"><span class="pre">time.sleep(1)</span></tt> judiciously.</p>
 </div>
 <div class="section" id="q-ruffus-seems-to-be-hanging-in-the-same-place">
-<h2>Q. Ruffus seems to be hanging in the same place<a class="headerlink" href="#q-ruffus-seems-to-be-hanging-in-the-same-place" title="Permalink to this headline">¶</a></h2>
+<h3>Q. Ruffus seems to be hanging in the same place<a class="headerlink" href="#q-ruffus-seems-to-be-hanging-in-the-same-place" title="Permalink to this headline">¶</a></h3>
 <p>A. If ruffus is interrupted, for example, by a Ctrl-C,
 you will find the following lines of code highlighted:</p>
 <div class="highlight-python"><pre>File "build/bdist.linux-x86_64/egg/ruffus/task.py", line 1904, in pipeline_run
@@ -83,9 +85,37 @@ File "/xxxxx/python2.6/threading.py", line 237, in wait
 and the sub-processes which run ruffus jobs in parallel.</p>
 <p>This is naturally where broken execution threads get washed up onto.</p>
 </div>
+</div>
+<div class="section" id="windows">
+<h2>Windows<a class="headerlink" href="#windows" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="q-windows-seems-to-spawn-ruffus-processes-recursively">
+<h3>Q. Windows seems to spawn ruffus processes recursively<a class="headerlink" href="#q-windows-seems-to-spawn-ruffus-processes-recursively" title="Permalink to this headline">¶</a></h3>
+<p>A. Is is necessary to protect the &#8220;entry point&#8221; of the program under windows.
+Otherwise, a new process will be started each time the main module is imported
+by a new Python interpreter as an unintended side effects. Causing a cascade
+of new processes.
+See: <a class="reference external" href="http://docs.python.org/library/multiprocessing.html#multiprocessing-programming">http://docs.python.org/library/multiprocessing.html#multiprocessing-programming</a></p>
+<dl class="docutils">
+<dt>This code works::</dt>
+<dd><dl class="first last docutils">
+<dt>if __name__ == &#8216;__main__&#8217;:</dt>
+<dd><dl class="first last docutils">
+<dt>try:</dt>
+<dd>pipeline_run([parallel_task], multiprocess = 5)</dd>
+</dl>
+</dd>
+<dt>except Exception, e:</dt>
+<dd>print e.args</dd>
+</dl>
+</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="id1">
+<h2><a class="reference external" href="http://gridengine.sunsource.net/">Sun Grid Engine</a><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="q-qrsh-eats-up-all-my-processor-time-under-ruffus">
-<h2>Q. <em>qrsh</em> eats up all my processor time under ruffus<a class="headerlink" href="#q-qrsh-eats-up-all-my-processor-time-under-ruffus" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="http://gridengine.sunsource.net/">Sun Grid Engine</a> provides the
+<h3>Q. <em>qrsh</em> eats up all my processor time under ruffus<a class="headerlink" href="#q-qrsh-eats-up-all-my-processor-time-under-ruffus" title="Permalink to this headline">¶</a></h3>
+<p>A. <a class="reference external" href="http://gridengine.sunsource.net/">Sun Grid Engine</a> provides the
 <a class="reference external" href="http://gridengine.sunsource.net/nonav/source/browse/~checkout~/gridengine/doc/htmlman/manuals.html?content-type=text/html">qrsh</a>
 command to run an interactive rsh session. <tt class="docutils literal"><span class="pre">qrsh</span></tt> can
 be used to run commands/scripts in a compute farm or grid cluster.</p>
@@ -105,6 +135,22 @@ all the CPU resources in that process.</p>
 </pre></div>
 </div>
 </div>
+<div class="section" id="q-when-i-submit-lots-of-jobs-at-the-same-time-sge-freezes-and-dies">
+<h3>Q. When I submit lots of jobs at the same time, SGE freezes and dies<a class="headerlink" href="#q-when-i-submit-lots-of-jobs-at-the-same-time-sge-freezes-and-dies" title="Permalink to this headline">¶</a></h3>
+<p>A. This seems to be dependent on your setup. One workaround may be to
+introduce a random time delay at the beginining of your jobs:</p>
+<p>import time, random
+&#64;parallel(param_func)
+def task_in_parallel(input_file, output_file):</p>
+<blockquote>
+<p>&#8220;&#8221;&#8221;
+Works starts after a random delay so that SGE has a chance to manage the queue
+&#8220;&#8221;&#8221;
+time.sleep(random.random() / 2.0)</p>
+<p># Wake up and do work</p>
+</blockquote>
+</div>
+</div>
 </div>
 
 
@@ -116,9 +162,20 @@ all the CPU resources in that process.</p>
             <h3><a href="contents.html">Table Of Contents</a></h3>
             <ul>
 <li><a class="reference external" href="">FAQ</a><ul>
+<li><a class="reference external" href="#general">General</a><ul>
 <li><a class="reference external" href="#q-some-jobs-rerun-even-when-they-seem-up-to-date">Q. Some jobs rerun even when they seem up-to-date</a></li>
 <li><a class="reference external" href="#q-ruffus-seems-to-be-hanging-in-the-same-place">Q. Ruffus seems to be hanging in the same place</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#windows">Windows</a><ul>
+<li><a class="reference external" href="#q-windows-seems-to-spawn-ruffus-processes-recursively">Q. Windows seems to spawn ruffus processes recursively</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#id1">Sun Grid Engine</a><ul>
 <li><a class="reference external" href="#q-qrsh-eats-up-all-my-processor-time-under-ruffus">Q. <em>qrsh</em> eats up all my processor time under ruffus</a></li>
+<li><a class="reference external" href="#q-when-i-submit-lots-of-jobs-at-the-same-time-sge-freezes-and-dies">Q. When I submit lots of jobs at the same time, SGE freezes and dies</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

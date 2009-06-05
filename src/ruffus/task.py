@@ -1384,25 +1384,27 @@ class _task (node):
         if pool:
             # run in parallel
             imap_unordered_it = pool.imap_unordered(run_pooled_job_without_exceptions, job_parameters)
-            return_values = list()
-            for results in imap_unordered_it:
-                if results[0] == False:
-                    if logger:
-                        logger.debug("    %s unnecessary: already up to date" % results[1])
-                elif results[0] == None:
-                    if logger:
-                        logger.debug("    %s completed" % results[1])
-                else:
-                    #
-                    #   too many errors: break
-                    #
-                    return_values.append(results)
-                    if ("JobSignalledBreak" in results[1]  or
-                        len(return_values) >= poolsize):
-                        break
+            mapped_results = imap_unordered_it
         else:
-            return_values = map(run_pooled_job_without_exceptions, job_parameters)
-        #return_values = list(a for a in return_values if a != None)
+            mapped_results = map(run_pooled_job_without_exceptions, job_parameters)
+        return_values = list()
+        
+        for results in mapped_results:
+            if results[0] == False:
+                if logger:
+                    logger.debug("    %s unnecessary: already up to date" % results[1])
+            elif results[0] == None:
+                if logger:
+                    logger.debug("    %s completed" % results[1])
+            else:
+                #
+                #   too many errors: break
+                #
+                return_values.append(results)
+                if ("JobSignalledBreak" in results[1]  or
+                    len(return_values) >= poolsize):
+                    break
+            
         if len(return_values):
             errt = RethrownJobError(return_values)
             errt.specify_task(self, "Exceptions running jobs")
@@ -1908,7 +1910,7 @@ def pipeline_run(target_tasks, forcedtorun_tasks = [], multiprocess = 1, logger 
     #
     #   whether using multiprocessing
     #   
-    pool = Pool(multiprocess) if multiprocess >= 1 else None
+    pool = Pool(multiprocess) if multiprocess > 1 else None
 
     for task in topological_sorted:
         if not task.run_all_jobs_in_task(logger, pool, multiprocess, task in forcedtorun_tasks):

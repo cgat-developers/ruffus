@@ -262,23 +262,30 @@ def generate_program_task_file(stream, task_dependencies, task_names,
 
     stream.write(
     """
+# 
+#   Necessary to protect the "entry point" of the program under windows.
+#       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
+#
+if __name__ == '__main__':
+    try:
+        if options.just_print:
+            pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks, 
+                                long_winded=True, 
+                                gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode)
         
-if options.just_print:
-    pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks, 
-                        long_winded=True, 
-                        gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode)
-
-elif options.dependency_file:
-    pipeline_printout_graph (     open(options.dependency_file, "w"),
-                         options.dependency_graph_format,
-                         options.target_tasks, 
-                         options.forced_tasks,
-                         draw_vertically = not options.draw_horizontally,
-                         gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                         no_key_legend  = options.no_key_legend_in_graph)
-else:    
-    pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, 
-                    gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode)
+        elif options.dependency_file:
+            pipeline_printout_graph (     open(options.dependency_file, "w"),
+                                 options.dependency_graph_format,
+                                 options.target_tasks, 
+                                 options.forced_tasks,
+                                 draw_vertically = not options.draw_horizontally,
+                                 gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
+                                 no_key_legend  = options.no_key_legend_in_graph)
+        else:    
+            pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, 
+                            gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode)
+except Exception, e:
+    print e.args        
     \n""")
 
 

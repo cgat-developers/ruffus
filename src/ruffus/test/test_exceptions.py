@@ -11,5 +11,12 @@ def parallel_task(name, param1):
     sys.stderr.write("    Parallel task %s: \n\n" % name)
     raise task.JobSignalledBreak("oops")
 
-pipeline_run([parallel_task], multiprocess = 2)
-
+# 
+#   Necessary to protect the "entry point" of the program under windows.
+#       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
+#
+if __name__ == '__main__':
+    try:
+        pipeline_run([parallel_task], multiprocess = 2)
+except Exception, e:
+    print e.args

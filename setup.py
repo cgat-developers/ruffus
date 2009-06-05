@@ -6,11 +6,18 @@ import sys
 if not sys.version_info[0:2] >= (2,4):
     sys.stderr.write("Requires Python later than 2.4\n")
     sys.exit(1)
+    
+    
+if sys.version_info[0:2] >= (2,6):
+    module_dependencies = ['multiprocessing>=2.6']
+else:
+    module_dependencies = ['multiprocessing>=2.6', 'simplejson']
+
 
 from setuptools import setup, find_packages
 setup(
         name='ruffus',
-        version='1.0.3',            #major.minor[.patch[.sub]]
+        version='1.0.4',            #major.minor[.patch[.sub]]
         description='Light-weight Python Computational Pipeline Management',
         long_description=\
 """     
@@ -143,8 +150,8 @@ Usage
         url='http://ruffus.googlecode.com',
         #download_url = "http://http://code.google.com/p/ruffus/download",
     
-        install_requires = ['multiprocessing>=1.0' ], #, 'python>=2.5'],
-        setup_requires = ['multiprocessing>=1.0'],    #, 'python>=2.5'],
+        install_requires = module_dependencies, #['multiprocessing>=1.0', 'json' ], #, 'python>=2.5'],
+        setup_requires   = module_dependencies, #['multiprocessing>=1.0', 'json'],    #, 'python>=2.5'],
 
         
         classifiers=[

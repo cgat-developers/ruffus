@@ -513,15 +513,23 @@ def summarise_all( summary_files, total_summary_file_name):
 #
 #   print pipeline or run pipeline
 # 
+# 
 
-if options.just_print:
-    pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks, long_winded=True)
-
-elif options.dependency_file:
-    graph_printout (     open(options.dependency_file, "w"),
-                         options.dependency_graph_format,
-                         options.target_tasks, 
-                         options.forced_tasks)
-else:    
-    pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs)
-    
+#   Necessary to protect the "entry point" of the program under windows.
+#       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
+#
+if __name__ == '__main__':
+    try:
+        if options.just_print:
+            pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks, long_winded=True)
+        
+        elif options.dependency_file:
+            graph_printout (     open(options.dependency_file, "w"),
+                                 options.dependency_graph_format,
+                                 options.target_tasks, 
+                                 options.forced_tasks)
+        else:    
+            pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs)
+    except Exception, e:
+        print e.args
+            

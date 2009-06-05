@@ -206,7 +206,10 @@ def first_task():
 def parallel_task(name, param1, param2):
     sys.stderr.write("    Parallel task %s: " % name)
     sys.stderr.write("%d + %d = %d\n" % (param1, param2, param1 + param2))
-                                        
+    
+    
+    pipeline_run([parallel_task], multiprocess = 2)
+                                    
 pipeline_run([parallel_task])           
 
 

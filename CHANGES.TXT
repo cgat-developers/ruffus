@@ -1,3 +1,28 @@
-28/April/2009       v1.0.0 beta:        Initial Release in Oxford 
-22/May/2009         v1.0.1 release:     Add simple tutorial. No major bugs so far...
-04/June/2009        v1.0.3 release:     Documentation changes. Including SGE qrsh workaround in FAQ.
+28/April/2009       v1.0.0 beta:        
+	Initial Release in Oxford 
+
+
+22/May/2009         v1.0.1 release:     
+	Add simple tutorial. No major bugs so far...
+
+04/June/2009        v1.0.3 release:     
+	Documentation changes. Including SGE qrsh workaround in FAQ.
+
+05/June/2009        v1.0.4 release:     
+	Bug fix: 
+
+		task.task_names_to_tasks did not include tasks specified by function rather than name
+		
+		task.run_all_jobs_in_task, did not work properly without multiprocessing (# of jobs = 1)
+
+		task.pipeline_run only uses multiprocessing pools if multiprocess (# of jobs)  > 1
+	
+	Changes to allow python 2.4/2.5 to run:
+		setup.py changed to remove dependency
+		simplejson can be loaded instead of python 2.6 json module
+		NamedTemporaryFile to mkstemp because delete parameter is not avaliable before python 2.6
+
+	Windows programmes
+		It is necessary to protect the "entry point" of the program under windows.
+		Otherwise, a new process with be created recursively, like the magicians's apprentice
+		See: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
