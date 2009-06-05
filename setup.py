@@ -207,5 +207,5 @@ Usage
 # 
 #   python setup.py register
 # python setup.py sdist  upload --formats=gztar,zip
-# python setup.py bdist --format=rpm, wininst sdist --format=gztar,zip upload
-# python setup.py bdist --format=rpm,gztar,zip sdist --format=gztar,zip upload
+# python setup.py bdist --format=rpm,gztar,zip,wininst sdist --format=gztar,zip upload
+# python setup.py sdist --format=gztar,zip upload
