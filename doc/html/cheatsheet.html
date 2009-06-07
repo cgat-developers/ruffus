@@ -41,10 +41,10 @@
              accesskey="P">previous</a> |</li>
         Ruffus v. 1.04          :   
         <li><a href="index.html">Home</a> | </li>
-        <li><a href="search.html">Search</a> | </li>
         <li><a href="contents.html">Contents</a> | </li>
         <li><a href="">Cheat sheet</a> | </li>
         <li><a href="Tutorial.html">Full tutorial</a> &raquo;</li>
+        <li><a href="search.html">Search</a> | </li>
  
       </ul>
     </div>  
@@ -88,7 +88,7 @@ Each python function can be called in parallel to run multiple <strong>jobs</str
 <li>mkdir prerequisite shorthand</li>
 </ul>
 </td>
-<td><p class="first"><tt class="docutils literal"><span class="pre">&#64;follows(task1,</span> <span class="pre">&quot;task2&quot;)</span></tt></p>
+<td><p class="first"><tt class="docutils literal"><span class="pre">&#64;follows``(``task1,</span> <span class="pre">&quot;task2&quot;</span></tt>)</p>
 <p class="last"><tt class="docutils literal"><span class="pre">&#64;follows(task1,</span> <span class="pre">mkdir(&quot;my/directory/for/results&quot;))</span></tt></p>
 </td>
 </tr>
@@ -98,8 +98,8 @@ Each python function can be called in parallel to run multiple <strong>jobs</str
 <li>Parameters for parallel jobs</li>
 </ul>
 </td>
-<td><p class="first last"><tt class="docutils literal"><span class="pre">&#64;parallel(parameter_list)</span></tt>
-<tt class="docutils literal"><span class="pre">&#64;parallel(parameter_generating_function)</span></tt></p>
+<td><p class="first"><tt class="docutils literal"><span class="pre">&#64;parallel(parameter_list)</span></tt></p>
+<p class="last"><tt class="docutils literal"><span class="pre">&#64;parallel(parameter_generating_function)</span></tt></p>
 </td>
 </tr>
 <tr><td><p class="first last"><strong>&#64;files</strong></p>
@@ -124,10 +124,12 @@ or <tt class="docutils literal"><span class="pre">glob</span></tt> results</li>
 <li>skips up-to-date jobs</li>
 </ul>
 </td>
-<td><p class="first"><tt class="docutils literal"><span class="pre">&#64;files_re(glob_str,</span> <span class="pre">matching_regex,</span> <span class="pre">pattern_for_output_filenames)</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">&#64;files_re(file_names,</span> <span class="pre">matching_regex,</span> <span class="pre">pattern_for_output_filenames)</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">&#64;files_re(glob_str,</span> <span class="pre">matching_regex,</span> <span class="pre">pattern_for_input_filenames,</span> <span class="pre">pattern_for_output_filenames)</span></tt></p>
-<p class="last"><tt class="docutils literal"><span class="pre">&#64;files_re(file_names,</span> <span class="pre">matching_regex,</span> <span class="pre">pattern_for_input_filenames,</span> <span class="pre">pattern_for_output_filenames)</span></tt></p>
+<td><p class="first"><tt class="docutils literal"><span class="pre">&#64;files_re(glob_str,</span> <span class="pre">matching_regex,</span> <span class="pre">output_pattern)</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">&#64;files_re(file_names,</span> <span class="pre">matching_regex,</span> <span class="pre">output_pattern)</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">&#64;files_re(glob_str,</span> <span class="pre">matching_regex,</span> <span class="pre">input_pattern,</span> <span class="pre">output_pattern)</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">&#64;files_re(file_names,</span> <span class="pre">matching_regex,</span> <span class="pre">input_pattern,</span> <span class="pre">output_pattern)</span></tt></p>
+<p class="last">input/output patterns are regex patterns used to create input/output file names from the starting
+list of either glob_str or file names</p>
 </td>
 </tr>
 <tr><td><p class="first last"><strong>&#64;check_if_uptodate</strong></p>
@@ -244,10 +246,10 @@ for ruffus.</p>
              >previous</a> |</li>
         Ruffus v. 1.04          :   
         <li><a href="index.html">Home</a> | </li>
-        <li><a href="search.html">Search</a> | </li>
         <li><a href="contents.html">Contents</a> | </li>
         <li><a href="">Cheat sheet</a> | </li>
         <li><a href="Tutorial.html">Full tutorial</a> &raquo;</li>
+        <li><a href="search.html">Search</a> | </li>
  
       </ul>
     </div>
