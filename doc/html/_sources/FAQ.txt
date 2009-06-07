@@ -59,13 +59,14 @@ Windows
 Q. Windows seems to spawn ruffus processes recursively
 =========================================================
 
-A. Is is necessary to protect the "entry point" of the program under windows.
+A. It is necessary to protect the "entry point" of the program under windows.
 Otherwise, a new process will be started each time the main module is imported
 by a new Python interpreter as an unintended side effects. Causing a cascade
 of new processes.
 See: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 
 This code works::
+
     if __name__ == '__main__':
         try:
             pipeline_run([parallel_task], multiprocess = 5)

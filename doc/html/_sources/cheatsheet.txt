@@ -19,7 +19,7 @@ Each python function can be called in parallel to run multiple **jobs**.
 
   .. csv-table::
    :header: "Decorator", "Example"
-   :widths: 15, 15
+   :widths: 40, 60
    
    "**@follows**
 
