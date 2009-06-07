@@ -58,8 +58,13 @@
 <h1>FAQ<a class="headerlink" href="#faq" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="general">
 <h2>General<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="q-some-jobs-rerun-even-when-they-seem-up-to-date">
-<h3>Q. Some jobs rerun even when they seem up-to-date<a class="headerlink" href="#q-some-jobs-rerun-even-when-they-seem-up-to-date" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="q-ruffus-won-t-create-dependency-graphs">
+<h3>Q. Ruffus won&#8217;t create dependency graphs<a class="headerlink" href="#q-ruffus-won-t-create-dependency-graphs" title="Permalink to this headline">¶</a></h3>
+<p>A. Ruffus uses <tt class="docutils literal"><span class="pre">dot</span></tt> from <a class="reference external" href="http://www.graphviz.org/">Graphviz</a> to produce its
+pretty picture.</p>
+</div>
+<div class="section" id="q-some-jobs-re-run-even-when-they-seem-up-to-date">
+<h3>Q. Some jobs re-run even when they seem up-to-date<a class="headerlink" href="#q-some-jobs-re-run-even-when-they-seem-up-to-date" title="Permalink to this headline">¶</a></h3>
 <p>A. You might have fallen foul of coarse timestamp precision in some
 operating systems.</p>
 <p>If you are using <tt class="docutils literal"><span class="pre">&#64;files</span></tt> or <tt class="docutils literal"><span class="pre">files_re</span></tt>, ruffus uses
@@ -163,7 +168,8 @@ time.sleep(random.random() / 2.0)</p>
             <ul>
 <li><a class="reference external" href="">FAQ</a><ul>
 <li><a class="reference external" href="#general">General</a><ul>
-<li><a class="reference external" href="#q-some-jobs-rerun-even-when-they-seem-up-to-date">Q. Some jobs rerun even when they seem up-to-date</a></li>
+<li><a class="reference external" href="#q-ruffus-won-t-create-dependency-graphs">Q. Ruffus won&#8217;t create dependency graphs</a></li>
+<li><a class="reference external" href="#q-some-jobs-re-run-even-when-they-seem-up-to-date">Q. Some jobs re-run even when they seem up-to-date</a></li>
 <li><a class="reference external" href="#q-ruffus-seems-to-be-hanging-in-the-same-place">Q. Ruffus seems to be hanging in the same place</a></li>
 </ul>
 </li>

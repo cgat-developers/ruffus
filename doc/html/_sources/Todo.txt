@@ -122,6 +122,16 @@ Is this too much extra complexity for ruffus or ``@files_re`` to support?
 
 Is the syntactic convenience worthwhile?
     
+=========================================================
+Flexible plugin system for file dependency checking
+=========================================================
+So that MD5 / a database can be used instead of coarse-grained file modification times
+
+
+====================================
+SQL hooks
+====================================
+See above
 
 
     
@@ -129,6 +139,9 @@ Is the syntactic convenience worthwhile?
 Return values
 =========================================================
 Have a system for allowing values to be passed back from jobs
+
+There is space for this. Need to read through Python::multiprocessor carefully.
+May need to write our own process pool code!
 
 
 =========================================================
