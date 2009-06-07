@@ -139,16 +139,17 @@ all the CPU resources in that process.</p>
 <h3>Q. When I submit lots of jobs at the same time, SGE freezes and dies<a class="headerlink" href="#q-when-i-submit-lots-of-jobs-at-the-same-time-sge-freezes-and-dies" title="Permalink to this headline">¶</a></h3>
 <p>A. This seems to be dependent on your setup. One workaround may be to
 introduce a random time delay at the beginining of your jobs:</p>
-<p>import time, random
-&#64;parallel(param_func)
-def task_in_parallel(input_file, output_file):</p>
-<blockquote>
-<p>&#8220;&#8221;&#8221;
-Works starts after a random delay so that SGE has a chance to manage the queue
-&#8220;&#8221;&#8221;
-time.sleep(random.random() / 2.0)</p>
-<p># Wake up and do work</p>
-</blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">random</span>
+<span class="nd">@parallel</span><span class="p">(</span><span class="n">param_func</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">task_in_parallel</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Works starts after a random delay so that SGE has a chance to manage the queue</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
+
+    <span class="c"># Wake up and do work</span>
+</pre></div>
+</div>
 </div>
 </div>
 </div>
