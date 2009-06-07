@@ -7,59 +7,96 @@ Cheat Sheet
 The ``ruffus`` module is a lightweight way to add support 
 for running computational pipelines.
 
-
+========
 Usage
-=====
+========
 
 Each stage or **task** in a computational pipeline is represented by a python function
 Each python function can be called in parallel to run multiple **jobs**.
 
 1. Annotate functions with python decorators
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-     +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+
-     | Decorator              | Purpose                             |    Example                                                                                          |
-     +========================+=====================================+=====================================================================================================+
-     |**@follows**            | - Indicate task dependency          | ``@follows`` ( ``task1, "task2"`` )                                                                 |
-     |                        |                                     |                                                                                                     |
-     |                        | - mkdir prerequisite shorthand      | ``@follows(task1, mkdir("my/directory/for/results"))``                                              |
-     +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+
-     |**@parallel**           | - Parameters for parallel jobs      | ``@parallel(parameter_list)``                                                                       |
-     |                        |                                     |                                                                                                     |
-     |                        |                                     | ``@parallel(parameter_generating_function)``                                                        |
-     +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+
-     |**@files**              | - I/O parameters                    | ``@files(parameter_list)``                                                                          |
-     |                        |                                     |                                                                                                     |
-     |                        | - skips up-to-date jobs             | ``@files(parameter_generating_function)``                                                           |
-     |                        |                                     |                                                                                                     |
-     |                        |                                     | ``@files(input, output, other_params_for_a_single_job)``                                            |
-     +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+
-     |**@files_re**           | - I/O file names via regular        | ``@files_re(glob_str, matching_regex, output_pattern)``                                             | 
-     |                        |   expressions                       |                                                                                                     | 
-     |                        | - start from lists of file names    | ``@files_re(file_names, matching_regex, output_pattern)``                                           | 
-     |                        |   or ``glob`` results               |                                                                                                     | 
-     |                        | - skips up-to-date jobs             | ``@files_re(glob_str, matching_regex, input_pattern, output_pattern)``                              | 
-     |                        |                                     |                                                                                                     | 
-     |                        |                                     | ``@files_re(file_names, matching_regex, input_pattern, output_pattern)``                            | 
-     |                        |                                     |                                                                                                     |
-     |                        |                                     | input/output patterns are regex patterns used to create input/output file names from the starting   |
-     |                        |                                     | list of either glob_str or file names                                                               |
-     +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+
-     |**@check_if_uptodate**  | - Checks if task needs to be run    | ``@check_if_uptodate(is_task_up_to_date_function)``                                                 |
-     +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+
-     |**@posttask**           | - Call function after task          | ``@posttask(signal_task_completion_function)``                                                      |
-     |                        |                                     |                                                                                                     |
-     |                        | - touch file shorthand              | ``@posttask(touch_file("task1.completed")``                                                         |
-     +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+
+  .. csv-table::
+   :header: "Decorator", "Example"
+   :widths: 15, 15
+   
+   "**@follows**
+
+   - Indicate task dependency          
+   - `mkdir` prerequisite shorthand
+   ", "
+   @\ **follows**\ ( ``task1``, ``'task2'`` ))                                
+                                                                              
+   @\ **follows**\ ( ``task1``, **mkdir** ( ``'my/directory/for/results'`` )) 
+   "
+   "**@parallel**                            
+   
+   - Parameters for parallel jobs
+   ", "   
+   @\ **parallel**\ ( ``parameter_list`` )                                
+                                                                              
+   @\ **parallel**\ ( ``parameter_generating_function`` ) 
+   "
+   "**@files**
+   
+   - I/O parameters         
+   - skips up-to-date jobs
+   ", "
+   @\ **files**\ ( ``parameter_list`` )                                
+
+   @\ **files**\ ( ``parameter_generating_function`` )                                
+
+   *Simplified syntax for tasks with a single job:*
+   
+   @\ **files**\ ( ``input_file``, ``output_file``, ``other_params``, ``...`` )                                
+   "
+   "**@files_re**
+
+   - I/O file names via regular     
+     expressions                    
+   - start from lists of file names 
+     or ``glob`` results            
+   - skips up-to-date jobs          
+   ", "
+   @\ **files_re**\ (``glob_str``, ``matching_regex``, ``output_pattern``, ``...`` )
+
+   @\ **files_re**\ (``file_names``, ``matching_regex``, ``input_pattern``, ``output_pattern``, ``...`` )
+
+   @\ **files_re**\ (``glob_str``, ``matching_regex``, ``output_pattern``, ``...`` )
+
+   @\ **files_re**\ (``file_names``, ``matching_regex``, ``input_pattern``, ``output_pattern``, ``...`` )                                
+                                                                               
+   ``input_pattern``/``output_pattern`` are regex patterns                 
+   used to create input/output file names from the starting                
+   list of either glob_str or file names                                   
+   "
+   "**@check_if_uptodate**
+
+   - Checks if task needs to be run
+   ", "
+   @\ **check_if_uptodate**\ ( ``is_task_up_to_date_function`` )
+   "
+   "**@posttask**
+
+   - Call function after task  
+   - ``touch_file`` shorthand
+   ", "
+   @\ **posttask**\ ( ``signal_task_completion_function`` )
+
+   @\ **posttask**\ ( **touch_file** ( ``'task1.completed'`` ))
+   "  
+
 
 2. Print dependency graph if you necessary
-
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     - For a graphical flowchart in ``jpg``, ``svg``, ``dot``, ``png``, ``ps``, ``gif`` formats::
     
         graph_printout ( open("flowchart.svg", "w"),
                          "svg",
                          list_of_target_tasks)
     
-    This requires ``dot`` to be installed
+    This requires `dot <http://www.graphviz.org/>`_ to be installed
     
     - For a text printout of all jobs ::
     
@@ -67,6 +104,7 @@ Each python function can be called in parallel to run multiple **jobs**.
 
 
 3. Run the pipeline::
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     pipeline_run(list_of_target_tasks, [list_of_tasks_forced_to_rerun, multiprocess = N_PARALLEL_JOBS])
 

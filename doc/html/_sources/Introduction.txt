@@ -32,13 +32,15 @@ The easy way
     rufus is available as an 
     `easy-install <http://peak.telecommunity.com/DevCenter/EasyInstall>`_ -able package 
     on the `Python Package Index <http://pypi.python.org/pypi/Sphinx>`_.
-    ::
-   
-        easy_install ruffus
 
-    or, to upgrade::
+    #) Install setuptools::
+
+        wget peak.telecommunity.com/dist/ez_setup.py
+        sudo python ez_setup.py
+
+    #) Install Ruffus automatically::
     
-        easy_install -u ruffus
+        easy_install -U ruffus
 
 The most up-to-date code:
 ==============================
@@ -57,7 +59,6 @@ The most up-to-date code:
 
       * To install, type::
         
-           python setup.py build
            python setup.py install
 
 

@@ -6,9 +6,15 @@ FAQ
 General
 ^^^^^^^^^^^^^^^^^
 
+=========================================================
+Q. Ruffus won't create dependency graphs
+=========================================================
+
+A. Ruffus uses ``dot`` from `Graphviz <http://www.graphviz.org/>`_ to produce its
+pretty picture.
 
 =========================================================
-Q. Some jobs rerun even when they seem up-to-date
+Q. Some jobs re-run even when they seem up-to-date
 =========================================================
 
 A. You might have fallen foul of coarse timestamp precision in some
