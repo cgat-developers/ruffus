@@ -131,8 +131,8 @@ div.body h6 {
 
 div.body h1 { margin-top: 0; font-size: 200%; }
 div.body h2 { font-size: 200%; }
-div.body h3 { font-size: 140%; color: #800080; margin-left: 20px; margin-top: 40px ;font-style:italic;}        
-div.body h4 { font-size: 110%; color: #008000; margin-left: 40px; margin-top: 40px;background-color: #F0F0F0;} 
+div.body h3 { font-size: 140%; color: #800080; margin-left: 0px; margin-top: 40px ;font-style:italic;}        
+div.body h4 { font-size: 110%; color: #008000; margin-left: 10px; margin-top: 40px;background-color: #F0F0F0;} 
 div.body h5 { font-size: 90%; }
 div.body h6 { font-size: 80%; }
 
