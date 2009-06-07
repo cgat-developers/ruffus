@@ -97,25 +97,18 @@ and the sub-processes which run ruffus jobs in parallel.</p>
 <h2>Windows<a class="headerlink" href="#windows" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="q-windows-seems-to-spawn-ruffus-processes-recursively">
 <h3>Q. Windows seems to spawn ruffus processes recursively<a class="headerlink" href="#q-windows-seems-to-spawn-ruffus-processes-recursively" title="Permalink to this headline">¶</a></h3>
-<p>A. Is is necessary to protect the &#8220;entry point&#8221; of the program under windows.
+<p>A. It is necessary to protect the &#8220;entry point&#8221; of the program under windows.
 Otherwise, a new process will be started each time the main module is imported
 by a new Python interpreter as an unintended side effects. Causing a cascade
 of new processes.
 See: <a class="reference external" href="http://docs.python.org/library/multiprocessing.html#multiprocessing-programming">http://docs.python.org/library/multiprocessing.html#multiprocessing-programming</a></p>
-<dl class="docutils">
-<dt>This code works::</dt>
-<dd><dl class="first last docutils">
-<dt>if __name__ == &#8216;__main__&#8217;:</dt>
-<dd><dl class="first last docutils">
-<dt>try:</dt>
-<dd>pipeline_run([parallel_task], multiprocess = 5)</dd>
-</dl>
-</dd>
-<dt>except Exception, e:</dt>
-<dd>print e.args</dd>
-</dl>
-</dd>
-</dl>
+<p>This code works:</p>
+<div class="highlight-python"><pre>if __name__ == '__main__':
+    try:
+        pipeline_run([parallel_task], multiprocess = 5)
+except Exception, e:
+    print e.args</pre>
+</div>
 </div>
 </div>
 <div class="section" id="id1">
