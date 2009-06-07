@@ -109,13 +109,13 @@ Q. When I submit lots of jobs at the same time, SGE freezes and dies
 A. This seems to be dependent on your setup. One workaround may be to
 introduce a random time delay at the beginining of your jobs::
 
-import time, random
-@parallel(param_func)
-def task_in_parallel(input_file, output_file):
-    """
-    Works starts after a random delay so that SGE has a chance to manage the queue
-    """
-    time.sleep(random.random() / 2.0)
-
-    # Wake up and do work
+    import time, random
+    @parallel(param_func)
+    def task_in_parallel(input_file, output_file):
+        """
+        Works starts after a random delay so that SGE has a chance to manage the queue
+        """
+        time.sleep(random.random() / 2.0)
+    
+        # Wake up and do work
 
