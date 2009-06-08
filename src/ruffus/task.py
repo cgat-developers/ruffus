@@ -89,6 +89,16 @@ except ImportError:
 
 
 dumps = json.dumps
+
+def json_encode_ignore_unknown(obj):
+    try:
+        s= str(obj)
+        return s.replace('"', "OO")
+    except:
+        return str(obj.__class__).replace('"', "'")
+
+
+
 from multiprocessing import Pool
 import traceback
 
@@ -359,7 +369,7 @@ def glob_regex_io_param_factory (glob_str_or_list, matching_regex, *parameters):
         1. `param_func` has to be called each time
         2. `glob` is called each time.
            So do not expect the file lists in `param_func()` to be the same for each invocation
-        3. A "deepcopy" of the file list is saved
+        3. A "copy" of the file list is saved
            So do not expect to modify your copy of the original list and expect changes
            to the input/export files
         
@@ -368,13 +378,14 @@ def glob_regex_io_param_factory (glob_str_or_list, matching_regex, *parameters):
     parameters = list(parameters)
     if len(parameters) == 0:
         raise task_FilesreArgumentsError("Missing arguments @files_re for job " + 
-                                        dumps([glob_str_or_list, matching_regex] + parameters))
+                                        dumps([glob_str_or_list, matching_regex] + parameters, 
+                                              default=json_encode_ignore_unknown))
     
     
     regex = re.compile(matching_regex)
 
     # make (expensive) copy so that changes to the original sequence don't confuse us
-    parameters = copy.deepcopy(parameters)
+    parameters = copy.copy(parameters)
 
     
     # if the input file term is missing, just use the original
@@ -388,7 +399,7 @@ def glob_regex_io_param_factory (glob_str_or_list, matching_regex, *parameters):
     #   make copy of file list? 
     #
     if not is_str(glob_str_or_list):
-        glob_str_or_list = copy.deepcopy(glob_str_or_list)
+        glob_str_or_list = copy.copy(glob_str_or_list)
 
     def iterator ():
         #
@@ -482,11 +493,13 @@ def check_file_list_io_param (params):
         for job_param in params:
             if len(job_param) < 2:
                 raise task_FilesArgumentsError("Missing input or output files for job " + 
-                                                dumps(job_param))
+                                                dumps(job_param, 
+                                                      default=json_encode_ignore_unknown))
             if list(job_param[0:2]) == [None, None]:
                 raise task_FilesArgumentsError("Either the input or output file " + 
                                                 "must be defined for job "                +
-                                                dumps(job_param))
+                                                dumps(job_param, 
+                                                      default=json_encode_ignore_unknown))
             for file_param in job_param[0:2]:
                 # 
                 #   check that i/o files are sequences of strings or strings
@@ -503,11 +516,13 @@ def check_file_list_io_param (params):
                         continue
                 raise task_FilesArgumentsError("Input or output files must be a string or " + 
                                                     "a collection of strings: "              +
-                                                    dumps(job_param))
+                                                    dumps(job_param, 
+                                                      default=json_encode_ignore_unknown))
     except TypeError:
         message = ("Enclosing brackets are needed even if you are "
                                             "only supplying parameters for a single job: "     +
-                                            dumps(params))
+                                            dumps(params, 
+                                                      default=json_encode_ignore_unknown))
         raise task_FilesArgumentsError(message)
     
 def file_list_io_param_factory (orig_args):
@@ -554,9 +569,9 @@ def file_list_io_param_factory (orig_args):
     """
     # multiple jobs with input/output parameters etc.
     if len(orig_args) > 1:
-        params = copy.deepcopy([list(orig_args)])
+        params = copy.copy([list(orig_args)])
     else:
-        params = copy.deepcopy(orig_args[0])
+        params = copy.copy(orig_args[0])
 
     check_file_list_io_param(params)
       
@@ -596,9 +611,9 @@ both call::
     """
     # multiple jobs with input/output parameters etc.
     if len(orig_args) > 1:
-        params = copy.deepcopy([list(orig_args)])
+        params = copy.copy([list(orig_args)])
     else:
-        params = copy.deepcopy(orig_args[0])
+        params = copy.copy(orig_args[0])
 
     def iterator():
         for job_param in params:
@@ -1043,16 +1058,22 @@ def generic_job_descriptor (param):
     if param in ([], None):
         return "Job"
     else:
-        return "Job = %s" % dumps(param)
+        return "Job = %s" % dumps(param, 
+                                  default=json_encode_ignore_unknown)
 
 def io_files_job_descriptor (param):
     # input, output
-    extra_param = "" if len(param) == 2 else ", " + dumps(param[2:])[1:-1]
-    return "Job = [%s -> %s%s]" % (dumps(param[0]), dumps(param[1]), extra_param)
+    extra_param = "" if len(param) == 2 else ", " + dumps(param[2:], 
+                                                      default=json_encode_ignore_unknown)[1:-1]
+    return ("Job = [%s -> %s%s]" % (dumps(param[0], 
+                                         default=json_encode_ignore_unknown), 
+                                   dumps(param[1], 
+                                         default=json_encode_ignore_unknown), 
+                                   extra_param))
 
 def mkdir_job_descriptor (param):
     # input, output and parameters
-    return "Make directory %s" % (dumps(param))
+    return "Make directory %s" % (dumps(param, default=json_encode_ignore_unknown))
 
 
 #8888888888888888888888888888888888888888888888888888888888888888888888888888888888888

@@ -143,7 +143,7 @@ However, if you subsequently modified ``a.1`` again::
 
 You would see the following::
 
-    >>> pipeline_run([parallel_io_task])
+    >>> pipeline_run([second_task])
     Task = second_task
         1st_job
         Job = ["a.1" -> "a.2", "    1st_job"] completed
