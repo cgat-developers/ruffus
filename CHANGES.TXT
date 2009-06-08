@@ -1,15 +1,23 @@
-28/April/2009       v1.0.0 beta:        
-	Initial Release in Oxford 
+= v. 1.0.0 beta =
+	_28/April/2009_
 
+	Initial Release in Oxford
 
-22/May/2009         v1.0.1 release:     
-	Add simple tutorial. No major bugs so far...
+= v. 1.01=
+	_22/May/2009_
+	==Add simple tutorial.==
+	
+		No major bugs so far...!!
 
-04/June/2009        v1.0.3 release:     
-	Documentation changes. Including SGE qrsh workaround in FAQ.
+= v. 1.03=
+	_04/June/2009_
+	==Documentation ==
+		
+		Including SGE qrsh workaround in FAQ.
 
-05/June/2009        v1.0.4 release:     
-	Bug fix: 
+= v. 1.04=
+	_05/June/2009_
+	==Bug fix: ==
 
 		task.task_names_to_tasks did not include tasks specified by function rather than name
 		
@@ -17,12 +25,27 @@
 
 		task.pipeline_run only uses multiprocessing pools if multiprocess (# of jobs)  > 1
 	
-	Changes to allow python 2.4/2.5 to run:
-		setup.py changed to remove dependency
-		simplejson can be loaded instead of python 2.6 json module
-		NamedTemporaryFile to mkstemp because delete parameter is not avaliable before python 2.6
+	==Changes to allow python 2.4/2.5 to run:==
 
-	Windows programmes
+		setup.py changed to remove dependency
+
+		simplejson can be loaded instead of python 2.6 json module
+
+		Changed !NamedTemporaryFile to mkstemp because delete parameter is not avaliable before python 2.6
+
+	==Windows programmes==
+
 		It is necessary to protect the "entry point" of the program under windows.
 		Otherwise, a new process with be created recursively, like the magicians's apprentice
 		See: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
+
+= v. 1.05=
+	_Not yet released_
+
+	==Documentation:==
+		
+		Added example for sharing synchronising data between jobs.
+        
+		This shows how different jobs can write to a common log file while still leaveraging
+		the full power of ruffus
+
