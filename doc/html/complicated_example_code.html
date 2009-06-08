@@ -20,7 +20,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="ruffus v1.04 documentation" href="index.html" />
-    <link rel="next" title="ruffus.Task" href="task.html" />
+    <link rel="next" title="simpler-with_shared_logging – How to share data across jobs" href="sharing_data_across_jobs_example_code.html" />
     <link rel="prev" title="intermediate_example – A real-world example" href="intermediate_example_code.html" /> 
   </head>
   <body>
@@ -34,7 +34,7 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="task.html" title="ruffus.Task"
+          <a href="sharing_data_across_jobs_example_code.html" title="simpler-with_shared_logging – How to share data across jobs"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="intermediate_example_code.html" title="intermediate_example – A real-world example"
@@ -45,7 +45,7 @@
         <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
         <li><a href="Tutorial.html">Full tutorial</a>  | </li>
         <li><a href="FAQ.html">FAQ</a>  | </li>
-        <li><a href="Todo.html">Todo</a>  | </li>
+        <li><a href="Todo.html">Future plans</a>  | </li>
         <li><a href="search.html">Search</a> &raquo;</li>
  
       </ul>
@@ -66,11 +66,11 @@
 <blockquote>
 <tt class="docutils literal"><span class="pre">ruffus/test/data_for_complicated_example</span></tt></blockquote>
 <div class="section" id="programme-options">
-<h2>Programme options:<a class="headerlink" href="#programme-options" title="Permalink to this headline">¶</a></h2>
+<span id="index-72"></span><h2>Programme options:<a class="headerlink" href="#programme-options" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <dl class="cmdoption">
-<dt id="cmdoption-complicated_example.py--help">
-<tt class="descname">--help</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">-h</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-complicated_example.py--help" title="Permalink to this definition">¶</a></dt>
+<dt>
+<tt class="descname">--help</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">-h</tt><tt class="descclassname"></tt></dt>
 <dd>show help message</dd></dl>
 
 </blockquote>
@@ -78,8 +78,8 @@
 <h3>To specify tasks:<a class="headerlink" href="#to-specify-tasks" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <dl class="cmdoption">
-<dt id="cmdoption-complicated_example.py--target_tasks">
-<tt class="descname">--target_tasks</tt><tt class="descclassname"> TARGET_TASK</tt><tt class="descclassname">, </tt><tt class="descname">-t</tt><tt class="descclassname"> TARGET_TASK</tt><a class="headerlink" href="#cmdoption-complicated_example.py--target_tasks" title="Permalink to this definition">¶</a></dt>
+<dt>
+<tt class="descname">--target_tasks</tt><tt class="descclassname"> TARGET_TASK</tt><tt class="descclassname">, </tt><tt class="descname">-t</tt><tt class="descclassname"> TARGET_TASK</tt></dt>
 <dd><p>Target task(s) of pipeline. TARGET_TASK can be</p>
 <ul class="simple">
 <li><tt class="docutils literal"><span class="pre">split_unknown_gene_setdef</span></tt></li>
@@ -98,15 +98,15 @@
 </dd></dl>
 
 <dl class="cmdoption">
-<dt id="cmdoption-complicated_example.py--forced_tasks">
-<tt class="descname">--forced_tasks</tt><tt class="descclassname"> FORCED_TASK</tt><tt class="descclassname">, </tt><tt class="descname">-f</tt><tt class="descclassname"> FORCED_TASK</tt><a class="headerlink" href="#cmdoption-complicated_example.py--forced_tasks" title="Permalink to this definition">¶</a></dt>
+<dt>
+<tt class="descname">--forced_tasks</tt><tt class="descclassname"> FORCED_TASK</tt><tt class="descclassname">, </tt><tt class="descname">-f</tt><tt class="descclassname"> FORCED_TASK</tt></dt>
 <dd><p>Pipeline task(s) which will be run even if they are up to date.</p>
 <p>See above for a list of pipelined tasks</p>
 </dd></dl>
 
 <dl class="cmdoption">
-<dt id="cmdoption-complicated_example.py--jobs">
-<tt class="descname">--jobs</tt><tt class="descclassname"> N</tt><tt class="descclassname">, </tt><tt class="descname">-j</tt><tt class="descclassname"> N</tt><a class="headerlink" href="#cmdoption-complicated_example.py--jobs" title="Permalink to this definition">¶</a></dt>
+<dt>
+<tt class="descname">--jobs</tt><tt class="descclassname"> N</tt><tt class="descclassname">, </tt><tt class="descname">-j</tt><tt class="descclassname"> N</tt></dt>
 <dd>N specifies number of concurrent process running jobs in parallel</dd></dl>
 
 </blockquote>
@@ -115,13 +115,13 @@
 <h3>To specify paths:<a class="headerlink" href="#to-specify-paths" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <dl class="cmdoption">
-<dt id="cmdoption-complicated_example.py--data_dir">
-<tt class="descname">--data_dir</tt><tt class="descclassname"> PATH</tt><tt class="descclassname">, </tt><tt class="descname">-d</tt><tt class="descclassname"> PATH</tt><a class="headerlink" href="#cmdoption-complicated_example.py--data_dir" title="Permalink to this definition">¶</a></dt>
+<dt>
+<tt class="descname">--data_dir</tt><tt class="descclassname"> PATH</tt><tt class="descclassname">, </tt><tt class="descname">-d</tt><tt class="descclassname"> PATH</tt></dt>
 <dd>Directory with input data.</dd></dl>
 
 <dl class="cmdoption">
-<dt id="cmdoption-complicated_example.py--working_dir">
-<tt class="descname">--working_dir</tt><tt class="descclassname"> PATH</tt><tt class="descclassname">, </tt><tt class="descname">-d</tt><tt class="descclassname"> PATH</tt><a class="headerlink" href="#cmdoption-complicated_example.py--working_dir" title="Permalink to this definition">¶</a></dt>
+<dt>
+<tt class="descname">--working_dir</tt><tt class="descclassname"> PATH</tt><tt class="descclassname">, </tt><tt class="descname">-d</tt><tt class="descclassname"> PATH</tt></dt>
 <dd>Direction in which ruffus will run.</dd></dl>
 
 </blockquote>
@@ -130,17 +130,16 @@
 <h3>To print flowchart:<a class="headerlink" href="#to-print-flowchart" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <dl class="cmdoption">
-<dt id="cmdoption-complicated_example.py--dependency">
-<tt class="descname">--dependency</tt><tt class="descclassname"> FILE</tt><tt class="descclassname">, </tt><tt class="descname">-d</tt><tt class="descclassname"> file</tt><a class="headerlink" href="#cmdoption-complicated_example.py--dependency" title="Permalink to this definition">¶</a></dt>
+<dt>
+<tt class="descname">--dependency</tt><tt class="descclassname"> FILE</tt><tt class="descclassname">, </tt><tt class="descname">-d</tt><tt class="descclassname"> file</tt></dt>
 <dd>Print a dependency graph of the pipeline that would be
 executed to FILE, but do not execute it.</dd></dl>
 
 <dl class="cmdoption">
-<dt id="cmdoption-complicated_example.py--dependency_graph_format">
-<tt class="descname">--dependency_graph_format</tt><tt class="descclassname"> FORMAT</tt><tt class="descclassname">, </tt><tt class="descname">-F</tt><tt class="descclassname"> FORMAT</tt><a class="headerlink" href="#cmdoption-complicated_example.py--dependency_graph_format" title="Permalink to this definition">¶</a></dt>
 <dt>
-<tt class="descname">Format of dependency graph file.</tt></dt>
-<dd><p>Can be:</p>
+<tt class="descname">--dependency_graph_format</tt><tt class="descclassname"> FORMAT</tt><tt class="descclassname">, </tt><tt class="descname">-F</tt><tt class="descclassname"> FORMAT</tt></dt>
+<dd><p>Format of dependency graph file.</p>
+<p>Can be:</p>
 <div class="highlight-python"><pre>* 'ps'
     (PostScript)
 
@@ -157,8 +156,8 @@ executed to FILE, but do not execute it.</dd></dl>
 </dd></dl>
 
 <dl class="cmdoption">
-<dt id="cmdoption-complicated_example.py--just_print">
-<tt class="descname">--just_print</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">-n</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-complicated_example.py--just_print" title="Permalink to this definition">¶</a></dt>
+<dt>
+<tt class="descname">--just_print</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">-n</tt><tt class="descclassname"></tt></dt>
 <dd>Print a description of the jobs that would be
 executed, but do not execute them.</dd></dl>
 
@@ -723,8 +722,8 @@ executed, but do not execute them.</dd></dl>
             <p class="topless"><a href="intermediate_example_code.html"
                                   title="previous chapter"><tt class="docutils literal"><span class="pre">intermediate_example</span></tt> &#8211; A real-world example</a></p>
             <h4>Next topic</h4>
-            <p class="topless"><a href="task.html"
-                                  title="next chapter">ruffus.Task</a></p>
+            <p class="topless"><a href="sharing_data_across_jobs_example_code.html"
+                                  title="next chapter"><tt class="docutils literal"><span class="pre">simpler-with_shared_logging</span></tt> &#8211; How to share data across jobs</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/complicated_example_code.txt"
@@ -757,7 +756,7 @@ executed, but do not execute them.</dd></dl>
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="task.html" title="ruffus.Task"
+          <a href="sharing_data_across_jobs_example_code.html" title="simpler-with_shared_logging – How to share data across jobs"
              >next</a> |</li>
         <li class="right" >
           <a href="intermediate_example_code.html" title="intermediate_example – A real-world example"
@@ -768,7 +767,7 @@ executed, but do not execute them.</dd></dl>
         <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
         <li><a href="Tutorial.html">Full tutorial</a>  | </li>
         <li><a href="FAQ.html">FAQ</a>  | </li>
-        <li><a href="Todo.html">Todo</a>  | </li>
+        <li><a href="Todo.html">Future plans</a>  | </li>
         <li><a href="search.html">Search</a> &raquo;</li>
  
       </ul>

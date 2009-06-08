@@ -1,0 +1,305 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>How to share data across jobs &mdash; ruffus v1.04 documentation</title>
+    <link rel="stylesheet" href="_static/ruffus.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.04',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="ruffus v1.04 documentation" href="index.html" />
+    <link rel="next" title="simpler – A simple example" href="simpler.html" />
+    <link rel="prev" title="A more ambitious real-world example" href="complicated_example.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="simpler.html" title="simpler – A simple example"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="complicated_example.html" title="A more ambitious real-world example"
+             accesskey="P">previous</a> |</li>
+        Ruffus v. 1.04          :   
+        <li><a href="index.html">Home</a> | </li>
+        <li><a href="contents.html">Contents</a> | </li>
+        <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
+        <li><a href="Tutorial.html">Full tutorial</a>  | </li>
+        <li><a href="FAQ.html">FAQ</a>  | </li>
+        <li><a href="Todo.html">Future plans</a>  | </li>
+        <li><a href="search.html">Search</a> &raquo;</li>
+ 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="how-to-share-data-across-jobs">
+<span id="sharing-data-across-jobs-example"></span><h1>How to share data across jobs<a class="headerlink" href="#how-to-share-data-across-jobs" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="python-code">
+<h2>Python Code<a class="headerlink" href="#python-code" title="Permalink to this headline">¶</a></h2>
+<p>The full code is available <a class="reference external" href="sharing_data_across_jobs_example_code.html#code-for-sharing-data-across-jobs-example-rst"><em>here</em></a>.</p>
+</div>
+<div class="section" id="background">
+<span id="index-88"></span><h2>Background:<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<p>Each Ruffus job runs in a separate process.
+To synchronise across multiple jobs requires passing data across processes.</p>
+<p>This is generally to be avoided because</p>
+<ol class="arabic simple">
+<li>Synchronising across parallel tasks is inherently tricky</li>
+<li>Passing large amounts of data across processes is inefficient</li>
+<li>Some objects are not suitable for passing across the process boundary.</li>
+</ol>
+<p>For more information, see the documentation for the python
+<a class="reference external" href="http://docs.python.org/library/multiprocessing.html">multiprocessing module</a>.</p>
+</blockquote>
+</div>
+<div class="section" id="aim">
+<h2>Aim:<a class="headerlink" href="#aim" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<p>We create a shared python <a class="reference external" href="http://docs.python.org/library/logging.html">logging</a>
+object. All the jobs will write to this log without trampling over each other.</p>
+<p>This programme demonstrates</p>
+<ul class="simple">
+<li>calling functions in shared objects from different jobs</li>
+<li>synchronising calls to prevent them from being mixed up</li>
+</ul>
+</blockquote>
+<div class="section" id="create-the-shared-object">
+<h3>Create the shared object<a class="headerlink" href="#create-the-shared-object" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p>The object which will be shared between the jobs will be created in a separate
+Manager Server Process (See <a class="reference external" href="http://docs.python.org/library/multiprocessing.html#sharing-state-between-processes">Server Process</a>)</p>
+<p>We need to write a function which will be called in this process:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
+<span class="c">#   Create logger object</span>
+<span class="c">#</span>
+<span class="k">def</span> <span class="nf">setup_shared_logger</span><span class="p">(</span><span class="n">LOGGING_LEVEL</span><span class="p">,</span> <span class="n">LOG_FILENAME</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to setup logger shared between all processes</span>
+<span class="sd">    The logger object will be created within a separate (special) process</span>
+<span class="sd">        run by multiprocessing.BaseManager.start()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c">#</span>
+    <span class="c">#   Log file name with logger level</span>
+    <span class="c">#</span>
+    <span class="n">my_ruffus_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;simpler_example_logger&#39;</span><span class="p">)</span>
+    <span class="n">my_ruffus_logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LOGGING_LEVEL</span><span class="p">)</span>
+
+    <span class="c">#</span>
+    <span class="c">#   Add handler to print to file, with the specified format</span>
+    <span class="c">#</span>
+    <span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">RotatingFileHandler</span><span class="p">(</span>
+                  <span class="n">LOG_FILENAME</span><span class="p">,</span> <span class="n">maxBytes</span><span class="o">=</span><span class="mf">100000</span><span class="p">,</span> <span class="n">backupCount</span><span class="o">=</span><span class="mf">5</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">my_ruffus_logger</span>
+</pre></div>
+</div>
+</blockquote>
+</div>
+<div class="section" id="create-proxies-to-forward-calls-to-the-shared-object">
+<h3>Create proxies to forward calls to the shared object<a class="headerlink" href="#create-proxies-to-forward-calls-to-the-shared-object" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p>We then need to specify proxy objects which will forward function calls to the
+real (shared) object which is owned by the Manager Server Process:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
+<span class="c">#   Proxy object for logging</span>
+<span class="c">#       Logging messages will be marshalled (forwarded) to the process where the</span>
+<span class="c">#       shared log lives</span>
+<span class="c">#</span>
+<span class="k">class</span> <span class="nc">LoggerProxy</span><span class="p">(</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">BaseProxy</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callmethod</span><span class="p">(</span><span class="s">&#39;debug&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">message</span><span class="p">])</span>
+    <span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callmethod</span><span class="p">(</span><span class="s">&#39;info&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">message</span><span class="p">])</span>
+    <span class="k">def</span> <span class="nf">__str__</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Logging proxy&quot;</span>
+</pre></div>
+</div>
+<p>In this case, we are only interested in two function calls to forward: <cite>debug</cite> and
+<cite>info</cite>. We also override the <cite>__str__</cite> function so that ruffus output looks nicer.</p>
+</blockquote>
+</div>
+<div class="section" id="register-proxy-and-shared-object-with-manager-server">
+<h3>Register proxy and shared object with Manager Server<a class="headerlink" href="#register-proxy-and-shared-object-with-manager-server" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p>Now we need to tell the multiprocessing library how to create our shared object,
+and forward calls from the proxies:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
+<span class="c">#   Register the setup_logger function as a proxy for setup_logger</span>
+<span class="c">#</span>
+<span class="c">#   We use SyncManager as a base class so we can get a lock proxy for synchronising</span>
+<span class="c">#       logging later on</span>
+<span class="c">#</span>
+<span class="k">class</span> <span class="nc">LoggingManager</span><span class="p">(</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">SyncManager</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Logging manager sets up its own process and will create the real Log object there</span>
+<span class="sd">    We refer to this (real) log via proxies</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+<span class="n">LoggingManager</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">&#39;setup_logger&#39;</span><span class="p">,</span> <span class="n">setup_shared_logger</span><span class="p">,</span> <span class="n">proxytype</span><span class="o">=</span><span class="n">LoggerProxy</span><span class="p">,</span> <span class="n">exposed</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;info&#39;</span><span class="p">,</span> <span class="s">&#39;debug&#39;</span><span class="p">,</span> <span class="s">&#39;__str__&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>We link the proxy by creating an instance of <a class="reference external" href="http://docs.python.org/library/multiprocessing.html#multiprocessing.managers.SyncManager">SyncManager</a>.</p>
+<p>We could also have used <a class="reference external" href="http://docs.python.org/library/multiprocessing.html#multiprocessing.managers.BaseManager">multiprocessing::BaseManager</a>
+but <a class="reference external" href="http://docs.python.org/library/multiprocessing.html#multiprocessing.managers.SyncManager">SyncManager</a>
+includes the <cite>Lock()</cite> function which we shall use to synchronise the writing to the
+log.</p>
+</blockquote>
+</div>
+<div class="section" id="create-manager-server-process">
+<h3>Create Manager Server Process<a class="headerlink" href="#create-manager-server-process" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p>We need to create the Manager Server Process, the logs and the proxy:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+
+    <span class="c">#</span>
+    <span class="c">#   make shared log and proxy</span>
+    <span class="c">#</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">LoggingManager</span><span class="p">()</span>
+    <span class="n">manager</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">&#39;setup_logger&#39;</span><span class="p">,</span> <span class="n">setup_shared_logger</span><span class="p">,</span>
+                     <span class="n">proxytype</span><span class="o">=</span><span class="n">LoggerProxy</span><span class="p">,</span> <span class="n">exposed</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;info&#39;</span><span class="p">,</span> <span class="s">&#39;debug&#39;</span><span class="p">))</span>
+
+    <span class="n">manager</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">LOG_FILENAME</span>  <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">log_file_name</span>
+    <span class="n">LOGGING_LEVEL</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span>
+    <span class="n">logger_proxy</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">setup_logger</span><span class="p">(</span><span class="n">LOGGING_LEVEL</span><span class="p">,</span> <span class="n">LOG_FILENAME</span><span class="p">)</span>
+
+    <span class="c">#</span>
+    <span class="c">#   make sure we are not logging at the same time in different processes</span>
+    <span class="c">#</span>
+    <span class="n">logging_mutex</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+</pre></div>
+</div>
+</blockquote>
+</div>
+<div class="section" id="run-ruffus">
+<h3>Run ruffus<a class="headerlink" href="#run-ruffus" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p>The shared proxy can be passed to the task function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@files</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s">&#39;a.1&#39;</span><span class="p">,</span> <span class="n">logger_proxy</span><span class="p">,</span> <span class="n">logging_mutex</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">task1</span><span class="p">(</span><span class="n">no_infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="o">*</span><span class="n">extra_params</span><span class="p">):</span>
+
+    <span class="c"># Synchronised logging</span>
+    <span class="n">logger_proxy</span><span class="p">,</span> <span class="n">logging_mutex</span> <span class="o">=</span> <span class="n">extra_params</span>
+    <span class="k">with</span> <span class="n">logging_mutex</span><span class="p">:</span>
+        <span class="n">logger_proxy</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;task1, process name = </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                            <span class="p">(</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">current_process</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+    <span class="c"># do actual work</span>
+    <span class="n">do_some_hard_task</span><span class="p">(</span><span class="n">outfile</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Because <tt class="docutils literal"><span class="pre">logging_mutex</span></tt> is used, log entries will not be jumbled up or interleaved.</p>
+</blockquote>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="contents.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">How to share data across jobs</a><ul>
+<li><a class="reference external" href="#python-code">Python Code</a></li>
+<li><a class="reference external" href="#background">Background:</a></li>
+<li><a class="reference external" href="#aim">Aim:</a><ul>
+<li><a class="reference external" href="#create-the-shared-object">Create the shared object</a></li>
+<li><a class="reference external" href="#create-proxies-to-forward-calls-to-the-shared-object">Create proxies to forward calls to the shared object</a></li>
+<li><a class="reference external" href="#register-proxy-and-shared-object-with-manager-server">Register proxy and shared object with Manager Server</a></li>
+<li><a class="reference external" href="#create-manager-server-process">Create Manager Server Process</a></li>
+<li><a class="reference external" href="#run-ruffus">Run ruffus</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="complicated_example.html"
+                                  title="previous chapter">A more ambitious real-world example</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="simpler.html"
+                                  title="next chapter"><tt class="docutils literal"><span class="pre">simpler</span></tt> &#8211; A simple example</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/sharing_data_across_jobs_example.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="simpler.html" title="simpler – A simple example"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="complicated_example.html" title="A more ambitious real-world example"
+             >previous</a> |</li>
+        Ruffus v. 1.04          :   
+        <li><a href="index.html">Home</a> | </li>
+        <li><a href="contents.html">Contents</a> | </li>
+        <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
+        <li><a href="Tutorial.html">Full tutorial</a>  | </li>
+        <li><a href="FAQ.html">FAQ</a>  | </li>
+        <li><a href="Todo.html">Future plans</a>  | </li>
+        <li><a href="search.html">Search</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Leo Goodstadt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
+    </div>
+  </body>
+</html>

@@ -29,6 +29,9 @@ Overview
 **@follows**
 ***************************************
 
+.. index:: 
+    single: Example Programme; 1. Simple
+
 =====================
 A Simple example
 =====================
