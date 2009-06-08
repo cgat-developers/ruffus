@@ -41,7 +41,7 @@
         <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
         <li><a href="Tutorial.html">Full tutorial</a>  | </li>
         <li><a href="FAQ.html">FAQ</a>  | </li>
-        <li><a href="Todo.html">Todo</a>  | </li>
+        <li><a href="Todo.html">Future plans</a>  | </li>
         <li><a href="search.html">Search</a> &raquo;</li>
  
       </ul>
@@ -88,6 +88,27 @@ for running computational pipelines.</p>
 <li class="toctree-l2"><a class="reference external" href="Design.html#acknowledgements">Acknowledgements</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference external" href="Glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference external" href="FAQ.html">FAQ</a><ul>
+<li class="toctree-l2"><a class="reference external" href="FAQ.html#general">General</a></li>
+<li class="toctree-l2"><a class="reference external" href="FAQ.html#windows">Windows</a></li>
+<li class="toctree-l2"><a class="reference external" href="FAQ.html#id1">Sun Grid Engine</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="Todo.html">Future plans</a><ul>
+<li class="toctree-l2"><a class="reference external" href="Todo.html#cleanup">Cleanup</a></li>
+<li class="toctree-l2"><a class="reference external" href="Todo.html#combining-files">Combining files</a></li>
+<li class="toctree-l2"><a class="reference external" href="Todo.html#flexible-plugin-system-for-file-dependency-checking">Flexible plugin system for file dependency checking</a></li>
+<li class="toctree-l2"><a class="reference external" href="Todo.html#sql-hooks">SQL hooks</a></li>
+<li class="toctree-l2"><a class="reference external" href="Todo.html#return-values">Return values</a></li>
+<li class="toctree-l2"><a class="reference external" href="Todo.html#multiprocessing">Multiprocessing</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="detailed-examples">
+<h2>Detailed Examples:<a class="headerlink" href="#detailed-examples" title="Permalink to this headline">¶</a></h2>
+<ul>
 <li class="toctree-l1"><a class="reference external" href="Tutorial.html">Full Tutorial</a><ul>
 <li class="toctree-l2"><a class="reference external" href="Tutorial.html#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference external" href="Tutorial.html#follows"><strong>&#64;follows</strong></a></li>
@@ -112,20 +133,10 @@ for running computational pipelines.</p>
 <li class="toctree-l2"><a class="reference external" href="complicated_example.html#ruffus-flow-chart">Ruffus Flow chart</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference external" href="Glossary.html">Glossary</a></li>
-<li class="toctree-l1"><a class="reference external" href="FAQ.html">FAQ</a><ul>
-<li class="toctree-l2"><a class="reference external" href="FAQ.html#general">General</a></li>
-<li class="toctree-l2"><a class="reference external" href="FAQ.html#windows">Windows</a></li>
-<li class="toctree-l2"><a class="reference external" href="FAQ.html#id1">Sun Grid Engine</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference external" href="Todo.html">Todo</a><ul>
-<li class="toctree-l2"><a class="reference external" href="Todo.html#cleanup">Cleanup</a></li>
-<li class="toctree-l2"><a class="reference external" href="Todo.html#combining-files">Combining files</a></li>
-<li class="toctree-l2"><a class="reference external" href="Todo.html#flexible-plugin-system-for-file-dependency-checking">Flexible plugin system for file dependency checking</a></li>
-<li class="toctree-l2"><a class="reference external" href="Todo.html#sql-hooks">SQL hooks</a></li>
-<li class="toctree-l2"><a class="reference external" href="Todo.html#return-values">Return values</a></li>
-<li class="toctree-l2"><a class="reference external" href="Todo.html#multiprocessing">Multiprocessing</a></li>
+<li class="toctree-l1"><a class="reference external" href="sharing_data_across_jobs_example.html">How to share data across jobs</a><ul>
+<li class="toctree-l2"><a class="reference external" href="sharing_data_across_jobs_example.html#python-code">Python Code</a></li>
+<li class="toctree-l2"><a class="reference external" href="sharing_data_across_jobs_example.html#background">Background:</a></li>
+<li class="toctree-l2"><a class="reference external" href="sharing_data_across_jobs_example.html#aim">Aim:</a></li>
 </ul>
 </li>
 </ul>
@@ -146,6 +157,12 @@ for running computational pipelines.</p>
 <li class="toctree-l1"><a class="reference external" href="complicated_example_code.html"><tt class="docutils literal"><span class="pre">complicated_example</span></tt> &#8211; A more ambitious real-world example</a><ul>
 <li class="toctree-l2"><a class="reference external" href="complicated_example_code.html#programme-options">Programme options:</a></li>
 <li class="toctree-l2"><a class="reference external" href="complicated_example_code.html#code">Code:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="sharing_data_across_jobs_example_code.html"><tt class="docutils literal"><span class="pre">simpler_with_shared_logging</span></tt> &#8211; How to share data across jobs</a><ul>
+<li class="toctree-l2"><a class="reference external" href="sharing_data_across_jobs_example_code.html#the-shared-data">The shared data:</a></li>
+<li class="toctree-l2"><a class="reference external" href="sharing_data_across_jobs_example_code.html#programme-options">Programme options:</a></li>
+<li class="toctree-l2"><a class="reference external" href="sharing_data_across_jobs_example_code.html#code">Code:</a></li>
 </ul>
 </li>
 </ul>
@@ -211,6 +228,9 @@ for running computational pipelines.</p>
 <li><a class="reference external" href="#contents">Contents:</a><ul>
 </ul>
 </li>
+<li><a class="reference external" href="#detailed-examples">Detailed Examples:</a><ul>
+</ul>
+</li>
 <li><a class="reference external" href="#example-code">Example code:</a><ul>
 </ul>
 </li>
@@ -265,7 +285,7 @@ for running computational pipelines.</p>
         <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
         <li><a href="Tutorial.html">Full tutorial</a>  | </li>
         <li><a href="FAQ.html">FAQ</a>  | </li>
-        <li><a href="Todo.html">Todo</a>  | </li>
+        <li><a href="Todo.html">Future plans</a>  | </li>
         <li><a href="search.html">Search</a> &raquo;</li>
  
       </ul>

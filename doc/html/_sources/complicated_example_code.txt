@@ -10,6 +10,7 @@ See :ref:`here <complicated-pipelines>` for an overview and explanations for thi
 
 
 .. module:: complicated_example
+   :noindex:
    :synopsis: A more ambitious real-world Example.
 .. moduleauthor:: Leo Goodstadt <ruffus@llew.org.uk>
 
@@ -24,12 +25,17 @@ The data is at:
     ``ruffus/test/data_for_complicated_example``
 
 .. program:: complicated_example.py
+        :noindex:
+
+.. index:: 
+    single: Example Programme Code; 3. Ambitious
 
 ****************************
 Programme options:
 ****************************
 
     .. cmdoption:: --help, -h
+        :noindex:
     
         show help message
 
@@ -39,6 +45,7 @@ To specify tasks:
 =================
 
     .. cmdoption:: --target_tasks TARGET_TASK, -t TARGET_TASK
+        :noindex:
     
         Target task(s) of pipeline. TARGET_TASK can be
            
@@ -57,12 +64,14 @@ To specify tasks:
             complicated_example.py -t evolution_analysis -t summarise_all
         
     .. cmdoption:: --forced_tasks FORCED_TASK, -f FORCED_TASK
+        :noindex:
     
         Pipeline task(s) which will be run even if they are up to date.
 
         See above for a list of pipelined tasks
         
     .. cmdoption:: --jobs N, -j N
+        :noindex:
         
         N specifies number of concurrent process running jobs in parallel
 
@@ -71,10 +80,12 @@ To specify paths:
 =================
 
     .. cmdoption:: --data_dir PATH, -d PATH
+        :noindex:
         
         Directory with input data.
         
     .. cmdoption:: --working_dir PATH, -d PATH
+        :noindex:
     
         Direction in which ruffus will run.
 
@@ -84,11 +95,14 @@ To print flowchart:
 ==================================
 
     .. cmdoption:: --dependency FILE, -d file
+        :noindex:
     
         Print a dependency graph of the pipeline that would be
         executed to FILE, but do not execute it.
         
     .. cmdoption:: --dependency_graph_format FORMAT, -F FORMAT
+        :noindex:
+
         Format of dependency graph file. 
     
         Can be::
@@ -107,6 +121,7 @@ To print flowchart:
                  (bitmap  graphics)
                  
     .. cmdoption:: --just_print, -n
+        :noindex:
     
         Print a description of the jobs that would be
         executed, but do not execute them.

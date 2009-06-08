@@ -79,8 +79,8 @@ Each python function can be called in parallel to run multiple **jobs**.
    "
    "**@posttask**
 
-   - Call function after task  
-   - ``touch_file`` shorthand
+   - Calls function after task completes
+   - *touch_file* shorthand
    ", "
    @\ **posttask**\ ( ``signal_task_completion_function`` )
 

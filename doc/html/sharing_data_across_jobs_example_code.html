@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>simpler – A simple example &mdash; ruffus v1.04 documentation</title>
+    <title>simpler_with_shared_logging – How to share data across jobs &mdash; ruffus v1.04 documentation</title>
     <link rel="stylesheet" href="_static/ruffus.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -20,8 +20,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="ruffus v1.04 documentation" href="index.html" />
-    <link rel="next" title="intermediate_example – A real-world example" href="intermediate_example_code.html" />
-    <link rel="prev" title="How to share data across jobs" href="sharing_data_across_jobs_example.html" /> 
+    <link rel="next" title="ruffus.Task" href="task.html" />
+    <link rel="prev" title="complicated_example – A more ambitious real-world example" href="complicated_example_code.html" /> 
   </head>
   <body>
     <div class="related">
@@ -34,10 +34,10 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="intermediate_example_code.html" title="intermediate_example – A real-world example"
+          <a href="task.html" title="ruffus.Task"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="sharing_data_across_jobs_example.html" title="How to share data across jobs"
+          <a href="complicated_example_code.html" title="complicated_example – A more ambitious real-world example"
              accesskey="P">previous</a> |</li>
         Ruffus v. 1.04          :   
         <li><a href="index.html">Home</a> | </li>
@@ -56,15 +56,25 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="simpler-a-simple-example">
-<span id="code-for-simpler-example"></span><h1><tt class="xref docutils literal"><span class="pre">simpler</span></tt> &#8211; A simple example<a class="headerlink" href="#simpler-a-simple-example" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="simpler-with-shared-logging-how-to-share-data-across-jobs">
+<span id="code-for-sharing-data-across-jobs-example-rst"></span><h1><tt class="xref docutils literal"><span class="pre">simpler_with_shared_logging</span></tt> &#8211; How to share data across jobs<a class="headerlink" href="#simpler-with-shared-logging-how-to-share-data-across-jobs" title="Permalink to this headline">¶</a></h1>
 <blockquote>
-See <a class="reference external" href="Tutorial.html#simple-example"><em>here</em></a> for a run through of this example.</blockquote>
+See <a class="reference external" href="sharing_data_across_jobs_example.html#sharing-data-across-jobs-example"><em>here</em></a> for a run through of this example.</blockquote>
 <p>The code for this example is in the test subdirectory of the ruffus module:</p>
 <blockquote>
-<tt class="docutils literal"><span class="pre">ruffus/test/simpler.py</span></tt></blockquote>
+<tt class="docutils literal"><span class="pre">ruffus/test/simpler_with_shared_logging.py</span></tt></blockquote>
+<div class="section" id="the-shared-data">
+<span id="index-87"></span><h2>The shared data:<a class="headerlink" href="#the-shared-data" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<dl class="cmdoption">
+<dt>
+<tt class="descname">--log_file_name</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">-L</tt><tt class="descclassname"></tt></dt>
+<dd>shared log file location</dd></dl>
+
+</blockquote>
+</div>
 <div class="section" id="programme-options">
-<span id="index-80"></span><h2>Programme options:<a class="headerlink" href="#programme-options" title="Permalink to this headline">¶</a></h2>
+<h2>Programme options:<a class="headerlink" href="#programme-options" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <dl class="cmdoption">
 <dt>
@@ -160,7 +170,7 @@ executed, but do not execute them.</dd></dl>
 </div>
 <div class="section" id="code">
 <h2>Code:<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env python2.5</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    test_tasks.py</span>
@@ -182,6 +192,7 @@ executed, but do not execute them.</dd></dl>
 
 <span class="c"># add self to search path for testing</span>
 <span class="n">exe_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mf">0</span><span class="p">]))[</span><span class="mf">0</span><span class="p">]</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mf">0</span><span class="p">,</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">exe_path</span><span class="p">,</span><span class="s">&quot;..&quot;</span><span class="p">,</span> <span class="s">&quot;..&quot;</span><span class="p">)))</span>
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="n">module_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mf">0</span><span class="p">])[</span><span class="mf">1</span><span class="p">]</span>
     <span class="n">module_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">module_name</span><span class="p">)[</span><span class="mf">0</span><span class="p">];</span>
@@ -205,7 +216,7 @@ executed, but do not execute them.</dd></dl>
                   <span class="nb">type</span><span class="o">=</span><span class="s">&quot;string&quot;</span><span class="p">,</span>
                   <span class="n">help</span><span class="o">=</span><span class="s">&quot;Pipeline task(s) which will be included even if they are up to date.&quot;</span><span class="p">)</span>
 <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s">&quot;-j&quot;</span><span class="p">,</span> <span class="s">&quot;--jobs&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s">&quot;jobs&quot;</span><span class="p">,</span>
-                  <span class="n">default</span><span class="o">=</span><span class="mf">5</span><span class="p">,</span>
+                  <span class="n">default</span><span class="o">=</span><span class="mf">1</span><span class="p">,</span>
                   <span class="n">metavar</span><span class="o">=</span><span class="s">&quot;jobs&quot;</span><span class="p">,</span> 
                   <span class="nb">type</span><span class="o">=</span><span class="s">&quot;int&quot;</span><span class="p">,</span>
                   <span class="n">help</span><span class="o">=</span><span class="s">&quot;Specifies  the number of jobs (commands) to run simultaneously.&quot;</span><span class="p">)</span>
@@ -213,7 +224,7 @@ executed, but do not execute them.</dd></dl>
                   <span class="n">action</span><span class="o">=</span><span class="s">&quot;store_true&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                   <span class="n">help</span><span class="o">=</span><span class="s">&quot;Do not echo to shell but only print to log.&quot;</span><span class="p">)</span>
 <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s">&quot;-d&quot;</span><span class="p">,</span> <span class="s">&quot;--dependency&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s">&quot;dependency_file&quot;</span><span class="p">,</span>
-                  <span class="n">default</span><span class="o">=</span><span class="s">&quot;simple.svg&quot;</span><span class="p">,</span>
+                  <span class="c">#default=&quot;simple.svg&quot;,</span>
                   <span class="n">metavar</span><span class="o">=</span><span class="s">&quot;FILE&quot;</span><span class="p">,</span> 
                   <span class="nb">type</span><span class="o">=</span><span class="s">&quot;string&quot;</span><span class="p">,</span>
                   <span class="n">help</span><span class="o">=</span><span class="s">&quot;Print a dependency graph of the pipeline that would be executed &quot;</span>
@@ -240,6 +251,11 @@ executed, but do not execute them.</dd></dl>
                     <span class="n">action</span><span class="o">=</span><span class="s">&quot;store_true&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                     <span class="n">help</span><span class="o">=</span><span class="s">&quot;Draw horizontal dependency graph.&quot;</span><span class="p">)</span>
 
+<span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s">&quot;-L&quot;</span><span class="p">,</span> <span class="s">&quot;--log_file_name&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s">&quot;log_file_name&quot;</span><span class="p">,</span>
+                    <span class="n">default</span><span class="o">=</span><span class="s">&quot;/tmp/simple.log&quot;</span><span class="p">,</span>
+                    <span class="n">metavar</span><span class="o">=</span><span class="s">&quot;FILE&quot;</span><span class="p">,</span> 
+                    <span class="nb">type</span><span class="o">=</span><span class="s">&quot;string&quot;</span><span class="p">,</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s">&quot;log file.&quot;</span><span class="p">)</span>
 <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span>  
                 <span class="p">]</span>
 
@@ -259,13 +275,103 @@ executed, but do not execute them.</dd></dl>
 <span class="kn">import</span> <span class="nn">StringIO</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">operator</span>
-<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span><span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 
 <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">exe_path</span><span class="p">,</span><span class="s">&quot;..&quot;</span><span class="p">,</span> <span class="s">&quot;..&quot;</span><span class="p">)))</span>
 <span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">import</span> <span class="nn">json</span>
 
+<span class="c"># use simplejson in place of json for python &lt; 2.6</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">json</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">simplejson</span>
+    <span class="n">json</span> <span class="o">=</span> <span class="n">simplejson</span>
+
+    
+<span class="c">#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888</span>
+
+<span class="c">#   Shared logging</span>
+
+
+<span class="c">#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888</span>
+
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">import</span> <span class="nn">multiprocessing.managers</span>
+
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">logging.handlers</span>
+
+
+
+<span class="c">#</span>
+<span class="c">#   setup_logger </span>
+<span class="c">#</span>
+<span class="k">def</span> <span class="nf">setup_shared_logger</span><span class="p">(</span><span class="n">LOGGING_LEVEL</span><span class="p">,</span> <span class="n">LOG_FILENAME</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to setup logger shared between all processes</span>
+<span class="sd">    The logger object will be created within a separate (special) process </span>
+<span class="sd">        run by multiprocessing.BaseManager.start()</span>
+
+<span class="sd">    See &quot;LoggingManager&quot; below</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c">#</span>
+    <span class="c">#   Log file name with logger level</span>
+    <span class="c"># </span>
+    <span class="n">my_ruffus_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;simpler_example_logger&#39;</span><span class="p">)</span>
+    <span class="n">my_ruffus_logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LOGGING_LEVEL</span><span class="p">)</span>
+
+    <span class="c"># </span>
+    <span class="c">#   Add handler to print to file, with the specified format  </span>
+    <span class="c">#</span>
+    <span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">RotatingFileHandler</span><span class="p">(</span>
+                  <span class="n">LOG_FILENAME</span><span class="p">,</span> <span class="n">maxBytes</span><span class="o">=</span><span class="mf">100000</span><span class="p">,</span> <span class="n">backupCount</span><span class="o">=</span><span class="mf">5</span><span class="p">)</span>
+    <span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%(asctime)s</span><span class="s"> - </span><span class="si">%(name)s</span><span class="s"> - </span><span class="si">%(levelname)6s</span><span class="s"> - </span><span class="si">%(message)s</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+    <span class="n">my_ruffus_logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+
+
+    <span class="c">#</span>
+    <span class="c">#   This log object will be wrapped in proxy </span>
+    <span class="c">#</span>
+    <span class="k">return</span> <span class="n">my_ruffus_logger</span>
+
+
+<span class="c">#</span>
+<span class="c">#   Proxy object for logging</span>
+<span class="c">#       Logging messages will be marshalled (forwarded) to the process where the </span>
+<span class="c">#       shared log lives</span>
+<span class="c">#</span>
+<span class="k">class</span> <span class="nc">LoggerProxy</span><span class="p">(</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">BaseProxy</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callmethod</span><span class="p">(</span><span class="s">&#39;debug&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">message</span><span class="p">])</span>
+    <span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callmethod</span><span class="p">(</span><span class="s">&#39;info&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">message</span><span class="p">])</span>
+    <span class="k">def</span> <span class="nf">__str__</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;Logging proxy&quot;</span>
+
+
+<span class="c"># </span>
+<span class="c">#   Register the setup_logger function as a proxy for setup_logger</span>
+<span class="c">#   </span>
+<span class="c">#   We use SyncManager as a base class so we can get a lock proxy for synchronising </span>
+<span class="c">#       logging later on</span>
+<span class="c">#</span>
+<span class="k">class</span> <span class="nc">LoggingManager</span><span class="p">(</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">SyncManager</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Logging manager sets up its own process and will create the real Log object there</span>
+<span class="sd">    We refer to this (real) log via proxies</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+<span class="n">LoggingManager</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">&#39;setup_logger&#39;</span><span class="p">,</span> <span class="n">setup_shared_logger</span><span class="p">,</span> <span class="n">proxytype</span><span class="o">=</span><span class="n">LoggerProxy</span><span class="p">,</span> <span class="n">exposed</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;info&#39;</span><span class="p">,</span> <span class="s">&#39;debug&#39;</span><span class="p">,</span> <span class="s">&#39;__str__&#39;</span><span class="p">))</span>
+
+
+
+
+    
+    
 <span class="c">#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888</span>
 
 <span class="c">#   Functions</span>
@@ -281,16 +387,13 @@ executed, but do not execute them.</dd></dl>
         <span class="k">for</span> <span class="n">job_param</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
             <span class="k">yield</span> <span class="n">job_param</span>
     <span class="k">return</span> <span class="n">cust_func</span>
-    
-    
+
 <span class="k">def</span> <span class="nf">is_job_uptodate</span> <span class="p">(</span><span class="n">infiles</span><span class="p">,</span> <span class="n">outfiles</span><span class="p">,</span> <span class="o">*</span><span class="n">extra_params</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    assumes first two parameters are files, checks if they are up to date</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">task</span><span class="o">.</span><span class="n">needs_update_check_modify_time</span> <span class="p">(</span><span class="n">infiles</span><span class="p">,</span> <span class="n">outfiles</span><span class="p">,</span> <span class="o">*</span><span class="n">extra_params</span><span class="p">)</span>
-    
-    
-    
+
 <span class="k">def</span> <span class="nf">test_post_task_function</span> <span class="p">():</span>
     <span class="k">print</span> <span class="s">&quot;Hooray&quot;</span>
 
@@ -300,12 +403,19 @@ executed, but do not execute them.</dd></dl>
 <span class="sd">    cat input files content to output files</span>
 <span class="sd">        after writing out job parameters</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    
     <span class="c"># dump parameters</span>
-    <span class="n">params</span> <span class="o">=</span> <span class="p">(</span><span class="n">infiles</span><span class="p">,</span> <span class="n">outfiles</span><span class="p">)</span> <span class="o">+</span> <span class="n">extra_params</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;    job = </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">(</span><span class="n">infiles</span><span class="p">,</span> <span class="n">outfiles</span><span class="p">)</span><span class="c"># + extra_params[0:-3]</span>
+
+    <span class="n">logger_proxy</span><span class="p">,</span> <span class="n">logging_mutex</span> <span class="o">=</span> <span class="n">extra_params</span>
+    <span class="k">with</span> <span class="n">logging_mutex</span><span class="p">:</span>
+        <span class="n">logger_proxy</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;job = </span><span class="si">%s</span><span class="s">, process name = </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> 
+                            <span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">params</span><span class="p">),</span>
+                                <span class="n">multiprocessing</span><span class="o">.</span><span class="n">current_process</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
 
     
-        
+    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;    job = </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+    
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">infiles</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">infiles</span> <span class="o">=</span> <span class="p">[</span><span class="n">infiles</span><span class="p">]</span>
     <span class="k">elif</span> <span class="n">infiles</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
@@ -321,6 +431,7 @@ executed, but do not execute them.</dd></dl>
         <span class="nb">open</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output_text</span><span class="p">)</span>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1</span><span class="p">)</span>
 
+    
 
 <span class="c">#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888</span>
 
@@ -332,12 +443,35 @@ executed, but do not execute them.</dd></dl>
 
 
 
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
 
-<span class="c"># get help string</span>
-<span class="n">f</span> <span class="o">=</span><span class="n">StringIO</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
-<span class="n">parser</span><span class="o">.</span><span class="n">print_help</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-<span class="n">helpstr</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
-<span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">remaining_args</span><span class="p">)</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="c"># get help string</span>
+    <span class="n">f</span> <span class="o">=</span><span class="n">StringIO</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">print_help</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">helpstr</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+    
+    <span class="c">#</span>
+    <span class="c">#   Get options </span>
+    <span class="c">#</span>
+    <span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">remaining_args</span><span class="p">)</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+
+    <span class="c">#</span>
+    <span class="c">#   make shared log and proxy </span>
+    <span class="c">#</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">LoggingManager</span><span class="p">()</span>
+    <span class="n">manager</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">&#39;setup_logger&#39;</span><span class="p">,</span> <span class="n">setup_shared_logger</span><span class="p">,</span> <span class="n">proxytype</span><span class="o">=</span><span class="n">LoggerProxy</span><span class="p">,</span> <span class="n">exposed</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;info&#39;</span><span class="p">,</span> <span class="s">&#39;debug&#39;</span><span class="p">))</span>
+    
+    <span class="n">manager</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">LOG_FILENAME</span>  <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">log_file_name</span>
+    <span class="n">LOGGING_LEVEL</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span>
+    <span class="n">logger_proxy</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">setup_logger</span><span class="p">(</span><span class="n">LOGGING_LEVEL</span><span class="p">,</span> <span class="n">LOG_FILENAME</span><span class="p">)</span>
+    
+    <span class="c">#</span>
+    <span class="c">#   make sure we are not logging at the same time in different processes</span>
+    <span class="c">#</span>
+    <span class="n">logging_mutex</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+
 
 
 
@@ -351,10 +485,13 @@ executed, but do not execute them.</dd></dl>
 <span class="c">#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888</span>
 
 
+
+
+
 <span class="c">#</span>
 <span class="c">#    task1</span>
 <span class="c">#</span>
-<span class="nd">@files</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s">&#39;a.1&#39;</span><span class="p">)</span>
+<span class="nd">@files</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s">&#39;a.1&#39;</span><span class="p">,</span> <span class="n">logger_proxy</span><span class="p">,</span> <span class="n">logging_mutex</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">task1</span><span class="p">(</span><span class="n">infiles</span><span class="p">,</span> <span class="n">outfiles</span><span class="p">,</span> <span class="o">*</span><span class="n">extra_params</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    First task</span>
@@ -366,7 +503,7 @@ executed, but do not execute them.</dd></dl>
 <span class="c">#</span>
 <span class="c">#    task2</span>
 <span class="c">#</span>
-<span class="nd">@files_re</span><span class="p">(</span><span class="s">&#39;*.1&#39;</span><span class="p">,</span> <span class="s">&#39;(.*).1&#39;</span><span class="p">,</span> <span class="s">r&#39;\1.1&#39;</span><span class="p">,</span> <span class="s">r&#39;\1.2&#39;</span><span class="p">)</span>
+<span class="nd">@files_re</span><span class="p">(</span><span class="s">&#39;*.1&#39;</span><span class="p">,</span> <span class="s">&#39;(.*).1&#39;</span><span class="p">,</span> <span class="s">r&#39;\1.1&#39;</span><span class="p">,</span> <span class="s">r&#39;\1.2&#39;</span><span class="p">,</span> <span class="n">logger_proxy</span><span class="p">,</span> <span class="n">logging_mutex</span><span class="p">)</span>
 <span class="nd">@follows</span><span class="p">(</span><span class="n">task1</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">task2</span><span class="p">(</span><span class="n">infiles</span><span class="p">,</span> <span class="n">outfiles</span><span class="p">,</span> <span class="o">*</span><span class="n">extra_params</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -379,7 +516,7 @@ executed, but do not execute them.</dd></dl>
 <span class="c">#</span>
 <span class="c">#    task3</span>
 <span class="c">#</span>
-<span class="nd">@files_re</span><span class="p">(</span><span class="s">&#39;*.1&#39;</span><span class="p">,</span> <span class="s">&#39;(.*).1&#39;</span><span class="p">,</span> <span class="s">r&#39;\1.2&#39;</span><span class="p">,</span> <span class="s">r&#39;\1.3&#39;</span><span class="p">)</span>
+<span class="nd">@files_re</span><span class="p">(</span><span class="s">&#39;*.1&#39;</span><span class="p">,</span> <span class="s">&#39;(.*).1&#39;</span><span class="p">,</span> <span class="s">r&#39;\1.2&#39;</span><span class="p">,</span> <span class="s">r&#39;\1.3&#39;</span><span class="p">,</span> <span class="n">logger_proxy</span><span class="p">,</span> <span class="n">logging_mutex</span><span class="p">)</span>
 <span class="nd">@follows</span><span class="p">(</span><span class="n">task2</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">task3</span><span class="p">(</span><span class="n">infiles</span><span class="p">,</span> <span class="n">outfiles</span><span class="p">,</span> <span class="o">*</span><span class="n">extra_params</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -392,7 +529,7 @@ executed, but do not execute them.</dd></dl>
 <span class="c">#</span>
 <span class="c">#    task4</span>
 <span class="c">#</span>
-<span class="nd">@files_re</span><span class="p">(</span><span class="s">&#39;*.1&#39;</span><span class="p">,</span> <span class="s">&#39;(.*).1&#39;</span><span class="p">,</span> <span class="s">r&#39;\1.3&#39;</span><span class="p">,</span> <span class="s">r&#39;\1.4&#39;</span><span class="p">)</span>
+<span class="nd">@files_re</span><span class="p">(</span><span class="s">&#39;*.1&#39;</span><span class="p">,</span> <span class="s">&#39;(.*).1&#39;</span><span class="p">,</span> <span class="s">r&#39;\1.3&#39;</span><span class="p">,</span> <span class="s">r&#39;\1.4&#39;</span><span class="p">,</span> <span class="n">logger_proxy</span><span class="p">,</span> <span class="n">logging_mutex</span><span class="p">)</span>
 <span class="nd">@follows</span><span class="p">(</span><span class="n">task3</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">task4</span><span class="p">(</span><span class="n">infiles</span><span class="p">,</span> <span class="n">outfiles</span><span class="p">,</span> <span class="o">*</span><span class="n">extra_params</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -400,26 +537,31 @@ executed, but do not execute them.</dd></dl>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">test_job_io</span><span class="p">(</span><span class="n">infiles</span><span class="p">,</span> <span class="n">outfiles</span><span class="p">,</span> <span class="n">extra_params</span><span class="p">)</span>
 
-
-
+<span class="c"># </span>
+<span class="c">#   Necessary to protect the &quot;entry point&quot; of the program under windows.</span>
+<span class="c">#       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming</span>
+<span class="c">#</span>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">just_print</span><span class="p">:</span>
+            <span class="n">pipeline_printout</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">target_tasks</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">forced_tasks</span><span class="p">,</span> 
+                                <span class="n">long_winded</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> 
+                                <span class="n">gnu_make_maximal_rebuild_mode</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">options</span><span class="o">.</span><span class="n">minimal_rebuild_mode</span><span class="p">)</span>
         
-<span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">just_print</span><span class="p">:</span>
-    <span class="n">pipeline_printout</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">target_tasks</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">forced_tasks</span><span class="p">,</span> 
-                        <span class="n">long_winded</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> 
-                        <span class="n">gnu_make_maximal_rebuild_mode</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">options</span><span class="o">.</span><span class="n">minimal_rebuild_mode</span><span class="p">)</span>
-
-<span class="k">elif</span> <span class="n">options</span><span class="o">.</span><span class="n">dependency_file</span><span class="p">:</span>
-    <span class="n">pipeline_printout_graph</span> <span class="p">(</span>     <span class="nb">open</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">dependency_file</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">),</span>
-                         <span class="n">options</span><span class="o">.</span><span class="n">dependency_graph_format</span><span class="p">,</span>
-                         <span class="n">options</span><span class="o">.</span><span class="n">target_tasks</span><span class="p">,</span> 
-                         <span class="n">options</span><span class="o">.</span><span class="n">forced_tasks</span><span class="p">,</span>
-                         <span class="n">draw_vertically</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">options</span><span class="o">.</span><span class="n">draw_horizontally</span><span class="p">,</span>
-                         <span class="n">gnu_make_maximal_rebuild_mode</span>  <span class="o">=</span> <span class="ow">not</span> <span class="n">options</span><span class="o">.</span><span class="n">minimal_rebuild_mode</span><span class="p">,</span>
-                         <span class="n">no_key_legend</span>  <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">no_key_legend_in_graph</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>    
-    <span class="n">pipeline_run</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">target_tasks</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">forced_tasks</span><span class="p">,</span> <span class="n">multiprocess</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">jobs</span><span class="p">,</span> 
-                    <span class="n">gnu_make_maximal_rebuild_mode</span>  <span class="o">=</span> <span class="ow">not</span> <span class="n">options</span><span class="o">.</span><span class="n">minimal_rebuild_mode</span><span class="p">)</span>
-    
+        <span class="k">elif</span> <span class="n">options</span><span class="o">.</span><span class="n">dependency_file</span><span class="p">:</span>
+            <span class="n">pipeline_printout_graph</span> <span class="p">(</span>     <span class="nb">open</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">dependency_file</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">),</span>
+                                 <span class="n">options</span><span class="o">.</span><span class="n">dependency_graph_format</span><span class="p">,</span>
+                                 <span class="n">options</span><span class="o">.</span><span class="n">target_tasks</span><span class="p">,</span> 
+                                 <span class="n">options</span><span class="o">.</span><span class="n">forced_tasks</span><span class="p">,</span>
+                                 <span class="n">draw_vertically</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">options</span><span class="o">.</span><span class="n">draw_horizontally</span><span class="p">,</span>
+                                 <span class="n">gnu_make_maximal_rebuild_mode</span>  <span class="o">=</span> <span class="ow">not</span> <span class="n">options</span><span class="o">.</span><span class="n">minimal_rebuild_mode</span><span class="p">,</span>
+                                 <span class="n">no_key_legend</span>  <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">no_key_legend_in_graph</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>    
+            <span class="n">pipeline_run</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">target_tasks</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">forced_tasks</span><span class="p">,</span> <span class="n">multiprocess</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">jobs</span><span class="p">,</span> 
+                            <span class="n">gnu_make_maximal_rebuild_mode</span>  <span class="o">=</span> <span class="ow">not</span> <span class="n">options</span><span class="o">.</span><span class="n">minimal_rebuild_mode</span><span class="p">,</span>
+                            <span class="n">logger</span> <span class="o">=</span> <span class="n">logger_proxy</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span>
 </pre></div>
 </div>
 </div>
@@ -433,7 +575,8 @@ executed, but do not execute them.</dd></dl>
         <div class="sphinxsidebarwrapper">
             <h3><a href="contents.html">Table Of Contents</a></h3>
             <ul>
-<li><a class="reference external" href=""><tt class="docutils literal"><span class="pre">simpler</span></tt> &#8211; A simple example</a><ul>
+<li><a class="reference external" href=""><tt class="docutils literal"><span class="pre">simpler_with_shared_logging</span></tt> &#8211; How to share data across jobs</a><ul>
+<li><a class="reference external" href="#the-shared-data">The shared data:</a></li>
 <li><a class="reference external" href="#programme-options">Programme options:</a><ul>
 <li><a class="reference external" href="#to-specify-tasks">To specify tasks:</a></li>
 <li><a class="reference external" href="#to-print-flowchart">To print flowchart:</a></li>
@@ -445,14 +588,14 @@ executed, but do not execute them.</dd></dl>
 </ul>
 
             <h4>Previous topic</h4>
-            <p class="topless"><a href="sharing_data_across_jobs_example.html"
-                                  title="previous chapter">How to share data across jobs</a></p>
+            <p class="topless"><a href="complicated_example_code.html"
+                                  title="previous chapter"><tt class="docutils literal"><span class="pre">complicated_example</span></tt> &#8211; A more ambitious real-world example</a></p>
             <h4>Next topic</h4>
-            <p class="topless"><a href="intermediate_example_code.html"
-                                  title="next chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">intermediate_example</span></tt> &#8211; A real-world example</a></p>
+            <p class="topless"><a href="task.html"
+                                  title="next chapter">ruffus.Task</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
-              <li><a href="_sources/simpler.txt"
+              <li><a href="_sources/sharing_data_across_jobs_example_code.txt"
                      rel="nofollow">Show Source</a></li>
             </ul>
           <div id="searchbox" style="display: none">
@@ -482,10 +625,10 @@ executed, but do not execute them.</dd></dl>
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="intermediate_example_code.html" title="intermediate_example – A real-world example"
+          <a href="task.html" title="ruffus.Task"
              >next</a> |</li>
         <li class="right" >
-          <a href="sharing_data_across_jobs_example.html" title="How to share data across jobs"
+          <a href="complicated_example_code.html" title="complicated_example – A more ambitious real-world example"
              >previous</a> |</li>
         Ruffus v. 1.04          :   
         <li><a href="index.html">Home</a> | </li>

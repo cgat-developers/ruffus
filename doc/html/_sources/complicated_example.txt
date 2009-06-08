@@ -4,6 +4,9 @@
 A more ambitious real-world example
 ################################################
 
+.. index:: 
+    single: Example Programme; 3. Ambitious
+
 *****************************************
 Python Code
 *****************************************

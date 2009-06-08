@@ -30,14 +30,21 @@ Contents:
    cheatsheet.rst
 
    Design.rst
-   Tutorial.rst
-
-   intermediate_example.rst
-   complicated_example.rst
-   
    Glossary.rst
    FAQ.rst
-   Todo.rst
+   Future plans <Todo>
+
+=====================
+Detailed Examples:
+=====================
+.. toctree::
+   :maxdepth: 2
+
+   Tutorial.rst
+   intermediate_example.rst
+   complicated_example.rst
+   sharing_data_across_jobs_example.rst
+   
    
 =====================
 Example code:
@@ -49,6 +56,7 @@ Example code:
    simpler.rst
    intermediate_example_code.rst
    complicated_example_code.rst
+   sharing_data_across_jobs_example_code.rst
     
 =====================
 Modules:

@@ -1,11 +1,10 @@
-.. _code-for-simpler-example:
-
+.. _code-for-sharing-data-across-jobs-example.rst:
 
 #######################################################################
-:mod:`simpler` -- A simple example
+:mod:`simpler_with_shared_logging` -- How to share data across jobs
 #######################################################################
 
-    See :ref:`here <simple-example>` for a run through of this example.
+    See :ref:`here <sharing-data-across-jobs-example>` for a run through of this example.
 
 
    
@@ -15,13 +14,22 @@
 
 The code for this example is in the test subdirectory of the ruffus module:
 
-    ``ruffus/test/simpler.py``
+    ``ruffus/test/simpler_with_shared_logging.py``
 
 
-.. program:: simpler.py
+.. program:: ruffus/test/simpler_with_shared_logging.py
 
 .. index:: 
-    single: Example Programme Code; 1. Simple
+    single: Example Programme Code; 4. Sharing data across parallel jobs
+
+****************************
+The shared data:
+****************************
+    .. cmdoption:: --log_file_name, -L
+        :noindex:
+    
+        shared log file location
+
 
 ****************************
 Programme options:
@@ -31,7 +39,6 @@ Programme options:
         :noindex:
     
         show help message
-
 
 =================
 To specify tasks:
@@ -121,5 +128,5 @@ To print flowchart:
 ****************************
 Code:
 ****************************
-.. literalinclude:: _static/example_scripts/simpler.py
+.. literalinclude:: _static/example_scripts/simpler_with_shared_logging.py
 
