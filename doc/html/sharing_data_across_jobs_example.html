@@ -63,11 +63,11 @@
 <p>The full code is available <a class="reference external" href="sharing_data_across_jobs_example_code.html#code-for-sharing-data-across-jobs-example-rst"><em>here</em></a>.</p>
 </div>
 <div class="section" id="background">
-<span id="index-88"></span><h2>Background:<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
+<span id="index-262"></span><h2>Background:<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<p>Each Ruffus job runs in a separate process.
+<p>Each <em>Ruffus</em> job runs in a separate process.
 To synchronise across multiple jobs requires passing data across processes.</p>
-<p>This is generally to be avoided because</p>
+<p><a class="reference external" href="http://docs.python.org/library/multiprocessing.html#programming-guidelines">This is generally to be avoided</a> because</p>
 <ol class="arabic simple">
 <li>Synchronising across parallel tasks is inherently tricky</li>
 <li>Passing large amounts of data across processes is inefficient</li>
@@ -141,7 +141,7 @@ real (shared) object which is owned by the Manager Server Process:</p>
 </pre></div>
 </div>
 <p>In this case, we are only interested in two function calls to forward: <cite>debug</cite> and
-<cite>info</cite>. We also override the <cite>__str__</cite> function so that ruffus output looks nicer.</p>
+<cite>info</cite>. We also override the <cite>__str__</cite> function so that <em>ruffus</em> output looks nicer.</p>
 </blockquote>
 </div>
 <div class="section" id="register-proxy-and-shared-object-with-manager-server">
@@ -198,7 +198,7 @@ log.</p>
 </blockquote>
 </div>
 <div class="section" id="run-ruffus">
-<h3>Run ruffus<a class="headerlink" href="#run-ruffus" title="Permalink to this headline">¶</a></h3>
+<h3>Run <em>ruffus</em><a class="headerlink" href="#run-ruffus" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <p>The shared proxy can be passed to the task function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="nd">@files</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s">&#39;a.1&#39;</span><span class="p">,</span> <span class="n">logger_proxy</span><span class="p">,</span> <span class="n">logging_mutex</span><span class="p">)</span>
@@ -236,7 +236,7 @@ log.</p>
 <li><a class="reference external" href="#create-proxies-to-forward-calls-to-the-shared-object">Create proxies to forward calls to the shared object</a></li>
 <li><a class="reference external" href="#register-proxy-and-shared-object-with-manager-server">Register proxy and shared object with Manager Server</a></li>
 <li><a class="reference external" href="#create-manager-server-process">Create Manager Server Process</a></li>
-<li><a class="reference external" href="#run-ruffus">Run ruffus</a></li>
+<li><a class="reference external" href="#run-ruffus">Run <em>ruffus</em></a></li>
 </ul>
 </li>
 </ul>
@@ -248,7 +248,7 @@ log.</p>
                                   title="previous chapter">A more ambitious real-world example</a></p>
             <h4>Next topic</h4>
             <p class="topless"><a href="simpler.html"
-                                  title="next chapter"><tt class="docutils literal"><span class="pre">simpler</span></tt> &#8211; A simple example</a></p>
+                                  title="next chapter"><tt class="docutils literal docutils literal"><span class="pre">simpler</span></tt> &#8211; A simple example</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/sharing_data_across_jobs_example.txt"

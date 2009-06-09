@@ -38,7 +38,7 @@ The easy way
         wget peak.telecommunity.com/dist/ez_setup.py
         sudo python ez_setup.py
 
-    #) Install Ruffus automatically::
+    #) Install *Ruffus* automatically::
     
         easy_install -U ruffus
 
@@ -63,7 +63,7 @@ The most up-to-date code:
 
 
 =============================
-Whence the name "Ruffus"?
+Whence the name *Ruffus*?
 =============================
 
 .. image:: images/cyl_ruffus.jpg
@@ -74,7 +74,7 @@ which can be found in `Hong Kong <http://www.discoverhongkong.com/eng/index.html
 Be careful not to step on one when running down country park lanes at full speed 
 in Hong Kong: this snake is a `rare breed <http://www.hkras.org/eng/info/hkspp.htm>`_!
 
-Ruffus is a shy creature, and pretends to be a cobra by putting up its red tail and ducking its
+*Ruffus* is a shy creature, and pretends to be a cobra by putting up its red tail and ducking its
 head in its coils when startled. It does most of its work at night and sleeps during the day:
 typical of many python programmers!
 

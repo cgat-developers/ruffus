@@ -8,7 +8,7 @@ Glossary
     task
         A stage in a computational pipeline.
 
-        Each **task** in ruffus is represented by a python function.
+        Each **task** in *ruffus* is represented by a python function.
     
         For example, a task might be to find the products of a sets of two numbers::
 
@@ -20,7 +20,7 @@ Glossary
         Any number of operations which can be run in parallel and make up
         the work in a stage of a computional pipeline.
         
-        Each **task** in ruffus is a separate call to the **task** function.
+        Each **task** in *ruffus* is a separate call to the **task** function.
         
         For example, if a task is to find products of numbers, each of these will be a separate job.
         

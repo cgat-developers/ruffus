@@ -16,7 +16,7 @@ The full code is available :ref:`here <code-for-complicated-pipeline-example>`.
 Understanding newly discovered genes
 *****************************************
 
-This is the sort of problem that motivated the design of the ruffus module.
+This is the sort of problem that motivated the design of the *ruffus* module.
 
 =======================================
 Background:
@@ -54,7 +54,7 @@ Aim:
     tasks. We just have to break them up into digestible pieces running in 
     parallel on our cheap computational clusters.
 
-    This is where ruffus can come in.
+    This is where *ruffus* can come in.
      
 =======================================
 Conceptual Flow chart: 
@@ -71,7 +71,7 @@ Conceptual Flow chart:
     .. image:: images/complex_conceptual.jpg
  
     This is a simple list of sequential tasks which are conceptually easy (for genome
-    scientists!) to grasp, and should be straightforward to code using ruffus.
+    scientists!) to grasp, and should be straightforward to code using *ruffus*.
  
 =======================================
 Flow chart of file dependencies: 
@@ -107,7 +107,7 @@ Flow chart of file dependencies:
 
 
 ***************************************
-Ruffus Flow chart
+*Ruffus* Flow chart
 ***************************************
 
     Our pipeline flow chart is built around these 9 steps: 
@@ -311,7 +311,7 @@ Conclusions
 ===================================================
 
 This may seem a long-winded example but without
-ruffus to help abstract away some of the complexity, the
+*ruffus* to help abstract away some of the complexity, the
 code would have been quite unmanageable.
 
 
