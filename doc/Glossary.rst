@@ -1,6 +1,7 @@
 ****************
 Glossary
 ****************
+.. _Glossary:
 
 .. glossary::
     
