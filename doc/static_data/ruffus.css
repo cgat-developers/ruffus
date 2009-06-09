@@ -46,7 +46,8 @@ div.related {
 }
 
 div.related a {
-    color: #ffffff;
+    font-size: 120%;
+    color: #c0c0FF;
 }
 
 div.sphinxsidebar {
@@ -83,6 +84,7 @@ div.sphinxsidebar p.topless {
 }
 
 div.sphinxsidebar ul {
+    font-size: 100%;
     margin: 10px;
     padding: 0;
     color: #ffffff;
