@@ -3,7 +3,6 @@ Glossary
 ****************
 
 .. glossary::
-    :sorted:
     
     task
         A stage in a computational pipeline.
