@@ -90,6 +90,8 @@ Displaying
     
 .. ???
 
+.. _follows-out-of-order:
+
 =====================
 More to **@follows**
 =====================
@@ -191,7 +193,7 @@ More to **@follows**
 Multi Processing
 =====================
 
-    Ruffus uses python `multiprocessing <http://docs.python.org/library/multiprocessing.html>`_ to run
+    *Ruffus* uses python `multiprocessing <http://docs.python.org/library/multiprocessing.html>`_ to run
     each job in a separate process.
     
     This means that jobs do *not* necessarily complete in the order of the defined parameters.
@@ -305,13 +307,13 @@ Interrupting the pipeline
 =====================
 Multiple Errors
 =====================
-    For any task where exceptions are thrown, Ruffus will continue executing until
+    For any task where exceptions are thrown, *Ruffus* will continue executing until
     the number of exceptions is equal to the number of concurrent jobs (``multiprocess``) set in
     ``pipeline_run``. This seems a fair tradeoff between being able to gather detailed
     error information for running jobs, and not wasting too much time for a task
     that is going to fail anyway.
     
-    Ruffus always exits concurrent task operations as soon as possible if the
+    *Ruffus* always exits concurrent task operations as soon as possible if the
     pipeline is interrupted by a job returning false (see :ref:`previous section <interrupting>`).
 
 
@@ -396,7 +398,7 @@ Skip jobs which are up to date
     and output files of a job. The job will only be rerun if the input file has changed
     since the output file was produced.
     
-    Ruffus treats the first two parameters of each job as the input and output files
+    *Ruffus* treats the first two parameters of each job as the input and output files
     and checks timestamps for you.
     
     From the command prompt, make our starting files::
@@ -533,7 +535,7 @@ Automatic dependency checking
 Running all out-of-date tasks and dependents
 =============================================
 
-    By default, ruffus will 
+    By default, *ruffus* will 
     
         * build a flow chart,
         * look upstream (among the antecedents) of the specified target(s),
@@ -542,12 +544,12 @@ Running all out-of-date tasks and dependents
     
         .. _checking-multiple-times:
     
-        This means that ruffus *may* ask any task if their jobs are out of date more than once:
+        This means that *ruffus* *may* ask any task if their jobs are out of date more than once:
     
         * once when deciding whether/how to run the pipeline
         * once when actually executing the task.
         
-    ruffus tries to be clever / efficient, and does the minimal amount of querying.
+    *Ruffus* tries to be clever / efficient, and does the minimal amount of querying.
     
     
 .. _simple-example:
@@ -978,7 +980,7 @@ Manual dependency checking
     The function specified by :ref:`@check_if_uptodate <check_if_uptodate>` can be called
     more than once for each job. 
 
-    See the discussion of how ruffus decides which tasks
+    See the discussion of how *ruffus* decides which tasks
     to run in :ref:`@automatic dependency checking <automatic-dependency-checking>`
         
         
@@ -1032,6 +1034,7 @@ Signalling the completion of each task
     pair: @posttask; touch_file
 
 .. ???
+.. _posttask-touch-file:
 
 =======================================
 touch_file
@@ -1065,7 +1068,10 @@ touch_file
 Logging
 ***************************************
 
-    Ruffus logs each task and each job as it is completed. The results of each
+=================================
+Logging task/job completion
+=================================
+    *Ruffus* logs each task and each job as it is completed. The results of each
     of the examples in this tutorial were produced by default logging to stderr.
     
     You can specify your own logging by providing a python 
@@ -1105,6 +1111,24 @@ Logging
         Task = create_if_necessary
             Description: Create the file if it does not exists
             Job = [null -> "a.1"] completed
+
+=================================
+Custom job progress logging
+=================================
+
+    It is often useful to log the progress of each job.
+    
+    Each job runs in a separate process, it is *not* possible to pass the logging object
+    between jobs:
+    
+    #) logging is not synchronised between processes
+    #) the logger object can not be "pickled" and sent across processes
+        
+    The best thing to do is to have a centralised log and to have each job invoke the
+    logging methods (e.g. `debug` and `info`) across the process boundaries.
+    
+    :ref:`This example <sharing-data-across-jobs-example>` shows how this can be coded.
+    
 
         
 .. ???

@@ -7,11 +7,19 @@ General
 ^^^^^^^^^^^^^^^^^
 
 =========================================================
-Q. Ruffus won't create dependency graphs
+Q. *Ruffus* won't create dependency graphs
 =========================================================
 
-A. Ruffus uses ``dot`` from `Graphviz <http://www.graphviz.org/>`_ to produce its
-pretty picture.
+A. *Ruffus* uses ``dot`` from `Graphviz <http://www.graphviz.org/>`_ to produce its
+pretty flowcharts likes this:
+        
+        .. image:: images/four_stage_pipeline.jpg
+        
+
+        (Flow Chart Key):
+        
+        .. image:: images/key.jpg
+
 
 =========================================================
 Q. Some jobs re-run even when they seem up-to-date
@@ -32,7 +40,7 @@ In the worse case, you might try adding some ``time.sleep(1)`` judiciously.
 
 
 =========================================================
-Q. Ruffus seems to be hanging in the same place
+Q. *Ruffus* seems to be hanging in the same place
 =========================================================
 
 A. If ruffus is interrupted, for example, by a Ctrl-C,

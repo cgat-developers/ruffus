@@ -20,7 +20,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="ruffus v1.04 documentation" href="index.html" />
-    <link rel="next" title="Todo" href="Todo.html" />
+    <link rel="next" title="What is left to do:" href="Todo.html" />
     <link rel="prev" title="Glossary" href="Glossary.html" /> 
   </head>
   <body>
@@ -34,7 +34,7 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="Todo.html" title="Todo"
+          <a href="Todo.html" title="What is left to do:"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="Glossary.html" title="Glossary"
@@ -61,9 +61,14 @@
 <div class="section" id="general">
 <h2>General<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="q-ruffus-won-t-create-dependency-graphs">
-<h3>Q. Ruffus won&#8217;t create dependency graphs<a class="headerlink" href="#q-ruffus-won-t-create-dependency-graphs" title="Permalink to this headline">¶</a></h3>
-<p>A. Ruffus uses <tt class="docutils literal"><span class="pre">dot</span></tt> from <a class="reference external" href="http://www.graphviz.org/">Graphviz</a> to produce its
-pretty picture.</p>
+<h3>Q. <em>Ruffus</em> won&#8217;t create dependency graphs<a class="headerlink" href="#q-ruffus-won-t-create-dependency-graphs" title="Permalink to this headline">¶</a></h3>
+<p>A. <em>Ruffus</em> uses <tt class="docutils literal"><span class="pre">dot</span></tt> from <a class="reference external" href="http://www.graphviz.org/">Graphviz</a> to produce its
+pretty flowcharts likes this:</p>
+<blockquote>
+<img alt="_images/four_stage_pipeline.jpg" src="_images/four_stage_pipeline.jpg" />
+<p>(Flow Chart Key):</p>
+<img alt="_images/key.jpg" src="_images/key.jpg" />
+</blockquote>
 </div>
 <div class="section" id="q-some-jobs-re-run-even-when-they-seem-up-to-date">
 <h3>Q. Some jobs re-run even when they seem up-to-date<a class="headerlink" href="#q-some-jobs-re-run-even-when-they-seem-up-to-date" title="Permalink to this headline">¶</a></h3>
@@ -78,7 +83,7 @@ sub-second precision.</p>
 <p>In the worse case, you might try adding some <tt class="docutils literal"><span class="pre">time.sleep(1)</span></tt> judiciously.</p>
 </div>
 <div class="section" id="q-ruffus-seems-to-be-hanging-in-the-same-place">
-<h3>Q. Ruffus seems to be hanging in the same place<a class="headerlink" href="#q-ruffus-seems-to-be-hanging-in-the-same-place" title="Permalink to this headline">¶</a></h3>
+<h3>Q. <em>Ruffus</em> seems to be hanging in the same place<a class="headerlink" href="#q-ruffus-seems-to-be-hanging-in-the-same-place" title="Permalink to this headline">¶</a></h3>
 <p>A. If ruffus is interrupted, for example, by a Ctrl-C,
 you will find the following lines of code highlighted:</p>
 <div class="highlight-python"><pre>File "build/bdist.linux-x86_64/egg/ruffus/task.py", line 1904, in pipeline_run
@@ -164,9 +169,9 @@ introduce a random time delay at the beginining of your jobs:</p>
             <ul>
 <li><a class="reference external" href="">FAQ</a><ul>
 <li><a class="reference external" href="#general">General</a><ul>
-<li><a class="reference external" href="#q-ruffus-won-t-create-dependency-graphs">Q. Ruffus won&#8217;t create dependency graphs</a></li>
+<li><a class="reference external" href="#q-ruffus-won-t-create-dependency-graphs">Q. <em>Ruffus</em> won&#8217;t create dependency graphs</a></li>
 <li><a class="reference external" href="#q-some-jobs-re-run-even-when-they-seem-up-to-date">Q. Some jobs re-run even when they seem up-to-date</a></li>
-<li><a class="reference external" href="#q-ruffus-seems-to-be-hanging-in-the-same-place">Q. Ruffus seems to be hanging in the same place</a></li>
+<li><a class="reference external" href="#q-ruffus-seems-to-be-hanging-in-the-same-place">Q. <em>Ruffus</em> seems to be hanging in the same place</a></li>
 </ul>
 </li>
 <li><a class="reference external" href="#windows">Windows</a><ul>
@@ -187,7 +192,7 @@ introduce a random time delay at the beginining of your jobs:</p>
                                   title="previous chapter">Glossary</a></p>
             <h4>Next topic</h4>
             <p class="topless"><a href="Todo.html"
-                                  title="next chapter">Todo</a></p>
+                                  title="next chapter">What is left to do:</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/FAQ.txt"
@@ -220,7 +225,7 @@ introduce a random time delay at the beginining of your jobs:</p>
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="Todo.html" title="Todo"
+          <a href="Todo.html" title="What is left to do:"
              >next</a> |</li>
         <li class="right" >
           <a href="Glossary.html" title="Glossary"

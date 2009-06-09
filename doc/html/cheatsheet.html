@@ -74,7 +74,7 @@ Each python function can be called in parallel to run multiple <strong>jobs</str
 </colgroup>
 <thead valign="bottom">
 <tr><th class="head">Decorator</th>
-<th class="head">Example</th>
+<th class="head">Examples</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -84,8 +84,8 @@ Each python function can be called in parallel to run multiple <strong>jobs</str
 <li><cite>mkdir</cite> prerequisite shorthand</li>
 </ul>
 </td>
-<td><p class="first">&#64;<strong>follows</strong>( <tt class="docutils literal"><span class="pre">task1</span></tt>, <tt class="docutils literal"><span class="pre">'task2'</span></tt> ))</p>
-<p class="last">&#64;<strong>follows</strong>( <tt class="docutils literal"><span class="pre">task1</span></tt>, <strong>mkdir</strong> ( <tt class="docutils literal"><span class="pre">'my/directory/for/results'</span></tt> ))</p>
+<td><p class="first"><a class="reference external" href="Tutorial.html#follows"><em>&#64;follows</em></a> ( <tt class="docutils literal"><span class="pre">task1</span></tt>, <tt class="docutils literal"><span class="pre">'task2'</span></tt> ))</p>
+<p class="last"><a class="reference external" href="Tutorial.html#follows-out-of-order"><em>&#64;follows</em></a> ( <tt class="docutils literal"><span class="pre">task1</span></tt>,  <a class="reference external" href="Tutorial.html#follow-mkdir"><em>mkdir</em></a>( <tt class="docutils literal"><span class="pre">'my/directory/for/results'</span></tt> ))</p>
 </td>
 </tr>
 <tr><td><p class="first"><strong>&#64;parallel</strong></p>
@@ -93,8 +93,8 @@ Each python function can be called in parallel to run multiple <strong>jobs</str
 <li>Parameters for parallel jobs</li>
 </ul>
 </td>
-<td><p class="first">&#64;<strong>parallel</strong>( <tt class="docutils literal"><span class="pre">parameter_list</span></tt> )</p>
-<p class="last">&#64;<strong>parallel</strong>( <tt class="docutils literal"><span class="pre">parameter_generating_function</span></tt> )</p>
+<td><p class="first"><a class="reference external" href="Tutorial.html#parallel"><em>&#64;parallel</em></a> ( <tt class="docutils literal"><span class="pre">parameter_list</span></tt> )</p>
+<p class="last"><a class="reference external" href="Tutorial.html#on-the-fly"><em>&#64;parallel</em></a> ( <tt class="docutils literal"><span class="pre">parameter_generating_function</span></tt> )</p>
 </td>
 </tr>
 <tr><td><p class="first"><strong>&#64;files</strong></p>
@@ -103,10 +103,10 @@ Each python function can be called in parallel to run multiple <strong>jobs</str
 <li>skips up-to-date jobs</li>
 </ul>
 </td>
-<td><p class="first">&#64;<strong>files</strong>( <tt class="docutils literal"><span class="pre">parameter_list</span></tt> )</p>
-<p>&#64;<strong>files</strong>( <tt class="docutils literal"><span class="pre">parameter_generating_function</span></tt> )</p>
+<td><p class="first"><a class="reference external" href="Tutorial.html#files"><em>&#64;files</em></a>( <tt class="docutils literal"><span class="pre">parameter_list</span></tt> )</p>
+<p><a class="reference external" href="Tutorial.html#files"><em>&#64;files</em></a>( <tt class="docutils literal"><span class="pre">parameter_generating_function</span></tt> )</p>
 <p><em>Simplified syntax for tasks with a single job:</em></p>
-<p class="last">&#64;<strong>files</strong>( <tt class="docutils literal"><span class="pre">input_file</span></tt>, <tt class="docutils literal"><span class="pre">output_file</span></tt>, <tt class="docutils literal"><span class="pre">other_params</span></tt>, <tt class="docutils literal"><span class="pre">...</span></tt> )</p>
+<p class="last"><a class="reference external" href="Tutorial.html#files"><em>&#64;files</em></a> ( <tt class="docutils literal"><span class="pre">input_file</span></tt>, <tt class="docutils literal"><span class="pre">output_file</span></tt>, <tt class="docutils literal"><span class="pre">other_params</span></tt>, <tt class="docutils literal"><span class="pre">...</span></tt> )</p>
 </td>
 </tr>
 <tr><td><p class="first"><strong>&#64;files_re</strong></p>
@@ -118,10 +118,10 @@ or <tt class="docutils literal"><span class="pre">glob</span></tt> results</li>
 <li>skips up-to-date jobs</li>
 </ul>
 </td>
-<td><p class="first">&#64;<strong>files_re</strong>(<tt class="docutils literal"><span class="pre">glob_str</span></tt>, <tt class="docutils literal"><span class="pre">matching_regex</span></tt>, <tt class="docutils literal"><span class="pre">output_pattern</span></tt>, <tt class="docutils literal"><span class="pre">...</span></tt> )</p>
-<p>&#64;<strong>files_re</strong>(<tt class="docutils literal"><span class="pre">file_names</span></tt>, <tt class="docutils literal"><span class="pre">matching_regex</span></tt>, <tt class="docutils literal"><span class="pre">input_pattern</span></tt>, <tt class="docutils literal"><span class="pre">output_pattern</span></tt>, <tt class="docutils literal"><span class="pre">...</span></tt> )</p>
-<p>&#64;<strong>files_re</strong>(<tt class="docutils literal"><span class="pre">glob_str</span></tt>, <tt class="docutils literal"><span class="pre">matching_regex</span></tt>, <tt class="docutils literal"><span class="pre">output_pattern</span></tt>, <tt class="docutils literal"><span class="pre">...</span></tt> )</p>
-<p>&#64;<strong>files_re</strong>(<tt class="docutils literal"><span class="pre">file_names</span></tt>, <tt class="docutils literal"><span class="pre">matching_regex</span></tt>, <tt class="docutils literal"><span class="pre">input_pattern</span></tt>, <tt class="docutils literal"><span class="pre">output_pattern</span></tt>, <tt class="docutils literal"><span class="pre">...</span></tt> )</p>
+<td><p class="first"><a class="reference external" href="Tutorial.html#files-re"><em>&#64;files_re</em></a> ( <tt class="docutils literal"><span class="pre">glob_str</span></tt>, <tt class="docutils literal"><span class="pre">matching_regex</span></tt>, <tt class="docutils literal"><span class="pre">output_pattern</span></tt>, <tt class="docutils literal"><span class="pre">...</span></tt> )</p>
+<p><a class="reference external" href="Tutorial.html#files-re"><em>&#64;files_re</em></a> ( <tt class="docutils literal"><span class="pre">file_names</span></tt>, <tt class="docutils literal"><span class="pre">matching_regex</span></tt>, <tt class="docutils literal"><span class="pre">input_pattern</span></tt>, <tt class="docutils literal"><span class="pre">output_pattern</span></tt>, <tt class="docutils literal"><span class="pre">...</span></tt> )</p>
+<p><a class="reference external" href="Tutorial.html#files-re"><em>&#64;files_re</em></a> ( <tt class="docutils literal"><span class="pre">glob_str</span></tt>, <tt class="docutils literal"><span class="pre">matching_regex</span></tt>, <tt class="docutils literal"><span class="pre">output_pattern</span></tt>, <tt class="docutils literal"><span class="pre">...</span></tt> )</p>
+<p><a class="reference external" href="Tutorial.html#files-re"><em>&#64;files_re</em></a> ( <tt class="docutils literal"><span class="pre">file_names</span></tt>, <tt class="docutils literal"><span class="pre">matching_regex</span></tt>, <tt class="docutils literal"><span class="pre">input_pattern</span></tt>, <tt class="docutils literal"><span class="pre">output_pattern</span></tt>, <tt class="docutils literal"><span class="pre">...</span></tt> )</p>
 <p class="last"><tt class="docutils literal"><span class="pre">input_pattern</span></tt>/<tt class="docutils literal"><span class="pre">output_pattern</span></tt> are regex patterns
 used to create input/output file names from the starting
 list of either glob_str or file names</p>
@@ -132,7 +132,7 @@ list of either glob_str or file names</p>
 <li>Checks if task needs to be run</li>
 </ul>
 </td>
-<td>&#64;<strong>check_if_uptodate</strong>( <tt class="docutils literal"><span class="pre">is_task_up_to_date_function</span></tt> )</td>
+<td><a class="reference external" href="Tutorial.html#check-if-uptodate"><em>&#64;check_if_uptodate</em></a> ( <tt class="docutils literal"><span class="pre">is_task_up_to_date_function</span></tt> )</td>
 </tr>
 <tr><td><p class="first"><strong>&#64;posttask</strong></p>
 <ul class="last simple">
@@ -140,8 +140,8 @@ list of either glob_str or file names</p>
 <li><em>touch_file</em> shorthand</li>
 </ul>
 </td>
-<td><p class="first">&#64;<strong>posttask</strong>( <tt class="docutils literal"><span class="pre">signal_task_completion_function</span></tt> )</p>
-<p class="last">&#64;<strong>posttask</strong>( <strong>touch_file</strong> ( <tt class="docutils literal"><span class="pre">'task1.completed'</span></tt> ))</p>
+<td><p class="first"><a class="reference external" href="Tutorial.html#posttask"><em>&#64;posttask</em></a> ( <tt class="docutils literal"><span class="pre">signal_task_completion_function</span></tt> )</p>
+<p class="last"><a class="reference external" href="Tutorial.html#posttask"><em>&#64;posttask</em></a> (<a class="reference external" href="Tutorial.html#posttask-touch-file"><em>&#64;touch_file</em></a>( <tt class="docutils literal"><span class="pre">'task1.completed'</span></tt> ))</p>
 </td>
 </tr>
 </tbody>
@@ -171,7 +171,7 @@ list of either glob_str or file names</p>
 </blockquote>
 </div>
 <div class="section" id="run-the-pipeline">
-<h3>3. Run the pipeline::<a class="headerlink" href="#run-the-pipeline" title="Permalink to this headline">¶</a></h3>
+<h3>3. Run the pipeline<a class="headerlink" href="#run-the-pipeline" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 pipeline_run(list_of_target_tasks, [list_of_tasks_forced_to_rerun, multiprocess = N_PARALLEL_JOBS])</blockquote>
 <p>See the <a class="reference external" href="Tutorial.html#tutorial"><em>Full Tutorial</em></a> for a more complete introduction on how to add support
@@ -192,7 +192,7 @@ for ruffus.</p>
 <li><a class="reference external" href="#usage">Usage</a><ul>
 <li><a class="reference external" href="#annotate-functions-with-python-decorators">1. Annotate functions with python decorators</a></li>
 <li><a class="reference external" href="#print-dependency-graph-if-you-necessary">2. Print dependency graph if you necessary</a></li>
-<li><a class="reference external" href="#run-the-pipeline">3. Run the pipeline::</a></li>
+<li><a class="reference external" href="#run-the-pipeline">3. Run the pipeline</a></li>
 </ul>
 </li>
 </ul>

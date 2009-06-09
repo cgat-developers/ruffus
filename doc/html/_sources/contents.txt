@@ -1,9 +1,9 @@
 .. ruffus documentation master file, created by
    sphinx-quickstart on Tue Apr 21 16:55:56 2009.
 
-*********************
-Ruffus documentation
-*********************
+***************************
+*Ruffus* documentation
+***************************
 
 
 The :mod:`ruffus` module is a lightweight way to add support 

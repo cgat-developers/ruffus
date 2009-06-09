@@ -7,18 +7,18 @@ Cheat Sheet
 The ``ruffus`` module is a lightweight way to add support 
 for running computational pipelines.
 
-========
+======
 Usage
-========
+======
 
 Each stage or **task** in a computational pipeline is represented by a python function
 Each python function can be called in parallel to run multiple **jobs**.
 
 1. Annotate functions with python decorators
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
   .. csv-table::
-   :header: "Decorator", "Example"
+   :header: "Decorator", "Examples"
    :widths: 40, 60
    
    "**@follows**
@@ -26,30 +26,30 @@ Each python function can be called in parallel to run multiple **jobs**.
    - Indicate task dependency          
    - `mkdir` prerequisite shorthand
    ", "
-   @\ **follows**\ ( ``task1``, ``'task2'`` ))                                
+   :ref:`@follows <follows>` ( ``task1``, ``'task2'`` ))                                
                                                                               
-   @\ **follows**\ ( ``task1``, **mkdir** ( ``'my/directory/for/results'`` )) 
+   :ref:`@follows <follows-out-of-order>` ( ``task1``,  :ref:`mkdir <follow-mkdir>`\ ( ``'my/directory/for/results'`` )) 
    "
    "**@parallel**                            
    
    - Parameters for parallel jobs
    ", "   
-   @\ **parallel**\ ( ``parameter_list`` )                                
-                                                                              
-   @\ **parallel**\ ( ``parameter_generating_function`` ) 
+   :ref:`@parallel <parallel>` ( ``parameter_list`` )                                
+                                                                           
+   :ref:`@parallel <on_the_fly>` ( ``parameter_generating_function`` ) 
    "
    "**@files**
    
    - I/O parameters         
    - skips up-to-date jobs
    ", "
-   @\ **files**\ ( ``parameter_list`` )                                
+   :ref:`@files <files>`\ ( ``parameter_list`` )                                
 
-   @\ **files**\ ( ``parameter_generating_function`` )                                
+   :ref:`@files <files>`\ ( ``parameter_generating_function`` )                                
 
    *Simplified syntax for tasks with a single job:*
    
-   @\ **files**\ ( ``input_file``, ``output_file``, ``other_params``, ``...`` )                                
+   :ref:`@files <files>` ( ``input_file``, ``output_file``, ``other_params``, ``...`` )                                
    "
    "**@files_re**
 
@@ -59,13 +59,13 @@ Each python function can be called in parallel to run multiple **jobs**.
      or ``glob`` results            
    - skips up-to-date jobs          
    ", "
-   @\ **files_re**\ (``glob_str``, ``matching_regex``, ``output_pattern``, ``...`` )
-
-   @\ **files_re**\ (``file_names``, ``matching_regex``, ``input_pattern``, ``output_pattern``, ``...`` )
-
-   @\ **files_re**\ (``glob_str``, ``matching_regex``, ``output_pattern``, ``...`` )
-
-   @\ **files_re**\ (``file_names``, ``matching_regex``, ``input_pattern``, ``output_pattern``, ``...`` )                                
+   :ref:`@files_re <files_re>` ( ``glob_str``, ``matching_regex``, ``output_pattern``, ``...`` )
+                                 
+   :ref:`@files_re <files_re>` ( ``file_names``, ``matching_regex``, ``input_pattern``, ``output_pattern``, ``...`` )
+                                 
+   :ref:`@files_re <files_re>` ( ``glob_str``, ``matching_regex``, ``output_pattern``, ``...`` )
+                                 
+   :ref:`@files_re <files_re>` ( ``file_names``, ``matching_regex``, ``input_pattern``, ``output_pattern``, ``...`` )                                
                                                                                
    ``input_pattern``/``output_pattern`` are regex patterns                 
    used to create input/output file names from the starting                
@@ -75,21 +75,22 @@ Each python function can be called in parallel to run multiple **jobs**.
 
    - Checks if task needs to be run
    ", "
-   @\ **check_if_uptodate**\ ( ``is_task_up_to_date_function`` )
+   :ref:`@check_if_uptodate <check_if_uptodate>` ( ``is_task_up_to_date_function`` )
    "
    "**@posttask**
 
    - Calls function after task completes
    - *touch_file* shorthand
    ", "
-   @\ **posttask**\ ( ``signal_task_completion_function`` )
+   :ref:`@posttask <posttask>` ( ``signal_task_completion_function`` )
 
-   @\ **posttask**\ ( **touch_file** ( ``'task1.completed'`` ))
+   :ref:`@posttask <posttask>` (:ref:`@touch_file <posttask-touch-file>`\ ( ``'task1.completed'`` ))
    "  
 
 
 2. Print dependency graph if you necessary
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
     - For a graphical flowchart in ``jpg``, ``svg``, ``dot``, ``png``, ``ps``, ``gif`` formats::
     
         graph_printout ( open("flowchart.svg", "w"),
@@ -103,8 +104,8 @@ Each python function can be called in parallel to run multiple **jobs**.
         pipeline_printout(sys.stdout, list_of_target_tasks)
 
 
-3. Run the pipeline::
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3. Run the pipeline
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     pipeline_run(list_of_target_tasks, [list_of_tasks_forced_to_rerun, multiprocess = N_PARALLEL_JOBS])
 

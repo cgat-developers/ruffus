@@ -16,10 +16,10 @@ The full code is available :ref:`here <code-for-sharing-data-across-jobs-example
 Background:
 ***************************************************
 
-    Each Ruffus job runs in a separate process. 
+    Each *Ruffus* job runs in a separate process. 
     To synchronise across multiple jobs requires passing data across processes.
     
-    This is generally to be avoided because
+    `This is generally to be avoided <http://docs.python.org/library/multiprocessing.html#programming-guidelines>`_ because
     
     1) Synchronising across parallel tasks is inherently tricky
     2) Passing large amounts of data across processes is inefficient
@@ -95,7 +95,7 @@ Create proxies to forward calls to the shared object
                 return "Logging proxy"
 
     In this case, we are only interested in two function calls to forward: `debug` and
-    `info`. We also override the `__str__` function so that ruffus output looks nicer.
+    `info`. We also override the `__str__` function so that *ruffus* output looks nicer.
     
 
 =========================================================
@@ -155,7 +155,7 @@ Create Manager Server Process
 
 
 =========================================================
-Run ruffus
+Run *ruffus*
 =========================================================
 
     The shared proxy can be passed to the task function::

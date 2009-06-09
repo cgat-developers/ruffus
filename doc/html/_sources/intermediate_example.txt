@@ -75,7 +75,7 @@ Challenges:
             for m in MMM:
                 do n x m
                 
-    The ruffus code is as simple.
+    The *ruffus* code is as simple.
 
 =======================================
 1. Simulations per gene 
@@ -145,6 +145,6 @@ Challenges:
 Conclusions
 ===================================================
 
-What would be spaghetti in makefile format looks just like normal python code with ruffus.
+What would be spaghetti in makefile format looks just like normal python code with *ruffus*.
 
 
