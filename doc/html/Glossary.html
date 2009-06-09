@@ -60,6 +60,33 @@
   <div class="section" id="glossary">
 <h1>Glossary<a class="headerlink" href="#glossary" title="Permalink to this headline">¶</a></h1>
 <dl class="glossary docutils">
+<dt id="term-task">task</dt>
+<dd><p class="first">A stage in a computational pipeline.</p>
+<p>Each <strong>task</strong> in <em>ruffus</em> is represented by a python function.</p>
+<p>For example, a task might be to find the products of a sets of two numbers:</p>
+<div class="last highlight-python"><pre>4 x 5 = 20
+5 x 6 = 30
+2 x 7 = 14</pre>
+</div>
+</dd>
+<dt id="term-job">job</dt>
+<dd><p class="first">Any number of operations which can be run in parallel and make up
+the work in a stage of a computional pipeline.</p>
+<p>Each <strong>task</strong> in <em>ruffus</em> is a separate call to the <strong>task</strong> function.</p>
+<p>For example, if a task is to find products of numbers, each of these will be a separate job.</p>
+<blockquote>
+<p>Job1:</p>
+<div class="highlight-python"><pre>4 x 5 = 20</pre>
+</div>
+<p>Job2:</p>
+<div class="highlight-python"><pre>5 x 6 = 30</pre>
+</div>
+<p>Job3:</p>
+<div class="highlight-python"><pre>2 x 7 = 14</pre>
+</div>
+</blockquote>
+<p class="last">Jobs need not complete in order.</p>
+</dd>
 <dt id="term-decorator">decorator</dt>
 <dd><dl class="first docutils">
 <dt>Quoting from the <a class="reference external" href="http://wiki.python.org/moin/PythonDecorators">python wiki</a>:</dt>
@@ -90,33 +117,6 @@ greater clarity. For example,:</p>
 </pre></div>
 </div>
 <p class="last">Each job takes the parameters <tt class="docutils literal"><span class="pre">file_index</span></tt> and <tt class="docutils literal"><span class="pre">file_name</span></tt></p>
-</dd>
-<dt id="term-job">job</dt>
-<dd><p class="first">Any number of operations which can be run in parallel and make up
-the work in a stage of a computional pipeline.</p>
-<p>Each <strong>task</strong> in <em>ruffus</em> is a separate call to the <strong>task</strong> function.</p>
-<p>For example, if a task is to find products of numbers, each of these will be a separate job.</p>
-<blockquote>
-<p>Job1:</p>
-<div class="highlight-python"><pre>4 x 5 = 20</pre>
-</div>
-<p>Job2:</p>
-<div class="highlight-python"><pre>5 x 6 = 30</pre>
-</div>
-<p>Job3:</p>
-<div class="highlight-python"><pre>2 x 7 = 14</pre>
-</div>
-</blockquote>
-<p class="last">Jobs need not complete in order.</p>
-</dd>
-<dt id="term-task">task</dt>
-<dd><p class="first">A stage in a computational pipeline.</p>
-<p>Each <strong>task</strong> in <em>ruffus</em> is represented by a python function.</p>
-<p>For example, a task might be to find the products of a sets of two numbers:</p>
-<div class="last highlight-python"><pre>4 x 5 = 20
-5 x 6 = 30
-2 x 7 = 14</pre>
-</div>
 </dd>
 </dl>
 </div>
