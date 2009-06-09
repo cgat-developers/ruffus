@@ -15,7 +15,7 @@ Task-based rather than file-based work flow
 ================================================
 
     Computational pipelines, especially in science are best thought of as successively 
-    dependent stages (we call them **task**\ s: See the :ref:`Glossary <glossary>` ).
+    dependent stages (we call them **task**\ s: See the :ref:`Glossary <Glossary>` ).
     
     Traditionally, especially in Unix, pipelined stages have been linked together using files.
     
