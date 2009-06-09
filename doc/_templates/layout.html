@@ -1,14 +1,15 @@
 {% extends "!layout.html" %}
 
 {% block rootrellink %}
-        Ruffus v. {{ release }}          :   
+        Ruffus v. {{ release }}
+                               <h3>
         <li><a href="{{ pathto('index') }}">Home</a> | </li>
         <li><a href="{{ pathto('contents') }}">Contents</a> | </li>
         <li><a href="{{ pathto('cheatsheet') }}">Cheat sheet</a> | </li>
         <li><a href="{{ pathto('Tutorial') }}">Full tutorial</a>  | </li>
         <li><a href="{{ pathto('FAQ') }}">FAQ</a>  | </li>
         <li><a href="{{ pathto('Todo') }}">Future plans</a>  | </li>
-        <li><a href="{{ pathto('search') }}">Search</a> &raquo;</li>
+        <li><a href="{{ pathto('search') }}">Search</a> &raquo;</li></h3>
 {% endblock %}
 
 
