@@ -93,9 +93,9 @@ Each python function can be called in parallel to run multiple **jobs**.
 
     - For a graphical flowchart in ``jpg``, ``svg``, ``dot``, ``png``, ``ps``, ``gif`` formats::
     
-        graph_printout ( open("flowchart.svg", "w"),
-                         "svg",
-                         list_of_target_tasks)
+        pipeline_printout_graph ( open("flowchart.svg", "w"),
+                                 "svg",
+                                 list_of_target_tasks)
     
     This requires `dot <http://www.graphviz.org/>`_ to be installed
     
