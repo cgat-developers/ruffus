@@ -78,9 +78,9 @@ Displaying
 
     We can see a flowchart of our fledgling pipeline by executing::
     
-        graph_printout ( open("flowchart.svg", "w"),
-                         "svg",
-                         [final_task])
+        pipeline_printout_graph ( open("flowchart.svg", "w"),
+                                 "svg",
+                                 [final_task])
     
 .. ???
 
