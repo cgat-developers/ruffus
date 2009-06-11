@@ -7,6 +7,8 @@ if not sys.version_info[0:2] >= (2,4):
     sys.stderr.write("Requires Python later than 2.4\n")
     sys.exit(1)
     
+import ruffus_version
+    
     
 if sys.version_info[0:2] >= (2,6):
     module_dependencies = ['multiprocessing>=2.6']
@@ -17,7 +19,7 @@ else:
 from setuptools import setup, find_packages
 setup(
         name='ruffus',
-        version='1.0.4',            #major.minor[.patch[.sub]]
+        version=ruffus_version._ruffus_version, #major.minor[.patch[.sub]]
         description='Light-weight Python Computational Pipeline Management',
         long_description=\
 """     
