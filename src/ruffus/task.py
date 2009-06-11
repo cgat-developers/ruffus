@@ -1807,13 +1807,16 @@ def task_names_to_tasks (task_description, task_names):
 
         # Is this already a function, don't do mapping if already is task
         if type(task_name) == types.FunctionType:
-            if task_name.pipeline_task:
+            if hasattr(task_name, "pipeline_task"):
                 task_nodes.append(task_name.pipeline_task)
                 continue
             else:
                 # blow up for unwrapped function
-                raise error_function_is_not_a_task("Function %s is not a pipelined task" % 
-                                                    task_name.__name__)
+                raise error_function_is_not_a_task("Function %s is not a pipelined task in ruffus." % 
+                                                    task_name.__name__ + 
+                                                    " To include this, this function needs to have a ruffus "+
+                                                    "decoration like '@parallel', '@files', or named as a dependent "+
+                                                    "of some other Ruffus task function via '@follows'.")
             
         # assumes is some kind of string
         if not node.is_node(task_name):
