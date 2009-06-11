@@ -259,6 +259,10 @@ Run jobs on remote (clustered) processes via SGE/Hadoop
 ************************************************************
     Can we run jobs on remote processes using SGE / Hadoop?
     
+    Can we abstract all job management using drmaa?
+    
+    Python examples at http://gridengine.sunsource.net/howto/drmaa_python.html
+    
 =========
 SGE
 =========

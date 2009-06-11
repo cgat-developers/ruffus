@@ -19,7 +19,7 @@ else:
 from setuptools import setup, find_packages
 setup(
         name='ruffus',
-        version=ruffus_version._ruffus_version, #major.minor[.patch[.sub]]
+        version=ruffus_version.__version, #major.minor[.patch[.sub]]
         description='Light-weight Python Computational Pipeline Management',
         long_description=\
 """     
