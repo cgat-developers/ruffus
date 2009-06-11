@@ -18,5 +18,5 @@ def parallel_task(name, param1):
 if __name__ == '__main__':
     try:
         pipeline_run([parallel_task], multiprocess = 2)
-except Exception, e:
-    print e.args
+    except Exception, e:
+        print e.args
