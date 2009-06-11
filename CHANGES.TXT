@@ -40,12 +40,30 @@
 		See: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 
 = v. 1.05=
-	_Not yet released_
+	_11/June/2009_
 
 	==Documentation:==
 		
-		Added example for sharing synchronising data between jobs.
+		1) Added example for sharing synchronising data between jobs.
         
-		This shows how different jobs can write to a common log file while still leaveraging
-		the full power of ruffus
+		   This shows how different jobs can write to a common log file while still leaveraging
+		   the full power of ruffus
+
+		2) Changed "graph_printout" to "pipeline_printout_graph"
+           
+           This function had been renamed in the code but not in the documentation :-(
+		
+
+	==Code Changes:==
+		
+		1) The graph and print_dependencies modules are no longer exported by default 
+		   from task.
+
+		   Please email me if this breaks anything.
+
+        2) More informative error message when refer to unadorned (without Ruffus decorators) 
+	       python functions as pipelined Tasks
+            
+
+		
 
