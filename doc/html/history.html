@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Fixed Bugs &mdash; ruffus v(&#39;1.0.5&#39;,) documentation</title>
+    <link rel="stylesheet" href="_static/ruffus.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '(&#39;1.0.5&#39;,)',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="ruffus v(&#39;1.0.5&#39;,) documentation" href="index.html" />
+    <link rel="next" title="What is left to do:" href="Todo.html" />
+    <link rel="prev" title="FAQ" href="FAQ.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="Todo.html" title="What is left to do:"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FAQ.html" title="FAQ"
+             accesskey="P">previous</a> |</li>
+        Ruffus v. ('1.0.5',)
+    <li><a href="index.html">Home</a> | </li>
+        <li><a href="contents.html">Contents</a> | </li>
+        <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
+        <li><a href="Tutorial.html">Full tutorial</a>  | </li>
+        <li><a href="FAQ.html">FAQ</a>  | </li>
+        <li><a href="Todo.html">Future plans</a>  | </li>
+        <li><a href="search.html">Search</a> &raquo;</li>
+     
+ 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="fixed-bugs">
+<h1>Fixed Bugs<a class="headerlink" href="#fixed-bugs" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="issue3">
+<h2>Issue3<a class="headerlink" href="#issue3" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="manifestation">
+<h3>Manifestation<a class="headerlink" href="#manifestation" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p>Calling:</p>
+<div class="highlight-python"><pre>  graph_printout(
+  open("flowchart.svg", "w"),
+  "svg",
+  [final_task]
+)</pre>
+</div>
+<p>dies with:</p>
+<div class="highlight-python"><pre>TypeError: "unbound method outward() ..." on call to "graph_printout"</pre>
+</div>
+</blockquote>
+</div>
+<div class="section" id="diagnosis">
+<h3>Diagnosis<a class="headerlink" href="#diagnosis" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p><cite>graph_printout</cite> resolves to <cite>graph.graph_printout (...)</cite></p>
+<p>Should be <cite>task.pipeline_printout_graph (...)</cite></p>
+<p>The error is in the documentation but the graph and print_dependencies modules
+should probably not be exported by default.</p>
+</blockquote>
+</div>
+<div class="section" id="resolution">
+<h3>Resolution<a class="headerlink" href="#resolution" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<ol class="arabic">
+<li><p class="first">Changed documentation</p>
+</li>
+<li><p class="first">Removed the following code from <tt class="docutils literal"><span class="pre">ruffus/__init__.py</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">graph</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">print_dependencies</span> <span class="kn">import</span> <span class="o">*</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</blockquote>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="contents.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Fixed Bugs</a><ul>
+<li><a class="reference external" href="#issue3">Issue3</a><ul>
+<li><a class="reference external" href="#manifestation">Manifestation</a></li>
+<li><a class="reference external" href="#diagnosis">Diagnosis</a></li>
+<li><a class="reference external" href="#resolution">Resolution</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="FAQ.html"
+                                  title="previous chapter">FAQ</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="Todo.html"
+                                  title="next chapter">What is left to do:</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/history.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="Todo.html" title="What is left to do:"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FAQ.html" title="FAQ"
+             >previous</a> |</li>
+        Ruffus v. ('1.0.5',)
+    <li><a href="index.html">Home</a> | </li>
+        <li><a href="contents.html">Contents</a> | </li>
+        <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
+        <li><a href="Tutorial.html">Full tutorial</a>  | </li>
+        <li><a href="FAQ.html">FAQ</a>  | </li>
+        <li><a href="Todo.html">Future plans</a>  | </li>
+        <li><a href="search.html">Search</a> &raquo;</li>
+     
+ 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Leo Goodstadt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
+    </div>
+  </body>
+</html>
