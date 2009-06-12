@@ -1,6 +1,14 @@
 = v. 1.06=
-	
-	mkdir takes a list of strings
+    _12/June/2009_
+    
+    ==Bug fix:==
+        * Ruffus version module (ruffus_version.py) links fixed
+          Soft links in linux do not travel well
+        * mkdir now can take a list of strings
+          added test case
+
+    ==Documentation:==
+        * Added history of changes
 
 = v. 1.05=
     _11/June/2009_
@@ -18,6 +26,7 @@
         * The graph and print_dependencies modules are no longer exported by default from task.
           Please email me if this breaks anything.
         * More informative error message when refer to unadorned (without _Ruffus_ decorators) python functions as pipelined Tasks
+        * Added Ruffus version module ruffus_version.py
 
 
 
