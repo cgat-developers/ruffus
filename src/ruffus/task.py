@@ -1074,7 +1074,7 @@ def io_files_job_descriptor (param):
 
 def mkdir_job_descriptor (param):
     # input, output and parameters
-    return "Make directory %s" % (dumps(param, default=json_encode_ignore_unknown))
+    return "Make directories %s" % (dumps(param[0], default=json_encode_ignore_unknown))
 
 
 #8888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -1134,7 +1134,7 @@ def job_wrapper_mkdir(param, user_defined_work_func, register_cleanup):
     make directories if not exists
     """
     #
-    #   Just in case, extra check because some other makedirs might be subpath 
+    #   Just in case, swallow file exist errors because some other makedirs might be subpath 
     #       of this directory
     #   Should not be necessary because of "sorted" in task_mkdir
     #   
@@ -1621,12 +1621,14 @@ class _task (node):
         #   all directories created in one job to avoid race conditions
         #    so we are converting [a,b,c] into [   [[a, b,c]]   ]
         self.set_action_type (_task.action_mkdir)
+        if not is_str(orig_args[0]):
+            orig_args = orig_args[0]
         param_func                = args_param_factory([[[sorted(orig_args)]]])
         
         #print >>sys.stderr, dumps(list(param_func()), indent = 4)
         
         self.param_generator_func = param_func
-        self._description         = "Make directories (%s)" % ", ".join(orig_args[0])
+        self._description         = "Make directories %s" % (dumps(orig_args, default=json_encode_ignore_unknown))
         self.needs_update_func    = self.needs_update_func or needs_update_check_directory_missing
         self.job_wrapper          = job_wrapper_mkdir
         self.job_descriptor       = mkdir_job_descriptor
