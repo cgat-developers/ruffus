@@ -2,13 +2,13 @@
 import ez_setup
 ez_setup.use_setuptools()
 
-import sys
+import sys, os
 if not sys.version_info[0:2] >= (2,4):
     sys.stderr.write("Requires Python later than 2.4\n")
     sys.exit(1)
     
 # quickly import the latest version of ruffus
-sys.path.insert(0, os.path.abspath(os.path.join("..", "src")))
+sys.path.insert(0, os.path.abspath(os.path.join("src")))
 import ruffus.ruffus_version
 sys.path.pop(0)
     

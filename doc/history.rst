@@ -44,3 +44,45 @@ Resolution
         from graph import *
         from print_dependencies import *
 
+########    
+mkdir
+########
+    
+===============
+Manifestation
+===============
+
+    Calling::
+    
+        from ruffus import *
+        
+        directories = ['a', 'b']    
+        @follows(mkdir(directories))
+        def task_which_makes_directories ():
+            pass
+        
+    dies with:
+        File "build/bdist.linux-i686/egg/ruffus/task.py", line 1604, in task_mkdir
+        TypeError: sequence item 0: expected string, list found
+
+    
+        
+===============
+Diagnosis
+===============
+    
+    mkdir should handle cleanly all three cases::
+    
+        mkdir(['a', 'b'])
+        mkdir('a')
+        mkdir('a', 'b')
+    
+    
+===============
+Resolution
+===============
+
+    #) Changes to task.py
+    #) Ignores cases (especially race conditions) when the directory already exists
+    #) Added test case test/test_follows_mkdir.py
+

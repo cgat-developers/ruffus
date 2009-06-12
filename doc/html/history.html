@@ -5,13 +5,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Fixed Bugs &mdash; ruffus v(&#39;1.0.5&#39;,) documentation</title>
+    <title>Fixed Bugs &mdash; ruffus v(&#39;1.0.6&#39;,) documentation</title>
     <link rel="stylesheet" href="_static/ruffus.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '(&#39;1.0.5&#39;,)',
+        VERSION:     '(&#39;1.0.6&#39;,)',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -19,7 +19,7 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="ruffus v(&#39;1.0.5&#39;,) documentation" href="index.html" />
+    <link rel="top" title="ruffus v(&#39;1.0.6&#39;,) documentation" href="index.html" />
     <link rel="next" title="What is left to do:" href="Todo.html" />
     <link rel="prev" title="FAQ" href="FAQ.html" /> 
   </head>
@@ -39,7 +39,7 @@
         <li class="right" >
           <a href="FAQ.html" title="FAQ"
              accesskey="P">previous</a> |</li>
-        Ruffus v. ('1.0.5',)
+        Ruffus v. ('1.0.6',)
     <li><a href="index.html">Home</a> | </li>
         <li><a href="contents.html">Contents</a> | </li>
         <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
@@ -101,6 +101,49 @@ should probably not be exported by default.</p>
 </blockquote>
 </div>
 </div>
+<div class="section" id="mkdir">
+<h2>mkdir<a class="headerlink" href="#mkdir" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Manifestation<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p>Calling:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">directories</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">]</span>
+<span class="nd">@follows</span><span class="p">(</span><span class="n">mkdir</span><span class="p">(</span><span class="n">directories</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">task_which_makes_directories</span> <span class="p">():</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>dies with:</dt>
+<dd>File &#8220;build/bdist.linux-i686/egg/ruffus/task.py&#8221;, line 1604, in task_mkdir
+TypeError: sequence item 0: expected string, list found</dd>
+</dl>
+</blockquote>
+</div>
+<div class="section" id="id2">
+<h3>Diagnosis<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p>mkdir should handle cleanly all three cases:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">mkdir</span><span class="p">([</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">])</span>
+<span class="n">mkdir</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">)</span>
+<span class="n">mkdir</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</blockquote>
+</div>
+<div class="section" id="id3">
+<h3>Resolution<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<ol class="arabic simple">
+<li>Changes to task.py</li>
+<li>Ignores cases (especially race conditions) when the directory already exists</li>
+<li>Added test case test/test_follows_mkdir.py</li>
+</ol>
+</blockquote>
+</div>
+</div>
 </div>
 
 
@@ -116,6 +159,12 @@ should probably not be exported by default.</p>
 <li><a class="reference external" href="#manifestation">Manifestation</a></li>
 <li><a class="reference external" href="#diagnosis">Diagnosis</a></li>
 <li><a class="reference external" href="#resolution">Resolution</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#mkdir">mkdir</a><ul>
+<li><a class="reference external" href="#id1">Manifestation</a></li>
+<li><a class="reference external" href="#id2">Diagnosis</a></li>
+<li><a class="reference external" href="#id3">Resolution</a></li>
 </ul>
 </li>
 </ul>
@@ -165,7 +214,7 @@ should probably not be exported by default.</p>
         <li class="right" >
           <a href="FAQ.html" title="FAQ"
              >previous</a> |</li>
-        Ruffus v. ('1.0.5',)
+        Ruffus v. ('1.0.6',)
     <li><a href="index.html">Home</a> | </li>
         <li><a href="contents.html">Contents</a> | </li>
         <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
