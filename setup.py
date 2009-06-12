@@ -7,7 +7,10 @@ if not sys.version_info[0:2] >= (2,4):
     sys.stderr.write("Requires Python later than 2.4\n")
     sys.exit(1)
     
-import ruffus_version
+# quickly import the latest version of ruffus
+sys.path.insert(0, os.path.abspath(os.path.join("..", "src")))
+import ruffus.ruffus_version
+sys.path.pop(0)
     
     
 if sys.version_info[0:2] >= (2,6):
@@ -19,7 +22,7 @@ else:
 from setuptools import setup, find_packages
 setup(
         name='ruffus',
-        version=ruffus_version.__version, #major.minor[.patch[.sub]]
+        version=ruffus.ruffus_version.__version, #major.minor[.patch[.sub]]
         description='Light-weight Python Computational Pipeline Management',
         long_description=\
 """     
@@ -80,7 +83,7 @@ Features
     Automatic support for
 
         * Managing dependencies
-        * Parallel jobs
+        * Parallel jobs                         
         * Re-starting from arbitrary points, especially after errors
         * Display of the pipeline as a flowchart
         * Reporting

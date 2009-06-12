@@ -12,9 +12,8 @@
 # serve to show the default.
 
 import sys, os
-sys.path.append(os.path.abspath(os.path.join("..", "src")))
-import ruffus, ruffus.task
-import ruffus_version
+sys.path.insert(0, os.path.abspath(os.path.join("..", "src")))
+import ruffus, ruffus.task, ruffus.ruffus_version
 
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -49,7 +48,7 @@ copyright = u'2009, Leo Goodstadt'
 # built documents.
 #
 # The short X.Y version.
-version=ruffus_version.__version, #major.minor[.patch[.sub]]
+version=ruffus.ruffus_version.__version, #major.minor[.patch[.sub]]
 # The full version, including alpha/beta/rc tags.
 release = version
 

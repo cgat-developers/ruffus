@@ -32,6 +32,7 @@ Contents:
    Design.rst
    Glossary.rst
    FAQ.rst
+   Bugs and Updates <history>
    Future plans <Todo>
 
 =====================

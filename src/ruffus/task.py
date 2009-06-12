@@ -79,6 +79,7 @@ from collections import defaultdict
 from graph import *
 from print_dependencies import *
 import types
+from itertools import imap 
 
 # use simplejson in place of json for python < 2.6
 try:
@@ -1139,9 +1140,12 @@ def job_wrapper_mkdir(param, user_defined_work_func, register_cleanup):
     #   
     #
     for d in param[0]:
-        if not os.path.exists(d):
+        try:
             os.makedirs(d)
             register_cleanup(d, "makedirs")
+        except OSError, e:
+            if "File exists" not in e:
+                raise
 
 
         
@@ -1407,7 +1411,7 @@ class _task (node):
             imap_unordered_it = pool.imap_unordered(run_pooled_job_without_exceptions, job_parameters)
             mapped_results = imap_unordered_it
         else:
-            mapped_results = map(run_pooled_job_without_exceptions, job_parameters)
+            mapped_results = imap(run_pooled_job_without_exceptions, job_parameters)
         return_values = list()
         
         for results in mapped_results:
@@ -1622,7 +1626,7 @@ class _task (node):
         #print >>sys.stderr, dumps(list(param_func()), indent = 4)
         
         self.param_generator_func = param_func
-        self._description         = "Make directories (%s)" % ", ".join(orig_args)
+        self._description         = "Make directories (%s)" % ", ".join(orig_args[0])
         self.needs_update_func    = self.needs_update_func or needs_update_check_directory_missing
         self.job_wrapper          = job_wrapper_mkdir
         self.job_descriptor       = mkdir_job_descriptor
@@ -1812,8 +1816,8 @@ def task_names_to_tasks (task_description, task_names):
                 continue
             else:
                 # blow up for unwrapped function
-                raise error_function_is_not_a_task("Function %s is not a pipelined task in ruffus." % 
-                                                    task_name.__name__ + 
+                raise error_function_is_not_a_task(("Function %s is not a pipelined task in ruffus." % 
+                                                    task_name.__name__) + 
                                                     " To include this, this function needs to have a ruffus "+
                                                     "decoration like '@parallel', '@files', or named as a dependent "+
                                                     "of some other Ruffus task function via '@follows'.")

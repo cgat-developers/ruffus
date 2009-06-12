@@ -1,1 +1,2 @@
-__version='1.0.5'
+#!/usr/bin/env python
+__version='1.0.5beta'
