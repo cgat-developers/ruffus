@@ -48,7 +48,7 @@ copyright = u'2009, Leo Goodstadt'
 # built documents.
 #
 # The short X.Y version.
-version=ruffus.ruffus_version.__version, #major.minor[.patch[.sub]]
+version=ruffus.ruffus_version.__version #major.minor[.patch[.sub]]
 # The full version, including alpha/beta/rc tags.
 release = version
 
