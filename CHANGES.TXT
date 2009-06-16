@@ -1,3 +1,10 @@
+= v. 1.07=
+    _16/June/2009_
+    
+    ==Code Changes:==
+        * Added proxy_logger module for accessing a shared log across multiple jobs in
+          different processes.
+
 = v. 1.06=
     _12/June/2009_
     

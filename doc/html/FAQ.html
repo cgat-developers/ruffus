@@ -63,7 +63,7 @@
 <h2>General<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="q-ruffus-won-t-create-dependency-graphs">
 <h3>Q. <em>Ruffus</em> won&#8217;t create dependency graphs<a class="headerlink" href="#q-ruffus-won-t-create-dependency-graphs" title="Permalink to this headline">¶</a></h3>
-<p>A. <em>Ruffus</em> uses <tt class="docutils literal"><span class="pre">dot</span></tt> from <a class="reference external" href="http://www.graphviz.org/">Graphviz</a> to produce its
+<p>A. You need to have installed <tt class="docutils literal"><span class="pre">dot</span></tt> from <a class="reference external" href="http://www.graphviz.org/">Graphviz</a> to produce
 pretty flowcharts likes this:</p>
 <blockquote>
 <img alt="_images/four_stage_pipeline.jpg" src="_images/four_stage_pipeline.jpg" />
@@ -78,7 +78,7 @@ operating systems.</p>
 <p>If you are using <tt class="docutils literal"><span class="pre">&#64;files</span></tt> or <tt class="docutils literal"><span class="pre">&#64;files_re</span></tt>, <em>ruffus</em> uses
 file modification times to see if input files were created before
 output files.</p>
-<p>Unfortunately, some file systems for some versions of
+<p>Unfortunately, some file systems in some versions of
 Windows, Unix, linux or NFS do not record file times with
 sub-second precision.</p>
 <p>In the worse case, you might try adding some <tt class="docutils literal"><span class="pre">time.sleep(1)</span></tt> judiciously.</p>
@@ -86,7 +86,7 @@ sub-second precision.</p>
 <div class="section" id="q-ruffus-seems-to-be-hanging-in-the-same-place">
 <h3>Q. <em>Ruffus</em> seems to be hanging in the same place<a class="headerlink" href="#q-ruffus-seems-to-be-hanging-in-the-same-place" title="Permalink to this headline">¶</a></h3>
 <p>A. If <em>ruffus</em> is interrupted, for example, by a Ctrl-C,
-you will find the following lines of code highlighted:</p>
+you will often find the following lines of code highlighted:</p>
 <div class="highlight-python"><pre>File "build/bdist.linux-x86_64/egg/ruffus/task.py", line 1904, in pipeline_run
 File "build/bdist.linux-x86_64/egg/ruffus/task.py", line 1380, in run_all_jobs_in_task
 File "/xxxx/python2.6/multiprocessing/pool.py", line 507, in next
