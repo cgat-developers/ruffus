@@ -67,6 +67,7 @@ Modules:
    :maxdepth: 3
 
    task.rst
+   proxy_logger.rst
    
 .. comment
    graph.rst

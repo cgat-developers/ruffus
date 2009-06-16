@@ -117,84 +117,15 @@ except ImportError:
     json = simplejson
 
     
+from ruffus.proxy_logger import *
+import logging
+
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Shared logging
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-import multiprocessing
-import multiprocessing.managers
-
-
-import logging
-import logging.handlers
-
-
-
-#
-#   setup_logger 
-#
-def setup_shared_logger(LOGGING_LEVEL, LOG_FILENAME):
-    """
-    Function to setup logger shared between all processes
-    The logger object will be created within a separate (special) process 
-        run by multiprocessing.BaseManager.start()
-
-    See "LoggingManager" below
-    """
-
-    #
-    #   Log file name with logger level
-    # 
-    my_ruffus_logger = logging.getLogger('simpler_example_logger')
-    my_ruffus_logger.setLevel(LOGGING_LEVEL)
-
-    # 
-    #   Add handler to print to file, with the specified format  
-    #
-    handler = logging.handlers.RotatingFileHandler(
-                  LOG_FILENAME, maxBytes=100000, backupCount=5)
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)6s - %(message)s")
-    handler.setFormatter(formatter)
-    my_ruffus_logger.addHandler(handler)
-
-
-    #
-    #   This log object will be wrapped in proxy 
-    #
-    return my_ruffus_logger
-
-
-#
-#   Proxy object for logging
-#       Logging messages will be marshalled (forwarded) to the process where the 
-#       shared log lives
-#
-class LoggerProxy(multiprocessing.managers.BaseProxy):
-    def debug(self, message):
-        return self._callmethod('debug', [message])
-    def info(self, message):
-        return self._callmethod('info', [message])
-    def __str__ (self):
-        return "Logging proxy"
-
-
-# 
-#   Register the setup_logger function as a proxy for setup_logger
-#   
-#   We use SyncManager as a base class so we can get a lock proxy for synchronising 
-#       logging later on
-#
-class LoggingManager(multiprocessing.managers.SyncManager):
-    """
-    Logging manager sets up its own process and will create the real Log object there
-    We refer to this (real) log via proxies
-    """
-    pass
-LoggingManager.register('setup_logger', setup_shared_logger, proxytype=LoggerProxy, exposed = ('info', 'debug', '__str__'))
-
 
 
 
@@ -283,22 +214,17 @@ if __name__ == '__main__':
     #
     (options, remaining_args) = parser.parse_args()
 
+    args={}
+    args["file_name"] = options.log_file_name
+    args["level"] = logging.DEBUG
+    args["rotating"] = True
+    args["maxBytes"]=20000
+    args["backupCount"]=10
+    args["formatter"]="%(asctime)s - %(name)s - %(levelname)6s - %(message)s"
 
-    #
-    #   make shared log and proxy 
-    #
-    manager = LoggingManager()
-    manager.register('setup_logger', setup_shared_logger, proxytype=LoggerProxy, exposed = ('info', 'debug'))
-    
-    manager.start()
-    LOG_FILENAME  = options.log_file_name
-    LOGGING_LEVEL = logging.DEBUG
-    logger_proxy = manager.setup_logger(LOGGING_LEVEL, LOG_FILENAME)
-    
-    #
-    #   make sure we are not logging at the same time in different processes
-    #
-    logging_mutex = manager.Lock()
+    (logger_proxy, 
+     logging_mutex) = make_shared_logger_and_proxy (setup_std_shared_logger, 
+                                                    "my_logger", args)
 
 
 

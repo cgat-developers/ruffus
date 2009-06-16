@@ -1074,8 +1074,13 @@ Logging task/job completion
     *Ruffus* logs each task and each job as it is completed. The results of each
     of the examples in this tutorial were produced by default logging to stderr.
     
-    You can specify your own logging by providing a python 
-    `logging <http://docs.python.org/library/logging.html>`_ object to ``pipeline_run``::
+    You can specify your own logging by providing an log object which has ``debug()``
+    and ``info()`` methods to ``pipeline_run``.
+    
+    The python `logging <http://docs.python.org/library/logging.html>`
+    module provides logging classes with rich functionality::
+    
+    
     
         import logging
         import logging.handlers
@@ -1116,19 +1121,46 @@ Logging task/job completion
 Custom job progress logging
 =================================
 
-    It is often useful to log the progress of each job.
+    It is often useful to log the progress within each job.
     
-    Each job runs in a separate process, it is *not* possible to pass the logging object
-    between jobs:
+    However, each job runs in a separate process, and it is *not* a good
+    idea to pass the logging object itself between jobs:
     
     #) logging is not synchronised between processes
-    #) the logger object can not be "pickled" and sent across processes
+    #) `logging <http://docs.python.org/library/logging.html>` objects can not be 
+        *pickled* and sent across processes
         
     The best thing to do is to have a centralised log and to have each job invoke the
     logging methods (e.g. `debug` and `info`) across the process boundaries.
     
     :ref:`This example <sharing-data-across-jobs-example>` shows how this can be coded.
     
+    The code for setting up a shared log is in ``task/proxy_logger.py``
+    
+    
+    Set up logger from config file::
+    
+        from ruffus.proxy_logger import *
+        args={}
+        args["config_file"] = "/my/config/file"
+        
+        (logger_proxy, 
+         logging_mutex) = make_shared_logger_and_proxy (setup_std_shared_logger, 
+                                                        "my_logger", args)
+                                                        
+    Now, pass the ``logger_proxy`` (which forwards logging calls across jobs) and
+    ``logging_mutex`` (which prevents different jobs which are logging simultaneously 
+    from being jumbled up) to each job::
+
+        @files(None, 'a.1', logger_proxy, logging_mutex)
+        def task1(ignore_infile, outfile, *extra_params):
+            """
+            Log within task
+            """
+            open(outfile, "w").write("Here we go")
+            with logging_mutex:
+                logger.proxy.info("Here we go logging")
+
 
         
 .. ???

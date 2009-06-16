@@ -10,7 +10,7 @@ General
 Q. *Ruffus* won't create dependency graphs
 =========================================================
 
-A. *Ruffus* uses ``dot`` from `Graphviz <http://www.graphviz.org/>`_ to produce its
+A. You need to have installed ``dot`` from `Graphviz <http://www.graphviz.org/>`_ to produce 
 pretty flowcharts likes this:
         
         .. image:: images/four_stage_pipeline.jpg
@@ -32,7 +32,7 @@ If you are using ``@files`` or ``@files_re``, *ruffus* uses
 file modification times to see if input files were created before
 output files.
 
-Unfortunately, some file systems for some versions of 
+Unfortunately, some file systems in some versions of 
 Windows, Unix, linux or NFS do not record file times with
 sub-second precision.
 
@@ -44,7 +44,7 @@ Q. *Ruffus* seems to be hanging in the same place
 =========================================================
 
 A. If *ruffus* is interrupted, for example, by a Ctrl-C,
-you will find the following lines of code highlighted::
+you will often find the following lines of code highlighted::
 
     File "build/bdist.linux-x86_64/egg/ruffus/task.py", line 1904, in pipeline_run
     File "build/bdist.linux-x86_64/egg/ruffus/task.py", line 1380, in run_all_jobs_in_task
@@ -59,9 +59,9 @@ and the sub-processes which run *ruffus* jobs in parallel.
 This is naturally where broken execution threads get washed up onto.
 
 
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 Windows
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 =========================================================
 Q. Windows seems to spawn *ruffus* processes recursively
