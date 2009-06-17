@@ -55,7 +55,7 @@
             
   <div class="section" id="module-ruffus.proxy_logger">
 <h1>ruffus.proxy_logger<a class="headerlink" href="#module-ruffus.proxy_logger" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="create-proxy-for-logging-for-use-with-multiprocessing">
+<span class="target" id="proxy-logger"></span><div class="section" id="create-proxy-for-logging-for-use-with-multiprocessing">
 <h2>Create proxy for logging for use with multiprocessing<a class="headerlink" href="#create-proxy-for-logging-for-use-with-multiprocessing" title="Permalink to this headline">¶</a></h2>
 <p>These can be safely sent (marshalled) across process boundaries</p>
 <div class="section" id="example-1">
@@ -76,16 +76,27 @@
 <div class="section" id="example-2">
 <h3>Example 2<a class="headerlink" href="#example-2" title="Permalink to this headline">¶</a></h3>
 <blockquote>
-<p>Log to file in a specified format.</p>
+<p>Log to file <tt class="docutils literal"><span class="pre">&quot;/my/lg.log&quot;</span></tt> in the specified format (Time / Log name / Event type / Message).</p>
 <p>Delay file creation until first log.</p>
-<p>Only log &#8220;Debug&#8221; messages</p>
-<p>Other alternatives are <tt class="docutils literal"><span class="pre">logging.DEBUG</span> <span class="pre">/</span> <span class="pre">INFO</span> <span class="pre">/</span> <span class="pre">WARNING</span> <span class="pre">/</span> <span class="pre">ERROR</span> <span class="pre">/</span> <span class="pre">CRITICAL</span></tt></p>
+<p>Only log <tt class="docutils literal"><span class="pre">Debug</span></tt> messages</p>
+<blockquote>
+<p>Other alternatives for the logging threshold (<tt class="docutils literal"><span class="pre">args[&quot;level&quot;]</span></tt>) include</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">logging.DEBUG</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">logging.INFO</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">logging.WARNING</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">logging.ERROR</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">logging.CRITICAL</span></tt></li>
+</ul>
+</blockquote>
+</blockquote>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">proxy_logger</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="n">args</span><span class="o">=</span><span class="p">{}</span>
 <span class="n">args</span><span class="p">[</span><span class="s">&quot;file_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;/my/lg.log&quot;</span>
 <span class="n">args</span><span class="p">[</span><span class="s">&quot;formatter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%(asctime)s</span><span class="s"> - </span><span class="si">%(name)s</span><span class="s"> - </span><span class="si">%(levelname)6s</span><span class="s"> - </span><span class="si">%(message)s</span><span class="s">&quot;</span>
-<span class="n">args</span><span class="p">[</span><span class="s">&quot;delay&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
-<span class="n">args</span><span class="p">[</span><span class="s">&quot;level&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span>
+<span class="n">args</span><span class="p">[</span><span class="s">&quot;delay&quot;</span><span class="p">]</span>     <span class="o">=</span> <span class="bp">True</span>
+<span class="n">args</span><span class="p">[</span><span class="s">&quot;level&quot;</span><span class="p">]</span>     <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span>
 
 <span class="p">(</span><span class="n">logger_proxy</span><span class="p">,</span> 
  <span class="n">logging_mutex</span><span class="p">)</span> <span class="o">=</span> <span class="n">make_shared_logger_and_proxy</span> <span class="p">(</span><span class="n">setup_std_shared_logger</span><span class="p">,</span> 
@@ -97,7 +108,7 @@
 <div class="section" id="example-3">
 <h3>Example 3<a class="headerlink" href="#example-3" title="Permalink to this headline">¶</a></h3>
 <blockquote>
-<p>Back up log files every 20 Kb, with up to 10 backups.</p>
+<p>Rotate log files every 20 Kb, with up to 10 backups.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">proxy_logger</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="n">args</span><span class="o">=</span><span class="p">{}</span>
 <span class="n">args</span><span class="p">[</span><span class="s">&quot;file_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;/my/lg.log&quot;</span>
@@ -127,8 +138,9 @@
     <span class="n">my_log</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span> <span class="s">&#39;This is a debug message&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Note that <tt class="docutils literal"><span class="pre">exception</span></tt> is not included because the information is not well-marshalled
-across processes.</p>
+<p>Note that the logging function <tt class="docutils literal"><span class="pre">exception()</span></tt> is not included because python
+stack trace information is not well-marshalled
+(<a class="reference external" href="http://docs.python.org/library/pickle.html">pickle</a>d) across processes.</p>
 </blockquote>
 </div>
 </div>

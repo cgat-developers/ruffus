@@ -2,6 +2,8 @@
 ruffus.proxy_logger
 #####################
 
+.. _proxy-logger:
+
 .. automodule:: ruffus.proxy_logger
       :undoc-members:
       

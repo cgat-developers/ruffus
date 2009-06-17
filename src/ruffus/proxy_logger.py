@@ -26,13 +26,19 @@ Example 1
 Example 2
 ===========
 
-    Log to file in a specified format.
+    Log to file ``"/my/lg.log"`` in the specified format (Time / Log name / Event type / Message).
 
     Delay file creation until first log.
     
-    Only log "Debug" messages
+    Only log ``Debug`` messages
     
-    Other alternatives are ``logging.DEBUG / INFO / WARNING / ERROR / CRITICAL``
+        Other alternatives for the logging threshold (``args["level"]``) include
+    
+            * ``logging.DEBUG``
+            * ``logging.INFO``
+            * ``logging.WARNING``
+            * ``logging.ERROR``
+            * ``logging.CRITICAL``
     
     ::
     
@@ -40,8 +46,8 @@ Example 2
         args={}
         args["file_name"] = "/my/lg.log"
         args["formatter"] = "%(asctime)s - %(name)s - %(levelname)6s - %(message)s"
-        args["delay"] = True
-        args["level"] = logging.DEBUG
+        args["delay"]     = True
+        args["level"]     = logging.DEBUG
         
         (logger_proxy, 
          logging_mutex) = make_shared_logger_and_proxy (setup_std_shared_logger, 
@@ -51,7 +57,7 @@ Example 2
 Example 3
 ===========
 
-    Back up log files every 20 Kb, with up to 10 backups.
+    Rotate log files every 20 Kb, with up to 10 backups.
     ::
 
         from proxy_logger import *
@@ -84,8 +90,9 @@ To use:
             my_log.critical('This is a critical error message')
             my_log.log(logging.DEBUG, 'This is a debug message')
             
-    Note that ``exception`` is not included because the information is not well-marshalled
-    across processes.
+    Note that the logging function ``exception()`` is not included because python
+    stack trace information is not well-marshalled
+    (`pickle <http://docs.python.org/library/pickle.html>`_\ d) across processes.
 
 """
 

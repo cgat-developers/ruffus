@@ -1072,13 +1072,14 @@ Logging
 Logging task/job completion
 =================================
     *Ruffus* logs each task and each job as it is completed. The results of each
-    of the examples in this tutorial were produced by default logging to stderr.
+    of the examples in this tutorial were produced by default logging to ``stderr``.
     
-    You can specify your own logging by providing an log object which has ``debug()``
-    and ``info()`` methods to ``pipeline_run``.
+    You can specify your own logging by providing a log object  to ``pipeline_run``.
+    This log object should have ``debug()`` and ``info()`` methods.
     
-    The python `logging <http://docs.python.org/library/logging.html>`
-    module provides logging classes with rich functionality::
+    Instead of writing your own, it is usually more convenient to use the python
+    `logging <http://docs.python.org/library/logging.html>`_
+    module which provides logging classes with rich functionality::
     
     
     
@@ -1117,9 +1118,9 @@ Logging task/job completion
             Description: Create the file if it does not exists
             Job = [null -> "a.1"] completed
 
-=================================
-Custom job progress logging
-=================================
+=======================================
+Your own logging *within* each job
+=======================================
 
     It is often useful to log the progress within each job.
     
@@ -1127,39 +1128,50 @@ Custom job progress logging
     idea to pass the logging object itself between jobs:
     
     #) logging is not synchronised between processes
-    #) `logging <http://docs.python.org/library/logging.html>` objects can not be 
-        *pickled* and sent across processes
+    #) `logging <http://docs.python.org/library/logging.html>`_ objects can not be 
+       `pickle <http://docs.python.org/library/pickle.html>`_\ d and sent across processes
         
     The best thing to do is to have a centralised log and to have each job invoke the
-    logging methods (e.g. `debug` and `info`) across the process boundaries.
+    logging methods (e.g. `debug`, `warning`, `info` etc.) across the process boundaries in
+    the centralised log.
     
     :ref:`This example <sharing-data-across-jobs-example>` shows how this can be coded.
     
-    The code for setting up a shared log is in ``task/proxy_logger.py``
+    The :ref:`proxy_logger <proxy-logger>` module also provides an easy way to share 
+    `logging <http://docs.python.org/library/logging.html>`_ objects among
+    jobs. This requires just two simple steps:
     
     
-    Set up logger from config file::
+-------------------------------------
+    1. Set up log from config file
+-------------------------------------
+    ::
     
         from ruffus.proxy_logger import *
-        args={}
-        args["config_file"] = "/my/config/file"
-        
         (logger_proxy, 
          logging_mutex) = make_shared_logger_and_proxy (setup_std_shared_logger, 
-                                                        "my_logger", args)
+                                                        "my_logger", 
+                                                        {"file_name" :"/my/lg.log"})
                                                         
-    Now, pass the ``logger_proxy`` (which forwards logging calls across jobs) and
-    ``logging_mutex`` (which prevents different jobs which are logging simultaneously 
-    from being jumbled up) to each job::
-
-        @files(None, 'a.1', logger_proxy, logging_mutex)
-        def task1(ignore_infile, outfile, *extra_params):
-            """
-            Log within task
-            """
-            open(outfile, "w").write("Here we go")
-            with logging_mutex:
-                logger.proxy.info("Here we go logging")
+-------------------------------------
+    2. Give each job proxy to logger
+-------------------------------------
+        Now, pass:
+        
+            * ``logger_proxy`` (which forwards logging calls across jobs) and
+            * ``logging_mutex`` (which prevents different jobs which are logging simultaneously 
+              from being jumbled up) 
+            
+        to each job::
+    
+            @files(None, 'a.1', logger_proxy, logging_mutex)
+            def task1(ignore_infile, outfile, logger_proxy, logging_mutex):
+                """
+                Log within task
+                """
+                open(outfile, "w").write("Here we go")
+                with logging_mutex:
+                    logger.proxy.info("Here we go logging")
 
 
         
@@ -1176,4 +1188,4 @@ Cleaning up
 ***************************************
 
 To be implemented later!!
-See :ref:`todo-combining`
+See :ref:`todo-cleanup`
