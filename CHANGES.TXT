@@ -2,16 +2,16 @@
     _17/June/2009_
     
     ==Code Changes:==
-        * Added proxy_logger module for accessing a shared log across multiple jobs in
+        * Added `proxy_logger` module for accessing a shared log across multiple jobs in
           different processes.
 
 = v. 1.06=
     _12/June/2009_
     
     ==Bug fix:==
-        * Ruffus version module (ruffus_version.py) links fixed
+        * _Ruffus_ version module (`ruffus_version.py`) links fixed
           Soft links in linux do not travel well
-        * mkdir now can take a list of strings
+        * `mkdir` now can take a list of strings
           added test case
 
     ==Documentation:==
@@ -21,7 +21,7 @@
     _11/June/2009_
 
     ==Bug fix:==
-        * Changed "graph_printout" to "pipeline_printout_graph" in documentation.
+        * Changed "graph_printout" to `pipeline_printout_graph` in documentation.
           This function had been renamed in the code but not in the documentation :-(
 
     ==Documentation:==
@@ -33,7 +33,7 @@
         * The graph and print_dependencies modules are no longer exported by default from task.
           Please email me if this breaks anything.
         * More informative error message when refer to unadorned (without _Ruffus_ decorators) python functions as pipelined Tasks
-        * Added Ruffus version module ruffus_version.py
+        * Added Ruffus version module `ruffus_version.py`
 
 
 
@@ -41,19 +41,15 @@
     _05/June/2009_
     ==Bug fix: ==
 
-        task.task_names_to_tasks did not include tasks specified by function rather than name
-        
-        task.run_all_jobs_in_task, did not work properly without multiprocessing (# of jobs = 1)
-
-        task.pipeline_run only uses multiprocessing pools if multiprocess (# of jobs)  > 1
+        * `task.task_names_to_tasks` did not include tasks specified by function rather than name
+        * `task.run_all_jobs_in_task` did not work properly without multiprocessing (# of jobs = 1)
+        * `task.pipeline_run` only uses multiprocessing pools if `multiprocess` (# of jobs)  > 1
     
     ==Changes to allow python 2.4/2.5 to run:==
 
-        setup.py changed to remove dependency
-
-        simplejson can be loaded instead of python 2.6 json module
-
-        Changed !NamedTemporaryFile to mkstemp because delete parameter is not avaliable before python 2.6
+        * `setup.py` changed to remove dependency
+        * `simplejson` can be loaded instead of python 2.6 `json` module
+        * Changed `NamedTemporaryFile` to `mkstemp` because delete parameter is not avaliable before python 2.6
 
     ==Windows programmes==
 
@@ -65,7 +61,7 @@
     _04/June/2009_
     ==Documentation ==
         
-        Including SGE qrsh workaround in FAQ.
+        Including SGE `qrsh` workaround in FAQ.
 
 = v. 1.01=
     _22/May/2009_
