@@ -14,7 +14,7 @@ sys.path.pop(0)
     
     
 if sys.version_info[0:2] >= (2,6):
-    module_dependencies = ['multiprocessing>=2.6']
+    module_dependencies = []
 else:
     module_dependencies = ['multiprocessing>=2.6', 'simplejson']
 

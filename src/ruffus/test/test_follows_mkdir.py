@@ -19,7 +19,7 @@ exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
 sys.path.insert(0, os.path.abspath(os.path.join(exe_path,"..", "..")))
 from ruffus import *
 
-directories = ['a', 'b']    
+directories = [os.path.abspath('a'), 'b']    
 @follows(mkdir(directories), mkdir('c'), mkdir('d', 'e'), mkdir('e'))
 def task_which_makes_directories ():
     pass

@@ -254,6 +254,8 @@ def setup_std_shared_logger(logger_name, args):
 class LoggerProxy(multiprocessing.managers.BaseProxy):
     def debug(self, *args, **kwargs):
         return self._callmethod('debug', args, kwargs)
+    def log(self, *args, **kwargs):
+        return self._callmethod('log', args, kwargs)
     def info(self, *args, **kwargs):
         return self._callmethod('info', args, kwargs)
     def warning(self, *args, **kwargs):
@@ -265,7 +267,7 @@ class LoggerProxy(multiprocessing.managers.BaseProxy):
     def log(self, *args, **kwargs):
         return self._callmethod('log', args, kwargs)
     def __str__ (self):
-        return "Logging proxy"
+        return "<LoggingProxy>"
 
 # 
 #   Register the setup_logger function as a proxy for setup_logger
