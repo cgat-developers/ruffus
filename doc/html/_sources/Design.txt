@@ -140,7 +140,7 @@ Acknowledgements
     Python's easy support for reflection and function references, 
     as well as the necessity of marshalling over process boundaries, dictated the
     internal architecture of *Ruffus*.
- *  The `Boost Graph library <www.boost.org>`_ for text book implementations of directed
+ *  The `Boost Graph library <http://www.boost.org>`_ for text book implementations of directed
     graph traversals.
  *  `Graphviz <http://www.graphviz.org/>`_. Just works. Wonderful.
 
