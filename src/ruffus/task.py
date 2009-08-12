@@ -91,13 +91,25 @@ except ImportError:
 
 dumps = json.dumps
 
-def json_encode_ignore_unknown(obj):
+def ignore_unknown_encoder(obj):
+    if non_str_sequence (obj):
+        return "[%s]" % ", ".join(map(ignore_unknown_encoder, obj))
     try:
         s= str(obj)
-        return s.replace('"', "OO")
+        if "object at " in s and s[0] == '<' and s[-1] == '>':
+            pos = s.find(" object at ")
+            s = "<" + s[1:pos].replace("__main__.", "") + ">"
+        return s.replace('"', "'")
     except:
-        return str(obj.__class__).replace('"', "'")
+        return "<%s>" % str(obj.__class__).replace('"', "'")
 
+def shorten_filenames_encoder (obj):
+    if non_str_sequence (obj):
+        return "[%s]" % ", ".join(map(shorten_filenames_encoder, obj))
+    if is_str(obj):
+        if os.path.isabs(obj) and obj[1:].count('/') > 1:
+            return os.path.split(obj)[1]
+    return ignore_unknown_encoder(obj)
 
 
 from multiprocessing import Pool
@@ -379,8 +391,9 @@ def glob_regex_io_param_factory (glob_str_or_list, matching_regex, *parameters):
     parameters = list(parameters)
     if len(parameters) == 0:
         raise task_FilesreArgumentsError("Missing arguments @files_re for job " + 
-                                        dumps([glob_str_or_list, matching_regex] + parameters, 
-                                              default=json_encode_ignore_unknown))
+                                         ignore_unknown_encoder([glob_str_or_list, 
+                                                                matching_regex] + 
+                                                                    parameters) )
     
     
     regex = re.compile(matching_regex)
@@ -494,13 +507,11 @@ def check_file_list_io_param (params):
         for job_param in params:
             if len(job_param) < 2:
                 raise task_FilesArgumentsError("Missing input or output files for job " + 
-                                                dumps(job_param, 
-                                                      default=json_encode_ignore_unknown))
+                                                ignore_unknown_encoder(job_param))
             if list(job_param[0:2]) == [None, None]:
                 raise task_FilesArgumentsError("Either the input or output file " + 
                                                 "must be defined for job "                +
-                                                dumps(job_param, 
-                                                      default=json_encode_ignore_unknown))
+                                                ignore_unknown_encoder(job_param))
             for file_param in job_param[0:2]:
                 # 
                 #   check that i/o files are sequences of strings or strings
@@ -517,13 +528,11 @@ def check_file_list_io_param (params):
                         continue
                 raise task_FilesArgumentsError("Input or output files must be a string or " + 
                                                     "a collection of strings: "              +
-                                                    dumps(job_param, 
-                                                      default=json_encode_ignore_unknown))
+                                                ignore_unknown_encoder(job_param))
     except TypeError:
         message = ("Enclosing brackets are needed even if you are "
                                             "only supplying parameters for a single job: "     +
-                                            dumps(params, 
-                                                      default=json_encode_ignore_unknown))
+                                                ignore_unknown_encoder(job_param))
         raise task_FilesArgumentsError(message)
     
 def file_list_io_param_factory (orig_args):
@@ -1059,22 +1068,18 @@ def generic_job_descriptor (param):
     if param in ([], None):
         return "Job"
     else:
-        return "Job = %s" % dumps(param, 
-                                  default=json_encode_ignore_unknown)
+        return "Job = %s" % ignore_unknown_encoder(job_param)
 
 def io_files_job_descriptor (param):
     # input, output
-    extra_param = "" if len(param) == 2 else ", " + dumps(param[2:], 
-                                                      default=json_encode_ignore_unknown)[1:-1]
-    return ("Job = [%s -> %s%s]" % (dumps(param[0], 
-                                         default=json_encode_ignore_unknown), 
-                                   dumps(param[1], 
-                                         default=json_encode_ignore_unknown), 
-                                   extra_param))
+    extra_param = "" if len(param) == 2 else ", " + shorten_filenames_encoder(param[2:])[1:-1]
+    return ("Job = [%s -> %s%s]" % (shorten_filenames_encoder(param[0]),
+                                    shorten_filenames_encoder(param[1]),
+                                    extra_param))
 
 def mkdir_job_descriptor (param):
     # input, output and parameters
-    return "Make directories %s" % (dumps(param[0], default=json_encode_ignore_unknown))
+    return "Make directories %s" % (shorten_filenames_encoder(param[0]))
 
 
 #8888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -1417,10 +1422,10 @@ class _task (node):
         for results in mapped_results:
             if results[0] == False:
                 if logger:
-                    logger.debug("    %s unnecessary: already up to date" % results[1])
+                    logger.info("    %s unnecessary: already up to date" % results[1])
             elif results[0] == None:
                 if logger:
-                    logger.debug("    %s completed" % results[1])
+                    logger.info("    %s completed" % results[1])
             else:
                 #
                 #   too many errors: break
@@ -1628,7 +1633,7 @@ class _task (node):
         #print >>sys.stderr, dumps(list(param_func()), indent = 4)
         
         self.param_generator_func = param_func
-        self._description         = "Make directories %s" % (dumps(orig_args, default=json_encode_ignore_unknown))
+        self._description         = "Make directories %s" % (shorten_filenames_encoder(orig_args))
         self.needs_update_func    = self.needs_update_func or needs_update_check_directory_missing
         self.job_wrapper          = job_wrapper_mkdir
         self.job_descriptor       = mkdir_job_descriptor

@@ -1,3 +1,26 @@
+= v. 1.08=
+    _12/August/2009_
+    
+    ==Code Changes:==
+        * Added::
+
+			task.shorten_filenames_encoder (obj)
+			task.ignore_unknown_encoder(obj)
+
+		  functions which print out job parameters more prettily.
+
+		  Parameters which look like file paths will only have the file part printed
+		  (i.e. "/a/b/c" -> 'c')
+		
+		  Test scripts ``simpler_with_shared_logging.py`` and ``test_follows_mkdir.py``
+          have been changed to test for this.
+
+    ==Documentation:==
+		Errors fixed. Thanks to Matteo Bertini!
+
+` module for accessing a shared log across multiple jobs in
+          different processes.
+
 = v. 1.07=
     _17/June/2009_
     

@@ -245,7 +245,7 @@ if __name__ == '__main__':
 #
 #    task1
 #
-@files(None, 'a.1', logger_proxy, logging_mutex)
+@files(None, os.path.abspath('a.1'), logger_proxy, logging_mutex)
 def task1(infiles, outfiles, *extra_params):
     """
     First task
