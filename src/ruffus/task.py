@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+DEBUG_TASKS_FILE = "DEBUG.TASKS.PROGRESS.DELETE.THIS"
+
 
 """
 
@@ -49,10 +51,10 @@ Running the pipeline
     
 
 """
-__version__ = '0.9.1'
 
 
 import os,sys,copy, multiprocessing
+from collections import namedtuple
 # add self to search path for testing
 if __name__ == '__main__':
     exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
@@ -269,7 +271,7 @@ def needs_update_check_directory_missing (dirs):
         Is it an ordinary file not a directory? (throw exception
     """
     for d in dirs:
-        #print >>sys.stderr, "check directory missing %d " % os.path.exists(d)
+        #print >>sys.stderr, "check directory missing %d " % os.path.exists(d) # DEBUG
         if not os.path.exists(d):
             return True
         if not os.path.isdir(d):
@@ -330,6 +332,14 @@ stderr_logger     = t_stderr_logger()
 #               act_func(*param)
 #
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+
+
+# fake parameters to signal in queue
+class all_tasks_complete:
+    pass
+
+class waiting_for_more_tasks_to_complete:
+    pass
 
 #_________________________________________________________________________________________
 
@@ -588,7 +598,7 @@ def file_list_io_param_factory (orig_args):
 
     def iterator():
         for job_param in params:
-            #print >> sys.stderr, dumps(job_param, indent=4)
+            #print >> sys.stderr, dumps(job_param, indent=4) # DEBUG
             yield job_param
     return iterator
 
@@ -627,7 +637,7 @@ both call::
 
     def iterator():
         for job_param in params:
-            #print >> sys.stderr, dumps(job_param, indent=4)
+            #print >> sys.stderr, dumps(job_param, indent=4) # DEBUG
             yield job_param
     return iterator
 
@@ -680,14 +690,18 @@ def _touch_file_factory (orig_args, register_cleanup):
 class error_task(Exception):
     def __init__(self, *errmsg):
         Exception.__init__(self, *errmsg)
-        self.task = ""
+        self.task_names = []
+        self.additional_msg = ""
     def __str__(self):
-        return self.task + " ".join(map(str, self.args))
+        task_names = "\n".join(self.task_names)
+        task = "\n\n" + self.additional_msg + " for\n%s\n" % task_names
+        return task + " ".join(map(str, self.args))
     def specify_task (self, task, additional_msg):
         task_name = task._name.replace('__main__.', '')
         if task._action_type != task.action_mkdir:
             task_name = "'def %s(...):'" % (task_name)
-        self.task = "\n\n" + additional_msg + " for\n%s\n" % task_name
+        self.task_names.append(task_name)
+        self.additional_msg = additional_msg
 
 class RethrownJobError(error_task):
     """
@@ -696,7 +710,7 @@ class RethrownJobError(error_task):
         See multiprocessor.Server.handle_request/serve_client for an analogous function
     """
     def __init__(self, job_exceptions):
-        Exception.__init__(self, job_exceptions)
+        error_task.__init__(self)
         self.args = job_exceptions
     def __str__(self):
         message = ["\nOriginal exception%s:\n" % ("s" if len(self.args) > 1 else "")]
@@ -708,7 +722,9 @@ class RethrownJobError(error_task):
             message += ("\nException #%d\n" % (i + 1) +
                         "%s: %s\nfor %s\n\n%s\n" % 
                             (exception_name, exception_value, job_name, exception_stack) )
-        return (self.task + "".join(message)).replace("\n", "\n    ")
+        task_names = "\n".join(self.task_names)
+        task = "\n\n" + self.additional_msg + " for\n%s\n" % task_names
+        return (task + "".join(message)).replace("\n", "\n    ")
         
 class task_FilesArgumentsError(error_task):
     pass
@@ -1112,8 +1128,8 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup):
     assert(user_defined_work_func)
 
     ret_val = user_defined_work_func(*param)
-    if ret_val == False:
-        return False
+    #if ret_val == False:
+    #    return False
 
     i,o = param[0:2]
 
@@ -1153,6 +1169,12 @@ def job_wrapper_mkdir(param, user_defined_work_func, register_cleanup):
                 raise
 
 
+JOB_ERROR           = 0
+JOB_SIGNALLED_BREAK = 1
+JOB_UP_TO_DATE      = 2
+JOB_COMPLETED       = 3
+t_job_result = namedtuple('t_job_result', 'task_name state job_name return_value exception')
+
         
 #_________________________________________________________________________________________
 
@@ -1168,7 +1190,7 @@ def run_pooled_job_without_exceptions (process_parameters):
         See RethrownJobError /  run_all_jobs_in_task
     """
     
-    (param, job_descriptor, needs_update_func, job_wrapper, 
+    (param, task_name, job_descriptor, needs_update_func, job_wrapper, 
         user_defined_work_func, do_log, force_rerun) = process_parameters
     
     if do_log:
@@ -1180,7 +1202,7 @@ def run_pooled_job_without_exceptions (process_parameters):
         # don't run if up to date
         if not force_rerun and needs_update_func:
             if not needs_update_func (*param):
-                return False, job_name
+                return t_job_result(task_name, JOB_UP_TO_DATE, job_name, None, None)
                 
             #    Clunky hack to make sure input files exists right before 
             #        job is called for better error messages
@@ -1189,9 +1211,8 @@ def run_pooled_job_without_exceptions (process_parameters):
 
 
         # if user return false, halt job
-        if job_wrapper(param, user_defined_work_func, register_cleanup) == False:
-            raise JobSignalledBreak("%s returned False" % job_descriptor(param))
-        return None, job_name
+        return_value =  job_wrapper(param, user_defined_work_func, register_cleanup)
+        return t_job_result(task_name, JOB_COMPLETED, job_name, return_value, None)
     except:
         #   Wrap up one or more exceptions rethrown across process boundaries
         #   
@@ -1200,7 +1221,11 @@ def run_pooled_job_without_exceptions (process_parameters):
         exception_stack  = traceback.format_exc(exceptionTraceback)
         exception_name   = exceptionType.__module__ + '.' + exceptionType.__name__
         exception_value  = str(exceptionValue)
-        return (job_descriptor(param), exception_name, exception_value, exception_stack)
+        return t_job_result(task_name, JOB_ERROR, job_name, None,
+                            [job_descriptor(param), 
+                             exception_name, 
+                             exception_value, 
+                             exception_stack])
         
 
 
@@ -1213,6 +1238,7 @@ def run_pooled_job_without_exceptions (process_parameters):
 #_________________________________________________________________________________________
 def register_cleanup (file_name, operation):
     pass
+
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   _task
@@ -1369,83 +1395,6 @@ class _task (node):
 
     
 
-    #_________________________________________________________________________________________
-
-    #   run_all_jobs_in_task
-
-    #_________________________________________________________________________________________
-    def run_all_jobs_in_task(self, logger, pool, poolsize, force_rerun):
-        """
-        Run all jobs for this task
-        """
-            
-        task_name = self._name.replace("__main__.", "")
-        logger.info("Task = " + task_name + (": Forced to rerun" if force_rerun else ""))
-        if len(self._description):
-            logger.debug("    " + self._description)
-
-        # 
-        # append all functions and arguments to a list
-        # 
-        # pass to pool if multiprocess otherwise to single task
-        # 
-        # Catch exceptions before pool
-        
-        job_parameters = list()
-            
-            
-        assert(self.job_wrapper)
-        import pickle
-        
-        #
-        #   No parameters: just call task function 
-        #
-        if self.param_generator_func == None:
-            job_parameters.append(([], self.job_descriptor, self.needs_update_func, 
-                                    self.job_wrapper, self.user_defined_work_func,
-                                    logger != None, force_rerun))
-        else:    
-            for param in self.param_generator_func():
-                job_parameters.append((param, self.job_descriptor, self.needs_update_func, 
-                                        self.job_wrapper, self.user_defined_work_func,
-                                        logger != None, force_rerun))
-
-
-        if pool:
-            # run in parallel
-            imap_unordered_it = pool.imap_unordered(run_pooled_job_without_exceptions, job_parameters)
-            mapped_results = imap_unordered_it
-        else:
-            mapped_results = imap(run_pooled_job_without_exceptions, job_parameters)
-        return_values = list()
-        
-        for results in mapped_results:
-            if results[0] == False:
-                if logger:
-                    logger.info("    %s unnecessary: already up to date" % results[1])
-            elif results[0] == None:
-                if logger:
-                    logger.info("    %s completed" % results[1])
-            else:
-                #
-                #   too many errors: break
-                #
-                return_values.append(results)
-                if ("JobSignalledBreak" in results[1]  or
-                    len(return_values) >= poolsize):
-                    break
-            
-        if len(return_values):
-            errt = RethrownJobError(return_values)
-            errt.specify_task(self, "Exceptions running jobs")
-            raise errt
-        
-        # run post task functions
-        for f in self.post_task_functions:
-            f()
-        return True
-        
-        
 
     #_____________________________________________________________________________________
 
@@ -1630,7 +1579,7 @@ class _task (node):
             orig_args = orig_args[0]
         param_func                = args_param_factory([[[sorted(orig_args)]]])
         
-        #print >>sys.stderr, dumps(list(param_func()), indent = 4)
+        #print >>sys.stderr, dumps(list(param_func()), indent = 4) # DEBUG
         
         self.param_generator_func = param_func
         self._description         = "Make directories %s" % (shorten_filenames_encoder(orig_args))
@@ -1755,6 +1704,17 @@ class _task (node):
 
         
         
+#   DEBUGG
+class task_encoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, set):
+            return list(obj)
+        if isinstance(obj, defaultdict):
+            return dict(obj)
+        if isinstance(obj, _task):
+            return obj._name #, _task.action_names[obj.action_task], obj._description]
+        return json.JSONEncoder.default(self, obj)
+
 
             
             
@@ -1900,59 +1860,6 @@ def pipeline_printout_graph (stream,
     
 #_________________________________________________________________________________________
 
-#   pipeline_run
-
-#_________________________________________________________________________________________
-def pipeline_run(target_tasks, forcedtorun_tasks = [], multiprocess = 1, logger = stderr_logger, 
-                                    gnu_make_maximal_rebuild_mode  = True):
-    """
-    Run pipelines.
-    
-    :param target_tasks: targets task functions which will be run if they are out-of-date
-    :param forcedtorun_tasks: task functions which will be run whether or not they are out-of-date
-    :param multiprocess: The number of concurrent jobs
-    :param logger: Where progress will be logged. Defaults to stderr output. 
-    :type logger: `logging <http://docs.python.org/library/logging.html>`_ objects
-    :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all* out-of-date tasks. Runs minimal
-                                          set to build targets if set to ``True``. Use with caution. 
-
-   
-    """
-    
-    
-
-
-    link_task_names_to_functions ()
-    #
-    #   target jobs
-    #     
-    target_tasks = task_names_to_tasks ("Target", target_tasks)
-    forcedtorun_tasks = task_names_to_tasks ("Forced to run", forcedtorun_tasks)
-    (topological_sorted,
-    self_terminated_nodes,
-    dag_violating_edges,
-    dag_violating_nodes) = topologically_sorted_nodes(  target_tasks, forcedtorun_tasks, 
-                                                        gnu_make_maximal_rebuild_mode)
-
-    if len(dag_violating_nodes):
-        dag_violating_tasks = ", ".join(t._name for t in dag_violating_nodes)
-        
-        e = error_circular_dependencies("Circular dependencies found in the "
-                                        "pipeline involving one or more of (%s)" %
-                                            (dag_violating_tasks))
-        raise e
-
-    #
-    #   whether using multiprocessing
-    #   
-    pool = Pool(multiprocess) if multiprocess > 1 else None
-
-    for task in topological_sorted:
-        if not task.run_all_jobs_in_task(logger, pool, multiprocess, task in forcedtorun_tasks):
-            break
-
-#_________________________________________________________________________________________
-
 #   pipeline_printout
 
 #_________________________________________________________________________________________
@@ -2003,7 +1910,292 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], long_
     for task in topological_sorted:
         task.printout(output_stream, task in forcedtorun_tasks, long_winded, indent)
 
+#_________________________________________________________________________________________
+#
+#   Parameter generator for all jobs / tasks
+#
+#________________________________________________________________________________________ 
+def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forcedtorun_tasks, 
+                                                        count_remaining_jobs):
 
+    inprogress_tasks = set()
+
+    def parameter_generator():
+        #print >>sys.stderr, "   job_parameter_generator BEGIN" # DEBUG
+        while len(incomplete_tasks):
+            for task in list(incomplete_tasks):              
+                # ignore tasks in progress
+                if task in inprogress_tasks:
+                    continue
+
+                # ignore tasks with incomplete dependencies
+                for parent in task_parents[task]:                  
+                    if parent in incomplete_tasks:         
+                        break
+                else:                                        
+                    force_rerun = task in forcedtorun_tasks
+                    # 
+                    # log task
+                    # 
+                    task_name = task._name.replace("__main__.", "")
+                    if logger:
+                        logger.info("Start Task = " + task_name + (": Forced to rerun" if force_rerun else ""))
+                        if len(task._description):
+                            logger.debug("    " + task._description)
+                    inprogress_tasks.add(task)
+
+
+                    #
+                    #   If no parameters: just call task function (empty list)
+                    #
+                    if task.param_generator_func == None:
+                        parameters = ([])
+                    else:
+                        parameters = task.param_generator_func()
+                    for param in parameters:
+                        count_remaining_jobs[task] += 1
+                        yield (param, 
+                                task._name,
+                                task.job_descriptor, 
+                                task.needs_update_func, 
+                                task.job_wrapper, 
+                                task.user_defined_work_func,
+                                logger != None, 
+                                force_rerun)
+
+            yield waiting_for_more_tasks_to_complete()
+
+        yield all_tasks_complete()
+        # This function is done
+        #print >>sys.stderr, "   job_parameter_generator END" # DEBUG
+
+    return parameter_generator
+
+ 
+
+#_________________________________________________________________________________________
+#
+#   feed_job_params_to_process_pool
+#
+#
+#________________________________________________________________________________________ 
+def feed_job_params_to_process_pool_factory (parameter_q):
+    """
+    Process pool gets its parameters from this generator
+    Use factory function to save parameter_queue
+    """
+    def feed_job_params_to_process_pool ():
+        #print >>sys.stderr, "   Send param to Pooled Process START" # DEBUG
+        while 1:
+            param = parameter_q.get()
+
+            # all tasks done
+            if isinstance(param, all_tasks_complete):
+                break
+
+            #print >>sys.stderr, "   Send param to Pooled Process=>", param[0] # DEBUG
+            yield param
+
+        #print >>sys.stderr, "   Send param to Pooled Process END" # DEBUG
+        parameter_q.close()
+        
+    # return generator
+    return feed_job_params_to_process_pool
+
+#_________________________________________________________________________________________
+#
+#   fill_queue_with_job_parameters
+#
+#________________________________________________________________________________________ 
+def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE):
+    """
+    Ensures queue is filled with number of parameters > jobs / slots (POOL_SIZE)
+    """
+    #print >>sys.stderr, "   fill_queue_with_job_parameters START" # DEBUG
+    for param in job_parameters:
+
+        # stop if no more jobs available
+        if isinstance(param, waiting_for_more_tasks_to_complete):
+            #print >>sys.stderr, "   fill_queue_with_job_parameters wait for task to complete" # DEBUG
+            break
+            
+        # put into queue
+        #if not isinstance(param, all_tasks_complete):                           # DEBUG
+            #print >>sys.stderr, "   fill_queue_with_job_parameters=>", param[0] # DEBUG
+
+
+
+        parameter_q.put(param)
+        
+        # needs to be at least 2 so that the parameter queue never consists of a single
+        #   waiting_for_task_to_complete entry which will cause
+        #   a loop and everything to hang!
+        if parameter_q.qsize() > POOL_SIZE + 1:
+            break
+    #print >>sys.stderr, "   fill_queue_with_job_parameters END" # DEBUG
+
+
+#_________________________________________________________________________________________
+
+#   pipeline_run
+
+#_________________________________________________________________________________________
+def pipeline_run(target_tasks, forcedtorun_tasks = [], multiprocess = 1, logger = black_hole_logger, 
+                                    gnu_make_maximal_rebuild_mode  = True):
+    """
+    Run pipelines.
+
+    :param target_tasks: targets task functions which will be run if they are out-of-date
+    :param forcedtorun_tasks: task functions which will be run whether or not they are out-of-date
+    :param multiprocess: The number of concurrent jobs
+    :param logger: Where progress will be logged. Defaults to stderr output. 
+    :type logger: `logging <http://docs.python.org/library/logging.html>`_ objects
+    :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all* out-of-date tasks. Runs minimal
+                                          set to build targets if set to ``True``. Use with caution. 
+
+
+    """
+
+
+
+
+    link_task_names_to_functions ()
+    #
+    #   target jobs
+    #     
+    target_tasks = task_names_to_tasks ("Target", target_tasks)
+    forcedtorun_tasks = task_names_to_tasks ("Forced to run", forcedtorun_tasks)
+    (topological_sorted,
+    self_terminated_nodes,
+    dag_violating_edges,
+    dag_violating_nodes) = topologically_sorted_nodes(  target_tasks, forcedtorun_tasks, 
+                                                        gnu_make_maximal_rebuild_mode)
+
+    if len(dag_violating_nodes):
+        dag_violating_tasks = ", ".join(t._name for t in dag_violating_nodes)
+
+        e = error_circular_dependencies("Circular dependencies found in the "
+                                        "pipeline involving one or more of (%s)" %
+                                            (dag_violating_tasks))
+        raise e
+
+
+
+    # 
+    # get dependencies. Only include tasks which will be run
+    # 
+    incomplete_tasks = set(topological_sorted)
+    task_parents = defaultdict(set)
+    for task in incomplete_tasks:
+        task_parents[task] = set()
+        for parent in task._outward:
+            if parent in incomplete_tasks:
+                task_parents[task].add(parent)
+    #print json.dumps(task_parents.items(), indent=4, cls=task_encoder)
+    
+    
+    
+
+    # 
+    # prime queue with initial set of job parameters    
+    # 
+    parameter_q = multiprocessing.Queue()
+
+    count_remaining_jobs = defaultdict(int)
+    parameter_generator = make_job_parameter_generator (incomplete_tasks, task_parents, 
+                                                        logger, forcedtorun_tasks, 
+                                                        count_remaining_jobs)
+    job_parameters = parameter_generator()
+    fill_queue_with_job_parameters(job_parameters, parameter_q, multiprocess)
+
+
+    #
+    #   whether using multiprocessing
+    #   
+    pool = Pool(multiprocess) if multiprocess > 1 else None
+    if pool:
+        pool_func = pool.imap_unordered
+    else:
+        pool_func = imap
+
+    
+    
+    feed_job_params_to_process_pool = feed_job_params_to_process_pool_factory (parameter_q)
+
+    # 
+    #   for each result from job
+    # 
+    job_errors = list()
+    tasks_with_errors = set()
+
+    #   
+    #   job_result.job_name / job_result.return_value
+    #       Reserved for returning result from job... 
+    #       How?
+    # 
+    
+    
+    for job_result in pool_func(run_pooled_job_without_exceptions, feed_job_params_to_process_pool()):
+        
+        task = node.lookup_node_from_name(job_result.task_name)
+        count_remaining_jobs[task] = count_remaining_jobs[task] - 1
+        
+        last_job_in_task = False
+        if count_remaining_jobs[task] == 0:
+            incomplete_tasks.remove(task)
+            last_job_in_task = True
+            
+        elif count_remaining_jobs[task] < 0:
+            raise Exception("Task [%s] job count < 0" % task._name)
+            
+        # only save poolsize number of errors            
+        if job_result.state == JOB_ERROR:
+            job_errors.append(job_result.exception)
+            tasks_with_errors.add(task)
+            if len(job_errors) >= multiprocess:
+                break
+                
+        # break immediately if the user says stop
+        elif job_result.state == JOB_SIGNALLED_BREAK:
+            job_errors.append(job_result.exception)
+            tasks_with_errors.add(task)
+            break
+
+        elif logger:
+            if job_result.state == JOB_UP_TO_DATE:
+                logger.info("    %s unnecessary: already up to date" % job_result.job_name)
+            else:
+                logger.info("    %s completed" % job_result.job_name)
+            
+        #
+        # Current Task completed
+        #             
+        if last_job_in_task:
+
+            #   call job completion signals
+            for f in task.post_task_functions:
+                f()
+            if logger:
+                short_task_name = job_result.task_name.replace('__main__.', '')
+                logger.info("Completed Task = " + short_task_name)
+
+            
+        # make sure queue is still full after each job is retired
+        # do this after undating which jobs are incomplete
+        fill_queue_with_job_parameters(job_parameters, parameter_q, multiprocess)
+
+        
+        
+
+    if len(job_errors):
+        errt = RethrownJobError(job_errors)
+        for task in tasks_with_errors:
+            errt.specify_task(task, "Exceptions running jobs")
+        raise errt
+
+
+
+        
 #   use high resolution timestamps where available            
 #       default in python 2.5 and greater
 #   N.B. File modify times / stat values have 1 second precision for many file systems
