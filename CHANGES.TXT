@@ -1,3 +1,12 @@
+= v. 1.09=
+    _8/October/2009_
+    
+    ==Code Changes:==
+        * In a major piece of retooling, jobs from independent tasks which do not
+          depend on each other will be run in parallel.
+		  This involves major changes to the scheduling code. Please contact me asap
+		  if anything breaks.
+
 = v. 1.08=
     _12/August/2009_
     
