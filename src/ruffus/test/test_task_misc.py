@@ -64,12 +64,7 @@ class TestMiscFunctions(unittest.TestCase):
         self.assert_(task.non_str_sequence(test_str4))
         
         
-    def test_ioparam_to_str (self):
-        self.assert_(task.ioparam_to_str(None) == '')
-        self.assert_(task.ioparam_to_str('test') == "'test'")
-        self.assert_(task.ioparam_to_str(['test1', 'test2']) == "'test1', 'test2'")
-
-    
+   
 class Test_needs_update_check_directory_missing(unittest.TestCase):
 
     def setUp (self):
