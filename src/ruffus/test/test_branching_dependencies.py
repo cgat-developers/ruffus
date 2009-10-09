@@ -200,7 +200,6 @@ def task1(infiles, outfiles, *extra_params):
     open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
 
 
-
 #
 #    task2
 #
@@ -220,7 +219,7 @@ def task2(infiles, outfiles, *extra_params):
 #
 #    task3
 #
-@files_re(tempdir + '*.1', '(.*).1', r'\1.2', r'\1.3')
+@files_re(tempdir + '*.1', '(.*).1', [r'\1.2', tempdir + "a.1"], r'\1.3')
 @follows(task2)
 @posttask(lambda: open(tempdir + "task.done", "a").write("Task 3 Done\n"))
 def task3(infiles, outfiles, *extra_params):
@@ -321,14 +320,17 @@ def check_final_output_correct():
     expected_output = \
 """        ["DIR/a.1"] -> ["DIR/a.2"]
         ["DIR/a.1"] -> ["DIR/a.4"]
-        ["DIR/a.2"] -> ["DIR/a.3"]
+        ["DIR/a.2", "DIR/a.1"] -> ["DIR/a.3"]
         ["DIR/a.3", "DIR/b.3", "DIR/c.3", "DIR/a.4", "DIR/b.4", "DIR/c.4", "DIR/a.5"] -> ["DIR/final.6"]
         ["DIR/b.1"] -> ["DIR/b.2"]
         ["DIR/b.1"] -> ["DIR/b.4"]
-        ["DIR/b.2"] -> ["DIR/b.3"]
+        ["DIR/b.2", "DIR/a.1"] -> ["DIR/b.3"]
         ["DIR/c.1"] -> ["DIR/c.2"]
         ["DIR/c.1"] -> ["DIR/c.4"]
-        ["DIR/c.2"] -> ["DIR/c.3"]
+        ["DIR/c.2", "DIR/a.1"] -> ["DIR/c.3"]
+        [] -> ["DIR/a.1", "DIR/b.1", "DIR/c.1"]
+        [] -> ["DIR/a.1", "DIR/b.1", "DIR/c.1"]
+        [] -> ["DIR/a.1", "DIR/b.1", "DIR/c.1"]
         [] -> ["DIR/a.1", "DIR/b.1", "DIR/c.1"]
         [] -> ["DIR/a.1", "DIR/b.1", "DIR/c.1"]
         [] -> ["DIR/a.1", "DIR/b.1", "DIR/c.1"]
@@ -367,6 +369,7 @@ if __name__ == '__main__':
         import os
         os.system("rm -rf %s" % tempdir)
         pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, 
+                            logger = black_hole_logger,
                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode)
         
         check_final_output_correct()
@@ -376,5 +379,5 @@ if __name__ == '__main__':
         print "Done"
     else:
         pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, 
-                            gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode)
+                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode)
 
