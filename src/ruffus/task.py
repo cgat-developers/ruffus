@@ -1,8 +1,4 @@
 #!/usr/bin/env python
-
-DEBUG_TASKS_FILE = "DEBUG.TASKS.PROGRESS.DELETE.THIS"
-
-
 """
 
 ********************************************
@@ -80,6 +76,7 @@ import sys
 from collections import defaultdict
 from graph import *
 from print_dependencies import *
+from ruffus_exceptions import  *
 import types
 from itertools import imap 
 
@@ -188,23 +185,25 @@ def print_error (Msg):
 #   needs_update_check_modify_time
 
 #_________________________________________________________________________________________
+def get_filenames_from_nested_sequence(p, l = None):
+    if l == None:
+        l = []
+    if is_str(p):
+        l.append(p)
+    elif non_str_sequence (p):
+        for pp in p:
+            get_filenames_from_nested_sequence(pp, l)
+    return l
+
 def check_input_files_exist (input, *other):
     """
     Clunky hack to make sure input files exists right before 
         job is called for better error messages
     """
-
-    # missing file means always build                
-    if input == None:
-        return
-    if is_str(input):
-        if not os.path.exists(input):
-            raise MissingInputFileError("No way to run job: Input file ['%s'] does not exist" % input)
-    else:
-        for f in input:
-            if not os.path.exists(f):
-                raise MissingInputFileError("No way to run job: Input file ['%s'] does not exist" % f)
-
+    for f in get_filenames_from_nested_sequence(input):
+        if not os.path.exists(f):
+            raise MissingInputFileError("No way to run job: "+
+                                        "Input file ['%s'] does not exist" % f)
 
 def needs_update_check_modify_time (i, o, *other):
     """
@@ -214,26 +213,25 @@ def needs_update_check_modify_time (i, o, *other):
         None means always make
         
     """
-    # missing output file
-    if o == None or (non_str_sequence(o)  and len(o) == 0):
+    i = get_filenames_from_nested_sequence(i)
+    o = get_filenames_from_nested_sequence(o)
+
+    # 
+    # build: missing output file
+    # 
+    if len(o) == 0:
         return True
 
-    # missing file means always build                
+    # missing input / output file means always build                
     for io in (i, o):
-        if io == None:
-            continue
-        if is_str(io):
-            if not os.path.exists(io):
+        for f in io:
+            if not os.path.exists(f):
                 return True
-        else:
-            for f in io:
-                if not os.path.exists(f):
-                    return True
 
     #
-    #   missing input -> build if absent
+    #   missing input -> build only if output absent
     # 
-    if i == None or len(i) == 0:
+    if len(i) == 0:
         return False
     
     
@@ -242,12 +240,8 @@ def needs_update_check_modify_time (i, o, *other):
     #
     file_times = [[], []]                                    
     for index, io in enumerate((i, o)):
-        if is_str(io):
-            file_times[index].append(os.path.getmtime(io))
-        else:
-            for f in io:
-                file_times[index].append(os.path.getmtime(f))
-        file_times[index].sort()
+        for f in io:
+            file_times[index].append(os.path.getmtime(f))
 
     # 
     #   update if any input file >= (more recent) output fifle
@@ -352,6 +346,22 @@ class waiting_for_more_tasks_to_complete:
 #                3) input_filename_str (optional)
 #                4) output_filename_str
 #_________________________________________________________________________________________
+class pass_thru:
+    pass
+def construct_filename_parameters_with_regex(filename, regex, p):
+    """
+    recursively replaces file name specifications using regular expressions
+    Non-strings are left alone
+    """
+    if isinstance(p, pass_thru):
+        return starting_file_name
+    elif is_str(p):
+        return regex.sub(p, filename) 
+    elif non_str_sequence (p):
+        return [construct_filename_parameters_with_regex(filename, regex, pp) for pp in p]
+    else:
+        return p
+
 import glob    
 def glob_regex_io_param_factory (glob_str_or_list, matching_regex, *parameters):
     """
@@ -408,13 +418,14 @@ def glob_regex_io_param_factory (glob_str_or_list, matching_regex, *parameters):
     
     regex = re.compile(matching_regex)
 
-    # make (expensive) copy so that changes to the original sequence don't confuse us
-    parameters = copy.copy(parameters)
+    # 
+    #  copy.copy already called in parent
+    # 
+    #  make (expensive) copy so that changes to the original sequence don't confuse us
+    #  parameters = copy.copy(parameters)
 
     
     # if the input file term is missing, just use the original
-    class pass_thru:
-        pass
     if len(parameters) == 1:
         parameters.insert(0, pass_thru())
 
@@ -435,54 +446,19 @@ def glob_regex_io_param_factory (glob_str_or_list, matching_regex, *parameters):
             filenames = sorted(glob_str_or_list)
             
             
-        
-        for starting_file_name in filenames:
+        for filename in filenames:
             #
             #   regular expression has to match 
             #
-            if not regex.search(starting_file_name):
+            if not regex.search(filename):
                 continue
 
             job_param = []
             for p in parameters:
-                if isinstance(p, pass_thru):
-                    job_param.append(starting_file_name)
-                elif is_str(p):
-                    job_param.append(regex.sub(p, starting_file_name))
-                elif non_str_sequence (p):
-                    nested_params = []
-                    for pp in p:
-                        if is_str(pp):
-                            nested_params.append(regex.sub(pp, starting_file_name))
-                        else:
-                            nested_params.append(pp)
-                    job_param.append(nested_params)
-                else:
-                    job_param.append(p)
-            
+                job_param.append(construct_filename_parameters_with_regex(filename, regex, p))
+
             yield job_param
-                
-        ##  
-        ##   If there is no input_filename_str
-        ##       use original file names as the input files
-        ##   
-        ##   Only proceed if regex matches filename
-        ##       (any_changes != 0)
-        ##           
-        ## 
-        #if input_filename_str == None:
-        #    for input_file_name in filenames:
-        #        (output_file_name, any_changes) = regex.subn(output_filename_str, input_file_name)
-        #        if not any_changes:
-        #            continue
-        #        yield (input_file_name, output_file_name)
-        #else:
-        #    for filename in filenames:
-        #        (input_file_name, any_changes) = regex.subn(input_filename_str, filename)
-        #        if not any_changes:
-        #            continue
-        #        output_file_name = regex.sub(output_filename_str, filename)
-        #        yield (input_file_name, output_file_name)
+        
 
     return iterator
     
@@ -516,33 +492,20 @@ def check_file_list_io_param (params):
     try:
         for job_param in params:
             if len(job_param) < 2:
-                raise task_FilesArgumentsError("Missing input or output files for job " + 
-                                                ignore_unknown_encoder(job_param))
-            if list(job_param[0:2]) == [None, None]:
-                raise task_FilesArgumentsError("Either the input or output file " + 
-                                                "must be defined for job "                +
-                                                ignore_unknown_encoder(job_param))
-            for file_param in job_param[0:2]:
-                # 
-                #   check that i/o files are sequences of strings or strings
-                #
-                if file_param == None:
-                    continue
-                if is_str(file_param):
-                    continue
-                if non_str_sequence(file_param):
-                    for f in file_param:
-                        if not is_str(f):
-                            break
-                    else:
-                        continue
-                raise task_FilesArgumentsError("Input or output files must be a string or " + 
-                                                    "a collection of strings: "              +
+                raise task_FilesArgumentsError("Missing input or output files for job " +   
+                                                ignore_unknown_encoder(job_param))      
+            if list(job_param[0:2]) == [None, None]:                                    
+                raise task_FilesArgumentsError("Either the input or output file "       +   
+                                                "must be defined for job "              +   
+                                                ignore_unknown_encoder(job_param))      
+            if len(get_filenames_from_nested_sequence(job_param[0:2])) == 0:            
+                raise task_FilesArgumentsError("Input or output files contain strings " +   
+                                                    "or a collection of strings: "      +   
                                                 ignore_unknown_encoder(job_param))
     except TypeError:
         message = ("Enclosing brackets are needed even if you are "
-                                            "only supplying parameters for a single job: "     +
-                                                ignore_unknown_encoder(job_param))
+                   "only supplying parameters for a single job: "     +
+                    ignore_unknown_encoder(job_param))
         raise task_FilesArgumentsError(message)
     
 def file_list_io_param_factory (orig_args):
@@ -680,85 +643,6 @@ def _touch_file_factory (orig_args, register_cleanup):
     
         
         
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   Exceptions
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-class error_task(Exception):
-    def __init__(self, *errmsg):
-        Exception.__init__(self, *errmsg)
-        self.task_names = []
-        self.additional_msg = ""
-    def __str__(self):
-        task_names = "\n".join(self.task_names)
-        task = "\n\n" + self.additional_msg + " for\n%s\n" % task_names
-        return task + " ".join(map(str, self.args))
-    def specify_task (self, task, additional_msg):
-        task_name = task._name.replace('__main__.', '')
-        if task._action_type != task.action_mkdir:
-            task_name = "'def %s(...):'" % (task_name)
-        self.task_names.append(task_name)
-        self.additional_msg = additional_msg
-
-class RethrownJobError(error_task):
-    """
-    Wrap up one or more exceptions rethrown across process boundaries
-    
-        See multiprocessor.Server.handle_request/serve_client for an analogous function
-    """
-    def __init__(self, job_exceptions):
-        error_task.__init__(self)
-        self.args = job_exceptions
-    def __str__(self):
-        message = ["\nOriginal exception%s:\n" % ("s" if len(self.args) > 1 else "")]
-        #
-        #   For each exception:
-        #       turn original exception stack message into an indented string
-        #
-        for i, (job_name, exception_name, exception_value, exception_stack) in enumerate(self.args):
-            message += ("\nException #%d\n" % (i + 1) +
-                        "%s: %s\nfor %s\n\n%s\n" % 
-                            (exception_name, exception_value, job_name, exception_stack) )
-        task_names = "\n".join(self.task_names)
-        task = "\n\n" + self.additional_msg + " for\n%s\n" % task_names
-        return (task + "".join(message)).replace("\n", "\n    ")
-        
-class task_FilesArgumentsError(error_task):
-    pass
-class task_FilesreArgumentsError(error_task):
-    pass
-class JobSignalledBreak(error_task):
-    pass
-class MissingInputFileError(error_task):
-    pass
-class PostTaskArgumentError(error_task):
-    pass
-
-            
-class error_making_directory(error_task):
-    pass
-class error_duplicate_task_name(error_task):
-    pass
-class error_decorator_args(error_task):
-    pass
-class error_task_name_lookup_failed(error_task):
-    pass
-class error_task_decorator_takes_no_args(error_task):
-    pass
-class error_function_is_not_a_task(error_task):
-    pass
-class error_circular_dependencies(error_task):
-    pass
-class error_not_a_directory(error_task):
-    pass
-class error_missing_output(error_task):
-    pass
-class error_job_signalled_interrupt(error_task):
-    pass
-
         
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -1221,8 +1105,11 @@ def run_pooled_job_without_exceptions (process_parameters):
         exception_stack  = traceback.format_exc(exceptionTraceback)
         exception_name   = exceptionType.__module__ + '.' + exceptionType.__name__
         exception_value  = str(exceptionValue)
+        if len(exception_value):
+            exception_value = "(%s)" % exception_value
         return t_job_result(task_name, JOB_ERROR, job_name, None,
-                            [job_descriptor(param), 
+                            [task_name,
+                             job_descriptor(param), 
                              exception_name, 
                              exception_value, 
                              exception_stack])
@@ -2019,15 +1906,13 @@ def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE):
             #print >>sys.stderr, "   fill_queue_with_job_parameters wait for task to complete" # DEBUG
             break
             
-        # put into queue
         #if not isinstance(param, all_tasks_complete):                           # DEBUG
             #print >>sys.stderr, "   fill_queue_with_job_parameters=>", param[0] # DEBUG
 
-
-
+        # put into queue
         parameter_q.put(param)
         
-        # needs to be at least 2 so that the parameter queue never consists of a single
+        # queue size needs to be at least 2 so that the parameter queue never consists of a single
         #   waiting_for_task_to_complete entry which will cause
         #   a loop and everything to hang!
         if parameter_q.qsize() > POOL_SIZE + 1:
@@ -2040,7 +1925,7 @@ def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE):
 #   pipeline_run
 
 #_________________________________________________________________________________________
-def pipeline_run(target_tasks, forcedtorun_tasks = [], multiprocess = 1, logger = black_hole_logger, 
+def pipeline_run(target_tasks, forcedtorun_tasks = [], multiprocess = 1, logger = stderr_logger, 
                                     gnu_make_maximal_rebuild_mode  = True):
     """
     Run pipelines.
@@ -2182,7 +2067,12 @@ def pipeline_run(target_tasks, forcedtorun_tasks = [], multiprocess = 1, logger 
             
         # make sure queue is still full after each job is retired
         # do this after undating which jobs are incomplete
-        fill_queue_with_job_parameters(job_parameters, parameter_q, multiprocess)
+        if len(job_errors):
+            #parameter_q.clear()
+            if len(job_errors) == 1 and not parameter_q._closed:
+                parameter_q.put(all_tasks_complete())
+        else:
+            fill_queue_with_job_parameters(job_parameters, parameter_q, multiprocess)
 
         
         
