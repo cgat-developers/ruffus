@@ -135,7 +135,9 @@ class error_missing_output(error_task):
     pass
 class error_job_signalled_interrupt(error_task):
     pass
-
+class error_node_not_task(error_task):
+    pass
+    
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888

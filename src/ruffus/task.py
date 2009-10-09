@@ -68,97 +68,64 @@ else:
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 import logging
-import sys, os
-import os.path
 import re
-import operator
-import sys
 from collections import defaultdict
-from graph import *
-from print_dependencies import *
-from ruffus_exceptions import  *
+from multiprocessing import Pool
+import traceback
 import types
 from itertools import imap 
 
+
+from graph import *
+from print_dependencies import *
+from ruffus_exceptions import  *
+from ruffus_utility import *
+from file_name_parameters import  *
+
+
+# 
 # use simplejson in place of json for python < 2.6
+# 
 try:
     import json
 except ImportError:
     import simplejson
     json = simplejson
-
-
 dumps = json.dumps
 
-def ignore_unknown_encoder(obj):
-    if non_str_sequence (obj):
-        return "[%s]" % ", ".join(map(ignore_unknown_encoder, obj))
-    try:
-        s= str(obj)
-        if "object at " in s and s[0] == '<' and s[-1] == '>':
-            pos = s.find(" object at ")
-            s = "<" + s[1:pos].replace("__main__.", "") + ">"
-        return s.replace('"', "'")
-    except:
-        return "<%s>" % str(obj.__class__).replace('"', "'")
-
-def shorten_filenames_encoder (obj):
-    if non_str_sequence (obj):
-        return "[%s]" % ", ".join(map(shorten_filenames_encoder, obj))
-    if is_str(obj):
-        if os.path.isabs(obj) and obj[1:].count('/') > 1:
-            return os.path.split(obj)[1]
-    return ignore_unknown_encoder(obj)
 
 
-from multiprocessing import Pool
-import traceback
+#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-
-def is_str(arg):
-    return issubclass(arg.__class__, str)
-
-def non_str_sequence (arg):
+#
+#   light weight logging objects
+# 
+#     
+#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+class t_black_hole_logger:
     """
-    Whether arg is a sequence.
-    We treat a string however as a singleton not as a sequence
+    Does nothing!
     """
-    if issubclass(arg.__class__, str) or issubclass(arg.__class__, unicode):
-        return False
-    try:
-        test = iter(arg)
-        return True
-    except TypeError:
-        return False
-    
-def ioparam_to_str(io):
-    if io == None:
-        return ""
-    elif is_str(io):
-        return "'" + io + "'"
-    else:
-        return ", ".join("'%s'" % s for s in io)
+    def info (self, message):
+        pass
+    def debug (self, message):
+        pass
 
 
-    
-def die_error(Msg):
+class t_stderr_logger:
     """
-    Standard way of dying after a fatal error
+    Everything to stderr
     """
-    print_error (Msg)
-    sys.exit()
-
-def print_error (Msg):
-    """
-    Standard way of printing error
-    """
-    sys.stderr.write("\nError:\n    %s\n" % Msg)
-    
-   
+    def info (self, message):
+        print >>sys.stderr, message
+    def debug (self, message):
+         print >>sys.stderr, message
 
 
+black_hole_logger = t_black_hole_logger()
+stderr_logger     = t_stderr_logger()
 
-   
+
        
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -180,75 +147,6 @@ def print_error (Msg):
 #           yield (a,)
 #
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-#_________________________________________________________________________________________
-
-#   needs_update_check_modify_time
-
-#_________________________________________________________________________________________
-def get_filenames_from_nested_sequence(p, l = None):
-    if l == None:
-        l = []
-    if is_str(p):
-        l.append(p)
-    elif non_str_sequence (p):
-        for pp in p:
-            get_filenames_from_nested_sequence(pp, l)
-    return l
-
-def check_input_files_exist (input, *other):
-    """
-    Clunky hack to make sure input files exists right before 
-        job is called for better error messages
-    """
-    for f in get_filenames_from_nested_sequence(input):
-        if not os.path.exists(f):
-            raise MissingInputFileError("No way to run job: "+
-                                        "Input file ['%s'] does not exist" % f)
-
-def needs_update_check_modify_time (i, o, *other):
-    """
-    Given input and output files
-        see if all exist and whether output files are later than input files
-        Each can be None, "file1" or ["file1", "file2", "file3"]
-        None means always make
-        
-    """
-    i = get_filenames_from_nested_sequence(i)
-    o = get_filenames_from_nested_sequence(o)
-
-    # 
-    # build: missing output file
-    # 
-    if len(o) == 0:
-        return True
-
-    # missing input / output file means always build                
-    for io in (i, o):
-        for f in io:
-            if not os.path.exists(f):
-                return True
-
-    #
-    #   missing input -> build only if output absent
-    # 
-    if len(i) == 0:
-        return False
-    
-    
-    #
-    #   get sorted modified times for all input and output files 
-    #
-    file_times = [[], []]                                    
-    for index, io in enumerate((i, o)):
-        for f in io:
-            file_times[index].append(os.path.getmtime(f))
-
-    # 
-    #   update if any input file >= (more recent) output fifle
-    #
-    if max(file_times[0]) >= min(file_times[1]):
-        return True
-    return False
 
 #_________________________________________________________________________________________
 
@@ -277,34 +175,22 @@ def needs_update_check_directory_missing (dirs):
     
     
     
-class t_black_hole_logger:
-    """
-    Does nothing!
-    """
-    def info (self, message):
-        pass
-    def debug (self, message):
-        pass
-    
+#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-class t_stderr_logger:
-    """
-    Everything to stderr
-    """
-    def info (self, message):
-        print >>sys.stderr, message
-    def debug (self, message):
-         print >>sys.stderr, message
-    
-    
-black_hole_logger = t_black_hole_logger()
-stderr_logger     = t_stderr_logger()
-    
-    
-    
-    
-    
-    
+
+#   queue management objects
+
+#       inserted into queue like job parameters to control multi-processing queue
+
+#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+
+# fake parameters to signal in queue
+class all_tasks_complete:
+    pass
+
+class waiting_for_more_tasks_to_complete:
+    pass
+
     
     
     
@@ -327,243 +213,6 @@ stderr_logger     = t_stderr_logger()
 #
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-
-# fake parameters to signal in queue
-class all_tasks_complete:
-    pass
-
-class waiting_for_more_tasks_to_complete:
-    pass
-
-#_________________________________________________________________________________________
-
-#   glob_regex_io_param_factory                                                                        
-
-#      iterable list of input / output files from
-       
-#                1) glob/filelist
-#                2) regex
-#                3) input_filename_str (optional)
-#                4) output_filename_str
-#_________________________________________________________________________________________
-class pass_thru:
-    pass
-def construct_filename_parameters_with_regex(filename, regex, p):
-    """
-    recursively replaces file name specifications using regular expressions
-    Non-strings are left alone
-    """
-    if isinstance(p, pass_thru):
-        return starting_file_name
-    elif is_str(p):
-        return regex.sub(p, filename) 
-    elif non_str_sequence (p):
-        return [construct_filename_parameters_with_regex(filename, regex, pp) for pp in p]
-    else:
-        return p
-
-import glob    
-def glob_regex_io_param_factory (glob_str_or_list, matching_regex, *parameters):
-    """
-    Factory for functions which in turn
-        yield tuples of input_file_name, output_file_name                                     
-                                                                                                   
-    Usage:
-                                         
-    1.::
-    
-        param_func = glob_regex_io_param_factory("/etc/*",          # glob                                  
-                                                 "(file_)(\d+)",    # which match this regex                
-                                                 "input_file_\2",   # pattern to generate input file names    
-                                                 "output_file_\2")  # pattern to generate output file names  
-                                                 
-    or                                                                                                 
-    2.::
-    
-        param_func = glob_regex_io_param_factory("/etc/*",         # glob                                  
-                                                 "(file_)(\d+)",   # which match this regex                
-                                                 None,             # use originals as input file names     
-                                                 "output_file_\2") # pattern to generate output file names   
-
-    or 
-    3.::
-    
-        param_func = glob_regex_io_param_factory(file_list,        # list of files
-                                                 "(file_)(\d+)",   # which match this regex                
-                                                 None,             # use originals as input file names     
-                                                 "output_file_\2") # pattern to generate output file names   
-    
-        for i, o in param_func():                                                                          
-            print " input file name = " , i                                                                
-            print "output file name = " , o                                                                
-                                                                                                       
-                                                                                                       
-    ..Note::
-        1. `param_func` has to be called each time
-        2. `glob` is called each time.
-           So do not expect the file lists in `param_func()` to be the same for each invocation
-        3. A "copy" of the file list is saved
-           So do not expect to modify your copy of the original list and expect changes
-           to the input/export files
-        
-    
-    """
-    parameters = list(parameters)
-    if len(parameters) == 0:
-        raise task_FilesreArgumentsError("Missing arguments @files_re for job " + 
-                                         ignore_unknown_encoder([glob_str_or_list, 
-                                                                matching_regex] + 
-                                                                    parameters) )
-    
-    
-    regex = re.compile(matching_regex)
-
-    # 
-    #  copy.copy already called in parent
-    # 
-    #  make (expensive) copy so that changes to the original sequence don't confuse us
-    #  parameters = copy.copy(parameters)
-
-    
-    # if the input file term is missing, just use the original
-    if len(parameters) == 1:
-        parameters.insert(0, pass_thru())
-
-            
-    #
-    #   make copy of file list? 
-    #
-    if not is_str(glob_str_or_list):
-        glob_str_or_list = copy.copy(glob_str_or_list)
-
-    def iterator ():
-        #
-        #   glob or file list? 
-        #
-        if is_str(glob_str_or_list):
-            filenames = sorted(glob.glob(glob_str_or_list))
-        else:
-            filenames = sorted(glob_str_or_list)
-            
-            
-        for filename in filenames:
-            #
-            #   regular expression has to match 
-            #
-            if not regex.search(filename):
-                continue
-
-            job_param = []
-            for p in parameters:
-                job_param.append(construct_filename_parameters_with_regex(filename, regex, p))
-
-            yield job_param
-        
-
-    return iterator
-    
-#_________________________________________________________________________________________
-
-#   file_list_io_param_factory 
-
-#       iterates through a list of input output files
-
-#
-#       orig_args = ["input", "output", 1, 2, ...] 
-#       orig_args = [None,    "output", 1, 2, ...] 
-#       orig_args = [
-#                       ["input0",               "output0",                1, 2, ...]
-#                       [["input1a", "input1b"], "output1",                1, 2, ...]
-#                       ["input2",               ["output2a", "output2b"], 1, 2, ...]
-#                       ["input3",               "output3",                1, 2, ...]
-#                   ] 
-#       
-#       N.B. There is not much checking of parameters up front
-#_________________________________________________________________________________________
-def check_file_list_io_param (params):
-    """
-    Helper function for file_list_io_param_factory
-    Checks there are input and output files specified for each job
-    """
-    if not len(params):
-        return
-    
-        
-    try:
-        for job_param in params:
-            if len(job_param) < 2:
-                raise task_FilesArgumentsError("Missing input or output files for job " +   
-                                                ignore_unknown_encoder(job_param))      
-            if list(job_param[0:2]) == [None, None]:                                    
-                raise task_FilesArgumentsError("Either the input or output file "       +   
-                                                "must be defined for job "              +   
-                                                ignore_unknown_encoder(job_param))      
-            if len(get_filenames_from_nested_sequence(job_param[0:2])) == 0:            
-                raise task_FilesArgumentsError("Input or output files contain strings " +   
-                                                    "or a collection of strings: "      +   
-                                                ignore_unknown_encoder(job_param))
-    except TypeError:
-        message = ("Enclosing brackets are needed even if you are "
-                   "only supplying parameters for a single job: "     +
-                    ignore_unknown_encoder(job_param))
-        raise task_FilesArgumentsError(message)
-    
-def file_list_io_param_factory (orig_args):
-    """
-    Factory for functions which 
-        yield tuples of input_file_name, output_file_name                            
-        
-    Examples of orig_args:
-
-    1.::
-        
-        orig_args = "input1", "output1", any_other_parameters1, ...       # files for job 1 
-    
-    2.::
-        
-        orig_args = None,     "output1", any_other_parameters2, ...       # files for job 1 
-    
-    3.::
-    
-        orig_args = [                                                               
-                      ["input0",               "output0",                ...] # files for job 1
-                      [["input1a", "input1b"], "output1",                ...] # files for job 2 
-                      ["input2",               ["output2a", "output2b"], ...] # files for job 3 
-                      ["input3",               "output3",                ...] # files for job 4 
-                    ]                                                                 
-
-
-    Usage:
-
-        param_func = file_list_io_param_factory(orig_args)
-        
-        for params in param_func():                                                                          
-            i,o = params[0:2]
-            print " input file name = " , i                                                                
-            print "output file name = " , o                                                                
-
-
-    ..Note::
-    
-        1. Each job requires input/output file names
-        2. Input/output file names can be a string, a list of strings or None
-        3. Either Input or output file name must be non-None
-        
-    """
-    # multiple jobs with input/output parameters etc.
-    if len(orig_args) > 1:
-        params = copy.copy([list(orig_args)])
-    else:
-        params = copy.copy(orig_args[0])
-
-    check_file_list_io_param(params)
-      
-
-    def iterator():
-        for job_param in params:
-            #print >> sys.stderr, dumps(job_param, indent=4) # DEBUG
-            yield job_param
-    return iterator
 
 #_________________________________________________________________________________________
 
@@ -1681,7 +1330,7 @@ def task_names_to_tasks (task_description, task_names):
             if  node.is_node("__main__." + task_name):
                 task_nodes.append(node.lookup_node_from_name("__main__." + task_name))
             else:
-                die_error("%s task %s not a pipelined task " % (
+                raise error_node_not_task("%s task %s not a pipelined task " % (
                                                         task_description, task_name))
         else:
             task_nodes.append(node.lookup_node_from_name(task_name))
