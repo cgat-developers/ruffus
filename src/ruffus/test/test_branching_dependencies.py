@@ -265,7 +265,7 @@ def task5(infiles, outfiles, *extra_params):
 #    task6
 #
 #@files([[[tempdir + d for d in 'a.3', 'b.3', 'c.3', 'a.4', 'b.4', 'c.4', 'a.5'], tempdir + 'final.6']])
-@files_re(tempdir + '*.*', '(.*)/(.*\.[345]$)', combine(r'\1/\2'), r'\1/final.6')
+@files_re(tempdir + '*.*', '(.*)/(.*\.[345]$)', r'\1/\2', combine(r'\1/final.6'))
 @follows(task3, task4, task5, )
 @posttask(lambda: open(tempdir + "task.done", "a").write("Task 6 Done\n"))
 def task6(infiles, outfiles, *extra_params):
