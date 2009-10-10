@@ -201,7 +201,7 @@ def construct_filename_parameters_with_regex(filename, regex, p):
     elif is_str(p):
         return regex.sub(p, filename) 
     elif non_str_sequence (p):
-        return [construct_filename_parameters_with_regex(filename, regex, pp) for pp in p]
+        return tuple(construct_filename_parameters_with_regex(filename, regex, pp) for pp in p)
     else:
         return p
 
@@ -273,12 +273,12 @@ def glob_regex_io_param_factory (glob_str_or_list, matching_regex, *parameters):
     #       should only be one argument but hey...
     # 
     combining_all_jobs = False
-    if isinstance(parameters[0], combine):
+    if isinstance(parameters[1], combine):
         combining_all_jobs = True
-        if len(parameters[0].args) == 0:
-            parameters[0] = parameters[0].args[0]
+        if len(parameters[1].args) == 1:
+            parameters[1] = parameters[1].args[0]
         else:
-            parameters[0] = parameters[0].args[0]
+            parameters[1] = parameters[1].args
         
         
     if len(get_strings_in_nested_sequence(parameters)) == 0:
@@ -320,43 +320,25 @@ def glob_regex_io_param_factory (glob_str_or_list, matching_regex, *parameters):
             
         if combining_all_jobs:
             #
-            # Be aware that input files / output file/parameters are both delivered after
-            #   eliminating duplicates: the common use case
+            # This is intended as a many -> few combining operation 
+            #   so all [input] which lead to the same [output / extra] are combined together
             # 
-            # [Input] and [output / extra] parameters handled separately   
-            #   because this is intended for many-> one combining operations
-
-            # However, we allow the user to subvert our design if necessary.
-            #   The user might want a list of output files corresponding to the
-            #   different input files. 
-            # 
-            # But either way, the input/output files are going to
-            #   come in one big clump.
-            # 
-            # This function delivers one job per task
-            # 
-             
-            input_params = set()
-            output_params = set()
+            # This function delivers one job per unique [output / extra] parameter
+            input_params_per_output_extra_params = defaultdict(list)
             for filename in filenames:
                 #   regular expression has to match 
                 if not regex.search(filename):
                     continue
                     
                 #   input parameters                    
-                input_params.add(construct_filename_parameters_with_regex(filename, regex, parameters[0]))
+                input_param = construct_filename_parameters_with_regex(filename, regex, parameters[0])
 
-                #   make sure corresponding extra and output parameters go together
-                if len(parameters) == 2:
-                    #   output parameters                    
-                    output_params.add(construct_filename_parameters_with_regex(filename, regex, parameters[1]))
-                else:
-                    job_param = []
-                    for p in parameters[1:]:
-                        job_param.append(construct_filename_parameters_with_regex(filename, regex, p))
-                    output_params.add(construct_filename_parameters_with_regex(filename, regex, parameters[1]))
-
-            yield list(sorted(input_params)), list(sorted(output_params))
+                output_param = tuple(construct_filename_parameters_with_regex(filename, regex, p) 
+                                        for p in parameters[1:])
+                input_params_per_output_extra_params[output_param].append(input_param)
+                
+            for output_param, input_params in input_params_per_output_extra_params.iteritems():
+                yield (tuple(input_params),) + output_param
         else:
             
             for filename in filenames:
@@ -364,10 +346,8 @@ def glob_regex_io_param_factory (glob_str_or_list, matching_regex, *parameters):
                 if not regex.search(filename):
                     continue
     
-                job_param = []
-                for p in parameters:
-                    job_param.append(construct_filename_parameters_with_regex(filename, regex, p))
-                yield job_param
+                yield tuple(construct_filename_parameters_with_regex(filename, regex, p) 
+                                        for p in parameters)
         
 
     return iterator
