@@ -93,6 +93,8 @@ except ImportError:
     json = simplejson
 dumps = json.dumps
 
+import Queue
+Queue = Queue.Queue
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -1457,7 +1459,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
     inprogress_tasks = set()
 
     def parameter_generator():
-        #print >>sys.stderr, "   job_parameter_generator BEGIN" # DEBUG
+        #print >>sys.stderr, "   job_parameter_generator BEGIN" # DEBUG PIPELINE
         while len(incomplete_tasks):
             for task in list(incomplete_tasks):              
                 # ignore tasks in progress
@@ -1503,7 +1505,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
 
         yield all_tasks_complete()
         # This function is done
-        #print >>sys.stderr, "   job_parameter_generator END" # DEBUG
+        #print >>sys.stderr, "   job_parameter_generator END" # DEBUG PIPELINE
 
     return parameter_generator
 
@@ -1521,7 +1523,7 @@ def feed_job_params_to_process_pool_factory (parameter_q):
     Use factory function to save parameter_queue
     """
     def feed_job_params_to_process_pool ():
-        #print >>sys.stderr, "   Send param to Pooled Process START" # DEBUG
+        #print >>sys.stderr, "   Send param to Pooled Process START" # DEBUG PIPELINE
         while 1:
             param = parameter_q.get()
 
@@ -1529,11 +1531,14 @@ def feed_job_params_to_process_pool_factory (parameter_q):
             if isinstance(param, all_tasks_complete):
                 break
 
-            #print >>sys.stderr, "   Send param to Pooled Process=>", param[0] # DEBUG
+            #print >>sys.stderr, "   Send param to Pooled Process=>", param[0] # DEBUG PIPELINE
             yield param
 
-        #print >>sys.stderr, "   Send param to Pooled Process END" # DEBUG
-        parameter_q.close()
+        #print >>sys.stderr, "   Send param to Pooled Process END" # DEBUG PIPELINE
+        # only necessary for multiprocessing queue. Since we are not sharing th queue
+        # with any other process...
+        #parameter_q.close()
+        #print >>sys.stderr, "   Parameter queue closed" # DEBUG PIPELINE
         
     # return generator
     return feed_job_params_to_process_pool
@@ -1547,16 +1552,16 @@ def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE):
     """
     Ensures queue is filled with number of parameters > jobs / slots (POOL_SIZE)
     """
-    #print >>sys.stderr, "   fill_queue_with_job_parameters START" # DEBUG
+    #print >>sys.stderr, "   fill_queue_with_job_parameters START" # DEBUG PIPELINE
     for param in job_parameters:
 
         # stop if no more jobs available
         if isinstance(param, waiting_for_more_tasks_to_complete):
-            #print >>sys.stderr, "   fill_queue_with_job_parameters wait for task to complete" # DEBUG
+            #print >>sys.stderr, "   fill_queue_with_job_parameters wait for task to complete" # DEBUG PIPELINE
             break
             
-        #if not isinstance(param, all_tasks_complete):                           # DEBUG
-            #print >>sys.stderr, "   fill_queue_with_job_parameters=>", param[0] # DEBUG
+        #if not isinstance(param, all_tasks_complete):                           # DEBUG PIPELINE
+            #print >>sys.stderr, "   fill_queue_with_job_parameters=>", param[0] # DEBUG PIPELINE
 
         # put into queue
         parameter_q.put(param)
@@ -1566,7 +1571,7 @@ def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE):
         #   a loop and everything to hang!
         if parameter_q.qsize() > POOL_SIZE + 1:
             break
-    #print >>sys.stderr, "   fill_queue_with_job_parameters END" # DEBUG
+    #print >>sys.stderr, "   fill_queue_with_job_parameters END" # DEBUG PIPELINE
 
 
 #_________________________________________________________________________________________
@@ -1633,7 +1638,7 @@ def pipeline_run(target_tasks, forcedtorun_tasks = [], multiprocess = 1, logger 
     # 
     # prime queue with initial set of job parameters    
     # 
-    parameter_q = multiprocessing.Queue()
+    parameter_q = Queue()
 
     count_remaining_jobs = defaultdict(int)
     parameter_generator = make_job_parameter_generator (incomplete_tasks, task_parents, 
