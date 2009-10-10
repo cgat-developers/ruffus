@@ -1,13 +1,45 @@
-= v. 1.09=
+= v. 1.1.0=
     _8/October/2009_
     
-    ==Code Changes:==
+    ==New Feature:==
+        _Combine many files -> 1 output_
+
+        Added `combine` syntax to `@files_re` decorators:
+          
+        Documentation to follow...
+
+        Example from `src/ruffus/test/test_branching_dependencies.py`:
+{{{
+        @files_re('*.*', '(.*/)(.*\.[345]$)', combine(r'\1\2'), r'\1final.6')
+        def test(input_files, output_files):
+          pass`
+}}}     
+       
+           * will take all files in the current directory
+           * will identify files which end in `.3`,  `.4` and `.5` as input files
+           * will use `final.6` as the output file
+           * `input_files  == [a.3, a.4, b.3, b.5]`  (for example)
+           * `output_files == [final.6]` 
+           
+           Note that the output_files are always wrapped in a list 
+
+    ==Bug Fix:==
+        * All (known) bugs for running jobs from independent tasks in parallel
+
+
+
+= v. 1.0.9=
+    _8/October/2009_
+    
+    ==New Feature:==
+        _Multitasking independent tasks_
+
         * In a major piece of retooling, jobs from independent tasks which do not
           depend on each other will be run in parallel.
-		  This involves major changes to the scheduling code. Please contact me asap
-		  if anything breaks.
+          This involves major changes to the scheduling code. Please contact me asap
+          if anything breaks.
 
-= v. 1.08=
+= v. 1.0.8=
     _12/August/2009_
     
     ==Documentation:==
@@ -23,14 +55,14 @@
           have been changed to test for this.
 
 
-= v. 1.07=
+= v. 1.0.7=
     _17/June/2009_
     
     ==Code Changes:==
         * Added `proxy_logger` module for accessing a shared log across multiple jobs in
           different processes.
 
-= v. 1.06=
+= v. 1.0.6=
     _12/June/2009_
     
     ==Bug fix:==
@@ -42,7 +74,7 @@
     ==Documentation:==
         * Added history of changes
 
-= v. 1.05=
+= v. 1.0.5=
     _11/June/2009_
 
     ==Bug fix:==
@@ -62,7 +94,7 @@
 
 
 
-= v. 1.04=
+= v. 1.0.4=
     _05/June/2009_
     ==Bug fix: ==
 
@@ -82,13 +114,13 @@
         Otherwise, a new process with be created recursively, like the magicians's apprentice
         See: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 
-= v. 1.03=
+= v. 1.0.3=
     _04/June/2009_
     ==Documentation ==
         
         Including SGE `qrsh` workaround in FAQ.
 
-= v. 1.01=
+= v. 1.0.1=
     _22/May/2009_
     ==Add simple tutorial.==
     
@@ -98,4 +130,4 @@
     _28/April/2009_
 
     Initial Release in Oxford       
-	
+    
