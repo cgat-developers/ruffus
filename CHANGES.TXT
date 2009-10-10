@@ -1,4 +1,4 @@
-= v. 1.1.0=
+= v. 1.1.1=
     _8/October/2009_
     
     ==New Feature:==
@@ -10,7 +10,7 @@
 
         Example from `src/ruffus/test/test_branching_dependencies.py`:
 {{{
-        @files_re('*.*', '(.*/)(.*\.[345]$)', combine(r'\1\2'), r'\1final.6')
+        @files_re('*.*', '(.*/)(.*\.[345]$)', r'\1\2', combine(r'\1final.6'))
         def test(input_files, output_files):
           pass`
 }}}     
@@ -21,8 +21,6 @@
            * `input_files  == [a.3, a.4, b.3, b.5]`  (for example)
            * `output_files == [final.6]` 
            
-           Note that the output_files are always wrapped in a list 
-
     ==Bug Fix:==
         * All (known) bugs for running jobs from independent tasks in parallel
 
