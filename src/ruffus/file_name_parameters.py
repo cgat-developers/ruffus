@@ -51,6 +51,7 @@
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 import os,copy
 import re
+import glob    
 from ruffus_exceptions import *
 from ruffus_utility import *
 
@@ -88,6 +89,11 @@ from ruffus_utility import *
 #           yield (a,)
 #
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+#_________________________________________________________________________________________
+
+#   check_input_files_exist
+
+#_________________________________________________________________________________________
 def check_input_files_exist (input_files, *other_parameters_ignored):
     """
     Clunky hack to make sure input files exists right before 
@@ -183,17 +189,6 @@ def needs_update_check_modify_time (i, o, *other_parameters_ignored):
 #
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#_________________________________________________________________________________________
-
-#   glob_regex_io_param_factory                                                                        
-
-#      iterable list of input / output files from
-       
-#                1) glob/filelist
-#                2) regex
-#                3) input_filename_str (optional)
-#                4) output_filename_str
-#_________________________________________________________________________________________
 class pass_thru:
     pass
 def construct_filename_parameters_with_regex(filename, regex, p):
@@ -210,7 +205,17 @@ def construct_filename_parameters_with_regex(filename, regex, p):
     else:
         return p
 
-import glob    
+#_________________________________________________________________________________________
+
+#   glob_regex_io_param_factory                                                                        
+
+#      iterable list of input / output files from
+
+#                1) glob/filelist
+#                2) regex
+#                3) input_filename_str (optional)
+#                4) output_filename_str
+#_________________________________________________________________________________________
 def glob_regex_io_param_factory (glob_str_or_list, matching_regex, *parameters):
     """
     Factory for functions which in turn
@@ -261,7 +266,21 @@ def glob_regex_io_param_factory (glob_str_or_list, matching_regex, *parameters):
         raise task_FilesreArgumentsError("Missing arguments for @files_re(%s)" % 
                                          ignore_unknown_encoder([glob_str_or_list, 
                                                                 matching_regex] + 
-                                                                    parameters))
+                                                                parameters))
+    
+    #
+    #   special marker combining object
+    #       should only be one argument but hey...
+    # 
+    combining_all_jobs = False
+    if isinstance(parameters[0], combine):
+        combining_all_jobs = True
+        if len(parameters[0].args) == 0:
+            parameters[0] = parameters[0].args[0]
+        else:
+            parameters[0] = parameters[0].args[0]
+        
+        
     if len(get_strings_in_nested_sequence(parameters)) == 0:
         raise task_FilesreArgumentsError("Input or output file parameters should "
                                         "contain at least one or more file names or "
@@ -281,6 +300,7 @@ def glob_regex_io_param_factory (glob_str_or_list, matching_regex, *parameters):
     # if the input file term is missing, just use the original
     if len(parameters) == 1:
         parameters.insert(0, pass_thru())
+        
 
             
     #
@@ -298,18 +318,56 @@ def glob_regex_io_param_factory (glob_str_or_list, matching_regex, *parameters):
         else:
             filenames = sorted(glob_str_or_list)
             
-            
-        for filename in filenames:
+        if combining_all_jobs:
             #
-            #   regular expression has to match 
-            #
-            if not regex.search(filename):
-                continue
+            # Be aware that input files / output file/parameters are both delivered after
+            #   eliminating duplicates: the common use case
+            # 
+            # [Input] and [output / extra] parameters handled separately   
+            #   because this is intended for many-> one combining operations
 
-            job_param = []
-            for p in parameters:
-                job_param.append(construct_filename_parameters_with_regex(filename, regex, p))
-            yield job_param
+            # However, we allow the user to subvert our design if necessary.
+            #   The user might want a list of output files corresponding to the
+            #   different input files. 
+            # 
+            # But either way, the input/output files are going to
+            #   come in one big clump.
+            # 
+            # This function delivers one job per task
+            # 
+             
+            input_params = set()
+            output_params = set()
+            for filename in filenames:
+                #   regular expression has to match 
+                if not regex.search(filename):
+                    continue
+                    
+                #   input parameters                    
+                input_params.add(construct_filename_parameters_with_regex(filename, regex, parameters[0]))
+
+                #   make sure corresponding extra and output parameters go together
+                if len(parameters) == 2:
+                    #   output parameters                    
+                    output_params.add(construct_filename_parameters_with_regex(filename, regex, parameters[1]))
+                else:
+                    job_param = []
+                    for p in parameters[1:]:
+                        job_param.append(construct_filename_parameters_with_regex(filename, regex, p))
+                    output_params.add(construct_filename_parameters_with_regex(filename, regex, parameters[1]))
+
+            yield list(sorted(input_params)), list(sorted(output_params))
+        else:
+            
+            for filename in filenames:
+                #   regular expression has to match 
+                if not regex.search(filename):
+                    continue
+    
+                job_param = []
+                for p in parameters:
+                    job_param.append(construct_filename_parameters_with_regex(filename, regex, p))
+                yield job_param
         
 
     return iterator
@@ -585,6 +643,21 @@ if __name__ == '__main__':
             return [needs_update_check_modify_time (*p) for p in it()]
 
 
+        def test_combine(self):
+            """
+            test combining operator
+            """
+            paths = self.forwarded_function(test_path + "/*", "(.*).test$", combine(r"\1.input"), r"\1.output")
+            print recursive_replace(paths, test_path, "DIR")
+            paths = self.forwarded_function(test_path + "/*", "(.*).test$", combine(r"\1.input"), r"combined.output")
+            print recursive_replace(paths, test_path, "DIR")
+            #[
+            #   [['DIR/f0.input'], ['DIR/f0.output']], 
+            #   [['DIR/f0.input', 'DIR/f1.input'], ['DIR/f0.output', 'DIR/f1.output']], 
+            #   [['DIR/f0.input', 'DIR/f1.input', 'DIR/f2.input'], 
+            #    ['DIR/f0.output', 'DIR/f1.output', 'DIR/f2.output']]]
+            
+            
         def test_glob(self):
             """
             test globbed form
