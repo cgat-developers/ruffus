@@ -273,12 +273,13 @@ def glob_regex_io_param_factory (glob_str_or_list, matching_regex, *parameters):
     #       should only be one argument but hey...
     # 
     combining_all_jobs = False
-    if isinstance(parameters[1], combine):
+    if isinstance(parameters[0], combine):
         combining_all_jobs = True
-        if len(parameters[1].args) == 1:
-            parameters[1] = parameters[1].args[0]
+        if len(parameters[0].args) == 1:
+            parameters[0] = parameters[0].args[0]
         else:
-            parameters[1] = parameters[1].args
+            parameters[0] = parameters[0].args
+            
         
         
     if len(get_strings_in_nested_sequence(parameters)) == 0:

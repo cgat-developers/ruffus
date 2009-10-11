@@ -1,25 +1,34 @@
+= v. 1.1.2=
+    _9/October/2009_
+    
+    ==Bug Fix:==
+        * Nasty (long standing) bug for single job tasks only decorated with `@follows(mkdir(...))` to be caught in an infinite loop
+
+    ==Code Changes:==
+        * Add example of combining multiple input files depending on a regular expression pattern. 
+           # Run `test/test_filesre_combining.py` with -v (verbose)
+           # Run with -D (debug) to test.
+
+
+
 = v. 1.1.1=
     _8/October/2009_
     
     ==New Feature:==
-        _Combine many files -> 1 output_
-
-        Added `combine` syntax to `@files_re` decorators:
-          
-        Documentation to follow...
-
-        Example from `src/ruffus/test/test_branching_dependencies.py`:
+        * _Combine multiple input files using a regular expression_
+        * Added `combine` syntax to `@files_re` decorators:
+        * Documentation to follow...
+        * Example from `src/ruffus/test/test_branching_dependencies.py`:
 {{{
-        @files_re('*.*', '(.*/)(.*\.[345]$)', r'\1\2', combine(r'\1final.6'))
+        @files_re('*.*', '(.*/)(.*\.[345]$)', combine(r'\1\2'), r'\1final.6')
         def test(input_files, output_files):
           pass`
 }}}     
-       
-           * will take all files in the current directory
-           * will identify files which end in `.3`,  `.4` and `.5` as input files
-           * will use `final.6` as the output file
-           * `input_files  == [a.3, a.4, b.3, b.5]`  (for example)
-           * `output_files == [final.6]` 
+        * will take all files in the current directory
+        * will identify files which end in `.3`,  `.4` and `.5` as input files
+        * will use `final.6` as the output file
+        * `input_files  == [a.3, a.4, b.3, b.5]`  (for example)
+        * `output_files == [final.6]` 
            
     ==Bug Fix:==
         * All (known) bugs for running jobs from independent tasks in parallel
@@ -31,11 +40,15 @@
     
     ==New Feature:==
         _Multitasking independent tasks_
+        * In a major piece of retooling, jobs from independent tasks which do not         depend on each other will be run in parallel.
+        * This involves major changes to the scheduling code. 
+        * Please contact me asap if anything breaks.
 
-        * In a major piece of retooling, jobs from independent tasks which do not
-          depend on each other will be run in parallel.
-          This involves major changes to the scheduling code. Please contact me asap
-          if anything breaks.
+    ==Code Changes:==
+        * Add example of independent tasks running concurrently in
+          `test/test_branching_dependencies.py`
+          * Run with -v (verbose) and -j 1 or -j 10 to show the indeterminancy of multiprocessing.
+          * Run with -D (debug) to test.
 
 = v. 1.0.8=
     _12/August/2009_
@@ -95,19 +108,16 @@
 = v. 1.0.4=
     _05/June/2009_
     ==Bug fix: ==
-
         * `task.task_names_to_tasks` did not include tasks specified by function rather than name
         * `task.run_all_jobs_in_task` did not work properly without multiprocessing (# of jobs = 1)
         * `task.pipeline_run` only uses multiprocessing pools if `multiprocess` (# of jobs)  > 1
     
     ==Changes to allow python 2.4/2.5 to run:==
-
         * `setup.py` changed to remove dependency
         * `simplejson` can be loaded instead of python 2.6 `json` module
         * Changed `NamedTemporaryFile` to `mkstemp` because delete parameter is not avaliable before python 2.6
 
     ==Windows programmes==
-
         It is necessary to protect the "entry point" of the program under windows.
         Otherwise, a new process with be created recursively, like the magicians's apprentice
         See: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming

@@ -1462,15 +1462,18 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
         #print >>sys.stderr, "   job_parameter_generator BEGIN" # DEBUG PIPELINE
         while len(incomplete_tasks):
             for task in list(incomplete_tasks):              
+                #print >>sys.stderr, "   job_parameter_generator next task = %s" % task._name # DEBUG PIPELINE
                 # ignore tasks in progress
                 if task in inprogress_tasks:
                     continue
 
+                #print >>sys.stderr, "   job_parameter_generator task %s not in progress" % task._name # DEBUG PIPELINE
                 # ignore tasks with incomplete dependencies
                 for parent in task_parents[task]:                  
                     if parent in incomplete_tasks:         
                         break
                 else:                                        
+                    #print >>sys.stderr, "   job_parameter_generator task %s parents completed" % task._name # DEBUG PIPELINE
                     force_rerun = task in forcedtorun_tasks
                     # 
                     # log task
@@ -1487,7 +1490,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     #   If no parameters: just call task function (empty list)
                     #
                     if task.param_generator_func == None:
-                        parameters = ([])
+                        parameters = ([],)
                     else:
                         parameters = task.param_generator_func()
                     for param in parameters:
@@ -1525,7 +1528,9 @@ def feed_job_params_to_process_pool_factory (parameter_q):
     def feed_job_params_to_process_pool ():
         #print >>sys.stderr, "   Send param to Pooled Process START" # DEBUG PIPELINE
         while 1:
+            #print >>sys.stderr, "   Get next parameter size = %d" % parameter_q.qsize()               # DEBUG PIPELINE
             param = parameter_q.get()
+            #print >>sys.stderr, "   Get next parameter done"           # DEBUG PIPELINE
 
             # all tasks done
             if isinstance(param, all_tasks_complete):
