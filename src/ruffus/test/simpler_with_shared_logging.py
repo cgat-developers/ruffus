@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 
-    test_tasks.py
+    simpler_with_shared_logging.py
 
 """
 

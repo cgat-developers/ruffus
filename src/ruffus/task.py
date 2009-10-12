@@ -1728,8 +1728,8 @@ def pipeline_run(target_tasks, forcedtorun_tasks = [], multiprocess = 1, logger 
         # do this after undating which jobs are incomplete
         if len(job_errors):
             #parameter_q.clear()
-            if len(job_errors) == 1 and not parameter_q._closed:
-                parameter_q.put(all_tasks_complete())
+            #if len(job_errors) == 1 and not parameter_q._closed:
+            parameter_q.put(all_tasks_complete())
         else:
             fill_queue_with_job_parameters(job_parameters, parameter_q, multiprocess)
 
