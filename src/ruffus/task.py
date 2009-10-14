@@ -1160,22 +1160,33 @@ class _task (node):
         """
         cnt_task_mkdir      = 0
         for arg in args:
+            #
+            #   specified by string 
+            #
             if is_str(arg):
+                # string looks up to defined task, use that
                 if node.is_node(arg):
                     arg = node.lookup_node_from_name(arg)
+                # string looks up to defined task in main module, use that
                 elif node.is_node("__main__." + arg):
                     arg = node.lookup_node_from_name("__main__." + arg)
+
+                # 
+                # string does not look up to defined task: defer
+                #
                 else:    
-                    #
-                    #   if no module: use same module as task
-                    #
+                    #   no module: use same module as current task
                     names = arg.rsplit(".", 2)
                     if len(names) == 1:
                         arg = _task(self._module_name, arg)
                     else:
                         arg = _task(*names)
+
+                # 
+                #   add dependency
+                #       duplicate dependencies are ignore automatically
+                #
                 self.add_child(arg)
-                
         
             #
             #   for mkdir, automatically generate task with unique name 
@@ -1191,7 +1202,11 @@ class _task (node):
                 
                 
                 
-            # add task as attribute of this function
+            # 
+            #   Is this a function?
+            #       Turn this function into a task
+            #           (add task as attribute of this function)
+            #       Add self as dependent
             else:
                 if type(arg) != types.FunctionType:
                     raise error_decorator_args("Dependencies must be functions or function names in " +
