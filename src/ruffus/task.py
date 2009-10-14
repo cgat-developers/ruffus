@@ -1603,6 +1603,28 @@ def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE):
     #print >>sys.stderr, "   fill_queue_with_job_parameters END" # DEBUG PIPELINE
 
 
+#   
+#   How the job queue works:
+# 
+#   Main loop
+#       iterates pool.map using feed_job_params_to_process_pool() 
+#       (calls parameter_q.get() until all_tasks_complete)
+# 
+#           if errors but want to finish tasks already in pipeine:
+#               parameter_q.put(all_tasks_complete())
+#               keep going
+#        else:
+#            
+#            loops through jobs until no more jobs in non-dependent tasks
+#               separate loop in generator so that list of incomplete_tasks does not 
+#               get updated half way through
+#               causing race conditions
+#
+#               parameter_q.put(param)
+#               until waiting_for_more_tasks_to_complete
+#               until queue is full (check *after*)
+#
+
 #_________________________________________________________________________________________
 
 #   pipeline_run
