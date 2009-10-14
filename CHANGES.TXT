@@ -1,4 +1,21 @@
+= v. 1.1.3=
+    14/October/2009_
+
+    ==Bug Fix:==
+        * Minor (but show stopping) bug in task.generic_job_descriptor
+
 = v. 1.1.2=
+    _9/October/2009_
+    
+    ==Bug Fix:==
+        * Nasty (long standing) bug for single job tasks only decorated with `@follows(mkdir(...))` to be caught in an infinite loop
+
+    ==Code Changes:==
+        * Add example of combining multiple input files depending on a regular expression pattern. 
+           # Run `test/test_filesre_combining.py` with -v (verbose)
+           # Run with -D (debug) to test.
+
+           = v. 1.1.2=
     _9/October/2009_
     
     ==Bug Fix:==

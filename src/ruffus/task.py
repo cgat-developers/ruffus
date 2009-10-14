@@ -1091,7 +1091,29 @@ class _task (node):
                                           generated from the "to" replacement string
         """
         self.set_action_type (_task.action_task_files_re)
-        self.param_generator_func = glob_regex_io_param_factory (*orig_args)
+        
+        # glob or file name list
+        if (is_str(orig_args[0]) or 
+            (non_str_sequence(orig_args[0]) and is_str(orig_args[0][0]))):
+            self.param_generator_func = glob_regex_io_param_factory (*orig_args)
+        
+        # task
+        else:
+            # output from wrapped tasks or task names
+            if isinstance(orig_args[0], output_from):
+                tasks = self.task_follows(orig_args[0].args)
+
+            # single task decorated function
+            elif (type(orig_args[0]) == types.FunctionType):
+                tasks = self.task_follows([orig_args[0]])
+                
+            # multiple task decorated function
+            else:
+                tasks = self.task_follows(orig_args[0])
+                
+            self.param_generator_func = glob_regex_io_param_factory (output_from(*tasks), *orig_args[1:])
+            
+            
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
         self.job_descriptor       = io_files_job_descriptor
