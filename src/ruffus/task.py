@@ -889,12 +889,12 @@ class _task (node):
             
         """
         if self._action_type not in (_task.action_unspecified, _task.action_task):
-            old_action = _task.action_names[self.action_type]
+            old_action = _task.action_names[self._action_type]
             new_action = _task.action_names[new_action_type]
             actions = " and ".join(list(set((old_action, new_action))))
-            raise error_decorator_args(("Duplicate task names: Task/function %s has been " +
-                                        "specified more than once (%s) ") % 
-                                        (self._name, actions))
+            task_name = "def %s(...)" % self._name.replace("__main__.", "")
+            raise error_decorator_args(("    %s\n      has duplicate task specifications: (%s)\n") % 
+                                        (task_name, actions))
         self._action_type = new_action_type
         #
         #   DEBUGG
@@ -1539,8 +1539,11 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                         parameters = ([],)
                     else:
                         parameters = task.param_generator_func()
+                        
+                    cnt_jobs_created = 0
                     for param in parameters:
                         count_remaining_jobs[task] += 1
+                        cnt_jobs_created += 1
                         yield (param, 
                                 task._name,
                                 task.job_descriptor, 
@@ -1550,7 +1553,16 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                                 logger != None, 
                                 force_rerun)
 
-            yield waiting_for_more_tasks_to_complete()
+                    # if no job came from this task, this task is complete
+                    #   we need to complete it here instead of normal completion at end
+                    #   of job tasks
+                    if cnt_jobs_created == 0:
+                        incomplete_tasks.remove(task)
+                        inprogress_tasks.remove(task)
+            
+            # extra tests incase final tasks do not result in jobs
+            if len(incomplete_tasks):
+                yield waiting_for_more_tasks_to_complete()
 
         yield all_tasks_complete()
         # This function is done
