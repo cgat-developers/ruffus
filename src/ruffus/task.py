@@ -871,7 +871,8 @@ class _task (node):
         # functions which will be called when task completes
         self.post_task_functions    = []
                 
-        
+        # give makedir automatically made parent tasks unique names
+        self.cnt_task_mkdir         = 0
         
     #_________________________________________________________________________________________
 
@@ -1176,10 +1177,14 @@ class _task (node):
                 self.add_child(arg)
                 
         
+            #
+            #   for mkdir, automatically generate task with unique name 
+            #
             elif isinstance(arg, mkdir):
-                cnt_task_mkdir += 1
+                self.cnt_task_mkdir += 1
                 # give unique name to this instance of mkdir
-                new_node = _task(self._module_name, self._name + "_mkdir_%d" % cnt_task_mkdir)
+                unique_name = self._name + "_mkdir_%d" % self.cnt_task_mkdir
+                new_node = _task(self._module_name, unique_name)
                 self.add_child(new_node)
                 new_node.task_mkdir(arg.args)
 
