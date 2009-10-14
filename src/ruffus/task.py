@@ -1158,7 +1158,7 @@ class _task (node):
         Saved decorator arguments should be:
                 (string/task,...)
         """
-        cnt_task_mkdir      = 0
+        new_tasks = []
         for arg in args:
             #
             #   specified by string 
@@ -1187,6 +1187,8 @@ class _task (node):
                 #       duplicate dependencies are ignore automatically
                 #
                 self.add_child(arg)
+                new_tasks.append(arg)
+                
         
             #
             #   for mkdir, automatically generate task with unique name 
@@ -1198,6 +1200,7 @@ class _task (node):
                 new_node = _task(self._module_name, unique_name)
                 self.add_child(new_node)
                 new_node.task_mkdir(arg.args)
+                new_tasks.append(new_node)
 
                 
                 
@@ -1217,8 +1220,9 @@ class _task (node):
                 if not hasattr(arg, "pipeline_task"):
                     arg.pipeline_task = _task.create_task(arg)
                 self.add_child(arg.pipeline_task)
+                new_tasks.append(arg.pipeline_task)
 
-            
+        return new_tasks
             
             
             
