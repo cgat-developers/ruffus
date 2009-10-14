@@ -216,7 +216,7 @@ def construct_filename_parameters_with_regex(filename, regex, p):
 #                3) input_filename_str (optional)
 #                4) output_filename_str
 #_________________________________________________________________________________________
-def glob_regex_io_param_factory (glob_str_or_list, matching_regex, *parameters):
+def glob_regex_io_param_factory (glob_str_or_list_or_tasks, matching_regex, *parameters):
     """
     Factory for functions which in turn
         yield tuples of input_file_name, output_file_name                                     
@@ -264,7 +264,7 @@ def glob_regex_io_param_factory (glob_str_or_list, matching_regex, *parameters):
     parameters = list(parameters)
     if len(parameters) == 0:
         raise task_FilesreArgumentsError("Missing arguments for @files_re(%s)" % 
-                                         ignore_unknown_encoder([glob_str_or_list, 
+                                         ignore_unknown_encoder([glob_str_or_list_or_tasks, 
                                                                 matching_regex] + 
                                                                 parameters))
     
@@ -307,17 +307,41 @@ def glob_regex_io_param_factory (glob_str_or_list, matching_regex, *parameters):
     #
     #   make copy of file list? 
     #
-    if not is_str(glob_str_or_list):
-        glob_str_or_list = copy.copy(glob_str_or_list)
+    if not is_str(glob_str_or_list_or_tasks) and not isinstance(glob_str_or_list_or_tasks, output_from):
+        glob_str_or_list_or_tasks = copy.copy(glob_str_or_list_or_tasks)
 
     def iterator ():
         #
         #   glob or file list? 
         #
-        if is_str(glob_str_or_list):
-            filenames = sorted(glob.glob(glob_str_or_list))
+        if is_str(glob_str_or_list_or_tasks):
+            filenames = sorted(glob.glob(glob_str_or_list_or_tasks))
+        
+        # 
+        #   get output file names from specified tasks
+        #       assumes that 2nd parameter contain output files
+        #
+        elif isinstance(glob_str_or_list_or_tasks, output_from):
+            filenames = []
+            for task in glob_str_or_list_or_tasks.args:
+
+                # skip tasks which don't have parameters
+                if task.param_generator_func == None:
+                    continue
+
+                for param in task.param_generator_func():
+                    
+                    # skip tasks which don't have output parameters
+                    if len(param) < 2:
+                        continue
+                        
+                    #   get 
+                    #   
+                    filenames.extend(get_strings_in_nested_sequence(param[1]))
+                
+                
         else:
-            filenames = sorted(glob_str_or_list)
+            filenames = sorted(glob_str_or_list_or_tasks)
             
         if combining_all_jobs:
             #
@@ -484,11 +508,20 @@ if __name__ == '__main__':
 
     exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
     test_path = os.path.join(exe_path, "test", "file_name_parameters")
-    #_________________________________________________________________________________________
-    
-    #   file_list_io_param_factory
-     
-    #_________________________________________________________________________________________
+
+
+
+
+
+
+
+
+
+#=========================================================================================
+
+#   file_list_io_param_factory
+ 
+#=========================================================================================
     import unittest, time
     class Test_file_list_io_param_factory(unittest.TestCase):
     
@@ -557,10 +590,30 @@ if __name__ == '__main__':
             self.assertRaises(task_FilesArgumentsError, self.forwarded_function, [1, 2])
     
     
-    #_________________________________________________________________________________________
-    
-    #   glob_regex_io_param_factory
-    #_________________________________________________________________________________________
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+                
+#=========================================================================================
+
+#   glob_regex_io_param_factory
+
+#=========================================================================================
     
     def recursive_replace(p, from_s, to_s):
         """
@@ -574,6 +627,12 @@ if __name__ == '__main__':
         else:
             return p
 
+    def list_generator_factory (list):
+        def list_generator ():
+            for i in list:
+                yield i
+        return list_generator
+        
     class Test_glob_regex_io_param_factory(unittest.TestCase):
         def setUp(self):
             if not os.path.exists(test_path):
@@ -629,14 +688,15 @@ if __name__ == '__main__':
             test combining operator
             """
             paths = self.forwarded_function(test_path + "/*", "(.*).test$", combine(r"\1.input"), r"\1.output")
-            print recursive_replace(paths, test_path, "DIR")
+            self.assertEqual(recursive_replace(paths, test_path, "DIR"),
+                                [[['DIR/f2.input'], 'DIR/f2.output'], 
+                                 [['DIR/f0.input'], 'DIR/f0.output'], 
+                                 [['DIR/f1.input'], 'DIR/f1.output']])
             paths = self.forwarded_function(test_path + "/*", "(.*).test$", combine(r"\1.input"), r"combined.output")
-            print recursive_replace(paths, test_path, "DIR")
-            #[
-            #   [['DIR/f0.input'], ['DIR/f0.output']], 
-            #   [['DIR/f0.input', 'DIR/f1.input'], ['DIR/f0.output', 'DIR/f1.output']], 
-            #   [['DIR/f0.input', 'DIR/f1.input', 'DIR/f2.input'], 
-            #    ['DIR/f0.output', 'DIR/f1.output', 'DIR/f2.output']]]
+            self.assertEqual(recursive_replace(paths, test_path, "DIR"),
+                                [[['DIR/f0.input', 
+                                   'DIR/f1.input', 
+                                   'DIR/f2.input'], 'combined.output']])
             
             
         def test_glob(self):
@@ -742,6 +802,30 @@ if __name__ == '__main__':
             # 
             self.assertRaises(task_FilesreArgumentsError, self.forwarded_function, 
                                 test_path + "/*", ".*/(.*).test$", 1, 2)
+
+
+        def test_tasks(self):
+            """
+            test if can use tasks to specify dependencies
+            """
+            l1 = [["input1", "output1"], [3, "output2"], [], [4, 5]]
+            l2 = [["input3", "output3"], [3, ["output4", "output5"]], [], [4, 5]]
+            l3 = []
+            l4 = [[1, 2]]
+            import task
+            t1 = task._task("module", "func1"); t1.param_generator_func = list_generator_factory(l1)
+            t2 = task._task("module", "func2"); t2.param_generator_func = list_generator_factory(l2)
+            t3 = task._task("module", "func3"); t3.param_generator_func = list_generator_factory(l3)
+            t4 = task._task("module", "func4"); t4.param_generator_func = list_generator_factory(l4)
+            t5 = task._task("module", "func5"); t5.param_generator_func = None
+            self.assertEqual(self.forwarded_function(output_from(t1, t2, t3, t4, t5), r"(.*)", r"\1.yes"),
+                            [('output1', 'output1.yes'), 
+                             ('output2', 'output2.yes'), 
+                             ('output3', 'output3.yes'), 
+                             ('output4', 'output4.yes'), 
+                             ('output5', 'output5.yes')])
+
+
 
 if __name__ == '__main__':
     #
