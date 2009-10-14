@@ -619,7 +619,7 @@ def generic_job_descriptor (param):
     if param in ([], None):
         return "Job"
     else:
-        return "Job = %s" % ignore_unknown_encoder(job_param)
+        return "Job = %s" % ignore_unknown_encoder(param)
 
 def io_files_job_descriptor (param):
     # input, output
