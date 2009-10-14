@@ -127,34 +127,47 @@ def needs_update_check_modify_time (i, o, *other_parameters_ignored):
     # build: missing output file
     # 
     if len(o) == 0:
+        #print >>sys.stderr, "Missing output file"                 # DEBUG CHECK MODIFY TIME
         return True
 
     # missing input / output file means always build                
     for io in (i, o):
         for p in io:
             if not os.path.exists(p):
+                #print >>sys.stderr, "Missing file %s" % p         # DEBUG CHECK MODIFY TIME
                 return True
 
     #
     #   missing input -> build only if output absent
     # 
     if len(i) == 0:
+        #print >>sys.stderr, "Missing input files"                 # DEBUG CHECK MODIFY TIME
         return False
     
     
     #
     #   get sorted modified times for all input and output files 
     #
+    filename_to_times = dict()
     file_times = [[], []]                                    
     for index, io in enumerate((i, o)):
         for f in io:
-            file_times[index].append(os.path.getmtime(f))
+            mtime = os.path.getmtime(f)
+            file_times[index].append(mtime)
+            filename_to_times[f] = mtime
 
     # 
     #   update if any input file >= (more recent) output fifle
     #
     if max(file_times[0]) >= min(file_times[1]):
+        #print >>sys.stderr, "Need update %s > %s, %s > %s" % (  # DEBUG CHECK MODIFY TIME 
+                            #",".join(i),                        # DEBUG CHECK MODIFY TIME 
+                            #",".join(o),                        # DEBUG CHECK MODIFY TIME 
+                            #str(max(file_times[0])),            # DEBUG CHECK MODIFY TIME
+                            #str(min(file_times[1])))            # DEBUG CHECK MODIFY TIME
+        #print >>sys.stderr, "Need update %s" % str(filename_to_times) # DEBUG CHECK MODIFY TIME
         return True
+    #print >>sys.stderr, "Up to date"                            # DEBUG CHECK MODIFY TIME
     return False
 
 
@@ -269,10 +282,10 @@ def glob_regex_io_param_factory (glob_str_or_list_or_tasks, matching_regex, *par
                                                                 parameters))
     
     #
-    #   special marker combining object
-    #       should only be one argument but hey...
+    #   special marker combining object: mark either regex or input file parameter
     # 
     combining_all_jobs = False
+    
     if isinstance(parameters[0], combine):
         combining_all_jobs = True
         if len(parameters[0].args) == 1:
@@ -280,6 +293,12 @@ def glob_regex_io_param_factory (glob_str_or_list_or_tasks, matching_regex, *par
         else:
             parameters[0] = parameters[0].args
             
+    if isinstance(matching_regex, combine):
+        combining_all_jobs = True
+        if len(matching_regex.args) == 1:
+            matching_regex = matching_regex.args[0]
+        else:
+            matching_regex = matching_regex.args
         
         
     if len(get_strings_in_nested_sequence(parameters)) == 0:
@@ -315,7 +334,12 @@ def glob_regex_io_param_factory (glob_str_or_list_or_tasks, matching_regex, *par
         #   glob or file list? 
         #
         if is_str(glob_str_or_list_or_tasks):
-            filenames = sorted(glob.glob(glob_str_or_list_or_tasks))
+            #import time                                                                          # DEBUG GLOB TIME
+            #start_time = time.time()                                                             # DEBUG GLOB TIME
+            filenames = sorted(glob.glob(glob_str_or_list_or_tasks))                             
+            #end_time = time.time()                                                               # DEBUG GLOB TIME
+            #print >>sys.stderr, 'glob took %0.3f ms [%s]' % ((end_time-start_time)*1000.0,       # DEBUG GLOB TIME
+            #                                                        glob_str_or_list_or_tasks)   # DEBUG GLOB TIME
         
         # 
         #   get output file names from specified tasks
@@ -324,7 +348,8 @@ def glob_regex_io_param_factory (glob_str_or_list_or_tasks, matching_regex, *par
         elif isinstance(glob_str_or_list_or_tasks, output_from):
             filenames = []
             for task in glob_str_or_list_or_tasks.args:
-
+                
+                
                 # skip tasks which don't have parameters
                 if task.param_generator_func == None:
                     continue
@@ -497,14 +522,14 @@ if __name__ == '__main__':
     import sys
     
     # use simplejson in place of json for python < 2.6
-    try:                            # DEBUGG
-        import json                 # DEBUGG
-    except ImportError:             # DEBUGG
-        import simplejson           # DEBUGG
-        json = simplejson           # DEBUGG
-                                    # DEBUGG
-                                    # DEBUGG
-    dumps = json.dumps              # DEBUGG
+    try:                           
+        import json                
+    except ImportError:            
+        import simplejson          
+        json = simplejson          
+                                   
+                                   
+    dumps = json.dumps             
 
     exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
     test_path = os.path.join(exe_path, "test", "file_name_parameters")
