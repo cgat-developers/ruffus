@@ -119,10 +119,14 @@ class node (object):
     #   add_child
 
     #_____________________________________________________________________________________
-    def add_child(self, child):
+    def add_child(self, child, no_duplicates = True):
         """
         connect edges
         """
+        # do not add duplicates
+        if no_duplicates and child in self._outward:
+            return child
+            
         self._outward.append(child)
         child._inward.append(self)
         return child
