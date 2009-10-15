@@ -40,11 +40,13 @@ class Test_glob_regex_io_param_factory(unittest.TestCase):
             # expected file names
             input_file_name  = os.path.join(self.directory, "input_file_name_%d" % i)
             output_file_name = os.path.join(self.directory, "output_file_name_%d" % i)
-            self.iofiles_a_only.append([input_file_name, output_file_name])
+            self.iofiles_a_only.append((input_file_name, output_file_name))
 
             # expected file names with only output substitution
             #   (retaining original input file names)
-            self.iofiles_a_only_output_only.append([test_file.name, output_file_name])
+            self.iofiles_a_only_output_only.append((test_file.name, output_file_name))
+        self.iofiles_a_only = tuple(self.iofiles_a_only)
+        self.iofiles_a_only_output_only = tuple(self.iofiles_a_only_output_only)
             
         test_file = open(os.path.join(self.directory, "b_file%d" % 7), "w")
         test_file.write("%d" % 7)
@@ -103,6 +105,8 @@ class Test_glob_regex_io_param_factory(unittest.TestCase):
 
         # test a files only
         params = self.glob_helper("a_file")
+        print list(params())
+        print self.iofiles_a_only
         self.assert_(list(params()) == self.iofiles_a_only)
 
         # test a and b files
@@ -233,20 +237,6 @@ class Test_file_list_io_param_factory (unittest.TestCase):
         self.assertRaises(task.task_FilesArgumentsError, self.generator_via_decorator__init , [["input1", "output2"],[1, 2]])
 
 
-    def test_non_str_io_params (self):
-        #
-        #   incorrect file parameters
-        #
-        param_list      = [ 
-                                ["input1", "output1", 1, 2],
-                                [[1,"input2b"], "output2", 1, 2]
-                           ]
-        self.assertRaises(task.task_FilesArgumentsError, task.file_list_io_param_factory , param_list)
-        param_list      = [ 
-                                ["input1", "output1", 1, 2],
-                                [["input2a","input2b"], 2, 1, 2]
-                           ]
-        self.assertRaises(task.task_FilesArgumentsError, task.file_list_io_param_factory , param_list)
 
                            
         

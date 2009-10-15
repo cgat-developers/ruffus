@@ -127,48 +127,39 @@ def needs_update_check_modify_time (i, o, *other_parameters_ignored):
     # build: missing output file
     # 
     if len(o) == 0:
-        #print >>sys.stderr, "Missing output file"                 # DEBUG CHECK MODIFY TIME
-        return True
+        return True, "Missing output file"
 
     # missing input / output file means always build                
     for io in (i, o):
         for p in io:
             if not os.path.exists(p):
-                #print >>sys.stderr, "Missing file %s" % p         # DEBUG CHECK MODIFY TIME
-                return True
+                return True, "Missing file %s" % p
 
     #
     #   missing input -> build only if output absent
     # 
     if len(i) == 0:
-        #print >>sys.stderr, "Missing input files"                 # DEBUG CHECK MODIFY TIME
-        return False
+        return False, "Missing input files"
     
     
     #
     #   get sorted modified times for all input and output files 
     #
-    filename_to_times = dict()
-    file_times = [[], []]                                    
+    filename_to_times = [[], []]
+    file_times = [[], []]
     for index, io in enumerate((i, o)):
         for f in io:
             mtime = os.path.getmtime(f)
             file_times[index].append(mtime)
-            filename_to_times[f] = mtime
+            filename_to_times[index].append((mtime, f))
+        filename_to_times[index].sort()
 
     # 
     #   update if any input file >= (more recent) output fifle
     #
     if max(file_times[0]) >= min(file_times[1]):
-        #print >>sys.stderr, "Need update %s > %s, %s > %s" % (  # DEBUG CHECK MODIFY TIME 
-                            #",".join(i),                        # DEBUG CHECK MODIFY TIME 
-                            #",".join(o),                        # DEBUG CHECK MODIFY TIME 
-                            #str(max(file_times[0])),            # DEBUG CHECK MODIFY TIME
-                            #str(min(file_times[1])))            # DEBUG CHECK MODIFY TIME
-        #print >>sys.stderr, "Need update %s" % str(filename_to_times) # DEBUG CHECK MODIFY TIME
-        return True
-    #print >>sys.stderr, "Up to date"                            # DEBUG CHECK MODIFY TIME
-    return False
+        return True, "Need update %s" % str(filename_to_times)
+    return False, "Up to date"
 
 
     

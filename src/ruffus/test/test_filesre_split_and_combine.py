@@ -75,7 +75,7 @@ parser.add_option("-j", "--jobs", dest="jobs",
                   type="int",
                   help="Specifies  the number of jobs (commands) to run simultaneously.")
 parser.add_option("-v", "--verbose", dest = "verbose",
-                  action="store_true", default=False,
+                  action="count", default=0,
                   help="Do not echo to shell but only print to log.")
 parser.add_option("-d", "--dependency", dest="dependency_file",
                   #default="simple.svg",
@@ -282,11 +282,13 @@ if __name__ == '__main__':
         start_pipeline_afresh()
         pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
                             logger = stderr_logger if options.verbose else black_hole_logger,
-                            gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode)
+                            gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
+                            verbose = options.verbose > 1)
         os.system("rm -rf %s" % tempdir)
         print "Done"
     else:
         pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
                             logger = stderr_logger if options.verbose else black_hole_logger,
-                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode)
+                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
+                            verbose = options.verbose > 1)
 

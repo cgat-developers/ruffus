@@ -167,10 +167,10 @@ def needs_update_check_directory_missing (dirs):
     for d in dirs:
         #print >>sys.stderr, "check directory missing %d " % os.path.exists(d) # DEBUG
         if not os.path.exists(d):
-            return True
+            return True, "Directory [%s] is missing" % d
         if not os.path.isdir(d):
             raise error_not_a_directory("%s already exists but as a file, not a directory" % d )
-    return False
+    return False, "All directories exist"
 
     
     
@@ -734,16 +734,6 @@ def run_pooled_job_without_exceptions (process_parameters):
         job_name = None
     
     try:
-        # don't run if up to date
-        if not force_rerun and needs_update_func:
-            if not needs_update_func (*param):
-                return t_job_result(task_name, JOB_UP_TO_DATE, job_name, None, None)
-                
-            #    Clunky hack to make sure input files exists right before 
-            #        job is called for better error messages
-            if needs_update_func == needs_update_check_modify_time:
-                check_input_files_exist (*param)
-
 
         # if user return false, halt job
         return_value =  job_wrapper(param, user_defined_work_func, register_cleanup)
@@ -907,7 +897,7 @@ class _task (node):
     #   printout
 
     #_________________________________________________________________________________________
-    def printout (self, stream, force_rerun, long_winded=False, indent = 4):
+    def printout (self, stream, force_rerun, verbose=0, indent = 4):
         """
         Print out all jobs for this task
         """
@@ -915,7 +905,7 @@ class _task (node):
         
         task_name = self._name.replace("__main__.", "")
         stream.write("Task = " + task_name + ("    >>Forced to rerun<<\n" if force_rerun else "\n"))
-        if long_winded:
+        if verbose > 1:
             stream.write(indent_str + '"' + self._description + '"\n')
 
         #
@@ -926,9 +916,13 @@ class _task (node):
         else:
             for param in self.param_generator_func():
                 uptodate = '   '
-                if self.needs_update_func and not self.needs_update_func (*param):
-                    uptodate = "U: "
-                stream.write(indent_str + uptodate + self.job_descriptor(param) + "\n")
+                msg = ''
+                if self.needs_update_func:
+                    needs_update, msg = self.needs_update_func (*param)
+                    if not needs_update:
+                        uptodate = "U: "
+                stream.write(indent_str + uptodate + self.job_descriptor(param) + 
+                                " " + msg + "\n")
 
         stream.write("\n")
 
@@ -1447,7 +1441,7 @@ def pipeline_printout_graph (stream,
 #   pipeline_printout
 
 #_________________________________________________________________________________________
-def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], long_winded=False, indent = 4,
+def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbose=0, indent = 4,
                                     gnu_make_maximal_rebuild_mode  = True,
                                     test_all_task_for_update        = True):
     """
@@ -1461,7 +1455,7 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], long_
     :type output_stream: file-like object with ``write()`` function
     :param target_tasks: targets task functions which will be run if they are out-of-date
     :param forcedtorun_tasks: task functions which will be run whether or not they are out-of-date
-    :param long_winded: More verbose output
+    :param verbose: More verbose output
     :param indent: How much indentation for pretty format. 
     :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all* out-of-date tasks. Runs minimal
                                           set to build targets if set to ``True``. Use with caution.
@@ -1492,7 +1486,7 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], long_
         raise e
 
     for task in topological_sorted:
-        task.printout(output_stream, task in forcedtorun_tasks, long_winded, indent)
+        task.printout(output_stream, task in forcedtorun_tasks, verbose, indent)
 
 #_________________________________________________________________________________________
 #
@@ -1500,7 +1494,7 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], long_
 #
 #________________________________________________________________________________________ 
 def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forcedtorun_tasks, 
-                                                        count_remaining_jobs):
+                                                        count_remaining_jobs, verbose = 0):
 
     inprogress_tasks = set()
 
@@ -1542,6 +1536,22 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                         
                     cnt_jobs_created = 0
                     for param in parameters:
+                        
+                        # don't run if up to date
+                        if not force_rerun and task.needs_update_func:
+                            needs_update, msg = task.needs_update_func (*param)
+                            if not needs_update:
+                                if logger:
+                                    logger.info("    %s unnecessary: already up to date " % task.job_descriptor(param))
+                                continue
+                            elif verbose and logger:
+                                logger.info("    %s %s " % (task.job_descriptor(param), msg))
+
+                        #    Clunky hack to make sure input files exists right before 
+                        #        job is called for better error messages
+                        if task.needs_update_func == needs_update_check_modify_time:
+                            check_input_files_exist (*param)
+                        
                         count_remaining_jobs[task] += 1
                         cnt_jobs_created += 1
                         yield (param, 
@@ -1665,7 +1675,7 @@ def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE):
 
 #_________________________________________________________________________________________
 def pipeline_run(target_tasks, forcedtorun_tasks = [], multiprocess = 1, logger = stderr_logger, 
-                                    gnu_make_maximal_rebuild_mode  = True):
+                                    gnu_make_maximal_rebuild_mode  = True, verbose = 0):
     """
     Run pipelines.
 
@@ -1728,7 +1738,7 @@ def pipeline_run(target_tasks, forcedtorun_tasks = [], multiprocess = 1, logger 
     count_remaining_jobs = defaultdict(int)
     parameter_generator = make_job_parameter_generator (incomplete_tasks, task_parents, 
                                                         logger, forcedtorun_tasks, 
-                                                        count_remaining_jobs)
+                                                        count_remaining_jobs, verbose)
     job_parameters = parameter_generator()
     fill_queue_with_job_parameters(job_parameters, parameter_q, multiprocess)
 
