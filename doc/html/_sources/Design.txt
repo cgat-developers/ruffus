@@ -47,7 +47,9 @@ Task-based rather than file-based work flow
            
         #) All out-of-date **task**\ s and subsequent stages in the pipeline will be re-run
         #) When each **task** is run, it is asked (again) which operations are out-of-date and 
-           those **job**\ s will be executed
+           only those out-of-date **job**\ s will be executed
+        #) N.B. **Jobs** s from tasks which are independent and have not dependencies will run
+           in parallel.
            
     In practice, this means that *ruffus* re-constructs its dependencies on-the-fly when it
     gets to each stage, giving much more flexibility.

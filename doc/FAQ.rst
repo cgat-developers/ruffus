@@ -13,12 +13,12 @@ Q. *Ruffus* won't create dependency graphs
 A. You need to have installed ``dot`` from `Graphviz <http://www.graphviz.org/>`_ to produce 
 pretty flowcharts likes this:
         
-        .. image:: images/four_stage_pipeline.jpg
+        .. image:: images/tutorial_four_stage_pipeline.jpg
         
 
         (Flow Chart Key):
         
-        .. image:: images/key.jpg
+        .. image:: images/tutorial_key.jpg
 
 
 =========================================================

@@ -66,7 +66,7 @@ The most up-to-date code:
 Whence the name *Ruffus*?
 =============================
 
-.. image:: images/cyl_ruffus.jpg
+.. image:: images/wikimedia_cyl_ruffus.jpg
 
 **Cylindrophis ruffus** is the name of the 
 `red-tailed pipe snake <http://en.wikipedia.org/wiki/Cylindrophis_ruffus>`_ (bad python-y pun)

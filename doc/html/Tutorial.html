@@ -5,13 +5,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Full Tutorial &mdash; ruffus v1.0.8 documentation</title>
+    <title>Full Tutorial &mdash; ruffus v1.1.3b documentation</title>
     <link rel="stylesheet" href="_static/ruffus.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '1.0.8',
+        VERSION:     '1.1.3b',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -19,7 +19,7 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="ruffus v1.0.8 documentation" href="index.html" />
+    <link rel="top" title="ruffus v1.1.3b documentation" href="index.html" />
     <link rel="next" title="A real-world example" href="intermediate_example.html" />
     <link rel="prev" title="What is left to do:" href="Todo.html" /> 
   </head>
@@ -39,7 +39,7 @@
         <li class="right" >
           <a href="Todo.html" title="What is left to do:"
              accesskey="P">previous</a> |</li>
-        Ruffus v. 1.0.8
+        Ruffus v. 1.1.3b
     <li><a href="index.html">Home</a> | </li>
         <li><a href="contents.html">Contents</a> | </li>
         <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
@@ -68,11 +68,11 @@ for running computational pipelines.</p>
 if we breakdown the process into simple stages, or separate <strong>tasks</strong>.</p>
 <p>Each <strong>task</strong> is represented by a python function</p>
 </blockquote>
-<span class="target" id="index-569"></span></div>
+<span class="target" id="index-643"></span></div>
 <div class="section" id="follows">
 <span id="id1"></span><h2><strong>&#64;follows</strong><a class="headerlink" href="#follows" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="a-simple-example">
-<span id="index-570"></span><h3>A Simple example<a class="headerlink" href="#a-simple-example" title="Permalink to this headline">¶</a></h3>
+<span id="index-644"></span><h3>A Simple example<a class="headerlink" href="#a-simple-example" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <p>Use the <strong>&#64;follows(...)</strong> python decorator before the function definitions:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
@@ -107,11 +107,14 @@ three functions will be executed in order.</p>
 <h3>Displaying<a class="headerlink" href="#displaying" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <p>We can see a flowchart of our fledgling pipeline by executing:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">pipeline_printout_graph</span> <span class="p">(</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;flowchart.svg&quot;</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">),</span>
-                         <span class="s">&quot;svg&quot;</span><span class="p">,</span>
-                         <span class="p">[</span><span class="n">final_task</span><span class="p">])</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">pipeline_printout_graph</span> <span class="p">(</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;tutorial_flowchart_ex1.jpg&quot;</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">),</span>
+                         <span class="s">&quot;jpg&quot;</span><span class="p">,</span>
+                         <span class="p">[</span><span class="n">final_task</span><span class="p">],</span>
+                         <span class="n">no_key_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>producing the following flowchart</p>
+<img alt="_images/tutorial_flowchart_ex1.jpg" src="_images/tutorial_flowchart_ex1.jpg" />
 </blockquote>
 </div>
 <div class="section" id="more-to-follows">
@@ -128,7 +131,7 @@ function name. This is also a way of referring to tasks in other modules:</p>
 </pre></div>
 </div>
 </blockquote>
-<span class="target" id="follow-mkdir"></span><span class="target" id="index-571"></span></div>
+<span class="target" id="follow-mkdir"></span><span class="target" id="index-645"></span></div>
 <div class="section" id="follows-and-mkdir">
 <h3><strong>&#64;follows</strong> and <strong>mkdir</strong><a class="headerlink" href="#follows-and-mkdir" title="Permalink to this headline">¶</a></h3>
 <blockquote>
@@ -142,7 +145,7 @@ directories exist. As a shortcut, we can define a special <tt class="docutils li
 <p>will make sure that <tt class="docutils literal"><span class="pre">output/results/here</span></tt> exists before <cite>second_task</cite> is run.</p>
 <p>In other words, it will make the <tt class="docutils literal"><span class="pre">output/results/here</span></tt> directory if it does not exist.</p>
 </blockquote>
-<span class="target" id="index-572"></span></div>
+<span class="target" id="index-646"></span></div>
 </div>
 <div class="section" id="parallel">
 <span id="id2"></span><h2><strong>&#64;parallel</strong><a class="headerlink" href="#parallel" title="Permalink to this headline">¶</a></h2>
@@ -188,7 +191,7 @@ Task hierachies are, of course, inviolate: upstream tasks run before downstream,
 </div>
 <p>if <tt class="docutils literal"><span class="pre">multiprocess</span></tt> is set to 1, then jobs will be run on a single process.</p>
 </blockquote>
-<span class="target" id="index-573"></span></div>
+<span class="target" id="index-647"></span></div>
 <div class="section" id="exceptions">
 <span id="id4"></span><h3>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h3>
 <blockquote>
@@ -232,7 +235,7 @@ see where errors occurred.</p>
 </div>
 <p>(Parts of the traceback have been removed for brevity)</p>
 </blockquote>
-<span class="target" id="index-574"></span></div>
+<span class="target" id="index-648"></span></div>
 <div class="section" id="interrupting-the-pipeline">
 <span id="interrupting"></span><h3>Interrupting the pipeline<a class="headerlink" href="#interrupting-the-pipeline" title="Permalink to this headline">¶</a></h3>
 <blockquote>
@@ -270,7 +273,7 @@ that is going to fail anyway.</p>
 <p><em>Ruffus</em> always exits concurrent task operations as soon as possible if the
 pipeline is interrupted by a job returning false (see <a class="reference internal" href="#interrupting"><em>previous section</em></a>).</p>
 </blockquote>
-<span class="target" id="index-575"></span></div>
+<span class="target" id="index-649"></span></div>
 <div class="section" id="generating-parameters-on-the-fly">
 <span id="on-the-fly"></span><h3>Generating parameters on the fly<a class="headerlink" href="#generating-parameters-on-the-fly" title="Permalink to this headline">¶</a></h3>
 <blockquote>
@@ -312,7 +315,7 @@ parameters per job. For example:</p>
 <p>The parameters often need to be generated more than once (see
 <a class="reference internal" href="#checking-multiple-times"><em>below</em></a>).</p>
 </blockquote>
-<span class="target" id="index-576"></span></div>
+<span class="target" id="index-650"></span></div>
 </div>
 <div class="section" id="files">
 <span id="id5"></span><h2><strong>&#64;files</strong><a class="headerlink" href="#files" title="Permalink to this headline">¶</a></h2>
@@ -365,7 +368,7 @@ and checks timestamps for you.</p>
 </div>
 <p>The 2nd job is up to date and will be skipped.</p>
 </blockquote>
-<span class="target" id="index-577"></span></div>
+<span class="target" id="index-651"></span></div>
 <div class="section" id="caveats-timestamp-resolution">
 <h3>Caveats: Timestamp resolution<a class="headerlink" href="#caveats-timestamp-resolution" title="Permalink to this headline">¶</a></h3>
 <blockquote>
@@ -449,12 +452,12 @@ The full code is available <a class="reference external" href="simpler.html#code
 <h4>Four successive tasks to run:<a class="headerlink" href="#four-successive-tasks-to-run" title="Permalink to this headline">¶</a></h4>
 <blockquote>
 <p>The pipeline in <tt class="docutils literal"><span class="pre">example_scripts/simpler.py</span></tt> has four successive tasks:</p>
-<div class="highlight-python"><pre>python simpler.py -F "jpg" -d ../images/four_stage_pipeline.jpg -t task4  -K -H</pre>
+<div class="highlight-python"><pre>python simpler.py -F "jpg" -d ../images/tutorial_four_stage_pipeline.jpg -t task4  -K -H</pre>
 </div>
 <p>producing the following flowchart</p>
-<img alt="_images/four_stage_pipeline.jpg" src="_images/four_stage_pipeline.jpg" />
+<img alt="_images/tutorial_four_stage_pipeline.jpg" src="_images/tutorial_four_stage_pipeline.jpg" />
 <p>Flow Chart Key:</p>
-<img alt="_images/key.jpg" src="_images/key.jpg" />
+<img alt="_images/tutorial_pipeline_key.jpg" src="_images/tutorial_pipeline_key.jpg" />
 <p>We can see that all four tasks need to run reach the target task4.</p>
 </blockquote>
 </div>
@@ -462,9 +465,9 @@ The full code is available <a class="reference external" href="simpler.html#code
 <h4>Pipeline tasks are up-to-date:<a class="headerlink" href="#pipeline-tasks-are-up-to-date" title="Permalink to this headline">¶</a></h4>
 <blockquote>
 <p>After the pipeline runs (<tt class="docutils literal"><span class="pre">python</span> <span class="pre">simpler.py</span> <span class="pre">-d</span> <span class="pre">&quot;&quot;</span></tt>), all tasks are up to date and the flowchart shows:</p>
-<div class="highlight-python"><pre>python simpler.py -F "jpg" -d ../images/complete.jpg -t task4 -K -H</pre>
+<div class="highlight-python"><pre>python simpler.py -F "jpg" -d ../images/tutorial_complete.jpg -t task4 -K -H</pre>
 </div>
-<img alt="_images/complete.jpg" src="_images/complete.jpg" />
+<img alt="_images/tutorial_complete.jpg" src="_images/tutorial_complete.jpg" />
 </blockquote>
 </div>
 <div class="section" id="some-tasks-out-of-date">
@@ -475,9 +478,9 @@ The full code is available <a class="reference external" href="simpler.html#code
 &gt; touch a.3</pre>
 </div>
 <p>the flowchart would show:</p>
-<div class="highlight-python"><pre>python simpler.py -F "jpg" -d ../images/maximal_mode.jpg -t task4  -K -H</pre>
+<div class="highlight-python"><pre>python simpler.py -F "jpg" -d ../images/tutorial_maximal_mode.jpg -t task4  -K -H</pre>
 </div>
-<img alt="_images/maximal_mode.jpg" src="_images/maximal_mode.jpg" />
+<img alt="_images/tutorial_maximal_mode.jpg" src="_images/tutorial_maximal_mode.jpg" />
 <p>Showing that:</p>
 <blockquote>
 <ol class="arabic simple">
@@ -494,7 +497,7 @@ The full code is available <a class="reference external" href="simpler.html#code
 <blockquote>
 <p>In fact, you could point out that <tt class="docutils literal"><span class="pre">task3</span></tt> is not out of date. And if we were only interested
 in the immediate dependencies of <tt class="docutils literal"><span class="pre">task4</span></tt>, we might not need task2 to rerun at all, only <tt class="docutils literal"><span class="pre">task4</span></tt>.</p>
-<img alt="_images/minimal_mode.jpg" src="_images/minimal_mode.jpg" />
+<img alt="_images/tutorial_minimal_mode.jpg" src="_images/tutorial_minimal_mode.jpg" />
 <p>In which case, we can rerun the pipeline with a different option:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">pipeline_run</span><span class="p">([</span><span class="n">task4</span><span class="p">],</span> <span class="n">gnu_make_maximal_rebuild_mode</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
 </pre></div>
@@ -515,11 +518,11 @@ changes (rather than the data).</p>
 </pre></div>
 </div>
 <p>will run all tasks from <tt class="docutils literal"><span class="pre">task1</span></tt> to <tt class="docutils literal"><span class="pre">task4</span></tt></p>
-<img alt="_images/force_from_task1.jpg" src="_images/force_from_task1.jpg" />
+<img alt="_images/tutorial_force_from_task1.jpg" src="_images/tutorial_force_from_task1.jpg" />
 <p>Both the &#8220;target&#8221; and the &#8220;forced&#8221; lists can include as many tasks as you wish. All dependencies
 are still carried out and out-of-date jobs rerun.</p>
 </blockquote>
-<span class="target" id="index-578"></span></div>
+<span class="target" id="index-652"></span></div>
 </div>
 <div class="section" id="files-re">
 <span id="id8"></span><h2><strong>&#64;files_re</strong><a class="headerlink" href="#files-re" title="Permalink to this headline">¶</a></h2>
@@ -693,7 +696,7 @@ job, so long as</p>
 </div>
 <p>Note the third <tt class="docutils literal"><span class="pre">species</span></tt> parameter for <tt class="docutils literal"><span class="pre">capture_mammals(...)</span></tt>.</p>
 </blockquote>
-<span class="target" id="index-579"></span></div>
+<span class="target" id="index-653"></span></div>
 </div>
 <div class="section" id="check-if-uptodate">
 <span id="id10"></span><h2><strong>&#64;check_if_uptodate</strong><a class="headerlink" href="#check-if-uptodate" title="Permalink to this headline">¶</a></h2>
@@ -742,7 +745,7 @@ more than once for each job.</p>
 <p class="last">See the discussion of how <em>ruffus</em> decides which tasks
 to run in <a class="reference internal" href="#automatic-dependency-checking"><em>&#64;automatic dependency checking</em></a></p>
 </div>
-<span class="target" id="index-580"></span></div>
+<span class="target" id="index-654"></span></div>
 </div>
 <div class="section" id="posttask">
 <span id="id11"></span><h2><strong>&#64;posttask</strong><a class="headerlink" href="#posttask" title="Permalink to this headline">¶</a></h2>
@@ -772,7 +775,7 @@ through a task, even if none of its jobs are run because they are up-to-date.
 This happens when a upstream task is out-of-date, and the execution passes through
 this point in the pipeline</p>
 </div>
-<span class="target" id="index-581"></span></div>
+<span class="target" id="index-655"></span></div>
 <div class="section" id="touch-file">
 <span id="posttask-touch-file"></span><h3>touch_file<a class="headerlink" href="#touch-file" title="Permalink to this headline">¶</a></h3>
 <blockquote>
@@ -791,7 +794,7 @@ this point in the pipeline</p>
 </pre></div>
 </div>
 </blockquote>
-<span class="target" id="index-582"></span></div>
+<span class="target" id="index-656"></span></div>
 </div>
 <div class="section" id="logging">
 <span id="logging-tasks"></span><h2>Logging<a class="headerlink" href="#logging" title="Permalink to this headline">¶</a></h2>
@@ -893,7 +896,7 @@ from being jumbled up)</li>
 </pre></div>
 </div>
 </blockquote>
-<span class="target" id="index-583"></span></div>
+<span class="target" id="index-657"></span></div>
 </div>
 </div>
 <div class="section" id="cleaning-up">
@@ -1023,7 +1026,7 @@ See <a class="reference external" href="Todo.html#todo-cleanup"><em>Clean up</em
         <li class="right" >
           <a href="Todo.html" title="What is left to do:"
              >previous</a> |</li>
-        Ruffus v. 1.0.8
+        Ruffus v. 1.1.3b
     <li><a href="index.html">Home</a> | </li>
         <li><a href="contents.html">Contents</a> | </li>
         <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
