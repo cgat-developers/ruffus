@@ -5,13 +5,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>ruffus.Task &mdash; ruffus v1.0.8 documentation</title>
+    <title>ruffus.Task &mdash; ruffus v1.1.3b documentation</title>
     <link rel="stylesheet" href="_static/ruffus.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '1.0.8',
+        VERSION:     '1.1.3b',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -19,7 +19,7 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="ruffus v1.0.8 documentation" href="index.html" />
+    <link rel="top" title="ruffus v1.1.3b documentation" href="index.html" />
     <link rel="next" title="ruffus.proxy_logger" href="proxy_logger.html" />
     <link rel="prev" title="simpler_with_shared_logging – How to share data across jobs" href="sharing_data_across_jobs_example_code.html" /> 
   </head>
@@ -39,7 +39,7 @@
         <li class="right" >
           <a href="sharing_data_across_jobs_example_code.html" title="simpler_with_shared_logging – How to share data across jobs"
              accesskey="P">previous</a> |</li>
-        Ruffus v. 1.0.8
+        Ruffus v. 1.1.3b
     <li><a href="index.html">Home</a> | </li>
         <li><a href="contents.html">Contents</a> | </li>
         <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
@@ -501,20 +501,21 @@ class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">t_std
 <dl class="docutils">
 <dt>for params in param_func():                                                                          </dt>
 <dd>i,o = params[0:2]
-print &#8221; input file name = &#8221; , i                                                                
-print &#8220;output file name = &#8221; , o</dd>
+print &#8221; input file name(s) = &#8221; , i                                                                
+print &#8220;output file name(s) = &#8221; , o</dd>
 </dl>
 </blockquote>
 <p>..Note:</p>
 <div class="highlight-python"><pre>1. Each job requires input/output file names
-2. Input/output file names can be a string, a list of strings or None
-3. Either Input or output file name must be non-None</pre>
+2. Input/output file names can be a string, an arbitrarily nested sequence
+3. Non-string types are ignored
+3. Either Input or output file name must contain at least one string</pre>
 </div>
 </dd></dl>
 
 <dl class="function">
 <dt id="ruffus.task.glob_regex_io_param_factory">
-<tt class="descclassname">ruffus.task.</tt><tt class="descname">glob_regex_io_param_factory</tt><big>(</big><em>glob_str_or_list</em>, <em>matching_regex</em>, <em>*parameters</em><big>)</big><a class="headerlink" href="#ruffus.task.glob_regex_io_param_factory" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">glob_regex_io_param_factory</tt><big>(</big><em>glob_str_or_list_or_tasks</em>, <em>matching_regex</em>, <em>*parameters</em><big>)</big><a class="headerlink" href="#ruffus.task.glob_regex_io_param_factory" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Factory for functions which in turn</dt>
 <dd>yield tuples of input_file_name, output_file_name</dd>
@@ -584,12 +585,19 @@ to the input/export files</li>
 <h3>Checking if job is update:<a class="headerlink" href="#checking-if-job-is-update" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="ruffus.task.needs_update_check_modify_time">
-<tt class="descclassname">ruffus.task.</tt><tt class="descname">needs_update_check_modify_time</tt><big>(</big><em>i</em>, <em>o</em>, <em>*other</em><big>)</big><a class="headerlink" href="#ruffus.task.needs_update_check_modify_time" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">needs_update_check_modify_time</tt><big>(</big><em>i</em>, <em>o</em>, <em>*other_parameters_ignored</em><big>)</big><a class="headerlink" href="#ruffus.task.needs_update_check_modify_time" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Given input and output files</dt>
-<dd>see if all exist and whether output files are later than input files
-Each can be None, &#8220;file1&#8221; or [&#8220;file1&#8221;, &#8220;file2&#8221;, &#8220;file3&#8221;]
-None means always make</dd>
+<dd><p class="first">see if all exist and whether output files are later than input files
+Each can be</p>
+<blockquote class="last">
+<ol class="arabic simple">
+<li>string: assumed to be a filename &#8220;file1&#8221;</li>
+<li>any other type</li>
+<li>arbitrary nested sequence of (1) and (2)</li>
+</ol>
+</blockquote>
+</dd>
 </dl>
 </dd></dl>
 
@@ -694,7 +702,7 @@ Is it an ordinary file not a directory? (throw exception</dd>
         <li class="right" >
           <a href="sharing_data_across_jobs_example_code.html" title="simpler_with_shared_logging – How to share data across jobs"
              >previous</a> |</li>
-        Ruffus v. 1.0.8
+        Ruffus v. 1.1.3b
     <li><a href="index.html">Home</a> | </li>
         <li><a href="contents.html">Contents</a> | </li>
         <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
