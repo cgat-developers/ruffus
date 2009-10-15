@@ -9,7 +9,7 @@ from time import sleep
 def parallel_task(name, param1):
     sleep(2)
     sys.stderr.write("    Parallel task %s: \n\n" % name)
-    raise task.JobSignalledBreak("oops")
+    raise task.JobSignalledBreak("Oops! I did it again!")
 
 # 
 #   Necessary to protect the "entry point" of the program under windows.
@@ -19,4 +19,11 @@ if __name__ == '__main__':
     try:
         pipeline_run([parallel_task], multiprocess = 2)
     except Exception, e:
-        print e.args
+        print e
+        if (e.args[0][2] == "ruffus.ruffus_exceptions.JobSignalledBreak" and
+            'Oops! I did it again!' in e.args[0][3]):
+            print "\nCorrect\n"
+            sys.exit()
+    print "\nFailed\n"
+    sys.exit(1)
+    
