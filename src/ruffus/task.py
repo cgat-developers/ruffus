@@ -1581,7 +1581,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                         #   call job completion signals
                         for f in task.post_task_functions:
                             f()
-                        short_task_name = job_result.task_name.replace('__main__.', '')
+                        short_task_name = task_name.replace('__main__.', '')
                         logger.info("Completed Task = " + short_task_name)
 
             # extra tests incase final tasks do not result in jobs
