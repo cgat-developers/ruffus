@@ -128,7 +128,18 @@ black_hole_logger = t_black_hole_logger()
 stderr_logger     = t_stderr_logger()
 
 
-       
+#_________________________________________________________________________________________
+#
+#   logging helper function
+#
+#________________________________________________________________________________________ 
+def log_at_level (logger, message_level, verbose_level, msg):
+    """
+    writes to log if message_level > verbose level 
+    """
+    if message_level <= verbose_level:
+        logger.info(msg)
+
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   needs_update_func
@@ -725,13 +736,7 @@ def run_pooled_job_without_exceptions (process_parameters):
         See RethrownJobError /  run_all_jobs_in_task
     """
     
-    (param, task_name, job_descriptor, needs_update_func, job_wrapper, 
-        user_defined_work_func, do_log, force_rerun) = process_parameters
-    
-    if do_log:
-        job_name = job_descriptor(param)
-    else:
-        job_name = None
+    (param, task_name, job_name, job_wrapper, user_defined_work_func) = process_parameters
     
     try:
 
@@ -915,14 +920,17 @@ class _task (node):
             stream.write(indent_str + self._name + "()\n")
         else:
             for param in self.param_generator_func():
+                job_name = self.job_descriptor(param)
                 uptodate = '   '
                 msg = ''
                 if self.needs_update_func:
                     needs_update, msg = self.needs_update_func (*param)
                     if not needs_update:
                         uptodate = "U: "
-                stream.write(indent_str + uptodate + self.job_descriptor(param) + 
-                                " " + msg + "\n")
+                elif verbose > 1:
+                    stream.write(indent_str + "%s no function to check if up-to-date " % job_name)
+                if verbose:
+                    stream.write(indent_str + uptodate + job_name + " " + msg + "\n")
 
         stream.write("\n")
 
@@ -1488,41 +1496,40 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
     for task in topological_sorted:
         task.printout(output_stream, task in forcedtorun_tasks, verbose, indent)
 
+
+        
 #_________________________________________________________________________________________
 #
 #   Parameter generator for all jobs / tasks
 #
 #________________________________________________________________________________________ 
 def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forcedtorun_tasks, 
-                                                        count_remaining_jobs, verbose = 0):
+                                                        count_remaining_jobs, verbose):
 
     inprogress_tasks = set()
 
     def parameter_generator():
-        #print >>sys.stderr, "   job_parameter_generator BEGIN" # DEBUG PIPELINE
+        log_at_level (logger, 3, verbose, "   job_parameter_generator BEGIN") # DEBUG PIPELINE
         while len(incomplete_tasks):
             for task in list(incomplete_tasks):              
-                #print >>sys.stderr, "   job_parameter_generator next task = %s" % task._name # DEBUG PIPELINE
+                log_at_level (logger, 3, verbose, "   job_parameter_generator next task = %s" % task._name) # DEBUG PIPELINE
                 # ignore tasks in progress
                 if task in inprogress_tasks:
                     continue
-
-                #print >>sys.stderr, "   job_parameter_generator task %s not in progress" % task._name # DEBUG PIPELINE
+                log_at_level (logger, 3, verbose, "   job_parameter_generator task %s not in progress" % task._name) # DEBUG PIPELINE
                 # ignore tasks with incomplete dependencies
                 for parent in task_parents[task]:                  
                     if parent in incomplete_tasks:         
                         break
                 else:                                        
-                    #print >>sys.stderr, "   job_parameter_generator task %s parents completed" % task._name # DEBUG PIPELINE
+                    log_at_level (logger, 3, verbose, "   job_parameter_generator task %s parents completed" % task._name) # DEBUG PIPELINE
                     force_rerun = task in forcedtorun_tasks
                     # 
                     # log task
                     # 
                     task_name = task._name.replace("__main__.", "")
-                    if logger:
-                        logger.info("Start Task = " + task_name + (": Forced to rerun" if force_rerun else ""))
-                        if len(task._description):
-                            logger.debug("    " + task._description)
+                    log_at_level (logger, 2, verbose, "Start Task = " + task_name + (": Forced to rerun" if force_rerun else "")) # DEBUG PIPELINE
+                    log_at_level (logger, 2, verbose, task._description) # DEBUG PIPELINE
                     inprogress_tasks.add(task)
 
 
@@ -1537,15 +1544,20 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     cnt_jobs_created = 0
                     for param in parameters:
                         
+                        job_name = task.job_descriptor(param)
                         # don't run if up to date
-                        if not force_rerun and task.needs_update_func:
-                            needs_update, msg = task.needs_update_func (*param)
-                            if not needs_update:
-                                if logger:
-                                    logger.info("    %s unnecessary: already up to date " % task.job_descriptor(param))
-                                continue
-                            elif verbose and logger:
-                                logger.info("    %s %s " % (task.job_descriptor(param), msg))
+                        if force_rerun:
+                            log_at_level (logger, 2, verbose, "    force task %s to rerun " % job_name)
+                        else:
+                            if not task.needs_update_func:
+                                log_at_level (logger, 2, verbose, "    %s no function to check if up-to-date " % job_name)
+                            else:
+                                needs_update, msg = task.needs_update_func (*param)
+                                if not needs_update:
+                                    log_at_level (logger, 1, verbose, "    %s unnecessary: already up to date " % job_name)
+                                    continue
+                                else:
+                                    log_at_level (logger, 2, verbose, "    %s %s " % (job_name, msg))
 
                         #    Clunky hack to make sure input files exists right before 
                         #        job is called for better error messages
@@ -1556,27 +1568,31 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                         cnt_jobs_created += 1
                         yield (param, 
                                 task._name,
-                                task.job_descriptor, 
-                                task.needs_update_func, 
+                                job_name,   
                                 task.job_wrapper, 
-                                task.user_defined_work_func,
-                                logger != None, 
-                                force_rerun)
+                                task.user_defined_work_func)
 
                     # if no job came from this task, this task is complete
                     #   we need to complete it here instead of normal completion at end
                     #   of job tasks
                     if cnt_jobs_created == 0:
                         incomplete_tasks.remove(task)
-                        inprogress_tasks.remove(task)
-            
+
+                        #   call job completion signals
+                        for f in task.post_task_functions:
+                            f()
+                        short_task_name = job_result.task_name.replace('__main__.', '')
+                        logger.info("Completed Task = " + short_task_name)
+
             # extra tests incase final tasks do not result in jobs
             if len(incomplete_tasks):
+                log_at_level (logger, 3, verbose, "    incomplete tasks = " + 
+                                       ",".join([t._name for t in incomplete_tasks] )) # DEBUG PIPELINE
                 yield waiting_for_more_tasks_to_complete()
 
         yield all_tasks_complete()
         # This function is done
-        #print >>sys.stderr, "   job_parameter_generator END" # DEBUG PIPELINE
+        log_at_level (logger, 3, verbose, "   job_parameter_generator END") # DEBUG PIPELINE
 
     return parameter_generator
 
@@ -1686,6 +1702,10 @@ def pipeline_run(target_tasks, forcedtorun_tasks = [], multiprocess = 1, logger 
     :type logger: `logging <http://docs.python.org/library/logging.html>`_ objects
     :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all* out-of-date tasks. Runs minimal
                                           set to build targets if set to ``True``. Use with caution. 
+    :param verbose: level 0: logs completed jobs/tasks; 
+                    level 1: logs up to date jobs;
+                    level 2: logs reason for running job;
+                    level 3: logs pipeline debug messages
 
 
     """
@@ -1795,9 +1815,10 @@ def pipeline_run(target_tasks, forcedtorun_tasks = [], multiprocess = 1, logger 
             tasks_with_errors.add(task)
             break
 
-        elif logger:
+        else:
             if job_result.state == JOB_UP_TO_DATE:
-                logger.info("    %s unnecessary: already up to date" % job_result.job_name)
+                if verbose:
+                    logger.info("    %s unnecessary: already up to date" % job_result.job_name)
             else:
                 logger.info("    %s completed" % job_result.job_name)
             
@@ -1809,9 +1830,8 @@ def pipeline_run(target_tasks, forcedtorun_tasks = [], multiprocess = 1, logger 
             #   call job completion signals
             for f in task.post_task_functions:
                 f()
-            if logger:
-                short_task_name = job_result.task_name.replace('__main__.', '')
-                logger.info("Completed Task = " + short_task_name)
+            short_task_name = job_result.task_name.replace('__main__.', '')
+            logger.info("Completed Task = " + short_task_name)
 
             
         # make sure queue is still full after each job is retired
