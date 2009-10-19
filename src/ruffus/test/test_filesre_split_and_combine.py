@@ -199,15 +199,9 @@ def split_fasta_file (input_file, success_flag):
 @posttask(lambda: sys.stderr.write("Sequences aligned\n"))
 @follows(split_fasta_file)
 @files_re(tempdir  + "files.split.*.fa",       # find all .fa files
-            r"(.*\.)(.+).fa$",                 # match file name root and substitute
-            r'\g<0>',                          #    the original file
-            [r"\1\2.aln",                      #   .aln suffix for the result
-             r"\1\2.aln_success"],             #   .aln_success to indicate job completed
-            r"\2")                             #   extra parameter to remember the file index
-def align_sequences (input_file, output_files, split_index):
-    (output_filename, success_flag_filename) = output_files
-    open(output_filename, "w").write("%s\n" % split_index)
-    open(success_flag_filename, "w")
+            ".fa$", ".aln")                     # fa -> aln
+def align_sequences (input_file, output_filename):
+    open(output_filename, "w").write("%s\n" % output_filename)
 
 
 
@@ -267,7 +261,7 @@ if __name__ == '__main__':
         start_pipeline_afresh()
     if options.just_print:
         pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
-                            long_winded=True,
+                            verbose = options.verbose,
                             gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode)
 
     elif options.dependency_file:
@@ -283,12 +277,12 @@ if __name__ == '__main__':
         pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
                             logger = stderr_logger if options.verbose else black_hole_logger,
                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                            verbose = options.verbose > 1)
+                            verbose = options.verbose)
         os.system("rm -rf %s" % tempdir)
         print "Done"
     else:
         pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
                             logger = stderr_logger if options.verbose else black_hole_logger,
                              gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                            verbose = options.verbose > 1)
+                            verbose = options.verbose)
 

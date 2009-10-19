@@ -210,6 +210,35 @@ def construct_filename_parameters_with_regex(filename, regex, p):
         return p
 
 #_________________________________________________________________________________________
+#
+#   get_output_file_names_from_tasks
+# 
+#_________________________________________________________________________________________
+def get_output_file_names_from_tasks (file_source):
+    """
+    assumes file_source is a type of output_from
+        and that 2nd parameter contain output files
+    """
+    filenames = []
+    for task in file_source.args:
+
+        # skip tasks which don't have parameters
+        if task.param_generator_func == None:
+            continue
+
+        for param in task.param_generator_func():
+
+            # skip tasks which don't have output parameters
+            if len(param) < 2:
+                continue
+
+            #   get 
+            #   
+            filenames.extend(get_strings_in_nested_sequence(param[1]))
+
+    return filenames
+
+#_________________________________________________________________________________________
 
 #   glob_regex_io_param_factory                                                                        
 
@@ -220,7 +249,7 @@ def construct_filename_parameters_with_regex(filename, regex, p):
 #                3) input_filename_str (optional)
 #                4) output_filename_str
 #_________________________________________________________________________________________
-def glob_regex_io_param_factory (glob_str_or_list_or_tasks, matching_regex, *parameters):
+def glob_regex_io_param_factory (file_source, matching_regex, *parameters):
     """
     Factory for functions which in turn
         yield tuples of input_file_name, output_file_name                                     
@@ -268,7 +297,7 @@ def glob_regex_io_param_factory (glob_str_or_list_or_tasks, matching_regex, *par
     parameters = list(parameters)
     if len(parameters) == 0:
         raise task_FilesreArgumentsError("Missing arguments for @files_re(%s)" % 
-                                         ignore_unknown_encoder([glob_str_or_list_or_tasks, 
+                                         ignore_unknown_encoder([file_source, 
                                                                 matching_regex] + 
                                                                 parameters))
     
@@ -292,13 +321,13 @@ def glob_regex_io_param_factory (glob_str_or_list_or_tasks, matching_regex, *par
             matching_regex = matching_regex.args
         
         
-    if len(get_strings_in_nested_sequence(parameters)) == 0:
-        raise task_FilesreArgumentsError("Input or output file parameters should "
-                                        "contain at least one or more file names or "
-                                        "regular expression patterns to generate "
-                                        "file names (string or nested collection of "
-                                        "strings) "  +   
-                                        ignore_unknown_encoder(parameters))
+    #if len(get_strings_in_nested_sequence(parameters)) == 0:
+    #    raise task_FilesreArgumentsError("Input or output file parameters should "
+    #                                    "contain at least one or more file names or "
+    #                                    "regular expression patterns to generate "
+    #                                    "file names (string or nested collection of "
+    #                                    "strings) "  +   
+    #                                    ignore_unknown_encoder(parameters))
 
     
     
@@ -317,47 +346,25 @@ def glob_regex_io_param_factory (glob_str_or_list_or_tasks, matching_regex, *par
     #
     #   make copy of file list? 
     #
-    if not is_str(glob_str_or_list_or_tasks) and not isinstance(glob_str_or_list_or_tasks, output_from):
-        glob_str_or_list_or_tasks = copy.copy(glob_str_or_list_or_tasks)
+    if not is_str(file_source) and not isinstance(file_source, output_from):
+        file_source = copy.copy(file_source)
 
     def iterator ():
         #
         #   glob or file list? 
         #
-        if is_str(glob_str_or_list_or_tasks):
+        if is_str(file_source):
             #import time                                                                          # DEBUG GLOB TIME
             #start_time = time.time()                                                             # DEBUG GLOB TIME
-            filenames = sorted(glob.glob(glob_str_or_list_or_tasks))                             
+            filenames = sorted(glob.glob(file_source))                             
             #end_time = time.time()                                                               # DEBUG GLOB TIME
             #print >>sys.stderr, 'glob took %0.3f ms [%s]' % ((end_time-start_time)*1000.0,       # DEBUG GLOB TIME
-            #                                                        glob_str_or_list_or_tasks)   # DEBUG GLOB TIME
+            #                                                        file_source)   # DEBUG GLOB TIME
         
-        # 
-        #   get output file names from specified tasks
-        #       assumes that 2nd parameter contain output files
-        #
-        elif isinstance(glob_str_or_list_or_tasks, output_from):
-            filenames = []
-            for task in glob_str_or_list_or_tasks.args:
-                
-                
-                # skip tasks which don't have parameters
-                if task.param_generator_func == None:
-                    continue
-
-                for param in task.param_generator_func():
-                    
-                    # skip tasks which don't have output parameters
-                    if len(param) < 2:
-                        continue
-                        
-                    #   get 
-                    #   
-                    filenames.extend(get_strings_in_nested_sequence(param[1]))
-                
-                
+        elif isinstance(file_source, output_from):
+            filenames = get_output_file_names_from_tasks(file_source)
         else:
-            filenames = sorted(glob_str_or_list_or_tasks)
+            filenames = sorted(file_source)
             
         if combining_all_jobs:
             #
@@ -393,6 +400,60 @@ def glob_regex_io_param_factory (glob_str_or_list_or_tasks, matching_regex, *par
 
     return iterator
     
+#_________________________________________________________________________________________
+
+#   combine_io_param_factory                                                                        
+
+#      iterable list of input / output files from
+
+#                1) filelist/tasks
+#                4) output_filename_str
+#_________________________________________________________________________________________
+def combine_io_param_factory (file_source, *parameters):
+    """
+    Factory for functions which in turn
+        yield tuples of input_file_name, output_file_name                                     
+
+    Usage:
+
+        param_func = combine_io_param_factory(file_list/task,      # list of files
+                                                 "output_file") # pattern to generate output file names   
+
+        for i, o in param_func():                                                                          
+            print " input file name = " , i                                                                
+            print "output file name = " , o                                                                
+
+
+    ..Note::
+        A "copy" of the file list is saved
+        So do not expect to modify your copy of the original list and expect changes
+        to the input/export files
+
+
+    """
+    regex = re.compile(matching_regex)
+
+    #  make (expensive) copy so that changes to the original sequence don't confuse us
+    parameters = copy.copy(parameters)
+
+
+    #
+    #   make copy of file list
+    #
+    if not is_str(file_source) and not isinstance(file_source, output_from):
+        file_source = copy.copy(file_source)
+
+    def iterator ():
+        if isinstance(file_source, output_from):
+            filenames = get_output_file_names_from_tasks(file_source)
+        else:
+            filenames = sorted(file_source)
+
+        yield filenames, *parameters
+
+
+    return iterator
+
 #_________________________________________________________________________________________
 
 #   file_list_io_param_factory 
