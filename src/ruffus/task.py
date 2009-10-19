@@ -492,26 +492,50 @@ class files_re(task_decorator):
 """
     pass
 
-class files_combine(task_decorator):
+    
+    
+class files_map(task_decorator):
     """
-    **@combine** (tasks/input_files, output_file, [extra_parameters...])
+    **@files_map** (tasks/glob/file_list, matching_regex, output_file)
 
-    Generates a list of i/o files for one job which combines all the files from the tasks / input 
-    files.
+    **@files_map** (tasks/glob/file_list, matching_regex, input_file, output_file, [extra_parameters,...] )
+
+    Generates a list of i/o files for each job in the task:
     Only out of date jobs will be run (See @files).
 
-    #. The first parameter can be a list of input files or a task/list of tasks. In the latter
-       case, the input file names are generated from the output of the specied task(s)
-    #. The second parameter after that are output file(s)
-    #. Other parameters are optional
-    
-    If one or more tasks names are specified as strings, you need to wrap them using an `output_from` object::
+    #. The first parameter can be a list of input files, a file system glob specification 
+       or a task/list of tasks. In the latter case, the input file names are generated 
+       from the output of the specied task(s)
+    #. ``matching_regex`` is a python regular expression.
+    #. The next parameter after that are input file(s)
+    #. The next parameter after that are output file(s)
+    #. Further parameters are optional and are passed verbatim to the functions after regular expression
+       substition in any strings. Non-string values are passed through unchanged
 
-        @combine(tasks1, "output.file")
-        
-        @combine(output_from("tasks1", task2), "output.file")
+    These are used to check if jobs are up to date.
 
-    Input and output parameters are used to check if jobs are up to date.
+    All parameters can be:
+
+        #. ``None``
+        #. A string
+        #. A nested sequence containing strings
+        #. Anything else
+
+    Strings will be treated as regular expression substitution
+    patterns, using matches from ``matching_regex``.
+
+    See python `regular expression (re) <http://docs.python.org/library/re.html>`_ 
+    documentation for details of the syntax
+
+    `None` and all other types of objects are passed through unchanged.
+
+
+    Operation:    
+
+        1) For each file in the ``glob`` (See `glob <http://docs.python.org/library/glob.html>`_) 
+           results or ``file_list`` or in the output files from ``tasks``
+        2) Discard all file names those which don't matching ``matching_regex``
+        3) Generate parameters using regular expression pattern substitution
 
     Example::
 
@@ -519,21 +543,18 @@ class files_combine(task_decorator):
         #
         #   convert all files ending in ".1" into files ending in ".2"
         #
-        @combine(['a', 'b', 'c'], ['output1', 'output2'])
-        def task1(infiles, outfiles):
-            infiles == ['a', 'b', 'c']
-            outfiles == ["output1", "output2"]
+        @files_map('*.1', '(.*).1', r'\\1.2')
+        def task_re(infile, outfile):
+            open(outfile, "w").write(open(infile).read() + "\\nconverted\\n")
 
-        @combine(task2, 'final_output1')
-        def task2(infiles, outfile):
-            infiles == ["output1", "output2"]
-            outfile == "final_output1"
+        pipeline_run([task_re])
 
 
 """
     pass
-    
-    
+
+
+
 class check_if_uptodate(task_decorator):
     """
     **@check_if_uptodate** (dependency_checking_func)
@@ -839,6 +860,9 @@ class _task (node):
     action_names = ["unspecified",
                     "task",
                     "task_files_re",
+                    "task_split",
+                    "task_merge",
+                    "task_files_map",
                     "task_files_func",
                     "task_files",
                     "task_mkdir",
@@ -847,10 +871,13 @@ class _task (node):
     action_unspecified      = 0
     action_task             = 1
     action_task_files_re    = 2
-    action_task_files_func  = 3
-    action_task_files       = 4
-    action_mkdir            = 5
-    action_parallel         = 6
+    action_task_split       = 3
+    action_task_merge       = 4
+    action_task_files_map   = 5
+    action_task_files_func  = 6
+    action_task_files       = 7
+    action_mkdir            = 8
+    action_parallel         = 9
 
     #_________________________________________________________________________________________
 
