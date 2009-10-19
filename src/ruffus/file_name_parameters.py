@@ -449,7 +449,7 @@ def combine_io_param_factory (file_source, *parameters):
         else:
             filenames = sorted(file_source)
 
-        yield filenames, *parameters
+        yield (filenames) + tuple(parameters)
 
 
     return iterator

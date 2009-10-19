@@ -492,7 +492,7 @@ class files_re(task_decorator):
 """
     pass
 
-class combine(task_decorator):
+class files_combine(task_decorator):
     """
     **@combine** (tasks/input_files, output_file, [extra_parameters...])
 
