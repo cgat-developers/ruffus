@@ -442,9 +442,14 @@ class files_re(task_decorator):
     Generates a list of i/o files for each job in the task:
     Only out of date jobs will be run (See @files).
     
+    #. The first parameter can be a list of input files, a file system glob specification 
+       or a task/list of tasks. In the latter case, the input file names are generated 
+       from the output of the specied task(s)
     #. ``matching_regex`` is a python regular expression.
-    #. The first parameter after that are input file(s)
-    #. The second parameter after that are output file(s)
+    #. The next parameter after that are input file(s)
+    #. The next parameter after that are output file(s)
+    #. Further parameters are optional and are passed verbatim to the functions after regular expression
+       substition in any strings. Non-string values are passed through unchanged
 
     These are used to check if jobs are up to date.
     
@@ -486,11 +491,57 @@ class files_re(task_decorator):
        
 """
     pass
+
+class combine(task_decorator):
+    """
+    **@combine** (tasks/input_files, output_file, [extra_parameters...])
+
+    Generates a list of i/o files for one job which combines all the files from the tasks / input 
+    files.
+    Only out of date jobs will be run (See @files).
+
+    #. The first parameter can be a list of input files or a task/list of tasks. In the latter
+       case, the input file names are generated from the output of the specied task(s)
+    #. The second parameter after that are output file(s)
+    #. Other parameters are optional
+    
+    If one or more tasks names are specified as strings, you need to wrap them using an `output_from` object::
+
+        @combine(tasks1, "output.file")
+        
+        @combine(output_from("tasks1", task2), "output.file")
+
+    Input and output parameters are used to check if jobs are up to date.
+
+    Example::
+
+        from ruffus import *
+        #
+        #   convert all files ending in ".1" into files ending in ".2"
+        #
+        @combine(['a', 'b', 'c'], ['output1', 'output2'])
+        def task1(infiles, outfiles):
+            infiles == ['a', 'b', 'c']
+            outfiles == ["output1", "output2"]
+
+        @combine(task2, 'final_output1')
+        def task2(infiles, outfile):
+            infiles == ["output1", "output2"]
+            outfile == "final_output1"
+
+
+"""
+    pass
+    
+    
 class check_if_uptodate(task_decorator):
     """
     **@check_if_uptodate** (dependency_checking_func)
     
     Checks to see if a job is up to date, and needs to be run.
+    
+    returns two parameters: if job needs to be run, and a message explaining why
+    
     dependency_checking_func() needs to handle the same number of parameters as the
     task function
     
@@ -512,21 +563,24 @@ class check_if_uptodate(task_decorator):
         from ruffus import *
         import os
         def check_file_exists(input_file, output_file):
-            return not os.path.exists(output_file)
+            if not os.path.exists(output_file):
+                return True, "Missing file %s" % output_file
+            return 
+                return False, "File %s exists" % output_file
+            
+            @parallel([[None, "a.1"]])
+            @check_if_uptodate(check_file_exists)
+            def create_if_necessary(input_file, output_file):
+                open(output_file, "w")
+            
+            pipeline_run([create_if_necessary])
+            
+        Both produce the same output::
         
-        @parallel([[None, "a.1"]])
-        @check_if_uptodate(check_file_exists)
-        def create_if_necessary(input_file, output_file):
-            open(output_file, "w")
-        
-        pipeline_run([create_if_necessary])
-        
-    Both produce the same output::
+            Task = create_if_necessary
+                Job = [null, "a.1"] completed
+            
     
-        Task = create_if_necessary
-            Job = [null, "a.1"] completed
-        
-
     """
     pass
 
@@ -755,7 +809,7 @@ def run_pooled_job_without_exceptions (process_parameters):
             exception_value = "(%s)" % exception_value
         return t_job_result(task_name, JOB_ERROR, job_name, None,
                             [task_name,
-                             job_descriptor(param), 
+                             job_name, 
                              exception_name, 
                              exception_value, 
                              exception_stack])
@@ -1511,7 +1565,8 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
     def parameter_generator():
         log_at_level (logger, 3, verbose, "   job_parameter_generator BEGIN") # DEBUG PIPELINE
         while len(incomplete_tasks):
-            cnt_jobs_created_for_all_tasks == 0:
+            cnt_jobs_created_for_all_tasks = 0
+            cnt_tasks_processed = 0
             for task in list(incomplete_tasks):              
                 log_at_level (logger, 3, verbose, "   job_parameter_generator next task = %s" % task._name) # DEBUG PIPELINE
                 # ignore tasks in progress
@@ -1532,6 +1587,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     log_at_level (logger, 2, verbose, "Start Task = " + task_name + (": Forced to rerun" if force_rerun else "")) # DEBUG PIPELINE
                     log_at_level (logger, 2, verbose, task._description) # DEBUG PIPELINE
                     inprogress_tasks.add(task)
+                    cnt_tasks_processed += 1
 
 
                     #
@@ -1587,7 +1643,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                         logger.info("Completed Task = " + short_task_name)
 
             # extra tests incase final tasks do not result in jobs
-            if len(incomplete_tasks) and cnt_jobs_created_for_all_tasks:
+            if len(incomplete_tasks) and (not cnt_tasks_processed or cnt_jobs_created_for_all_tasks):
                 log_at_level (logger, 3, verbose, "    incomplete tasks = " + 
                                        ",".join([t._name for t in incomplete_tasks] )) # DEBUG PIPELINE
                 yield waiting_for_more_tasks_to_complete()
