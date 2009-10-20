@@ -28,12 +28,15 @@ Decorators
 ========================
 .. autoclass:: ruffus.task.follows(parent_task1, "module_X.parent_task2")
 
-.. _task.parallel:
+
+.. _task.posttask:
 
 ========================
-@parallel
+@posttask
 ========================
-.. autoclass:: parallel([[job1_params, ...], [job2_params, ...]...])
+.. autoclass:: posttask(custom_function, [touch_file("a.file")])
+
+
 
 .. _task.files:
 
@@ -42,12 +45,22 @@ Decorators
 ========================
 .. autoclass:: files([[input_files, output_files...], ...])
 
+
 .. _task.files_re:
 
 ========================
 @files_re
 ========================
 .. autoclass:: files_re(glob/file_list, matching_regex, input_file, output_file, [extra_parameters,...] )
+
+.. _task.parallel:
+
+========================
+@parallel
+========================
+.. autoclass:: parallel([[job1_params, ...], [job2_params, ...]...])
+
+
 
 .. _task.check_if_uptodate:
 
@@ -56,12 +69,42 @@ Decorators
 ========================
 .. autoclass:: check_if_uptodate(custom_function)
 
-.. _task.posttask:
+
+
+
+***************************************
+Simplified syntax (work in progress)
+***************************************
+
+.. _task.split:
 
 ========================
-@posttask
+@split
 ========================
-.. autoclass:: posttask(custom_function, [touch_file("a.file")])
+.. autoclass:: split(custom_function)
+
+
+.. _task.transform:
+
+========================
+@transform
+========================
+.. autoclass:: transform(custom_function)
+
+
+.. _task.merge:
+
+========================
+@merge
+========================
+.. autoclass:: merge(custom_function)
+
+
+
+
+
+
+
 
 
 .. ???
