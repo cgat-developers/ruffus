@@ -97,10 +97,10 @@ class RethrownJobError(error_task):
         #       turn original exception stack message into an indented string
         #
         for i, (task_name, job_name, exception_name, exception_value, exception_stack) in enumerate(self.args):
-            message += ("\nException #%d\n" % (i + 1) +
-                        "%s%s:\nfor %s.%s\n\n%s\n" % 
-                            (   exception_name, exception_value, 
-                                task_name, job_name, exception_stack) )
+            message += "\nException #%d\n" % (i + 1)
+            message += "\nException #%d\n" % (i + 1)
+            message += "%s%s:\n" % (exception_name, exception_value)
+            message += "for %s.%s\n\n%s\n" % (task_name, job_name, exception_stack)
         return (self.get_main_msg() + "".join(message)).replace("\n", "\n    ")
 
 class task_FilesArgumentsError(error_task):
