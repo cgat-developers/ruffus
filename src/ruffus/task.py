@@ -435,9 +435,9 @@ class files(task_decorator):
 
 class files_re(task_decorator):
     """
-    **@files_re** (tasks/glob/file_list, matching_regex, output_file)
+    **@files_re** (tasks/file_list, matching_regex, output_file)
     
-    **@files_re** (tasks/glob/file_list, matching_regex, input_file, output_file, [extra_parameters,...] )
+    **@files_re** (tasks/file_list, matching_regex, input_file, output_file, [extra_parameters,...] )
 
     Generates a list of i/o files for each job in the task:
     Only out of date jobs will be run (See @files).
@@ -494,62 +494,196 @@ class files_re(task_decorator):
 
     
     
-class files_map(task_decorator):
+class merge(task_decorator):
     """
-    **@files_map** (tasks/glob/file_list, matching_regex, output_file)
+    Simple form:
+    
+    
+    **@merge** (tasks/file_list, output_file, [extra_parameters,...] )
 
-    **@files_map** (tasks/glob/file_list, matching_regex, input_file, output_file, [extra_parameters,...] )
-
-    Generates a list of i/o files for each job in the task:
+    Merges multiple input files into a single job
     Only out of date jobs will be run (See @files).
-
-    #. The first parameter can be a list of input files, a file system glob specification 
-       or a task/list of tasks. In the latter case, the input file names are generated 
-       from the output of the specied task(s)
-    #. ``matching_regex`` is a python regular expression.
-    #. The next parameter after that are input file(s)
-    #. The next parameter after that are output file(s)
-    #. Further parameters are optional and are passed verbatim to the functions after regular expression
-       substition in any strings. Non-string values are passed through unchanged
-
-    These are used to check if jobs are up to date.
-
-    All parameters can be:
-
-        #. ``None``
-        #. A string
-        #. A nested sequence containing strings
-        #. Anything else
-
-    Strings will be treated as regular expression substitution
-    patterns, using matches from ``matching_regex``.
-
-    See python `regular expression (re) <http://docs.python.org/library/re.html>`_ 
-    documentation for details of the syntax
-
-    `None` and all other types of objects are passed through unchanged.
-
-
-    Operation:    
-
-        1) For each file in the ``glob`` (See `glob <http://docs.python.org/library/glob.html>`_) 
-           results or ``file_list`` or in the output files from ``tasks``
-        2) Discard all file names those which don't matching ``matching_regex``
-        3) Generate parameters using regular expression pattern substitution
 
     Example::
 
-        from ruffus import *
-        #
-        #   convert all files ending in ".1" into files ending in ".2"
-        #
-        @files_map('*.1', '(.*).1', r'\\1.2')
-        def task_re(infile, outfile):
-            open(outfile, "w").write(open(infile).read() + "\\nconverted\\n")
+        @merge(previous_task, 'all.summary')
+        def summarize(infiles, summary_file):
+            pass
+    
+    #. The first parameter can be 
+           #  a task / list of tasks (as above).
+              File names are taken from the output of the specified task(s)
+           #  a (nested) list of file name strings. 
+              Any file names containing "*[]?" will be expanded as a glob e.g. "a.*" => "a.1", "a.2" etc.
+    #. The second parameter specifies the output file name(s) of this task.
+       More than one file name can be passed as a nested sequence, and will be forwarded to the underlying
+       function
+    #. Further parameters are optional 
+    
+    
+    Grouping / Collating form       
+               
+    **@merge** (tasks/file_list, **regex**(matching_regex), output_file, [extra_parameters,...] )
+           
+    This allows the use of regular expressions to merge groups of input files, each into a separate
+    summary. 
+    For example: `regex(r".*(\..+)"), "\1.summary"` would create a separate summary file for each suffix::
 
-        pipeline_run([task_re])
+        animal_files = "a.fish", "b.fish", "c.mammals", "d.mammals"
+        # summarise by file suffix:
+        @merge(animal_files, regex(r"\.(.+)$"),  r'\1.summary')
+        def summarize(infiles, summary_file):
+            pass
+    
+           
+    #. `matching_regex` is a python regular expression string, which must be wrapped in
+       a `ruffus.regex` indicator object
+       See python `regular expression (re) <http://docs.python.org/library/re.html>`_ 
+       documentation for details of regular expression syntax
+    #. Output and option extra parameters are passed to the functions after regular expression
+       substitution in any strings. Non-string values are passed through unchanged.
+    #. Each merge job consists of input files which are aggregated by regular expression substitution
+       to a single set of output / extra parameter matches
+    #. In the above cases, "a.fish" and "b.fish" both produce "fish.summary" after regular
+       expression subsitution, and are merged into a single job:
+       `["a.fish", "b.fish" -> "fish.summary"]`
+       while "c.mammals", "d.mammals" both produce "mammals.summary", are merged in a separate job:
+       `["c.mammals", "d.mammals" -> "mammals.summary"]`
+       
+
+"""
+    pass
+
+class split(task_decorator):
+    """
+    Simple form:
 
 
+    **@split** (tasks/file_list, output_files, [extra_parameters,...] )
+
+    Splits a single set of input files into multiple output file names, where the number of
+    output file names is not known beforehand
+
+    Example::
+
+        @split("big_file", '*.little_files')
+        def split_big_to_small(input_file, resulting_output):
+            for i, data in enumerate(split_up(input_file)):
+                output_file_name = "%d.little_files" % i
+                open(output_file_name, "w").write(data)
+                
+                # remember to save newly created output file
+                resulting_output.append(output_file_name)
+                
+                
+
+    #. The first parameter can be 
+           #  a (nested) list of file name strings. (as above)
+              Any file names containing "*[]?" will be expanded as a glob e.g. "a.*" => "a.1", "a.2" etc.
+           #  a task / list of tasks.
+              File names are taken from the output of the specified task(s)
+    #. The second parameter specifies the output file name(s) of this task.
+       These are used **only** to check if the task is up to date.
+       Normally you would use either a glob (e.g. `*.little_files` as above) or  a "sentinel file"
+       to indicate that the task has completed successful. You can of course do both:
+       `["sentinel.file", "*.little_files"]`
+    #. Further parameters are optional 
+    #. The file names actually created should be returned as the second parameter of the task function.
+"""
+    pass
+
+
+class transform(task_decorator):
+    """
+    Simple form:
+    
+    **@transform** (tasks/file_list, suffix(suffix_string), outputs, [extra_parameters,...] )
+    **@transform** (tasks/file_list, regex(matching_regex), outputs, [extra_parameters,...] )
+
+    Applies the task function to transform inputs from (`tasks/file_list`) to outputs
+    output file names are determined from input file names using either suffix matches
+    or regular expression pattern matches.
+
+    Example::
+
+        #   compiles `*.c` to `*.o`
+        
+        @transform(previous_task, suffix(".c"), ".o")
+        def compile(infile, outfile):
+            pass
+
+    Same example with a regular expression::
+
+        #   compiles `*.c` to `*.o`
+        
+        @transform(previous_task, regex(r".c$"), ".o")
+        def compile(infile, outfile):
+            pass
+    
+    #. The first parameter can be 
+           #  a task / list of tasks (as above).
+              File names are taken from the output of the specified task(s)
+           #  a (nested) list of file name strings. 
+              Any file names containing "*[]?" will be expanded as a glob e.g. "a.*" => "a.1", "a.2" etc.
+    #. `matching_regex` is a python regular expression string, which must be wrapped in
+       a `ruffus.regex` indicator object
+       See python `regular expression (re) <http://docs.python.org/library/re.html>`_ 
+       documentation for details of regular expression syntax
+    #. `suffix_string` must be wrapped in a `ruffus.suffix` indicator object
+       "Suffix matches" are perfect matches from the end of the string.
+    #. Output and option extra parameters are passed to the functions after regular expression
+       substitution in any strings. Non-string values are passed through unchanged
+    #. The input and output file name parameter strings are used to check if jobs are 
+       up-to-date and need to be re-run. (Non-string parameters are ignored.)
+       For the above example, a call to `compile_c_file("a.c", "a.o")` will be made 
+       unless `a.c` is older than `a.o`.
+    
+    
+    Complicated / Flexible form       
+               
+    **@transform** (tasks/file_list, regex(matching_regex), inputs(input_file), output_file, [extra_parameters,...] )
+    **@transform** (tasks/file_list, suffix(suffix_string), inputs(input_file), output_file, [extra_parameters,...] )
+           
+    In the standard **@transform**, output file names are created using regular expression substitution.
+    Sometimes, it is necessary to create input file names the same way.
+    This is especially useful to **add** an extra dependency to the task.
+    
+    Example::
+
+        #   compiles `*.c` to `*.o`, depending on header files `*.h`
+        
+        @transform(previous_task, suffix(".c"), inputs(".c", ".h"),  ".o")
+        def compile_c_file(infile, outfile):
+            pass
+
+    A regular expression allows even more flexibility::
+
+        #   compiles `*.c` to `*.o`, depending on header files `*.h`, and `universal.h`
+        
+        @transform(previous_task, regex(r"(.*).c$"), inputs(r"\1.c", "\1.h", "universal.h"),  ".o")
+        def compile_c_file(infile, outfile):
+            pass
+    
+    Now the inputs to each job for example, include the header files, `a.h` and `universal.h` as
+    well as the source file `a.c` from `previous_task`. This is equivalent to calling::
+
+        compile_c_file(["a.c", "a.h", "universal.h"], "a.o")
+           
+    #. `matching_regex` is a python regular expression string, which must be wrapped in
+       a `ruffus.regex` indicator object
+       See python `regular expression (re) <http://docs.python.org/library/re.html>`_ 
+       documentation for details of regular expression syntax
+    #. `suffix_string` must be wrapped in a `ruffus.suffix` indicator object
+       "Suffix matches" are perfect matches from the end of the string.
+    #. Output file names and optional extra parameters are passed to the functions after regular expression
+       substitution in any strings. Non-string values are passed through unchanged
+    #. Input file name parameters mush be wrapped in a `ruffus.inputs` indicator object. These 
+       are also passed to the functions after regular expression
+       substitution in any strings. 
+       to a single set of output / extra parameter matches
+    #. The input and output file name parameter strings are used to check if jobs are 
+       up-to-date and need to be re-run. (Non-string parameters are ignored.)
+    
 """
     pass
 
@@ -862,7 +996,7 @@ class _task (node):
                     "task_files_re",
                     "task_split",
                     "task_merge",
-                    "task_files_map",
+                    "task_transform",
                     "task_files_func",
                     "task_files",
                     "task_mkdir",
@@ -873,7 +1007,7 @@ class _task (node):
     action_task_files_re    = 2
     action_task_split       = 3
     action_task_merge       = 4
-    action_task_files_map   = 5
+    action_task_transform   = 5
     action_task_files_func  = 6
     action_task_files       = 7
     action_mkdir            = 8
@@ -949,6 +1083,31 @@ class _task (node):
                 
         # give makedir automatically made parent tasks unique names
         self.cnt_task_mkdir         = 0
+        
+
+    #_________________________________________________________________________________________
+
+    #   init_for_pipeline
+
+    #_________________________________________________________________________________________
+    def init_for_pipeline (self):
+        """
+        Initialize variables for pipeline run / printout
+
+        **********
+          BEWARE
+        **********
+
+        Because state is stored, ruffus is *not* reentrant.
+
+        **********
+          BEWARE
+        **********
+        """
+
+        # cache output file names here
+        self.output_filenames = None
+        
         
     #_________________________________________________________________________________________
 
@@ -1059,6 +1218,42 @@ class _task (node):
 
         
         
+    #_____________________________________________________________________________________
+
+    #   get_output_files
+    # 
+    # 
+    #_____________________________________________________________________________________
+    def get_output_files (self, flattened = True):
+        """
+        Before the tasks runs: returns prospective output files using param_generator_func
+        After  the tasks runs: returns the actual output files                            
+        
+        If flattened is True, returns file as a list of strints, 
+            flattening any nested structures and discarding non string names
+        """
+        if self.output_filenames != None:
+            if flattened:
+                return get_strings_in_nested_sequence(filenames)
+            else:
+                return filenames
+                
+        filenames = []
+
+        # skip tasks which don't have parameters
+        if task.param_generator_func == None:
+            return []
+
+        for param in self.param_generator_func():
+
+            # skip tasks which don't have output parameters
+            if len(param) >= 2:
+                filenames.extend(param[1])
+
+        if flattened:
+            return get_strings_in_nested_sequence(filenames)
+            
+        return filenames
 
         
 
@@ -1512,15 +1707,15 @@ def pipeline_printout_graph (stream,
     
 
     graph_printout (  stream, 
-                          output_format,
-                          target_tasks, 
-                          forcedtorun_tasks,
-                          draw_vertically,
-                          ignore_upstream_of_target,
-                          skip_uptodate_tasks,
-                          gnu_make_maximal_rebuild_mode,
-                          test_all_task_for_update,
-                          no_key_legend)
+                      output_format,
+                      target_tasks, 
+                      forcedtorun_tasks,
+                      draw_vertically,
+                      ignore_upstream_of_target,
+                      skip_uptodate_tasks,
+                      gnu_make_maximal_rebuild_mode,
+                      test_all_task_for_update,
+                      no_key_legend)
 
     
 
@@ -1595,17 +1790,20 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
             cnt_jobs_created_for_all_tasks = 0
             cnt_tasks_processed = 0
             for task in list(incomplete_tasks):              
-                log_at_level (logger, 3, verbose, "   job_parameter_generator next task = %s" % task._name) # DEBUG PIPELINE
+
+                log_at_level (logger, 3, verbose, "   job_parameter_generator consider task = %s" % task._name) # DEBUG PIPELINE
+
                 # ignore tasks in progress
                 if task in inprogress_tasks:
                     continue
                 log_at_level (logger, 3, verbose, "   job_parameter_generator task %s not in progress" % task._name) # DEBUG PIPELINE
+                
                 # ignore tasks with incomplete dependencies
                 for parent in task_parents[task]:                  
                     if parent in incomplete_tasks:         
                         break
                 else:                                        
-                    log_at_level (logger, 3, verbose, "   job_parameter_generator task %s parents completed" % task._name) # DEBUG PIPELINE
+                    log_at_level (logger, 3, verbose, "   job_parameter_generator start task %s (parents completed)" % task._name) # DEBUG PIPELINE
                     force_rerun = task in forcedtorun_tasks
                     # 
                     # log task
@@ -1615,6 +1813,8 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     log_at_level (logger, 2, verbose, task._description) # DEBUG PIPELINE
                     inprogress_tasks.add(task)
                     cnt_tasks_processed += 1
+                    
+                    task.output_filenames = []
 
 
                     #
@@ -1647,6 +1847,9 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                         #        job is called for better error messages
                         if task.needs_update_func == needs_update_check_modify_time:
                             check_input_files_exist (*param)
+                            
+                        if len(param) >= 2:
+                            task.output_filenames.append(param[1])
                         
                         count_remaining_jobs[task] += 1
                         cnt_jobs_created += 1
@@ -1833,6 +2036,18 @@ def pipeline_run(target_tasks, forcedtorun_tasks = [], multiprocess = 1, logger 
     #print json.dumps(task_parents.items(), indent=4, cls=task_encoder)
     
     
+    # prepare tasks for pipeline run
+    #    **********
+    #      BEWARE
+    #    **********
+    #    
+    #    Because state is stored, ruffus is *not* reentrant.
+    #    
+    #    **********
+    #      BEWARE
+    #    **********
+    for task in topological_sorted:
+        task.init_for_pipeline()
     
 
     # 

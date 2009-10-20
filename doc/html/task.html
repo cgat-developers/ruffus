@@ -5,13 +5,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>ruffus.Task &mdash; ruffus v1.1.3b documentation</title>
+    <title>ruffus.Task &mdash; ruffus v1.1.5c documentation</title>
     <link rel="stylesheet" href="_static/ruffus.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '1.1.3b',
+        VERSION:     '1.1.5c',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -19,7 +19,7 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="ruffus v1.1.3b documentation" href="index.html" />
+    <link rel="top" title="ruffus v1.1.5c documentation" href="index.html" />
     <link rel="next" title="ruffus.proxy_logger" href="proxy_logger.html" />
     <link rel="prev" title="simpler_with_shared_logging – How to share data across jobs" href="sharing_data_across_jobs_example_code.html" /> 
   </head>
@@ -39,7 +39,7 @@
         <li class="right" >
           <a href="sharing_data_across_jobs_example_code.html" title="simpler_with_shared_logging – How to share data across jobs"
              accesskey="P">previous</a> |</li>
-        Ruffus v. 1.1.3b
+        Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>
         <li><a href="contents.html">Contents</a> | </li>
         <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
@@ -230,14 +230,19 @@ Example:</p>
 <dt id="ruffus.task.files_re">
 <em class="property">
 class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">files_re</tt><big>(</big><em>glob/file_list</em>, <em>matching_regex</em>, <em>input_file</em>, <em>output_file</em><span class="optional">[</span>, <em>extra_parameters</em>, <em>...</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ruffus.task.files_re" title="Permalink to this definition">¶</a></dt>
-<dd><p><strong>&#64;files_re</strong> (glob/file_list, matching_regex, output_file)</p>
-<p><strong>&#64;files_re</strong> (glob/file_list, matching_regex, input_file, output_file, [extra_parameters,...] )</p>
+<dd><p><strong>&#64;files_re</strong> (tasks/file_list, matching_regex, output_file)</p>
+<p><strong>&#64;files_re</strong> (tasks/file_list, matching_regex, input_file, output_file, [extra_parameters,...] )</p>
 <p>Generates a list of i/o files for each job in the task:
 Only out of date jobs will be run (See &#64;files).</p>
 <ol class="arabic simple">
+<li>The first parameter can be a list of input files, a file system glob specification 
+or a task/list of tasks. In the latter case, the input file names are generated 
+from the output of the specied task(s)</li>
 <li><tt class="docutils literal"><span class="pre">matching_regex</span></tt> is a python regular expression.</li>
-<li>The first parameter are input file(s)</li>
-<li>The second parameter are output file(s)</li>
+<li>The next parameter after that are input file(s)</li>
+<li>The next parameter after that are output file(s)</li>
+<li>Further parameters are optional and are passed verbatim to the functions after regular expression
+substition in any strings. Non-string values are passed through unchanged</li>
 </ol>
 <p>These are used to check if jobs are up to date.</p>
 <p>All parameters can be:</p>
@@ -245,11 +250,11 @@ Only out of date jobs will be run (See &#64;files).</p>
 <ol class="arabic simple">
 <li><tt class="xref docutils literal"><span class="pre">None</span></tt></li>
 <li>A string</li>
-<li>A sequence of strings</li>
+<li>A nested sequence containing strings</li>
 <li>Anything else</li>
 </ol>
 </blockquote>
-<p>Strings and sequences of strings will be treated as regular expression substitution
+<p>Strings will be treated as regular expression substitution
 patterns, using matches from <tt class="docutils literal"><span class="pre">matching_regex</span></tt>.</p>
 <p>See python <a class="reference external" href="http://docs.python.org/library/re.html">regular expression (re)</a> 
 documentation for details of the syntax</p>
@@ -258,7 +263,7 @@ documentation for details of the syntax</p>
 <blockquote>
 <ol class="arabic simple">
 <li>For each file in the <tt class="docutils literal"><span class="pre">glob</span></tt> (See <a class="reference external" href="http://docs.python.org/library/glob.html">glob</a>) 
-results or <tt class="docutils literal"><span class="pre">file_list</span></tt>.</li>
+results or <tt class="docutils literal"><span class="pre">file_list</span></tt> or in the output files from <tt class="docutils literal"><span class="pre">tasks</span></tt></li>
 <li>Discard all file names those which don&#8217;t matching <tt class="docutils literal"><span class="pre">matching_regex</span></tt></li>
 <li>Generate parameters using regular expression pattern substitution</li>
 </ol>
@@ -285,8 +290,9 @@ results or <tt class="docutils literal"><span class="pre">file_list</span></tt>.
 <em class="property">
 class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">check_if_uptodate</tt><big>(</big><em>custom_function</em><big>)</big><a class="headerlink" href="#ruffus.task.check_if_uptodate" title="Permalink to this definition">¶</a></dt>
 <dd><p><strong>&#64;check_if_uptodate</strong> (dependency_checking_func)</p>
-<p>Checks to see if a job is up to date, and needs to be run.
-dependency_checking_func() needs to handle the same number of parameters as the
+<p>Checks to see if a job is up to date, and needs to be run.</p>
+<p>returns two parameters: if job needs to be run, and a message explaining why</p>
+<p>dependency_checking_func() needs to handle the same number of parameters as the
 task function</p>
 <p>These two examples, using automatic and manual dependency checking produce
 the same output.
@@ -301,22 +307,25 @@ Example 1: Automatic:</p>
 </div>
 <p>Could be rewritten as::
 Example 2: Manual:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="k">def</span> <span class="nf">check_file_exists</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
-    <span class="k">return</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output_file</span><span class="p">)</span>
+<div class="highlight-python"><pre>from ruffus import *
+import os
+def check_file_exists(input_file, output_file):
+    if not os.path.exists(output_file):
+        return True, "Missing file %s" % output_file
+    return 
+        return False, "File %s exists" % output_file
+    
+    @parallel([[None, "a.1"]])
+    @check_if_uptodate(check_file_exists)
+    def create_if_necessary(input_file, output_file):
+        open(output_file, "w")
+    
+    pipeline_run([create_if_necessary])
+    
+Both produce the same output::
 
-<span class="nd">@parallel</span><span class="p">([[</span><span class="bp">None</span><span class="p">,</span> <span class="s">&quot;a.1&quot;</span><span class="p">]])</span>
-<span class="nd">@check_if_uptodate</span><span class="p">(</span><span class="n">check_file_exists</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">create_if_necessary</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
-    <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
-
-<span class="n">pipeline_run</span><span class="p">([</span><span class="n">create_if_necessary</span><span class="p">])</span>
-</pre></div>
-</div>
-<p>Both produce the same output:</p>
-<div class="highlight-python"><pre>Task = create_if_necessary
-    Job = [null, "a.1"] completed</pre>
+    Task = create_if_necessary
+        Job = [null, "a.1"] completed</pre>
 </div>
 </dd></dl>
 
@@ -382,6 +391,10 @@ this point in the pipeline</p>
 <li><em>logger</em> (<a class="reference external" href="http://docs.python.org/library/logging.html">logging</a> objects) &#8211; Where progress will be logged. Defaults to stderr output.</li>
 <li><em>gnu_make_maximal_rebuild_mode</em> &#8211; Defaults to re-running <em>all</em> out-of-date tasks. Runs minimal
 set to build targets if set to <tt class="xref docutils literal"><span class="pre">True</span></tt>. Use with caution.</li>
+<li><em>verbose</em> &#8211; level 0: logs completed jobs/tasks; 
+level 1: logs up to date jobs;
+level 2: logs reason for running job;
+level 3: logs pipeline debug messages</li>
 </ul>
 </td>
 </tr>
@@ -394,7 +407,7 @@ set to build targets if set to <tt class="xref docutils literal"><span class="pr
 <h3>pipeline_printout<a class="headerlink" href="#pipeline-printout" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="ruffus.task.pipeline_printout">
-<tt class="descclassname">ruffus.task.</tt><tt class="descname">pipeline_printout</tt><big>(</big><em>output_stream</em>, <em>target_tasks</em>, <em>forcedtorun_tasks=</em><span class="optional">[</span><span class="optional">]</span>, <em>long_winded=False</em>, <em>indent=4</em>, <em>gnu_make_maximal_rebuild_mode=True</em>, <em>test_all_task_for_update=True</em><big>)</big><a class="headerlink" href="#ruffus.task.pipeline_printout" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">pipeline_printout</tt><big>(</big><em>output_stream</em>, <em>target_tasks</em>, <em>forcedtorun_tasks=</em><span class="optional">[</span><span class="optional">]</span>, <em>verbose=0</em>, <em>indent=4</em>, <em>gnu_make_maximal_rebuild_mode=True</em>, <em>test_all_task_for_update=True</em><big>)</big><a class="headerlink" href="#ruffus.task.pipeline_printout" title="Permalink to this definition">¶</a></dt>
 <dd><p>Printouts the parts of the pipeline which will be run</p>
 <p>Because the parameters of some jobs depend on the results of previous tasks, this function
 produces only the current snap-shot of task jobs. In particular, tasks which generate 
@@ -407,7 +420,7 @@ variable number of inputs into following tasks will not produce the full range o
 <li><em>output_stream</em> (file-like object with <tt class="docutils literal"><span class="pre">write()</span></tt> function) &#8211; where to print to</li>
 <li><em>target_tasks</em> &#8211; targets task functions which will be run if they are out-of-date</li>
 <li><em>forcedtorun_tasks</em> &#8211; task functions which will be run whether or not they are out-of-date</li>
-<li><em>long_winded</em> &#8211; More verbose output</li>
+<li><em>verbose</em> &#8211; More verbose output</li>
 <li><em>indent</em> &#8211; How much indentation for pretty format.</li>
 <li><em>gnu_make_maximal_rebuild_mode</em> &#8211; Defaults to re-running <em>all</em> out-of-date tasks. Runs minimal
 set to build targets if set to <tt class="xref docutils literal"><span class="pre">True</span></tt>. Use with caution.</li>
@@ -515,7 +528,7 @@ print &#8220;output file name(s) = &#8221; , o</dd>
 
 <dl class="function">
 <dt id="ruffus.task.glob_regex_io_param_factory">
-<tt class="descclassname">ruffus.task.</tt><tt class="descname">glob_regex_io_param_factory</tt><big>(</big><em>glob_str_or_list_or_tasks</em>, <em>matching_regex</em>, <em>*parameters</em><big>)</big><a class="headerlink" href="#ruffus.task.glob_regex_io_param_factory" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">glob_regex_io_param_factory</tt><big>(</big><em>file_source</em>, <em>matching_regex</em>, <em>*parameters</em><big>)</big><a class="headerlink" href="#ruffus.task.glob_regex_io_param_factory" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Factory for functions which in turn</dt>
 <dd>yield tuples of input_file_name, output_file_name</dd>
@@ -702,7 +715,7 @@ Is it an ordinary file not a directory? (throw exception</dd>
         <li class="right" >
           <a href="sharing_data_across_jobs_example_code.html" title="simpler_with_shared_logging – How to share data across jobs"
              >previous</a> |</li>
-        Ruffus v. 1.1.3b
+        Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>
         <li><a href="contents.html">Contents</a> | </li>
         <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
