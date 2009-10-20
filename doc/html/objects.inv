@@ -1,10 +1,10 @@
 # Sphinx inventory version 1
 # Project: ruffus
 # Version: 1.1.5c
-ruffus.proxy_logger mod proxy_logger.html
 complicated_example mod complicated_example_code.html
 intermediate_example mod intermediate_example_code.html
 ruffus.task mod task.html
+ruffus.proxy_logger mod proxy_logger.html
 ruffus.proxy_logger.make_shared_logger_and_proxy function proxy_logger.html
 ruffus.task.file_list_io_param_factory function task.html
 ruffus.task.transform class task.html

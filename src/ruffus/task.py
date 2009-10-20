@@ -562,19 +562,15 @@ class split(task_decorator):
     **@split** (tasks/file_list, output_files, [extra_parameters,...] )
 
     Splits a single set of input files into multiple output file names, where the number of
-    output file names is not known beforehand
+    output files may not be known beforehand. 
 
     Example::
 
         @split("big_file", '*.little_files')
-        def split_big_to_small(input_file, resulting_output):
-            for i, data in enumerate(split_up(input_file)):
-                output_file_name = "%d.little_files" % i
-                open(output_file_name, "w").write(data)
-                
-                # remember to save newly created output file
-                resulting_output.append(output_file_name)
-                
+        def split_big_to_small(input_file, output_files):
+            assert(input_file = "big_file")
+            assert(input_file = "*.little_files")
+            pass    
                 
 
     #. The first parameter can be 
@@ -588,7 +584,6 @@ class split(task_decorator):
        to indicate that the task has completed successful. You can of course do both:
        `["sentinel.file", "*.little_files"]`
     #. Further parameters are optional 
-    #. The file names actually created should be returned as the second parameter of the task function.
 """
     pass
 

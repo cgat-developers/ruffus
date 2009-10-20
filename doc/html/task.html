@@ -383,17 +383,13 @@ class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">split
 <dd><p>Simple form:</p>
 <p><strong>&#64;split</strong> (tasks/file_list, output_files, [extra_parameters,...] )</p>
 <p>Splits a single set of input files into multiple output file names, where the number of
-output file names is not known beforehand</p>
+output files may not be known beforehand.</p>
 <p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="nd">@split</span><span class="p">(</span><span class="s">&quot;big_file&quot;</span><span class="p">,</span> <span class="s">&#39;*.little_files&#39;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">split_big_to_small</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">resulting_output</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">split_up</span><span class="p">(</span><span class="n">input_file</span><span class="p">)):</span>
-        <span class="n">output_file_name</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%d</span><span class="s">.little_files&quot;</span> <span class="o">%</span> <span class="n">i</span>
-        <span class="nb">open</span><span class="p">(</span><span class="n">output_file_name</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        
-        <span class="c"># remember to save newly created output file</span>
-        <span class="n">resulting_output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output_file_name</span><span class="p">)</span>
-</pre></div>
+<div class="highlight-python"><pre>@split("big_file", '*.little_files')
+def split_big_to_small(input_file, output_files):
+    assert(input_file = "big_file")
+    assert(input_file = "*.little_files")
+    pass    </pre>
 </div>
 <ol class="arabic">
 <li><dl class="first docutils">
@@ -416,8 +412,6 @@ to indicate that the task has completed successful. You can of course do both:
 <cite>[&#8220;sentinel.file&#8221;, &#8220;*.little_files&#8221;]</cite></p>
 </li>
 <li><p class="first">Further parameters are optional</p>
-</li>
-<li><p class="first">The file names actually created should be returned as the second parameter of the task function.</p>
 </li>
 </ol>
 </dd></dl>
