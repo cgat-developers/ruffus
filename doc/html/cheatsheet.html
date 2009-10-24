@@ -20,8 +20,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="ruffus v1.1.5c documentation" href="index.html" />
-    <link rel="next" title="Design & Architecture" href="Design.html" />
-    <link rel="prev" title="Simple 5 minute Tutorial" href="simple_tutorial.html" /> 
+    <link rel="next" title="Introduction" href="introduction.html" />
+    <link rel="prev" title="Full Tutorial" href="full_tutorial.html" /> 
   </head>
   <body>
     <div class="related">
@@ -34,10 +34,10 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="Design.html" title="Design & Architecture"
+          <a href="introduction.html" title="Introduction"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="simple_tutorial.html" title="Simple 5 minute Tutorial"
+          <a href="full_tutorial.html" title="Full Tutorial"
              accesskey="P">previous</a> |</li>
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>
@@ -58,100 +58,126 @@
           <div class="body">
             
   <div class="section" id="cheat-sheet">
-<span id="overwiew"></span><h1>Cheat Sheet<a class="headerlink" href="#cheat-sheet" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h1>Cheat Sheet<a class="headerlink" href="#cheat-sheet" title="Permalink to this headline">¶</a></h1>
 <p>The <tt class="docutils literal"><span class="pre">ruffus</span></tt> module is a lightweight way to add support
 for running computational pipelines.</p>
-<div class="section" id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
-<p>Each stage or <strong>task</strong> in a computational pipeline is represented by a python function
-Each python function can be called in parallel to run multiple <strong>jobs</strong>.</p>
-<div class="section" id="annotate-functions-with-python-decorators">
-<h3>1. Annotate functions with python decorators<a class="headerlink" href="#annotate-functions-with-python-decorators" title="Permalink to this headline">¶</a></h3>
-<blockquote>
+<div class="line-block">
+<div class="line">Each stage or <strong>task</strong> in a computational pipeline is represented by a python function</div>
+<div class="line">Each python function can be called in parallel to run multiple <strong>jobs</strong>.</div>
+</div>
+<div class="section" id="annotate-functions-with-ruffus-decorators">
+<h2>1. Annotate functions with <strong>Ruffus</strong> decorators<a class="headerlink" href="#annotate-functions-with-ruffus-decorators" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="basic">
+<h3>Basic<a class="headerlink" href="#basic" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="40%" />
 <col width="60%" />
+<col width="0%" />
 </colgroup>
 <thead valign="bottom">
 <tr><th class="head">Decorator</th>
 <th class="head">Examples</th>
+<th class="head">&nbsp;</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr><td><p class="first"><strong>&#64;follows</strong></p>
 <ul class="last simple">
-<li>Indicate task dependency</li>
-<li><cite>mkdir</cite> prerequisite shorthand</li>
+<li>Indicates task dependency (<a class="reference external" href="full_tutorial.html#follows"><em>see tutorial</em></a>)</li>
+<li>optional <a class="reference external" href="decorators/follows.html#task-follows-directory-name"><em>mkdir</em></a> prerequisite (<a class="reference external" href="full_tutorial.html#follow-mkdir"><em>see tutorial</em></a>)</li>
 </ul>
 </td>
-<td><p class="first"><a class="reference external" href="Tutorial.html#follows"><em>&#64;follows</em></a> ( <tt class="docutils literal"><span class="pre">task1</span></tt>, <tt class="docutils literal"><span class="pre">'task2'</span></tt> ))</p>
-<p class="last"><a class="reference external" href="Tutorial.html#follows-out-of-order"><em>&#64;follows</em></a> ( <tt class="docutils literal"><span class="pre">task1</span></tt>,  <a class="reference external" href="Tutorial.html#follow-mkdir"><em>mkdir</em></a>( <tt class="docutils literal"><span class="pre">'my/directory/for/results'</span></tt> ))</p>
+<td><div class="first last line-block">
+<div class="line"><a class="reference external" href="decorators/follows.html#task-follows"><em>&#64;follows</em></a> ( <tt class="docutils literal"><span class="pre">task1</span></tt>, <tt class="docutils literal"><span class="pre">'task2'</span></tt> ))</div>
+<div class="line"><a class="reference external" href="decorators/follows.html#task-follows"><em>&#64;follows</em></a> ( <tt class="docutils literal"><span class="pre">task1</span></tt>,  <a class="reference external" href="decorators/follows.html#task-follows-directory-name"><em>mkdir</em></a>( <tt class="docutils literal"><span class="pre">'my/directory/for/results'</span></tt> ))</div>
+</div>
 </td>
+<td>&nbsp;</td>
 </tr>
-<tr><td><p class="first"><strong>&#64;parallel</strong></p>
-<ul class="last simple">
-<li>Parameters for parallel jobs</li>
-</ul>
-</td>
-<td><p class="first"><a class="reference external" href="Tutorial.html#parallel"><em>&#64;parallel</em></a> ( <tt class="docutils literal"><span class="pre">parameter_list</span></tt> )</p>
-<p class="last"><a class="reference external" href="Tutorial.html#on-the-fly"><em>&#64;parallel</em></a> ( <tt class="docutils literal"><span class="pre">parameter_generating_function</span></tt> )</p>
-</td>
-</tr>
-<tr><td><p class="first"><strong>&#64;files</strong></p>
+<tr><td><p class="first"><strong>&#64;files</strong> (<a class="reference external" href="full_tutorial.html#files"><em>Tutorial</em></a>)</p>
 <ul class="last simple">
 <li>I/O parameters</li>
 <li>skips up-to-date jobs</li>
 </ul>
 </td>
-<td><p class="first"><a class="reference external" href="Tutorial.html#files"><em>&#64;files</em></a>( <tt class="docutils literal"><span class="pre">parameter_list</span></tt> )</p>
-<p><a class="reference external" href="Tutorial.html#files"><em>&#64;files</em></a>( <tt class="docutils literal"><span class="pre">parameter_generating_function</span></tt> )</p>
-<p><em>Simplified syntax for tasks with a single job:</em></p>
-<p class="last"><a class="reference external" href="Tutorial.html#files"><em>&#64;files</em></a> ( <tt class="docutils literal"><span class="pre">input_file</span></tt>, <tt class="docutils literal"><span class="pre">output_file</span></tt>, <tt class="docutils literal"><span class="pre">other_params</span></tt>, <tt class="docutils literal"><span class="pre">...</span></tt> )</p>
+<td><div class="first last line-block">
+<div class="line"><a class="reference external" href="decorators/files.html#task-files"><em>&#64;files</em></a>( <tt class="docutils literal"><span class="pre">parameter_list</span></tt> )</div>
+<div class="line"><a class="reference external" href="decorators/files.html#task-files"><em>&#64;files</em></a>( <tt class="docutils literal"><span class="pre">parameter_generating_function</span></tt> )</div>
+<div class="line"><a class="reference external" href="decorators/files.html#task-files"><em>&#64;files</em></a> ( <tt class="docutils literal"><span class="pre">input_file</span></tt>, <tt class="docutils literal"><span class="pre">output_file</span></tt>, <tt class="docutils literal"><span class="pre">other_params</span></tt>, ... )</div>
+</div>
 </td>
-</tr>
-<tr><td><p class="first"><strong>&#64;files_re</strong></p>
-<ul class="last simple">
-<li>I/O file names via regular
-expressions</li>
-<li>start from lists of file names
-or <tt class="docutils literal"><span class="pre">glob</span></tt> results</li>
-<li>skips up-to-date jobs</li>
-</ul>
-</td>
-<td><p class="first"><a class="reference external" href="Tutorial.html#files-re"><em>&#64;files_re</em></a> ( <tt class="docutils literal"><span class="pre">glob_str</span></tt>, <tt class="docutils literal"><span class="pre">matching_regex</span></tt>, <tt class="docutils literal"><span class="pre">output_pattern</span></tt>, <tt class="docutils literal"><span class="pre">...</span></tt> )</p>
-<p><a class="reference external" href="Tutorial.html#files-re"><em>&#64;files_re</em></a> ( <tt class="docutils literal"><span class="pre">file_names</span></tt>, <tt class="docutils literal"><span class="pre">matching_regex</span></tt>, <tt class="docutils literal"><span class="pre">input_pattern</span></tt>, <tt class="docutils literal"><span class="pre">output_pattern</span></tt>, <tt class="docutils literal"><span class="pre">...</span></tt> )</p>
-<p><a class="reference external" href="Tutorial.html#files-re"><em>&#64;files_re</em></a> ( <tt class="docutils literal"><span class="pre">glob_str</span></tt>, <tt class="docutils literal"><span class="pre">matching_regex</span></tt>, <tt class="docutils literal"><span class="pre">output_pattern</span></tt>, <tt class="docutils literal"><span class="pre">...</span></tt> )</p>
-<p><a class="reference external" href="Tutorial.html#files-re"><em>&#64;files_re</em></a> ( <tt class="docutils literal"><span class="pre">file_names</span></tt>, <tt class="docutils literal"><span class="pre">matching_regex</span></tt>, <tt class="docutils literal"><span class="pre">input_pattern</span></tt>, <tt class="docutils literal"><span class="pre">output_pattern</span></tt>, <tt class="docutils literal"><span class="pre">...</span></tt> )</p>
-<p class="last"><tt class="docutils literal"><span class="pre">input_pattern</span></tt>/<tt class="docutils literal"><span class="pre">output_pattern</span></tt> are regex patterns
-used to create input/output file names from the starting
-list of either glob_str or file names</p>
-</td>
-</tr>
-<tr><td><p class="first"><strong>&#64;check_if_uptodate</strong></p>
-<ul class="last simple">
-<li>Checks if task needs to be run</li>
-</ul>
-</td>
-<td><a class="reference external" href="Tutorial.html#check-if-uptodate"><em>&#64;check_if_uptodate</em></a> ( <tt class="docutils literal"><span class="pre">is_task_up_to_date_function</span></tt> )</td>
-</tr>
-<tr><td><p class="first"><strong>&#64;posttask</strong></p>
-<ul class="last simple">
-<li>Calls function after task completes</li>
-<li><em>touch_file</em> shorthand</li>
-</ul>
-</td>
-<td><p class="first"><a class="reference external" href="Tutorial.html#posttask"><em>&#64;posttask</em></a> ( <tt class="docutils literal"><span class="pre">signal_task_completion_function</span></tt> )</p>
-<p class="last"><a class="reference external" href="Tutorial.html#posttask"><em>&#64;posttask</em></a> (<a class="reference external" href="Tutorial.html#posttask-touch-file"><em>&#64;touch_file</em></a>( <tt class="docutils literal"><span class="pre">'task1.completed'</span></tt> ))</p>
-</td>
+<td>&nbsp;</td>
 </tr>
 </tbody>
 </table>
-</blockquote>
+</div>
+<div class="section" id="core">
+<h3>Core<a class="headerlink" href="#core" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="40%" />
+<col width="60%" />
+<col width="0%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Decorator</th>
+<th class="head">Examples</th>
+<th class="head">&nbsp;</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><p class="first"><strong>&#64;split</strong> (<em class="xref">Tutorial</em>)</p>
+<ul class="last simple">
+<li>Splits a single input into multiple output</li>
+<li>Globs in <tt class="docutils literal"><span class="pre">output</span></tt> can specify an indeterminate number of files.</li>
+</ul>
+</td>
+<td><a class="reference external" href="decorators/split.html#task-split"><em>&#64;split</em></a> ( <tt class="docutils literal"><span class="pre">tasks_or_file_names</span></tt>, <tt class="docutils literal"><span class="pre">output_files</span></tt>, [<tt class="docutils literal"><span class="pre">extra_parameters</span></tt>,...] )</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td><p class="first"><strong>&#64;transform</strong> (<em class="xref">Tutorial</em>)</p>
+<ul class="last simple">
+<li>Applies the task function to transform input data to output.</li>
+</ul>
+</td>
+<td><div class="first last line-block">
+<div class="line"><a class="reference external" href="decorators/transform.html#task-transform"><em>&#64;transform</em></a> ( <tt class="docutils literal"><span class="pre">tasks_or_file_names</span></tt>, <a class="reference external" href="decorators/transform_ex.html#task-transform-suffix-string"><em>suffix</em></a><em>(</em><tt class="docutils literal"><span class="pre">suffix_string</span></tt><em>)</em>, <tt class="docutils literal"><span class="pre">output_pattern</span></tt>, [<tt class="docutils literal"><span class="pre">extra_parameters</span></tt>,...] )</div>
+<div class="line"><a class="reference external" href="decorators/transform.html#task-transform"><em>&#64;transform</em></a> ( <tt class="docutils literal"><span class="pre">tasks_or_file_names</span></tt>, <a class="reference external" href="decorators/transform_ex.html#task-transform-matching-regex"><em>regex</em></a><em>(</em><tt class="docutils literal"><span class="pre">regex_pattern</span></tt><em>)</em>, <tt class="docutils literal"><span class="pre">output_pattern</span></tt>, [<tt class="docutils literal"><span class="pre">extra_parameters</span></tt>,...] )</div>
+</div>
+</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td><p class="first"><strong>&#64;merge</strong> (<em class="xref">Tutorial</em>)</p>
+<ul class="last simple">
+<li>Merges multiple input files into a single output.</li>
+</ul>
+</td>
+<td><a class="reference external" href="decorators/merge.html#task-merge"><em>&#64;merge</em></a> (<tt class="docutils literal"><span class="pre">tasks_or_file_names</span></tt>, <tt class="docutils literal"><span class="pre">output</span></tt>, [<tt class="docutils literal"><span class="pre">extra_parameters</span></tt>,...] )</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td><p class="first"><strong>&#64;posttask</strong></p>
+<ul class="last simple">
+<li>Calls function after task completes (<a class="reference external" href="full_tutorial.html#posttask"><em>see tutorial</em></a>)</li>
+<li>Optional <a class="reference external" href="decorators/posttask.html#task-posttask-file-name"><em>touch_file</em></a> indicator (<a class="reference external" href="full_tutorial.html#posttask-touch-file"><em>see tutorial</em></a>)</li>
+</ul>
+</td>
+<td><div class="first last line-block">
+<div class="line"><a class="reference external" href="decorators/posttask.html#task-posttask"><em>&#64;posttask</em></a> ( <tt class="docutils literal"><span class="pre">signal_task_completion_function</span></tt> )</div>
+<div class="line"><a class="reference external" href="decorators/posttask.html#task-posttask"><em>&#64;posttask</em></a> (<a class="reference external" href="decorators/indicator_objects.html#task-touch-file"><em>touch_file</em></a>( <tt class="docutils literal"><span class="pre">'task1.completed'</span></tt> ))</div>
+</div>
+</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="see-decorators-for-a-complete-list-of-decorators">
+<h3>See <a class="reference external" href="decorators/decorators.html#id1"><em>Decorators</em></a> for a complete list of decorators<a class="headerlink" href="#see-decorators-for-a-complete-list-of-decorators" title="Permalink to this headline">¶</a></h3>
+</div>
 </div>
 <div class="section" id="print-dependency-graph-if-you-necessary">
-<h3>2. Print dependency graph if you necessary<a class="headerlink" href="#print-dependency-graph-if-you-necessary" title="Permalink to this headline">¶</a></h3>
-<blockquote>
+<h2>2. Print dependency graph if you necessary<a class="headerlink" href="#print-dependency-graph-if-you-necessary" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p class="first">For a graphical flowchart in <tt class="docutils literal"><span class="pre">jpg</span></tt>, <tt class="docutils literal"><span class="pre">svg</span></tt>, <tt class="docutils literal"><span class="pre">dot</span></tt>, <tt class="docutils literal"><span class="pre">png</span></tt>, <tt class="docutils literal"><span class="pre">ps</span></tt>, <tt class="docutils literal"><span class="pre">gif</span></tt> formats:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">pipeline_printout_graph</span> <span class="p">(</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;flowchart.svg&quot;</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">),</span>
@@ -161,7 +187,6 @@ list of either glob_str or file names</p>
 </div>
 </li>
 </ul>
-<p>This requires <a class="reference external" href="http://www.graphviz.org/">dot</a> to be installed</p>
 <ul>
 <li><p class="first">For a text printout of all jobs</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">pipeline_printout</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">list_of_target_tasks</span><span class="p">)</span>
@@ -169,15 +194,13 @@ list of either glob_str or file names</p>
 </div>
 </li>
 </ul>
-</blockquote>
 </div>
 <div class="section" id="run-the-pipeline">
-<h3>3. Run the pipeline<a class="headerlink" href="#run-the-pipeline" title="Permalink to this headline">¶</a></h3>
-<blockquote>
-pipeline_run(list_of_target_tasks, [list_of_tasks_forced_to_rerun, multiprocess = N_PARALLEL_JOBS])</blockquote>
-<p>See the <a class="reference external" href="Tutorial.html#tutorial"><em>Full Tutorial</em></a> for a more complete introduction on how to add support
-for ruffus.</p>
+<h2>3. Run the pipeline<a class="headerlink" href="#run-the-pipeline" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>pipeline_run(list_of_target_tasks, [list_of_tasks_forced_to_rerun, multiprocess = N_PARALLEL_JOBS])</pre>
 </div>
+<p>See the <a class="reference external" href="full_tutorial.html#tutorial"><em>Full Tutorial</em></a> for a more complete introduction on how to add support
+for ruffus.</p>
 </div>
 </div>
 
@@ -190,27 +213,30 @@ for ruffus.</p>
             <h3><a href="contents.html">Table Of Contents</a></h3>
             <ul>
 <li><a class="reference external" href="">Cheat Sheet</a><ul>
-<li><a class="reference external" href="#usage">Usage</a><ul>
-<li><a class="reference external" href="#annotate-functions-with-python-decorators">1. Annotate functions with python decorators</a></li>
+<li><a class="reference external" href="#annotate-functions-with-ruffus-decorators">1. Annotate functions with <strong>Ruffus</strong> decorators</a><ul>
+<li><a class="reference external" href="#basic">Basic</a></li>
+<li><a class="reference external" href="#core">Core</a></li>
+<li><a class="reference external" href="#see-decorators-for-a-complete-list-of-decorators">See <tt class="docutils literal"><span class="pre">Decorators</span></tt> for a complete list of decorators</a></li>
+</ul>
+</li>
 <li><a class="reference external" href="#print-dependency-graph-if-you-necessary">2. Print dependency graph if you necessary</a></li>
 <li><a class="reference external" href="#run-the-pipeline">3. Run the pipeline</a></li>
 </ul>
 </li>
 </ul>
-</li>
-</ul>
 
             <h4>Previous topic</h4>
-            <p class="topless"><a href="simple_tutorial.html"
-                                  title="previous chapter">Simple 5 minute Tutorial</a></p>
+            <p class="topless"><a href="full_tutorial.html"
+                                  title="previous chapter">Full Tutorial</a></p>
             <h4>Next topic</h4>
-            <p class="topless"><a href="Design.html"
-                                  title="next chapter">Design &amp; Architecture</a></p>
+            <p class="topless"><a href="introduction.html"
+                                  title="next chapter">Introduction</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/cheatsheet.txt"
                      rel="nofollow">Show Source</a></li>
             </ul>
+    
           <div id="searchbox" style="display: none">
             <h3>Quick search</h3>
               <form class="search" action="search.html" method="get">
@@ -224,6 +250,19 @@ for ruffus.</p>
               </p>
           </div>
           <script type="text/javascript">$('#searchbox').show(0);</script>
+    <h3><a href="decorators/decorators.html">Decorators</a></h3>   <br>
+    <h3><a href="decorators/indicator_objects.html">Indicator objects</a></h3>   <br>
+    <a href="decorators/follows.html">@follows</a>                      <br>
+    <a href="decorators/files.html">@files</a>                          <br>
+    <a href="decorators/split.html">@split</a>                          <br>
+    <a href="decorators/transform.html">@transform</a>                  <br>
+    <a href="decorators/merge.html">@merge</a>                          <br>
+    <a href="decorators/posttask.html">@posttask</a>                    <br>
+    <a href="decorators/transform_ex.html">Advanced @transform</a>      <br>
+    <a href="decorators/merge_ex.html">Advanced @merge</a>              <br>
+    <a href="decorators/parallel.html">@parallel</a>                    <br>
+    <a href="decorators/check_if_uptodate.html">@check_if_uptodate</a>  <br>
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -238,10 +277,10 @@ for ruffus.</p>
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="Design.html" title="Design & Architecture"
+          <a href="introduction.html" title="Introduction"
              >next</a> |</li>
         <li class="right" >
-          <a href="simple_tutorial.html" title="Simple 5 minute Tutorial"
+          <a href="full_tutorial.html" title="Full Tutorial"
              >previous</a> |</li>
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>

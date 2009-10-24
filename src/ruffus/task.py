@@ -140,6 +140,9 @@ def log_at_level (logger, message_level, verbose_level, msg):
     if message_level <= verbose_level:
         logger.info(msg)
 
+        
+
+
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   needs_update_func
@@ -347,457 +350,35 @@ class task_decorator(object):
 
 
 class follows(task_decorator):
-    """
-    **@follows** (parent_task1, "module_X.parent_task2")
-
-        Takes a list of tasks which have to be run *before* this function
-        Dependencies can be quoted or unquoted function names.
-        Quoted function names allow dependencies to be added before the function is defined
-
-        Functions in other modules need to be fully qualified
-
-
-        For convenience, ``mkdir`` can be used to specify 
-        directories which need to be created (if they don't exist) before
-        the task is run.
-
-        e.g::
-            
-            @follows(task_x, mkdir("/output/directory") ...)
-    """
     pass
     
 class files(task_decorator):
-    """
-    **@files** ([[job1.input, job1.output, job1.optional_extra_parameters], ...])
-    
-    **@files** (input_file, output_file, optional_extra_parameters)
-
-    **@files** (custom_function)
-
-    The first two parameters in each set represent the input and output of the each job.
-    Only out of date jobs will be run.
-    By default, this is by checking input/output file timestamps.
-    (On some file systems, timestamps have a resolution in seconds.)
-
-    The input and output files for each job can be 
-        * A single file name
-        * A list of files
-        * ``None``
-    
-    If the input file is ``None``, the job will run if any output file is missing.
-    
-    If the output file is ``None``, the job will always run.
-    
-    If any of the output files is missing, the job will run.
-    
-    If any of the input files is missing when the job is run, a
-    ``MissingInputFileError`` exception will be raised.
-        
-    Example::
-
-        from ruffus import *
-        parameters = [
-                            [ 'a.1', 'a.2', 'A file'], # 1st job
-                            [ 'b.1', 'b.2', 'B file'], # 2nd job
-                      ]
-
-        @files(parameters)
-        def parallel_io_task(infile, outfile, text):
-            infile_text = open(infile).read()
-            f = open(outfile, "w").write(infile_text + "\\n" + text)
-
-        pipeline_run([parallel_io_task])
-
-
-    Parameters can be generated on the fly as well.
-    Example::
-
-        from ruffus import *
-        def generate_parameters_on_the_fly():
-            parameters = [
-                                ['input_file1', 'output_file1', 1, 2], # 1st job
-                                ['input_file2', 'output_file2', 3, 4], # 2nd job
-                                ['input_file3', 'output_file3', 5, 6], # 3rd job
-                         ]
-            for job_parameters in parameters:
-                yield job_parameters
-
-        @files(generate_parameters_on_the_fly)
-        def parallel_io_task(input_file, output_file, param1, param2):
-            sys.stderr.write("    Parallel task %s: " % name)
-            sys.stderr.write("%d + %d = %d\\n" % (param1, param2, param1 + param2))
-        
-        pipeline_run([parallel_task])
-"""
     pass
     
 
 class files_re(task_decorator):
-    """
-    **@files_re** (tasks/file_list, matching_regex, output_file)
-    
-    **@files_re** (tasks/file_list, matching_regex, input_file, output_file, [extra_parameters,...] )
-
-    Generates a list of i/o files for each job in the task:
-    Only out of date jobs will be run (See @files).
-    
-    #. The first parameter can be a list of input files, a file system glob specification 
-       or a task/list of tasks. In the latter case, the input file names are generated 
-       from the output of the specied task(s)
-    #. ``matching_regex`` is a python regular expression.
-    #. The next parameter after that are input file(s)
-    #. The next parameter after that are output file(s)
-    #. Further parameters are optional and are passed verbatim to the functions after regular expression
-       substition in any strings. Non-string values are passed through unchanged
-
-    These are used to check if jobs are up to date.
-    
-    All parameters can be:
-    
-        #. ``None``
-        #. A string
-        #. A nested sequence containing strings
-        #. Anything else
-    
-    Strings will be treated as regular expression substitution
-    patterns, using matches from ``matching_regex``.
-    
-    See python `regular expression (re) <http://docs.python.org/library/re.html>`_ 
-    documentation for details of the syntax
-   
-    `None` and all other types of objects are passed through unchanged.
-        
-        
-    Operation:    
-
-        1) For each file in the ``glob`` (See `glob <http://docs.python.org/library/glob.html>`_) 
-           results or ``file_list`` or in the output files from ``tasks``
-        2) Discard all file names those which don't matching ``matching_regex``
-        3) Generate parameters using regular expression pattern substitution
-       
-    Example::
-    
-        from ruffus import *
-        #
-        #   convert all files ending in ".1" into files ending in ".2"
-        #
-        @files_re('*.1', '(.*).1', r'\\1.2')
-        def task_re(infile, outfile):
-            open(outfile, "w").write(open(infile).read() + "\\nconverted\\n")
-        
-        pipeline_run([task_re])
-   
-       
-"""
     pass
 
     
     
 class merge(task_decorator):
-    """
-    Simple form:
-    
-    
-    **@merge** (tasks/file_list, output_file, [extra_parameters,...] )
-
-    Merges multiple input files into a single job
-    Only out of date jobs will be run (See @files).
-
-    Example::
-
-        @merge(previous_task, 'all.summary')
-        def summarize(infiles, summary_file):
-            pass
-    
-    #. The first parameter can be 
-           #  a task / list of tasks (as above).
-              File names are taken from the output of the specified task(s)
-           #  a (nested) list of file name strings. 
-              Any file names containing "*[]?" will be expanded as a glob e.g. "a.*" => "a.1", "a.2" etc.
-    #. The second parameter specifies the output file name(s) of this task.
-       More than one file name can be passed as a nested sequence, and will be forwarded to the underlying
-       function
-    #. Further parameters are optional 
-    
-    
-    Grouping / Collating form       
-               
-    **@merge** (tasks/file_list, **regex**(matching_regex), output_file, [extra_parameters,...] )
-           
-    This allows the use of regular expressions to merge groups of input files, each into a separate
-    summary. 
-    For example: `regex(r".*(\..+)"), "\1.summary"` would create a separate summary file for each suffix::
-
-        animal_files = "a.fish", "b.fish", "c.mammals", "d.mammals"
-        # summarise by file suffix:
-        @merge(animal_files, regex(r"\.(.+)$"),  r'\1.summary')
-        def summarize(infiles, summary_file):
-            pass
-    
-           
-    #. `matching_regex` is a python regular expression string, which must be wrapped in
-       a `ruffus.regex` indicator object
-       See python `regular expression (re) <http://docs.python.org/library/re.html>`_ 
-       documentation for details of regular expression syntax
-    #. Output and option extra parameters are passed to the functions after regular expression
-       substitution in any strings. Non-string values are passed through unchanged.
-    #. Each merge job consists of input files which are aggregated by regular expression substitution
-       to a single set of output / extra parameter matches
-    #. In the above cases, "a.fish" and "b.fish" both produce "fish.summary" after regular
-       expression subsitution, and are merged into a single job:
-       `["a.fish", "b.fish" -> "fish.summary"]`
-       while "c.mammals", "d.mammals" both produce "mammals.summary", are merged in a separate job:
-       `["c.mammals", "d.mammals" -> "mammals.summary"]`
-       
-
-"""
     pass
 
 class split(task_decorator):
-    """
-    Simple form:
-
-
-    **@split** (tasks/file_list, output_files, [extra_parameters,...] )
-
-    Splits a single set of input files into multiple output file names, where the number of
-    output files may not be known beforehand. 
-
-    Example::
-
-        @split("big_file", '*.little_files')
-        def split_big_to_small(input_file, output_files):
-            assert(input_file = "big_file")
-            assert(input_file = "*.little_files")
-            pass    
-                
-
-    #. The first parameter can be 
-           #  a (nested) list of file name strings. (as above)
-              Any file names containing "*[]?" will be expanded as a glob e.g. "a.*" => "a.1", "a.2" etc.
-           #  a task / list of tasks.
-              File names are taken from the output of the specified task(s)
-    #. The second parameter specifies the output file name(s) of this task.
-       These are used **only** to check if the task is up to date.
-       Normally you would use either a glob (e.g. `*.little_files` as above) or  a "sentinel file"
-       to indicate that the task has completed successful. You can of course do both:
-       `["sentinel.file", "*.little_files"]`
-    #. Further parameters are optional 
-"""
     pass
 
 
 class transform(task_decorator):
-    """
-    Simple form:
-    
-    **@transform** (tasks/file_list, suffix(suffix_string), outputs, [extra_parameters,...] )
-    **@transform** (tasks/file_list, regex(matching_regex), outputs, [extra_parameters,...] )
-
-    Applies the task function to transform inputs from (`tasks/file_list`) to outputs
-    output file names are determined from input file names using either suffix matches
-    or regular expression pattern matches.
-
-    Example::
-
-        #   compiles `*.c` to `*.o`
-        
-        @transform(previous_task, suffix(".c"), ".o")
-        def compile(infile, outfile):
-            pass
-
-    Same example with a regular expression::
-
-        #   compiles `*.c` to `*.o`
-        
-        @transform(previous_task, regex(r".c$"), ".o")
-        def compile(infile, outfile):
-            pass
-    
-    #. The first parameter can be 
-           #  a task / list of tasks (as above).
-              File names are taken from the output of the specified task(s)
-           #  a (nested) list of file name strings. 
-              Any file names containing "*[]?" will be expanded as a glob e.g. "a.*" => "a.1", "a.2" etc.
-    #. `matching_regex` is a python regular expression string, which must be wrapped in
-       a `ruffus.regex` indicator object
-       See python `regular expression (re) <http://docs.python.org/library/re.html>`_ 
-       documentation for details of regular expression syntax
-    #. `suffix_string` must be wrapped in a `ruffus.suffix` indicator object
-       "Suffix matches" are perfect matches from the end of the string.
-    #. Output and option extra parameters are passed to the functions after regular expression
-       substitution in any strings. Non-string values are passed through unchanged
-    #. The input and output file name parameter strings are used to check if jobs are 
-       up-to-date and need to be re-run. (Non-string parameters are ignored.)
-       For the above example, a call to `compile_c_file("a.c", "a.o")` will be made 
-       unless `a.c` is older than `a.o`.
-    
-    
-    Complicated / Flexible form       
-               
-    **@transform** (tasks/file_list, regex(matching_regex), inputs(input_file), output_file, [extra_parameters,...] )
-    **@transform** (tasks/file_list, suffix(suffix_string), inputs(input_file), output_file, [extra_parameters,...] )
-           
-    In the standard **@transform**, output file names are created using regular expression substitution.
-    Sometimes, it is necessary to create input file names the same way.
-    This is especially useful to **add** an extra dependency to the task.
-    
-    Example::
-
-        #   compiles `*.c` to `*.o`, depending on header files `*.h`
-        
-        @transform(previous_task, suffix(".c"), inputs(".c", ".h"),  ".o")
-        def compile_c_file(infile, outfile):
-            pass
-
-    A regular expression allows even more flexibility::
-
-        #   compiles `*.c` to `*.o`, depending on header files `*.h`, and `universal.h`
-        
-        @transform(previous_task, regex(r"(.*).c$"), inputs(r"\1.c", "\1.h", "universal.h"),  ".o")
-        def compile_c_file(infile, outfile):
-            pass
-    
-    Now the inputs to each job for example, include the header files, `a.h` and `universal.h` as
-    well as the source file `a.c` from `previous_task`. This is equivalent to calling::
-
-        compile_c_file(["a.c", "a.h", "universal.h"], "a.o")
-           
-    #. `matching_regex` is a python regular expression string, which must be wrapped in
-       a `ruffus.regex` indicator object
-       See python `regular expression (re) <http://docs.python.org/library/re.html>`_ 
-       documentation for details of regular expression syntax
-    #. `suffix_string` must be wrapped in a `ruffus.suffix` indicator object
-       "Suffix matches" are perfect matches from the end of the string.
-    #. Output file names and optional extra parameters are passed to the functions after regular expression
-       substitution in any strings. Non-string values are passed through unchanged
-    #. Input file name parameters mush be wrapped in a `ruffus.inputs` indicator object. These 
-       are also passed to the functions after regular expression
-       substitution in any strings. 
-       to a single set of output / extra parameter matches
-    #. The input and output file name parameter strings are used to check if jobs are 
-       up-to-date and need to be re-run. (Non-string parameters are ignored.)
-    
-"""
     pass
 
 
 
 class check_if_uptodate(task_decorator):
-    """
-    **@check_if_uptodate** (dependency_checking_func)
-    
-    Checks to see if a job is up to date, and needs to be run.
-    
-    returns two parameters: if job needs to be run, and a message explaining why
-    
-    dependency_checking_func() needs to handle the same number of parameters as the
-    task function
-    
-    These two examples, using automatic and manual dependency checking produce
-    the same output.
-    Example 1: Automatic::
-
-        from ruffus import *
-        @files(None, "a.1")
-        def create_if_necessary(input_file, output_file):
-            open(output_file, "w")
-                    
-        pipeline_run([create_if_necessary])
-
-
-    Could be rewritten as::
-    Example 2: Manual::
-        
-        from ruffus import *
-        import os
-        def check_file_exists(input_file, output_file):
-            if not os.path.exists(output_file):
-                return True, "Missing file %s" % output_file
-            return 
-                return False, "File %s exists" % output_file
-            
-            @parallel([[None, "a.1"]])
-            @check_if_uptodate(check_file_exists)
-            def create_if_necessary(input_file, output_file):
-                open(output_file, "w")
-            
-            pipeline_run([create_if_necessary])
-            
-        Both produce the same output::
-        
-            Task = create_if_necessary
-                Job = [null, "a.1"] completed
-            
-    
-    """
     pass
 
 class parallel(task_decorator):
-    """
-**@parallel** ([[job1_params, ...], [job2_params, ...]...])
-
-**@parallel** (parameter_generating_func)
-
-    The task function will be called iteratively 
-    with each set of parameters (possibly in parallel)
-
-    No dependency checking is carried out.
-    
-    Example::
-    
-        from ruffus import *
-        parameters = [
-                         ['A', 1, 2], # 1st job
-                         ['B', 3, 4], # 2nd job
-                         ['C', 5, 6], # 3rd job
-                     ]
-        @parallel(parameters)                                                     
-        def parallel_task(name, param1, param2):                                  
-            sys.stderr.write("    Parallel task %s: " % name)                     
-            sys.stderr.write("%d + %d = %d\\n" % (param1, param2, param1 + param2))
-        
-        pipeline_run([parallel_task])
-
-        
-    """
     pass
 class posttask(task_decorator):
-    """
-    Calls functions to signal the completion of each task::
-    
-        from ruffus import *
-        
-        def task_finished():
-            print "hooray"
-            
-        @posttask(task_finished)
-        @files(None, "a.1")
-        def create_if_necessary(input_file, output_file):
-            open(output_file, "w")
-                    
-        pipeline_run([create_if_necessary])
-
-    .. note::
-
-        The function(s) provided to ``@posttask`` will be called if the ruffus passes 
-        through a task, even if none of its jobs are run because they are up-to-date.
-        This happens when a upstream task is out-of-date, and the execution passes through
-        this point in the pipeline
-        
-
-    If ``touch_file`` is specified, the enclosed files(s) will be ``touch``\ -ed::
-
-        from ruffus import *
-
-        @posttask(touch_file("task_completed.flag"))
-        @files(None, "a.1")
-        def create_if_necessary(input_file, output_file):
-            open(output_file, "w")
-
-        pipeline_run([create_if_necessary])
-    """
     pass
      
         
@@ -815,7 +396,7 @@ class mkdir(object):
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   special marker used by post_task
+#   special marker used by posttask
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 class touch_file(object):
@@ -1074,7 +655,7 @@ class _task (node):
         self.user_defined_work_func = None
         
         # functions which will be called when task completes
-        self.post_task_functions    = []
+        self.posttask_functions    = []
                 
         # give makedir automatically made parent tasks unique names
         self.cnt_task_mkdir         = 0
@@ -1279,6 +860,108 @@ class _task (node):
         
     #_________________________________________________________________________________________
 
+    #   task_split
+
+    #_________________________________________________________________________________________
+    def task_split (self, orig_args):
+        """
+        Splits a single set of input files into multiple output file names, 
+            where the number of output files may not be known beforehand.
+        """
+        self.set_action_type (_task.action_task_split)
+
+        tasks, filenames, globs = get_tasks_filename_globs_in_nested_sequence(orig_args[0])
+
+        tasks = self.task_follows(tasks)
+
+        self.param_generator_func = split_param_factory (tasks, filenames, globs, 
+                                                           *orig_args[1:])
+
+
+        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
+        self.job_wrapper          = job_wrapper_io_files
+        self.job_descriptor       = io_files_job_descriptor
+
+    #_________________________________________________________________________________________
+
+    #   task_transform
+
+    #_________________________________________________________________________________________
+    def task_transform (self, orig_args):
+        """
+        Merges multiple input files into a single output.
+        """
+        self.set_action_type (_task.action_task_transform)
+
+        tasks, filenames, globs = get_tasks_filename_globs_in_nested_sequence(orig_args[0])
+
+        tasks = self.task_follows(tasks)
+
+        if len(orig_args) < 3:
+            raise error_transform("Too few arguments for @transform")
+        
+        # regular expression match
+        if isinstance(orig_args[1], regex):
+            matching_regex = re.compile(orig_args[1].args[0])
+            regex_substitute_extra_parameters = True
+            
+        # simulate end of string (suffix) match
+        elif isinstance(orig_args[1], suffix):
+            matching_regex = re.compile(re.escape(re.orig_args[1].args[0]) + "$")
+            regex_substitute_extra_parameters = False
+        else:
+            raise error_transform("@transform expects suffix() or "
+                                                "regex() as the second argument")
+            
+        
+        if instance(orig_args[2], inputs):
+            input_pattern = orig_args[2].args[0]
+            if len(orig_args) < 4:
+                raise error_transform("Too few arguments for @transform")
+            output_pattern = orig_args[3]
+            extras_arg_pos = 4
+        else:
+            input_pattern = r"\g<0>"
+            output_pattern = orig_args[2]
+            extras_arg_pos = 3
+            
+        self.param_generator_func = transform_param_factory (   tasks, filenames, globs, 
+                                                                matching_regex, input_pattern,
+                                                                output_pattern,
+                                                                regex_substitute_extra_parameters,
+                                                                *orig_args[extras_arg_pos:])
+
+
+        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
+        self.job_wrapper          = job_wrapper_io_files
+        self.job_descriptor       = io_files_job_descriptor
+
+
+    #_________________________________________________________________________________________
+
+    #   task_merge
+
+    #_________________________________________________________________________________________
+    def task_merge (self, orig_args):
+        """
+        Merges multiple input files into a single output.
+        """
+        self.set_action_type (_task.action_task_merge)
+
+        tasks, filenames, globs = get_tasks_filename_globs_in_nested_sequence(orig_args[0])
+
+        tasks = self.task_follows(tasks)
+
+        self.param_generator_func = merge_param_factory (tasks, filenames, globs, 
+                                                           *orig_args[1:])
+
+
+        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
+        self.job_wrapper          = job_wrapper_io_files
+        self.job_descriptor       = io_files_job_descriptor
+
+    #_________________________________________________________________________________________
+
     #   task_parallel
 
     #_________________________________________________________________________________________
@@ -1364,27 +1047,13 @@ class _task (node):
                                           generated from the "to" replacement string
         """
         self.set_action_type (_task.action_task_files_re)
-        
-        # glob or file name list
-        if (is_str(orig_args[0]) or 
-            (non_str_sequence(orig_args[0]) and is_str(orig_args[0][0]))):
-            self.param_generator_func = glob_regex_io_param_factory (*orig_args)
-        
-        # task
-        else:
-            # output from wrapped tasks or task names
-            if isinstance(orig_args[0], output_from):
-                tasks = self.task_follows(orig_args[0].args)
 
-            # single task decorated function
-            elif (type(orig_args[0]) == types.FunctionType):
-                tasks = self.task_follows([orig_args[0]])
-                
-            # multiple task decorated function
-            else:
-                tasks = self.task_follows(orig_args[0])
-                
-            self.param_generator_func = glob_regex_io_param_factory (output_from(*tasks), *orig_args[1:])
+        tasks, filenames, globs = get_tasks_filename_globs_in_nested_sequence(orig_args[0])
+        
+        tasks = self.task_follows(tasks)
+            
+        self.param_generator_func = glob_regex_io_param_factory (tasks, filenames, globs, 
+                                                                    *orig_args[1:])
             
             
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
@@ -1551,9 +1220,9 @@ class _task (node):
         """
         for arg in args:
             if isinstance(arg, touch_file):
-                self.post_task_functions.append(_touch_file_factory (arg.args, register_cleanup))
+                self.posttask_functions.append(_touch_file_factory (arg.args, register_cleanup))
             elif type(arg) == types.FunctionType:
-                self.post_task_functions.append(arg)
+                self.posttask_functions.append(arg)
             else:
                 raise PostTaskArgumentError("Expecting simple functions or touch_file in  " +
                                                 "@posttask(...)\n Task = %s" %
@@ -1862,7 +1531,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                         incomplete_tasks.remove(task)
 
                         #   call job completion signals
-                        for f in task.post_task_functions:
+                        for f in task.posttask_functions:
                             f()
                         short_task_name = task_name.replace('__main__.', '')
                         logger.info("Completed Task = " + short_task_name)
@@ -2123,7 +1792,7 @@ def pipeline_run(target_tasks, forcedtorun_tasks = [], multiprocess = 1, logger 
         if last_job_in_task:
 
             #   call job completion signals
-            for f in task.post_task_functions:
+            for f in task.posttask_functions:
                 f()
             short_task_name = job_result.task_name.replace('__main__.', '')
             logger.info("Completed Task = " + short_task_name)

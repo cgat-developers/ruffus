@@ -20,7 +20,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="ruffus v1.1.5c documentation" href="index.html" />
-    <link rel="next" title="Introduction" href="Introduction.html" /> 
+    <link rel="next" title="Introduction" href="introduction.html" /> 
   </head>
   <body>
     <div class="related">
@@ -33,7 +33,7 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="Introduction.html" title="Introduction"
+          <a href="introduction.html" title="Introduction"
              accesskey="N">next</a> |</li>
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>
@@ -60,168 +60,148 @@ for running computational pipelines.</p>
 <div class="section" id="start-here">
 <h2>Start Here:<a class="headerlink" href="#start-here" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li class="toctree-l1"><a class="reference external" href="Introduction.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference external" href="simple_tutorial.html">Simple 5 minute Tutorial</a></li>
+<li class="toctree-l1"><a class="reference external" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference external" href="simple_tutorial.html">7 steps to <em>Ruffus</em> in 10 minutes</a></li>
+<li class="toctree-l1"><a class="reference external" href="full_tutorial.html">Full Tutorial</a></li>
 </ul>
 </div>
-<div class="section" id="contents">
-<h2>Contents:<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="overview">
+<h2>Overview:<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li class="toctree-l1"><a class="reference external" href="Introduction.html">Introduction</a><ul>
-<li class="toctree-l2"><a class="reference external" href="Introduction.html#features">Features</a></li>
-<li class="toctree-l2"><a class="reference external" href="Introduction.html#installation">Installation</a></li>
-<li class="toctree-l2"><a class="reference external" href="Introduction.html#whence-the-name-ruffus">Whence the name <em>Ruffus</em>?</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference external" href="simple_tutorial.html">Simple 5 minute Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference external" href="simple_tutorial.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference external" href="simple_tutorial.html#a-simple-example">A Simple example</a></li>
-<li class="toctree-l2"><a class="reference external" href="simple_tutorial.html#more">More</a></li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference external" href="cheatsheet.html">Cheat Sheet</a><ul>
-<li class="toctree-l2"><a class="reference external" href="cheatsheet.html#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference external" href="cheatsheet.html#annotate-functions-with-ruffus-decorators">1. Annotate functions with <strong>Ruffus</strong> decorators</a></li>
+<li class="toctree-l2"><a class="reference external" href="cheatsheet.html#print-dependency-graph-if-you-necessary">2. Print dependency graph if you necessary</a></li>
+<li class="toctree-l2"><a class="reference external" href="cheatsheet.html#run-the-pipeline">3. Run the pipeline</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference external" href="Design.html">Design &amp; Architecture</a><ul>
-<li class="toctree-l2"><a class="reference external" href="Design.html#task-based-rather-than-file-based-work-flow">Task-based rather than file-based work flow</a></li>
-<li class="toctree-l2"><a class="reference external" href="Design.html#alternatives">Alternatives</a></li>
-<li class="toctree-l2"><a class="reference external" href="Design.html#acknowledgements">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference external" href="introduction.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference external" href="introduction.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference external" href="introduction.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference external" href="introduction.html#whence-the-name-ruffus">Whence the name <em>Ruffus</em>?</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference external" href="Glossary.html">Glossary</a></li>
-<li class="toctree-l1"><a class="reference external" href="FAQ.html">FAQ</a><ul>
-<li class="toctree-l2"><a class="reference external" href="FAQ.html#general">General</a></li>
-<li class="toctree-l2"><a class="reference external" href="FAQ.html#windows">Windows</a></li>
-<li class="toctree-l2"><a class="reference external" href="FAQ.html#id1">Sun Grid Engine</a></li>
+<li class="toctree-l1"><a class="reference external" href="design.html">Design &amp; Architecture</a><ul>
+<li class="toctree-l2"><a class="reference external" href="design.html#task-based-rather-than-file-based-work-flow">Task-based rather than file-based work flow</a></li>
+<li class="toctree-l2"><a class="reference external" href="design.html#alternatives">Alternatives</a></li>
+<li class="toctree-l2"><a class="reference external" href="design.html#acknowledgements">Acknowledgements</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference external" href="history.html">Bugs and Updates</a><ul>
-<li class="toctree-l2"><a class="reference external" href="history.html#issue3">Issue3</a></li>
-<li class="toctree-l2"><a class="reference external" href="history.html#mkdir">mkdir</a></li>
+<li class="toctree-l2"><a class="reference external" href="history.html#fixed-bugs">Fixed Bugs</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference external" href="Todo.html">Future plans</a><ul>
-<li class="toctree-l2"><a class="reference external" href="Todo.html#linking-the-output-from-one-task-as-the-input-to-the-next-automatically">Linking the output from one task as the input to the next automatically</a></li>
-<li class="toctree-l2"><a class="reference external" href="Todo.html#clean-up">Clean up</a></li>
-<li class="toctree-l2"><a class="reference external" href="Todo.html#plug-in-file-dependency-checking-via-md5-or-databases">(Plug-in) File Dependency Checking via MD5 or Databases</a></li>
-<li class="toctree-l2"><a class="reference external" href="Todo.html#sql-hooks">SQL hooks</a></li>
-<li class="toctree-l2"><a class="reference external" href="Todo.html#combining-files">Combining files</a></li>
-<li class="toctree-l2"><a class="reference external" href="Todo.html#return-values">Return values</a></li>
-<li class="toctree-l2"><a class="reference external" href="Todo.html#run-jobs-on-remote-clustered-processes-via-sge-hadoop">Run jobs on remote (clustered) processes via SGE/Hadoop</a></li>
+<li class="toctree-l1"><a class="reference external" href="todo.html">Future plans</a><ul>
+<li class="toctree-l2"><a class="reference external" href="todo.html#what-is-completed-on-this-list">What is completed on this list?</a></li>
+<li class="toctree-l2"><a class="reference external" href="todo.html#what-is-left-to-do">What is left to do?</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference external" href="faq.html">FAQ</a><ul>
+<li class="toctree-l2"><a class="reference external" href="faq.html#general">General</a></li>
+<li class="toctree-l2"><a class="reference external" href="faq.html#windows">Windows</a></li>
+<li class="toctree-l2"><a class="reference external" href="faq.html#id1">Sun Grid Engine</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="glossary.html">Glossary</a></li>
+</ul>
+</div>
+<div class="section" id="simple-tutorial">
+<h2>Simple Tutorial<a class="headerlink" href="#simple-tutorial" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="simple_tutorial.html">7 steps to <em>Ruffus</em> in 10 minutes</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step1_follows.html">Step 1: Arranging tasks into a pipeline</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step2_files.html">Step 2: Passing parameters to the pipeline</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step2_files_code.html">Code for Step 2: Passing parameters to the pipeline</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step3_run_pipeline.html">Step 3: Displaying the pipeline as a graphic</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step4_split.html">Step 4: Splitting up large tasks / files</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step5_transform.html">Step 5: Running jobs in parallel</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step6_merge.html">Step 5: Merging results back together</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step7_posttask.html">Step 7: Signal the completion of each stage of our pipeline</a></li>
+</ul>
+</div>
+<div class="section" id="full-tutorial">
+<h2>Full Tutorial<a class="headerlink" href="#full-tutorial" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="full_tutorial.html">Full Tutorial</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step1_follows.html">Step 1: Arranging tasks into a pipeline</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step2_files.html">Step 2: Passing parameters to the pipeline</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step3_dependencies.html">Step 3: Running / displaying the pipeline</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step4_split.html">Step 4: Splitting up large tasks / files</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step5_transform.html">Step 5: Running jobs in parallel</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step6_merge.html">Step 5: Merging results back together</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step7_posttask.html">Step 7: Signal the completion of each stage of our pipeline</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step8_exceptions.html">Step 8: Handling Exceptions in <em>Ruffus</em></a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step9_logging.html">Step 9: Logging in <em>Ruffus</em></a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step10_parallel.html">Step 10: Esoteric: Running jobs in parallel with full control</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step11_check_if_uptodate.html">Step 11: Esoteric: Writing custom functions to decide which jobs are up to date</a></li>
 </ul>
 </div>
 <div class="section" id="detailed-examples">
 <h2>Detailed Examples:<a class="headerlink" href="#detailed-examples" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li class="toctree-l1"><a class="reference external" href="Tutorial.html">Full Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference external" href="Tutorial.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference external" href="Tutorial.html#follows"><strong>&#64;follows</strong></a></li>
-<li class="toctree-l2"><a class="reference external" href="Tutorial.html#parallel"><strong>&#64;parallel</strong></a></li>
-<li class="toctree-l2"><a class="reference external" href="Tutorial.html#files"><strong>&#64;files</strong></a></li>
-<li class="toctree-l2"><a class="reference external" href="Tutorial.html#automatic-dependency-checking">Automatic dependency checking</a></li>
-<li class="toctree-l2"><a class="reference external" href="Tutorial.html#files-re"><strong>&#64;files_re</strong></a></li>
-<li class="toctree-l2"><a class="reference external" href="Tutorial.html#check-if-uptodate"><strong>&#64;check_if_uptodate</strong></a></li>
-<li class="toctree-l2"><a class="reference external" href="Tutorial.html#posttask"><strong>&#64;posttask</strong></a></li>
-<li class="toctree-l2"><a class="reference external" href="Tutorial.html#logging">Logging</a></li>
-<li class="toctree-l2"><a class="reference external" href="Tutorial.html#cleaning-up">Cleaning up</a></li>
+<li class="toctree-l1"><a class="reference external" href="Tutorial.html">Full Tutorial</a></li>
+<li class="toctree-l1"><a class="reference external" href="examples/intermediate_example.html">A real-world example</a></li>
+<li class="toctree-l1"><a class="reference external" href="examples/complicated_example.html">A more ambitious real-world example</a></li>
+<li class="toctree-l1"><a class="reference external" href="examples/sharing_data_across_jobs_example.html">How to share data across jobs</a></li>
 </ul>
-</li>
-<li class="toctree-l1"><a class="reference external" href="intermediate_example.html">A real-world example</a><ul>
-<li class="toctree-l2"><a class="reference external" href="intermediate_example.html#python-code">Python Code</a></li>
-<li class="toctree-l2"><a class="reference external" href="intermediate_example.html#running-simulation-studies-with-genes-and-gwas-data">Running simulation studies with genes and GWAS data</a></li>
+</div>
+<div class="section" id="decorators">
+<h2>Decorators:<a class="headerlink" href="#decorators" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="decorators/decorators.html">Decorators</a></li>
+<li class="toctree-l1"><a class="reference external" href="decorators/indicator_objects.html">Indicator Objects</a></li>
 </ul>
-</li>
-<li class="toctree-l1"><a class="reference external" href="complicated_example.html">A more ambitious real-world example</a><ul>
-<li class="toctree-l2"><a class="reference external" href="complicated_example.html#python-code">Python Code</a></li>
-<li class="toctree-l2"><a class="reference external" href="complicated_example.html#understanding-newly-discovered-genes">Understanding newly discovered genes</a></li>
-<li class="toctree-l2"><a class="reference external" href="complicated_example.html#ruffus-flow-chart"><em>Ruffus</em> Flow chart</a></li>
+<div class="section" id="basic">
+<h3>Basic:<a class="headerlink" href="#basic" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="decorators/follows.html">&#64;follows</a></li>
+<li class="toctree-l1"><a class="reference external" href="decorators/files.html">&#64;files for multiple jobs in parallel</a></li>
+<li class="toctree-l1"><a class="reference external" href="decorators/files.html#passing-parameters-to-files-with-a-custom-function">Passing parameters to &#64;files with a custom function</a></li>
+<li class="toctree-l1"><a class="reference external" href="decorators/files.html#files-for-a-single-job">&#64;files for a single job</a></li>
 </ul>
-</li>
-<li class="toctree-l1"><a class="reference external" href="sharing_data_across_jobs_example.html">How to share data across jobs</a><ul>
-<li class="toctree-l2"><a class="reference external" href="sharing_data_across_jobs_example.html#python-code">Python Code</a></li>
-<li class="toctree-l2"><a class="reference external" href="sharing_data_across_jobs_example.html#background">Background:</a></li>
-<li class="toctree-l2"><a class="reference external" href="sharing_data_across_jobs_example.html#aim">Aim:</a></li>
+</div>
+<div class="section" id="core">
+<h3>Core:<a class="headerlink" href="#core" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="decorators/split.html">&#64;split</a></li>
+<li class="toctree-l1"><a class="reference external" href="decorators/transform.html">&#64;transform</a></li>
+<li class="toctree-l1"><a class="reference external" href="decorators/merge.html">&#64;merge</a></li>
+<li class="toctree-l1"><a class="reference external" href="decorators/posttask.html">&#64;posttask</a></li>
 </ul>
-</li>
+</div>
+<div class="section" id="for-advanced-users">
+<h3>For advanced users:<a class="headerlink" href="#for-advanced-users" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="decorators/parallel.html">&#64;parallel</a></li>
+<li class="toctree-l1"><a class="reference external" href="decorators/check_if_uptodate.html">&#64;check_if_uptodate</a></li>
+<li class="toctree-l1"><a class="reference external" href="decorators/transform_ex.html">Advanced usage of &#64;transform:</a></li>
+<li class="toctree-l1"><a class="reference external" href="decorators/merge_ex.html">Advanced use of &#64;merge</a></li>
+<li class="toctree-l1"><a class="reference external" href="decorators/files_re.html">&#64;files_re</a></li>
 </ul>
+</div>
 </div>
 <div class="section" id="example-code">
 <h2>Example code:<a class="headerlink" href="#example-code" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li class="toctree-l1"><a class="reference external" href="simpler.html"><tt class="docutils literal"><span class="pre">simpler</span></tt> &#8211; A simple example</a><ul>
-<li class="toctree-l2"><a class="reference external" href="simpler.html#programme-options">Programme options:</a></li>
-<li class="toctree-l2"><a class="reference external" href="simpler.html#code">Code:</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference external" href="intermediate_example_code.html"><tt class="docutils literal"><span class="pre">intermediate_example</span></tt> &#8211; A real-world example</a><ul>
-<li class="toctree-l2"><a class="reference external" href="intermediate_example_code.html#programme-options">Programme options:</a></li>
-<li class="toctree-l2"><a class="reference external" href="intermediate_example_code.html#code">Code:</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference external" href="complicated_example_code.html"><tt class="docutils literal"><span class="pre">complicated_example</span></tt> &#8211; A more ambitious real-world example</a><ul>
-<li class="toctree-l2"><a class="reference external" href="complicated_example_code.html#programme-options">Programme options:</a></li>
-<li class="toctree-l2"><a class="reference external" href="complicated_example_code.html#code">Code:</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference external" href="sharing_data_across_jobs_example_code.html"><tt class="docutils literal"><span class="pre">simpler_with_shared_logging</span></tt> &#8211; How to share data across jobs</a><ul>
-<li class="toctree-l2"><a class="reference external" href="sharing_data_across_jobs_example_code.html#the-shared-data">The shared data:</a></li>
-<li class="toctree-l2"><a class="reference external" href="sharing_data_across_jobs_example_code.html#programme-options">Programme options:</a></li>
-<li class="toctree-l2"><a class="reference external" href="sharing_data_across_jobs_example_code.html#code">Code:</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference external" href="examples/simpler.html"><tt class="docutils literal"><span class="pre">simpler</span></tt> &#8211; A simple example</a></li>
+<li class="toctree-l1"><a class="reference external" href="examples/intermediate_example_code.html"><tt class="docutils literal"><span class="pre">intermediate_example</span></tt> &#8211; A real-world example</a></li>
+<li class="toctree-l1"><a class="reference external" href="examples/complicated_example_code.html"><tt class="docutils literal"><span class="pre">complicated_example</span></tt> &#8211; A more ambitious real-world example</a></li>
+<li class="toctree-l1"><a class="reference external" href="examples/sharing_data_across_jobs_example_code.html"><tt class="docutils literal"><span class="pre">simpler_with_shared_logging</span></tt> &#8211; How to share data across jobs</a></li>
 </ul>
 </div>
 <div class="section" id="modules">
 <h2>Modules:<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li class="toctree-l1"><a class="reference external" href="task.html">ruffus.Task</a><ul>
-<li class="toctree-l2"><a class="reference external" href="task.html#ruffus-task-overview"><tt class="docutils literal"><span class="pre">ruffus.task</span></tt> &#8211; Overview</a><ul>
-<li class="toctree-l3"><a class="reference external" href="task.html#decorator-syntax">Decorator syntax:</a></li>
-<li class="toctree-l3"><a class="reference external" href="task.html#running-the-pipeline">Running the pipeline</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference external" href="task.html#decorators">Decorators</a><ul>
-<li class="toctree-l3"><a class="reference external" href="task.html#follows">&#64;follows</a></li>
-<li class="toctree-l3"><a class="reference external" href="task.html#posttask">&#64;posttask</a></li>
-<li class="toctree-l3"><a class="reference external" href="task.html#files">&#64;files</a></li>
-<li class="toctree-l3"><a class="reference external" href="task.html#files-re">&#64;files_re</a></li>
-<li class="toctree-l3"><a class="reference external" href="task.html#parallel">&#64;parallel</a></li>
-<li class="toctree-l3"><a class="reference external" href="task.html#check-if-uptodate">&#64;check_if_uptodate</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference external" href="task.html#simplified-syntax-work-in-progress">Simplified syntax (work in progress)</a><ul>
-<li class="toctree-l3"><a class="reference external" href="task.html#split">&#64;split</a></li>
-<li class="toctree-l3"><a class="reference external" href="task.html#transform">&#64;transform</a></li>
-<li class="toctree-l3"><a class="reference external" href="task.html#merge">&#64;merge</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference external" href="task.html#pipeline-functions">Pipeline functions</a><ul>
-<li class="toctree-l3"><a class="reference external" href="task.html#pipeline-run">pipeline_run</a></li>
-<li class="toctree-l3"><a class="reference external" href="task.html#pipeline-printout">pipeline_printout</a></li>
-<li class="toctree-l3"><a class="reference external" href="task.html#pipeline-printout-graph">pipeline_printout_graph</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference external" href="task.html#id6">Logging</a></li>
-<li class="toctree-l2"><a class="reference external" href="task.html#implementation">Implementation:</a><ul>
-<li class="toctree-l3"><a class="reference external" href="task.html#parameter-factories">Parameter factories:</a></li>
-<li class="toctree-l3"><a class="reference external" href="task.html#wrappers-around-jobs">Wrappers around jobs:</a></li>
-<li class="toctree-l3"><a class="reference external" href="task.html#checking-if-job-is-update">Checking if job is update:</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference external" href="task.html#ruffus-task-overview"><tt class="docutils literal"><span class="pre">ruffus.task</span></tt> &#8211; Overview</a></li>
+<li class="toctree-l2"><a class="reference external" href="task.html#decorators">Decorators</a></li>
+<li class="toctree-l2"><a class="reference external" href="task.html#pipeline-functions">Pipeline functions</a></li>
+<li class="toctree-l2"><a class="reference external" href="task.html#id1">Logging</a></li>
+<li class="toctree-l2"><a class="reference external" href="task.html#implementation">Implementation:</a></li>
 <li class="toctree-l2"><a class="reference external" href="task.html#exceptions-and-errors">Exceptions and Errors</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference external" href="proxy_logger.html">ruffus.proxy_logger</a><ul>
-<li class="toctree-l2"><a class="reference external" href="proxy_logger.html#create-proxy-for-logging-for-use-with-multiprocessing">Create proxy for logging for use with multiprocessing</a><ul>
-<li class="toctree-l3"><a class="reference external" href="proxy_logger.html#example-1">Example 1</a></li>
-<li class="toctree-l3"><a class="reference external" href="proxy_logger.html#example-2">Example 2</a></li>
-<li class="toctree-l3"><a class="reference external" href="proxy_logger.html#example-3">Example 3</a></li>
-<li class="toctree-l3"><a class="reference external" href="proxy_logger.html#to-use">To use:</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference external" href="proxy_logger.html#create-proxy-for-logging-for-use-with-multiprocessing">Create proxy for logging for use with multiprocessing</a></li>
 <li class="toctree-l2"><a class="reference external" href="proxy_logger.html#proxies-for-a-log">Proxies for a log:</a></li>
 <li class="toctree-l2"><a class="reference external" href="proxy_logger.html#create-a-logging-object">Create a logging object</a></li>
 </ul>
@@ -250,10 +230,28 @@ for running computational pipelines.</p>
 <li><a class="reference external" href="#start-here">Start Here:</a><ul>
 </ul>
 </li>
-<li><a class="reference external" href="#contents">Contents:</a><ul>
+<li><a class="reference external" href="#overview">Overview:</a><ul>
+</ul>
+</li>
+<li><a class="reference external" href="#simple-tutorial">Simple Tutorial</a><ul>
+</ul>
+</li>
+<li><a class="reference external" href="#full-tutorial">Full Tutorial</a><ul>
 </ul>
 </li>
 <li><a class="reference external" href="#detailed-examples">Detailed Examples:</a><ul>
+</ul>
+</li>
+<li><a class="reference external" href="#decorators">Decorators:</a><ul>
+<li><a class="reference external" href="#basic">Basic:</a><ul>
+</ul>
+</li>
+<li><a class="reference external" href="#core">Core:</a><ul>
+</ul>
+</li>
+<li><a class="reference external" href="#for-advanced-users">For advanced users:</a><ul>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference external" href="#example-code">Example code:</a><ul>
@@ -268,13 +266,14 @@ for running computational pipelines.</p>
 </ul>
 
             <h4>Next topic</h4>
-            <p class="topless"><a href="Introduction.html"
+            <p class="topless"><a href="introduction.html"
                                   title="next chapter">Introduction</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/contents.txt"
                      rel="nofollow">Show Source</a></li>
             </ul>
+    
           <div id="searchbox" style="display: none">
             <h3>Quick search</h3>
               <form class="search" action="search.html" method="get">
@@ -288,6 +287,19 @@ for running computational pipelines.</p>
               </p>
           </div>
           <script type="text/javascript">$('#searchbox').show(0);</script>
+    <h3><a href="decorators/decorators.html">Decorators</a></h3>   <br>
+    <h3><a href="decorators/indicator_objects.html">Indicator objects</a></h3>   <br>
+    <a href="decorators/follows.html">@follows</a>                      <br>
+    <a href="decorators/files.html">@files</a>                          <br>
+    <a href="decorators/split.html">@split</a>                          <br>
+    <a href="decorators/transform.html">@transform</a>                  <br>
+    <a href="decorators/merge.html">@merge</a>                          <br>
+    <a href="decorators/posttask.html">@posttask</a>                    <br>
+    <a href="decorators/transform_ex.html">Advanced @transform</a>      <br>
+    <a href="decorators/merge_ex.html">Advanced @merge</a>              <br>
+    <a href="decorators/parallel.html">@parallel</a>                    <br>
+    <a href="decorators/check_if_uptodate.html">@check_if_uptodate</a>  <br>
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -302,7 +314,7 @@ for running computational pipelines.</p>
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="Introduction.html" title="Introduction"
+          <a href="introduction.html" title="Introduction"
              >next</a> |</li>
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>

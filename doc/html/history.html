@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Fixed Bugs &mdash; ruffus v1.1.5c documentation</title>
+    <title>Bugs and updates &mdash; ruffus v1.1.5c documentation</title>
     <link rel="stylesheet" href="_static/ruffus.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -20,8 +20,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="ruffus v1.1.5c documentation" href="index.html" />
-    <link rel="next" title="What is left to do:" href="Todo.html" />
-    <link rel="prev" title="FAQ" href="FAQ.html" /> 
+    <link rel="next" title="Future plans for Ruffus" href="todo.html" />
+    <link rel="prev" title="Design & Architecture" href="design.html" /> 
   </head>
   <body>
     <div class="related">
@@ -34,10 +34,10 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="Todo.html" title="What is left to do:"
+          <a href="todo.html" title="Future plans for Ruffus"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="FAQ.html" title="FAQ"
+          <a href="design.html" title="Design & Architecture"
              accesskey="P">previous</a> |</li>
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>
@@ -57,12 +57,14 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="fixed-bugs">
-<h1>Fixed Bugs<a class="headerlink" href="#fixed-bugs" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="bugs-and-updates">
+<h1>Bugs and updates<a class="headerlink" href="#bugs-and-updates" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="fixed-bugs">
+<h2>Fixed Bugs<a class="headerlink" href="#fixed-bugs" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="issue3">
-<h2>Issue3<a class="headerlink" href="#issue3" title="Permalink to this headline">¶</a></h2>
+<h3>Issue3<a class="headerlink" href="#issue3" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="manifestation">
-<h3>Manifestation<a class="headerlink" href="#manifestation" title="Permalink to this headline">¶</a></h3>
+<h4>Manifestation<a class="headerlink" href="#manifestation" title="Permalink to this headline">¶</a></h4>
 <blockquote>
 <p>Calling:</p>
 <div class="highlight-python"><pre>  graph_printout(
@@ -77,7 +79,7 @@
 </blockquote>
 </div>
 <div class="section" id="diagnosis">
-<h3>Diagnosis<a class="headerlink" href="#diagnosis" title="Permalink to this headline">¶</a></h3>
+<h4>Diagnosis<a class="headerlink" href="#diagnosis" title="Permalink to this headline">¶</a></h4>
 <blockquote>
 <p><cite>graph_printout</cite> resolves to <cite>graph.graph_printout (...)</cite></p>
 <p>Should be <cite>task.pipeline_printout_graph (...)</cite></p>
@@ -86,7 +88,7 @@ should probably not be exported by default.</p>
 </blockquote>
 </div>
 <div class="section" id="resolution">
-<h3>Resolution<a class="headerlink" href="#resolution" title="Permalink to this headline">¶</a></h3>
+<h4>Resolution<a class="headerlink" href="#resolution" title="Permalink to this headline">¶</a></h4>
 <blockquote>
 <ol class="arabic">
 <li><p class="first">Changed documentation</p>
@@ -102,9 +104,9 @@ should probably not be exported by default.</p>
 </div>
 </div>
 <div class="section" id="mkdir">
-<h2>mkdir<a class="headerlink" href="#mkdir" title="Permalink to this headline">¶</a></h2>
+<h3>mkdir<a class="headerlink" href="#mkdir" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="id1">
-<h3>Manifestation<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<h4>Manifestation<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
 <blockquote>
 <p>Calling:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
@@ -123,7 +125,7 @@ TypeError: sequence item 0: expected string, list found</dd>
 </blockquote>
 </div>
 <div class="section" id="id2">
-<h3>Diagnosis<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<h4>Diagnosis<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
 <blockquote>
 <p>mkdir should handle cleanly all three cases:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">mkdir</span><span class="p">([</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">])</span>
@@ -134,7 +136,7 @@ TypeError: sequence item 0: expected string, list found</dd>
 </blockquote>
 </div>
 <div class="section" id="id3">
-<h3>Resolution<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<h4>Resolution<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
 <blockquote>
 <ol class="arabic simple">
 <li>Changes to task.py</li>
@@ -142,6 +144,7 @@ TypeError: sequence item 0: expected string, list found</dd>
 <li>Added test case test/test_follows_mkdir.py</li>
 </ol>
 </blockquote>
+</div>
 </div>
 </div>
 </div>
@@ -154,7 +157,8 @@ TypeError: sequence item 0: expected string, list found</dd>
         <div class="sphinxsidebarwrapper">
             <h3><a href="contents.html">Table Of Contents</a></h3>
             <ul>
-<li><a class="reference external" href="">Fixed Bugs</a><ul>
+<li><a class="reference external" href="">Bugs and updates</a><ul>
+<li><a class="reference external" href="#fixed-bugs">Fixed Bugs</a><ul>
 <li><a class="reference external" href="#issue3">Issue3</a><ul>
 <li><a class="reference external" href="#manifestation">Manifestation</a></li>
 <li><a class="reference external" href="#diagnosis">Diagnosis</a></li>
@@ -170,18 +174,21 @@ TypeError: sequence item 0: expected string, list found</dd>
 </ul>
 </li>
 </ul>
+</li>
+</ul>
 
             <h4>Previous topic</h4>
-            <p class="topless"><a href="FAQ.html"
-                                  title="previous chapter">FAQ</a></p>
+            <p class="topless"><a href="design.html"
+                                  title="previous chapter">Design &amp; Architecture</a></p>
             <h4>Next topic</h4>
-            <p class="topless"><a href="Todo.html"
-                                  title="next chapter">What is left to do:</a></p>
+            <p class="topless"><a href="todo.html"
+                                  title="next chapter">Future plans for <em>Ruffus</em></a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/history.txt"
                      rel="nofollow">Show Source</a></li>
             </ul>
+    
           <div id="searchbox" style="display: none">
             <h3>Quick search</h3>
               <form class="search" action="search.html" method="get">
@@ -195,6 +202,19 @@ TypeError: sequence item 0: expected string, list found</dd>
               </p>
           </div>
           <script type="text/javascript">$('#searchbox').show(0);</script>
+    <h3><a href="decorators/decorators.html">Decorators</a></h3>   <br>
+    <h3><a href="decorators/indicator_objects.html">Indicator objects</a></h3>   <br>
+    <a href="decorators/follows.html">@follows</a>                      <br>
+    <a href="decorators/files.html">@files</a>                          <br>
+    <a href="decorators/split.html">@split</a>                          <br>
+    <a href="decorators/transform.html">@transform</a>                  <br>
+    <a href="decorators/merge.html">@merge</a>                          <br>
+    <a href="decorators/posttask.html">@posttask</a>                    <br>
+    <a href="decorators/transform_ex.html">Advanced @transform</a>      <br>
+    <a href="decorators/merge_ex.html">Advanced @merge</a>              <br>
+    <a href="decorators/parallel.html">@parallel</a>                    <br>
+    <a href="decorators/check_if_uptodate.html">@check_if_uptodate</a>  <br>
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -209,10 +229,10 @@ TypeError: sequence item 0: expected string, list found</dd>
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="Todo.html" title="What is left to do:"
+          <a href="todo.html" title="Future plans for Ruffus"
              >next</a> |</li>
         <li class="right" >
-          <a href="FAQ.html" title="FAQ"
+          <a href="design.html" title="Design & Architecture"
              >previous</a> |</li>
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>

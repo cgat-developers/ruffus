@@ -21,7 +21,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="ruffus v1.1.5c documentation" href="index.html" />
     <link rel="next" title="ruffus.proxy_logger" href="proxy_logger.html" />
-    <link rel="prev" title="simpler_with_shared_logging – How to share data across jobs" href="sharing_data_across_jobs_example_code.html" /> 
+    <link rel="prev" title="simpler_with_shared_logging – How to share data across jobs" href="examples/sharing_data_across_jobs_example_code.html" /> 
   </head>
   <body>
     <div class="related">
@@ -37,7 +37,7 @@
           <a href="proxy_logger.html" title="ruffus.proxy_logger"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="sharing_data_across_jobs_example_code.html" title="simpler_with_shared_logging – How to share data across jobs"
+          <a href="examples/sharing_data_across_jobs_example_code.html" title="simpler_with_shared_logging – How to share data across jobs"
              accesskey="P">previous</a> |</li>
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>
@@ -97,498 +97,28 @@ run in parallel.</p>
 <div class="section" id="decorators">
 <h2>Decorators<a class="headerlink" href="#decorators" title="Permalink to this headline">¶</a></h2>
 <blockquote>
+<p>Basic Task decorators are:</p>
+<blockquote>
+<p><a class="reference external" href="decorators/follows.html#task-follows"><em>&#64;follows()</em></a></p>
+<p>and</p>
+<p><a class="reference external" href="decorators/files.html#task-files"><em>&#64;files()</em></a></p>
+</blockquote>
 <p>Task decorators include:</p>
 <blockquote>
-<p><a class="reference internal" href="#task-follows"><em>&#64;follows()</em></a></p>
-<p><a class="reference internal" href="#task-files"><em>&#64;files()</em></a></p>
-<p><a class="reference internal" href="#task-files-re"><em>&#64;files_re()</em></a></p>
-<p><a class="reference internal" href="#task-parallel"><em>&#64;parallel()</em></a></p>
-<p><a class="reference internal" href="#task-check-if-uptodate"><em>&#64;check_if_uptodate()</em></a></p>
+<p><a class="reference external" href="decorators/files.html#task-files"><em>&#64;split()</em></a></p>
+<p><a class="reference external" href="decorators/files.html#task-files"><em>&#64;transform()</em></a></p>
+<p><a class="reference external" href="decorators/files.html#task-files"><em>&#64;merge()</em></a></p>
+<p><a class="reference external" href="decorators/posttask.html#task-posttask"><em>&#64;posttask()</em></a></p>
 </blockquote>
-</blockquote>
-<div class="section" id="follows">
-<span id="task-follows"></span><h3>&#64;follows<a class="headerlink" href="#follows" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
-<dt id="ruffus.task.follows">
-<em class="property">
-class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">follows</tt><big>(</big><em>parent_task1</em>, <em>&quot;module_X.parent_task2&quot;</em><big>)</big><a class="headerlink" href="#ruffus.task.follows" title="Permalink to this definition">¶</a></dt>
-<dd><p><strong>&#64;follows</strong> (parent_task1, &#8220;module_X.parent_task2&#8221;)</p>
+<p>More advanced users may require:</p>
 <blockquote>
-<p>Takes a list of tasks which have to be run <em>before</em> this function
-Dependencies can be quoted or unquoted function names.
-Quoted function names allow dependencies to be added before the function is defined</p>
-<p>Functions in other modules need to be fully qualified</p>
-<p>For convenience, <tt class="docutils literal"><span class="pre">mkdir</span></tt> can be used to specify 
-directories which need to be created (if they don&#8217;t exist) before
-the task is run.</p>
-<p>e.g:</p>
-<div class="highlight-python"><pre>@follows(task_x, mkdir("/output/directory") ...)</pre>
-</div>
+<p><a class="reference external" href="decorators/transform_ex.html#task-transform-ex"><em>&#64;transform()</em></a></p>
+<p><a class="reference external" href="decorators/merge_ex.html#task-merge-ex"><em>&#64;merge()</em></a></p>
+<p><a class="reference external" href="decorators/parallel.html#task-parallel"><em>&#64;parallel()</em></a></p>
+<p><a class="reference external" href="decorators/check_if_uptodate.html#task-check-if-uptodate"><em>&#64;check_if_uptodate()</em></a></p>
+<p><a class="reference external" href="decorators/files_re.html#task-files-re"><em>&#64;files_re()</em></a></p>
 </blockquote>
-</dd></dl>
-
-</div>
-<div class="section" id="posttask">
-<span id="task-posttask"></span><h3>&#64;posttask<a class="headerlink" href="#posttask" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
-<dt id="ruffus.task.posttask">
-<em class="property">
-class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">posttask</tt><big>(</big><em>custom_function</em><span class="optional">[</span>, <em>touch_file(&quot;a.file&quot;)</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ruffus.task.posttask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calls functions to signal the completion of each task:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
-
-<span class="k">def</span> <span class="nf">task_finished</span><span class="p">():</span>
-    <span class="k">print</span> <span class="s">&quot;hooray&quot;</span>
-    
-<span class="nd">@posttask</span><span class="p">(</span><span class="n">task_finished</span><span class="p">)</span>
-<span class="nd">@files</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s">&quot;a.1&quot;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">create_if_necessary</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
-    <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
-            
-<span class="n">pipeline_run</span><span class="p">([</span><span class="n">create_if_necessary</span><span class="p">])</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">The function(s) provided to <tt class="docutils literal"><span class="pre">&#64;posttask</span></tt> will be called if the ruffus passes 
-through a task, even if none of its jobs are run because they are up-to-date.
-This happens when a upstream task is out-of-date, and the execution passes through
-this point in the pipeline</p>
-</div>
-<p>If <tt class="docutils literal"><span class="pre">touch_file</span></tt> is specified, the enclosed files(s) will be <tt class="docutils literal"><span class="pre">touch</span></tt>-ed:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
-
-<span class="nd">@posttask</span><span class="p">(</span><span class="n">touch_file</span><span class="p">(</span><span class="s">&quot;task_completed.flag&quot;</span><span class="p">))</span>
-<span class="nd">@files</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s">&quot;a.1&quot;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">create_if_necessary</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
-    <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
-
-<span class="n">pipeline_run</span><span class="p">([</span><span class="n">create_if_necessary</span><span class="p">])</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</div>
-<div class="section" id="files">
-<span id="task-files"></span><h3>&#64;files<a class="headerlink" href="#files" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
-<dt id="ruffus.task.files">
-<em class="property">
-class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">files</tt><big>(</big><span class="optional">[</span><span class="optional">[</span><em>input_files</em>, <em>output_files...</em><span class="optional">]</span>, <em>...</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ruffus.task.files" title="Permalink to this definition">¶</a></dt>
-<dd><p><strong>&#64;files</strong> ([[job1.input, job1.output, job1.optional_extra_parameters], ...])</p>
-<p><strong>&#64;files</strong> (input_file, output_file, optional_extra_parameters)</p>
-<p><strong>&#64;files</strong> (custom_function)</p>
-<p>The first two parameters in each set represent the input and output of the each job.
-Only out of date jobs will be run.
-By default, this is by checking input/output file timestamps.
-(On some file systems, timestamps have a resolution in seconds.)</p>
-<dl class="docutils">
-<dt>The input and output files for each job can be </dt>
-<dd><ul class="first last simple">
-<li>A single file name</li>
-<li>A list of files</li>
-<li><tt class="xref docutils literal"><span class="pre">None</span></tt></li>
-</ul>
-</dd>
-</dl>
-<p>If the input file is <tt class="xref docutils literal"><span class="pre">None</span></tt>, the job will run if any output file is missing.</p>
-<p>If the output file is <tt class="xref docutils literal"><span class="pre">None</span></tt>, the job will always run.</p>
-<p>If any of the output files is missing, the job will run.</p>
-<p>If any of the input files is missing when the job is run, a
-<tt class="docutils literal"><span class="pre">MissingInputFileError</span></tt> exception will be raised.</p>
-<p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span>
-                    <span class="p">[</span> <span class="s">&#39;a.1&#39;</span><span class="p">,</span> <span class="s">&#39;a.2&#39;</span><span class="p">,</span> <span class="s">&#39;A file&#39;</span><span class="p">],</span> <span class="c"># 1st job</span>
-                    <span class="p">[</span> <span class="s">&#39;b.1&#39;</span><span class="p">,</span> <span class="s">&#39;b.2&#39;</span><span class="p">,</span> <span class="s">&#39;B file&#39;</span><span class="p">],</span> <span class="c"># 2nd job</span>
-              <span class="p">]</span>
-
-<span class="nd">@files</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">parallel_io_task</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
-    <span class="n">infile_text</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">infile_text</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">+</span> <span class="n">text</span><span class="p">)</span>
-
-<span class="n">pipeline_run</span><span class="p">([</span><span class="n">parallel_io_task</span><span class="p">])</span>
-</pre></div>
-</div>
-<p>Parameters can be generated on the fly as well.
-Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="k">def</span> <span class="nf">generate_parameters_on_the_fly</span><span class="p">():</span>
-    <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span>
-                        <span class="p">[</span><span class="s">&#39;input_file1&#39;</span><span class="p">,</span> <span class="s">&#39;output_file1&#39;</span><span class="p">,</span> <span class="mf">1</span><span class="p">,</span> <span class="mf">2</span><span class="p">],</span> <span class="c"># 1st job</span>
-                        <span class="p">[</span><span class="s">&#39;input_file2&#39;</span><span class="p">,</span> <span class="s">&#39;output_file2&#39;</span><span class="p">,</span> <span class="mf">3</span><span class="p">,</span> <span class="mf">4</span><span class="p">],</span> <span class="c"># 2nd job</span>
-                        <span class="p">[</span><span class="s">&#39;input_file3&#39;</span><span class="p">,</span> <span class="s">&#39;output_file3&#39;</span><span class="p">,</span> <span class="mf">5</span><span class="p">,</span> <span class="mf">6</span><span class="p">],</span> <span class="c"># 3rd job</span>
-                 <span class="p">]</span>
-    <span class="k">for</span> <span class="n">job_parameters</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
-        <span class="k">yield</span> <span class="n">job_parameters</span>
-
-<span class="nd">@files</span><span class="p">(</span><span class="n">generate_parameters_on_the_fly</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">parallel_io_task</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">):</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;    Parallel task </span><span class="si">%s</span><span class="s">: &quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%d</span><span class="s"> + </span><span class="si">%d</span><span class="s"> = </span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">,</span> <span class="n">param1</span> <span class="o">+</span> <span class="n">param2</span><span class="p">))</span>
-
-<span class="n">pipeline_run</span><span class="p">([</span><span class="n">parallel_task</span><span class="p">])</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</div>
-<div class="section" id="files-re">
-<span id="task-files-re"></span><h3>&#64;files_re<a class="headerlink" href="#files-re" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
-<dt id="ruffus.task.files_re">
-<em class="property">
-class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">files_re</tt><big>(</big><em>glob/file_list</em>, <em>matching_regex</em>, <em>input_file</em>, <em>output_file</em><span class="optional">[</span>, <em>extra_parameters</em>, <em>...</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ruffus.task.files_re" title="Permalink to this definition">¶</a></dt>
-<dd><p><strong>&#64;files_re</strong> (tasks/file_list, matching_regex, output_file)</p>
-<p><strong>&#64;files_re</strong> (tasks/file_list, matching_regex, input_file, output_file, [extra_parameters,...] )</p>
-<p>Generates a list of i/o files for each job in the task:
-Only out of date jobs will be run (See &#64;files).</p>
-<ol class="arabic simple">
-<li>The first parameter can be a list of input files, a file system glob specification 
-or a task/list of tasks. In the latter case, the input file names are generated 
-from the output of the specied task(s)</li>
-<li><tt class="docutils literal"><span class="pre">matching_regex</span></tt> is a python regular expression.</li>
-<li>The next parameter after that are input file(s)</li>
-<li>The next parameter after that are output file(s)</li>
-<li>Further parameters are optional and are passed verbatim to the functions after regular expression
-substition in any strings. Non-string values are passed through unchanged</li>
-</ol>
-<p>These are used to check if jobs are up to date.</p>
-<p>All parameters can be:</p>
-<blockquote>
-<ol class="arabic simple">
-<li><tt class="xref docutils literal"><span class="pre">None</span></tt></li>
-<li>A string</li>
-<li>A nested sequence containing strings</li>
-<li>Anything else</li>
-</ol>
 </blockquote>
-<p>Strings will be treated as regular expression substitution
-patterns, using matches from <tt class="docutils literal"><span class="pre">matching_regex</span></tt>.</p>
-<p>See python <a class="reference external" href="http://docs.python.org/library/re.html">regular expression (re)</a> 
-documentation for details of the syntax</p>
-<p><cite>None</cite> and all other types of objects are passed through unchanged.</p>
-<p>Operation:</p>
-<blockquote>
-<ol class="arabic simple">
-<li>For each file in the <tt class="docutils literal"><span class="pre">glob</span></tt> (See <a class="reference external" href="http://docs.python.org/library/glob.html">glob</a>) 
-results or <tt class="docutils literal"><span class="pre">file_list</span></tt> or in the output files from <tt class="docutils literal"><span class="pre">tasks</span></tt></li>
-<li>Discard all file names those which don&#8217;t matching <tt class="docutils literal"><span class="pre">matching_regex</span></tt></li>
-<li>Generate parameters using regular expression pattern substitution</li>
-</ol>
-</blockquote>
-<p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="c">#</span>
-<span class="c">#   convert all files ending in &quot;.1&quot; into files ending in &quot;.2&quot;</span>
-<span class="c">#</span>
-<span class="nd">@files_re</span><span class="p">(</span><span class="s">&#39;*.1&#39;</span><span class="p">,</span> <span class="s">&#39;(.*).1&#39;</span><span class="p">,</span> <span class="s">r&#39;\1.2&#39;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">task_re</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
-    <span class="nb">open</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">converted</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
-
-<span class="n">pipeline_run</span><span class="p">([</span><span class="n">task_re</span><span class="p">])</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</div>
-<div class="section" id="parallel">
-<span id="task-parallel"></span><h3>&#64;parallel<a class="headerlink" href="#parallel" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
-<dt id="ruffus.task.parallel">
-<em class="property">
-class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">parallel</tt><big>(</big><span class="optional">[</span><span class="optional">[</span><em>job1_params</em>, <em>...</em><span class="optional">]</span><span class="optional">[</span>, <em>job2_params</em>, <em>...</em><span class="optional">]</span>, <em>...</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ruffus.task.parallel" title="Permalink to this definition">¶</a></dt>
-<dd><p><strong>&#64;parallel</strong> ([[job1_params, ...], [job2_params, ...]...])</p>
-<p><strong>&#64;parallel</strong> (parameter_generating_func)</p>
-<blockquote>
-<p>The task function will be called iteratively 
-with each set of parameters (possibly in parallel)</p>
-<p>No dependency checking is carried out.</p>
-<p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span>
-                 <span class="p">[</span><span class="s">&#39;A&#39;</span><span class="p">,</span> <span class="mf">1</span><span class="p">,</span> <span class="mf">2</span><span class="p">],</span> <span class="c"># 1st job</span>
-                 <span class="p">[</span><span class="s">&#39;B&#39;</span><span class="p">,</span> <span class="mf">3</span><span class="p">,</span> <span class="mf">4</span><span class="p">],</span> <span class="c"># 2nd job</span>
-                 <span class="p">[</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mf">5</span><span class="p">,</span> <span class="mf">6</span><span class="p">],</span> <span class="c"># 3rd job</span>
-             <span class="p">]</span>
-<span class="nd">@parallel</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>                                                     
-<span class="k">def</span> <span class="nf">parallel_task</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">):</span>                                  
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;    Parallel task </span><span class="si">%s</span><span class="s">: &quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>                     
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%d</span><span class="s"> + </span><span class="si">%d</span><span class="s"> = </span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">,</span> <span class="n">param1</span> <span class="o">+</span> <span class="n">param2</span><span class="p">))</span>
-
-<span class="n">pipeline_run</span><span class="p">([</span><span class="n">parallel_task</span><span class="p">])</span>
-</pre></div>
-</div>
-</blockquote>
-</dd></dl>
-
-</div>
-<div class="section" id="check-if-uptodate">
-<span id="task-check-if-uptodate"></span><h3>&#64;check_if_uptodate<a class="headerlink" href="#check-if-uptodate" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
-<dt id="ruffus.task.check_if_uptodate">
-<em class="property">
-class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">check_if_uptodate</tt><big>(</big><em>custom_function</em><big>)</big><a class="headerlink" href="#ruffus.task.check_if_uptodate" title="Permalink to this definition">¶</a></dt>
-<dd><p><strong>&#64;check_if_uptodate</strong> (dependency_checking_func)</p>
-<p>Checks to see if a job is up to date, and needs to be run.</p>
-<p>returns two parameters: if job needs to be run, and a message explaining why</p>
-<p>dependency_checking_func() needs to handle the same number of parameters as the
-task function</p>
-<p>These two examples, using automatic and manual dependency checking produce
-the same output.
-Example 1: Automatic:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ruffus</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="nd">@files</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s">&quot;a.1&quot;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">create_if_necessary</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
-    <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
-            
-<span class="n">pipeline_run</span><span class="p">([</span><span class="n">create_if_necessary</span><span class="p">])</span>
-</pre></div>
-</div>
-<p>Could be rewritten as::
-Example 2: Manual:</p>
-<div class="highlight-python"><pre>from ruffus import *
-import os
-def check_file_exists(input_file, output_file):
-    if not os.path.exists(output_file):
-        return True, "Missing file %s" % output_file
-    return 
-        return False, "File %s exists" % output_file
-    
-    @parallel([[None, "a.1"]])
-    @check_if_uptodate(check_file_exists)
-    def create_if_necessary(input_file, output_file):
-        open(output_file, "w")
-    
-    pipeline_run([create_if_necessary])
-    
-Both produce the same output::
-
-    Task = create_if_necessary
-        Job = [null, "a.1"] completed</pre>
-</div>
-</dd></dl>
-
-</div>
-</div>
-<div class="section" id="simplified-syntax-work-in-progress">
-<h2>Simplified syntax (work in progress)<a class="headerlink" href="#simplified-syntax-work-in-progress" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="split">
-<span id="task-split"></span><h3>&#64;split<a class="headerlink" href="#split" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
-<dt id="ruffus.task.split">
-<em class="property">
-class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">split</tt><big>(</big><em>custom_function</em><big>)</big><a class="headerlink" href="#ruffus.task.split" title="Permalink to this definition">¶</a></dt>
-<dd><p>Simple form:</p>
-<p><strong>&#64;split</strong> (tasks/file_list, output_files, [extra_parameters,...] )</p>
-<p>Splits a single set of input files into multiple output file names, where the number of
-output files may not be known beforehand.</p>
-<p>Example:</p>
-<div class="highlight-python"><pre>@split("big_file", '*.little_files')
-def split_big_to_small(input_file, output_files):
-    assert(input_file = "big_file")
-    assert(input_file = "*.little_files")
-    pass    </pre>
-</div>
-<ol class="arabic">
-<li><dl class="first docutils">
-<dt>The first parameter can be </dt>
-<dd><dl class="first last docutils">
-<dt>#  a (nested) list of file name strings. (as above)</dt>
-<dd><p class="first last">Any file names containing &#8220;<em>[]?&#8221; will be expanded as a glob e.g. &#8220;a.</em>&#8221; =&gt; &#8220;a.1&#8221;, &#8220;a.2&#8221; etc.</p>
-</dd>
-<dt>#  a task / list of tasks.</dt>
-<dd><p class="first last">File names are taken from the output of the specified task(s)</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</li>
-<li><p class="first">The second parameter specifies the output file name(s) of this task.
-These are used <strong>only</strong> to check if the task is up to date.
-Normally you would use either a glob (e.g. <cite>*.little_files</cite> as above) or  a &#8220;sentinel file&#8221;
-to indicate that the task has completed successful. You can of course do both:
-<cite>[&#8220;sentinel.file&#8221;, &#8220;*.little_files&#8221;]</cite></p>
-</li>
-<li><p class="first">Further parameters are optional</p>
-</li>
-</ol>
-</dd></dl>
-
-</div>
-<div class="section" id="transform">
-<span id="task-transform"></span><h3>&#64;transform<a class="headerlink" href="#transform" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
-<dt id="ruffus.task.transform">
-<em class="property">
-class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">transform</tt><big>(</big><em>custom_function</em><big>)</big><a class="headerlink" href="#ruffus.task.transform" title="Permalink to this definition">¶</a></dt>
-<dd><p>Simple form:</p>
-<p><strong>&#64;transform</strong> (tasks/file_list, suffix(suffix_string), outputs, [extra_parameters,...] )
-<strong>&#64;transform</strong> (tasks/file_list, regex(matching_regex), outputs, [extra_parameters,...] )</p>
-<p>Applies the task function to transform inputs from (<cite>tasks/file_list</cite>) to outputs
-output file names are determined from input file names using either suffix matches
-or regular expression pattern matches.</p>
-<p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#   compiles `*.c` to `*.o`</span>
-
-<span class="nd">@transform</span><span class="p">(</span><span class="n">previous_task</span><span class="p">,</span> <span class="n">suffix</span><span class="p">(</span><span class="s">&quot;.c&quot;</span><span class="p">),</span> <span class="s">&quot;.o&quot;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
-    <span class="k">pass</span>
-</pre></div>
-</div>
-<p>Same example with a regular expression:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#   compiles `*.c` to `*.o`</span>
-
-<span class="nd">@transform</span><span class="p">(</span><span class="n">previous_task</span><span class="p">,</span> <span class="n">regex</span><span class="p">(</span><span class="s">r&quot;.c$&quot;</span><span class="p">),</span> <span class="s">&quot;.o&quot;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
-    <span class="k">pass</span>
-</pre></div>
-</div>
-<ol class="arabic">
-<li><dl class="first docutils">
-<dt>The first parameter can be </dt>
-<dd><dl class="first last docutils">
-<dt>#  a task / list of tasks (as above).</dt>
-<dd><p class="first last">File names are taken from the output of the specified task(s)</p>
-</dd>
-<dt>#  a (nested) list of file name strings. </dt>
-<dd><p class="first last">Any file names containing &#8220;<em>[]?&#8221; will be expanded as a glob e.g. &#8220;a.</em>&#8221; =&gt; &#8220;a.1&#8221;, &#8220;a.2&#8221; etc.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</li>
-<li><p class="first"><cite>matching_regex</cite> is a python regular expression string, which must be wrapped in
-a <cite>ruffus.regex</cite> indicator object
-See python <a class="reference external" href="http://docs.python.org/library/re.html">regular expression (re)</a> 
-documentation for details of regular expression syntax</p>
-</li>
-<li><p class="first"><cite>suffix_string</cite> must be wrapped in a <cite>ruffus.suffix</cite> indicator object
-&#8220;Suffix matches&#8221; are perfect matches from the end of the string.</p>
-</li>
-<li><p class="first">Output and option extra parameters are passed to the functions after regular expression
-substitution in any strings. Non-string values are passed through unchanged</p>
-</li>
-<li><p class="first">The input and output file name parameter strings are used to check if jobs are 
-up-to-date and need to be re-run. (Non-string parameters are ignored.)
-For the above example, a call to <cite>compile_c_file(&#8220;a.c&#8221;, &#8220;a.o&#8221;)</cite> will be made 
-unless <cite>a.c</cite> is older than <cite>a.o</cite>.</p>
-</li>
-</ol>
-<p>Complicated / Flexible form</p>
-<p><strong>&#64;transform</strong> (tasks/file_list, regex(matching_regex), inputs(input_file), output_file, [extra_parameters,...] )
-<strong>&#64;transform</strong> (tasks/file_list, suffix(suffix_string), inputs(input_file), output_file, [extra_parameters,...] )</p>
-<p>In the standard <strong>&#64;transform</strong>, output file names are created using regular expression substitution.
-Sometimes, it is necessary to create input file names the same way.
-This is especially useful to <strong>add</strong> an extra dependency to the task.</p>
-<p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#   compiles `*.c` to `*.o`, depending on header files `*.h`</span>
-
-<span class="nd">@transform</span><span class="p">(</span><span class="n">previous_task</span><span class="p">,</span> <span class="n">suffix</span><span class="p">(</span><span class="s">&quot;.c&quot;</span><span class="p">),</span> <span class="n">inputs</span><span class="p">(</span><span class="s">&quot;.c&quot;</span><span class="p">,</span> <span class="s">&quot;.h&quot;</span><span class="p">),</span>  <span class="s">&quot;.o&quot;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">compile_c_file</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
-    <span class="k">pass</span>
-</pre></div>
-</div>
-<p>A regular expression allows even more flexibility:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#   compiles `*.c` to `*.o`, depending on header files `*.h`, and `universal.h`</span>
-
-<span class="nd">@transform</span><span class="p">(</span><span class="n">previous_task</span><span class="p">,</span> <span class="n">regex</span><span class="p">(</span><span class="s">r&quot;(.*).c$&quot;</span><span class="p">),</span> <span class="n">inputs</span><span class="p">(</span><span class="s">r&quot;.c&quot;</span><span class="p">,</span> <span class="s">&quot;.h&quot;</span><span class="p">,</span> <span class="s">&quot;universal.h&quot;</span><span class="p">),</span>  <span class="s">&quot;.o&quot;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">compile_c_file</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
-    <span class="k">pass</span>
-</pre></div>
-</div>
-<p>Now the inputs to each job for example, include the header files, <cite>a.h</cite> and <cite>universal.h</cite> as
-well as the source file <cite>a.c</cite> from <cite>previous_task</cite>. This is equivalent to calling:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">compile_c_file</span><span class="p">([</span><span class="s">&quot;a.c&quot;</span><span class="p">,</span> <span class="s">&quot;a.h&quot;</span><span class="p">,</span> <span class="s">&quot;universal.h&quot;</span><span class="p">],</span> <span class="s">&quot;a.o&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<ol class="arabic simple">
-<li><cite>matching_regex</cite> is a python regular expression string, which must be wrapped in
-a <cite>ruffus.regex</cite> indicator object
-See python <a class="reference external" href="http://docs.python.org/library/re.html">regular expression (re)</a> 
-documentation for details of regular expression syntax</li>
-<li><cite>suffix_string</cite> must be wrapped in a <cite>ruffus.suffix</cite> indicator object
-&#8220;Suffix matches&#8221; are perfect matches from the end of the string.</li>
-<li>Output file names and optional extra parameters are passed to the functions after regular expression
-substitution in any strings. Non-string values are passed through unchanged</li>
-<li>Input file name parameters mush be wrapped in a <cite>ruffus.inputs</cite> indicator object. These 
-are also passed to the functions after regular expression
-substitution in any strings. 
-to a single set of output / extra parameter matches</li>
-<li>The input and output file name parameter strings are used to check if jobs are 
-up-to-date and need to be re-run. (Non-string parameters are ignored.)</li>
-</ol>
-</dd></dl>
-
-</div>
-<div class="section" id="merge">
-<span id="task-merge"></span><h3>&#64;merge<a class="headerlink" href="#merge" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
-<dt id="ruffus.task.merge">
-<em class="property">
-class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">merge</tt><big>(</big><em>custom_function</em><big>)</big><a class="headerlink" href="#ruffus.task.merge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Simple form:</p>
-<p><strong>&#64;merge</strong> (tasks/file_list, output_file, [extra_parameters,...] )</p>
-<p>Merges multiple input files into a single job
-Only out of date jobs will be run (See &#64;files).</p>
-<p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="nd">@merge</span><span class="p">(</span><span class="n">previous_task</span><span class="p">,</span> <span class="s">&#39;all.summary&#39;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">summarize</span><span class="p">(</span><span class="n">infiles</span><span class="p">,</span> <span class="n">summary_file</span><span class="p">):</span>
-    <span class="k">pass</span>
-</pre></div>
-</div>
-<ol class="arabic">
-<li><dl class="first docutils">
-<dt>The first parameter can be </dt>
-<dd><dl class="first last docutils">
-<dt>#  a task / list of tasks (as above).</dt>
-<dd><p class="first last">File names are taken from the output of the specified task(s)</p>
-</dd>
-<dt>#  a (nested) list of file name strings. </dt>
-<dd><p class="first last">Any file names containing &#8220;<em>[]?&#8221; will be expanded as a glob e.g. &#8220;a.</em>&#8221; =&gt; &#8220;a.1&#8221;, &#8220;a.2&#8221; etc.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</li>
-<li><p class="first">The second parameter specifies the output file name(s) of this task.
-More than one file name can be passed as a nested sequence, and will be forwarded to the underlying
-function</p>
-</li>
-<li><p class="first">Further parameters are optional</p>
-</li>
-</ol>
-<p>Grouping / Collating form</p>
-<p><strong>&#64;merge</strong> (tasks/file_list, <a href="#id3"><span class="problematic" id="id4">**</span></a>regex**(matching_regex), output_file, [extra_parameters,...] )</p>
-<p>This allows the use of regular expressions to merge groups of input files, each into a separate
-summary. 
-For example: <cite>regex(r&#8221;.*(..+)&#8221;), &#8220;.summary&#8221;</cite> would create a separate summary file for each suffix:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">animal_files</span> <span class="o">=</span> <span class="s">&quot;a.fish&quot;</span><span class="p">,</span> <span class="s">&quot;b.fish&quot;</span><span class="p">,</span> <span class="s">&quot;c.mammals&quot;</span><span class="p">,</span> <span class="s">&quot;d.mammals&quot;</span>
-<span class="c"># summarise by file suffix:</span>
-<span class="nd">@merge</span><span class="p">(</span><span class="n">animal_files</span><span class="p">,</span> <span class="n">regex</span><span class="p">(</span><span class="s">r&quot;\.(.+)$&quot;</span><span class="p">),</span>  <span class="s">r&#39;.summary&#39;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">summarize</span><span class="p">(</span><span class="n">infiles</span><span class="p">,</span> <span class="n">summary_file</span><span class="p">):</span>
-    <span class="k">pass</span>
-</pre></div>
-</div>
-<ol class="arabic simple">
-<li><cite>matching_regex</cite> is a python regular expression string, which must be wrapped in
-a <cite>ruffus.regex</cite> indicator object
-See python <a class="reference external" href="http://docs.python.org/library/re.html">regular expression (re)</a> 
-documentation for details of regular expression syntax</li>
-<li>Output and option extra parameters are passed to the functions after regular expression
-substitution in any strings. Non-string values are passed through unchanged.</li>
-<li>Each merge job consists of input files which are aggregated by regular expression substitution
-to a single set of output / extra parameter matches</li>
-<li>In the above cases, &#8220;a.fish&#8221; and &#8220;b.fish&#8221; both produce &#8220;fish.summary&#8221; after regular
-expression subsitution, and are merged into a single job:
-<cite>[&#8220;a.fish&#8221;, &#8220;b.fish&#8221; -&gt; &#8220;fish.summary&#8221;]</cite>
-while &#8220;c.mammals&#8221;, &#8220;d.mammals&#8221; both produce &#8220;mammals.summary&#8221;, are merged in a separate job:
-<cite>[&#8220;c.mammals&#8221;, &#8220;d.mammals&#8221; -&gt; &#8220;mammals.summary&#8221;]</cite></li>
-</ol>
-</dd></dl>
-
-</div>
 </div>
 <div class="section" id="pipeline-functions">
 <h2>Pipeline functions<a class="headerlink" href="#pipeline-functions" title="Permalink to this headline">¶</a></h2>
@@ -682,8 +212,8 @@ set to build targets if set to <tt class="xref docutils literal"><span class="pr
 
 </div>
 </div>
-<div class="section" id="id6">
-<h2>Logging<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h2>Logging<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="ruffus.task.t_black_hole_logger">
 <em class="property">
@@ -817,19 +347,15 @@ to the input/export files</li>
 <dl class="function">
 <dt id="ruffus.task.needs_update_check_modify_time">
 <tt class="descclassname">ruffus.task.</tt><tt class="descname">needs_update_check_modify_time</tt><big>(</big><em>i</em>, <em>o</em>, <em>*other_parameters_ignored</em><big>)</big><a class="headerlink" href="#ruffus.task.needs_update_check_modify_time" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Given input and output files</dt>
-<dd><p class="first">see if all exist and whether output files are later than input files
+<dd><p>Given input and output files, see if all exist and whether output files are later than input files
 Each can be</p>
-<blockquote class="last">
+<blockquote>
 <ol class="arabic simple">
 <li>string: assumed to be a filename &#8220;file1&#8221;</li>
 <li>any other type</li>
 <li>arbitrary nested sequence of (1) and (2)</li>
 </ol>
 </blockquote>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="function">
@@ -863,28 +389,14 @@ Is it an ordinary file not a directory? (throw exception</dd>
 <li><a class="reference external" href="#running-the-pipeline">Running the pipeline</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#decorators">Decorators</a><ul>
-<li><a class="reference external" href="#follows">&#64;follows</a></li>
-<li><a class="reference external" href="#posttask">&#64;posttask</a></li>
-<li><a class="reference external" href="#files">&#64;files</a></li>
-<li><a class="reference external" href="#files-re">&#64;files_re</a></li>
-<li><a class="reference external" href="#parallel">&#64;parallel</a></li>
-<li><a class="reference external" href="#check-if-uptodate">&#64;check_if_uptodate</a></li>
-</ul>
-</li>
-<li><a class="reference external" href="#simplified-syntax-work-in-progress">Simplified syntax (work in progress)</a><ul>
-<li><a class="reference external" href="#split">&#64;split</a></li>
-<li><a class="reference external" href="#transform">&#64;transform</a></li>
-<li><a class="reference external" href="#merge">&#64;merge</a></li>
-</ul>
-</li>
+<li><a class="reference external" href="#decorators">Decorators</a></li>
 <li><a class="reference external" href="#pipeline-functions">Pipeline functions</a><ul>
 <li><a class="reference external" href="#pipeline-run">pipeline_run</a></li>
 <li><a class="reference external" href="#pipeline-printout">pipeline_printout</a></li>
 <li><a class="reference external" href="#pipeline-printout-graph">pipeline_printout_graph</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#id6">Logging</a></li>
+<li><a class="reference external" href="#id1">Logging</a></li>
 <li><a class="reference external" href="#implementation">Implementation:</a><ul>
 <li><a class="reference external" href="#parameter-factories">Parameter factories:</a></li>
 <li><a class="reference external" href="#wrappers-around-jobs">Wrappers around jobs:</a></li>
@@ -897,8 +409,8 @@ Is it an ordinary file not a directory? (throw exception</dd>
 </ul>
 
             <h4>Previous topic</h4>
-            <p class="topless"><a href="sharing_data_across_jobs_example_code.html"
-                                  title="previous chapter"><tt class="docutils literal"><span class="pre">simpler_with_shared_logging</span></tt> &#8211; How to share data across jobs</a></p>
+            <p class="topless"><a href="examples/sharing_data_across_jobs_example_code.html"
+                                  title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">simpler_with_shared_logging</span></tt> &#8211; How to share data across jobs</a></p>
             <h4>Next topic</h4>
             <p class="topless"><a href="proxy_logger.html"
                                   title="next chapter">ruffus.proxy_logger</a></p>
@@ -907,6 +419,7 @@ Is it an ordinary file not a directory? (throw exception</dd>
               <li><a href="_sources/task.txt"
                      rel="nofollow">Show Source</a></li>
             </ul>
+    
           <div id="searchbox" style="display: none">
             <h3>Quick search</h3>
               <form class="search" action="search.html" method="get">
@@ -920,6 +433,19 @@ Is it an ordinary file not a directory? (throw exception</dd>
               </p>
           </div>
           <script type="text/javascript">$('#searchbox').show(0);</script>
+    <h3><a href="decorators/decorators.html">Decorators</a></h3>   <br>
+    <h3><a href="decorators/indicator_objects.html">Indicator objects</a></h3>   <br>
+    <a href="decorators/follows.html">@follows</a>                      <br>
+    <a href="decorators/files.html">@files</a>                          <br>
+    <a href="decorators/split.html">@split</a>                          <br>
+    <a href="decorators/transform.html">@transform</a>                  <br>
+    <a href="decorators/merge.html">@merge</a>                          <br>
+    <a href="decorators/posttask.html">@posttask</a>                    <br>
+    <a href="decorators/transform_ex.html">Advanced @transform</a>      <br>
+    <a href="decorators/merge_ex.html">Advanced @merge</a>              <br>
+    <a href="decorators/parallel.html">@parallel</a>                    <br>
+    <a href="decorators/check_if_uptodate.html">@check_if_uptodate</a>  <br>
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -937,7 +463,7 @@ Is it an ordinary file not a directory? (throw exception</dd>
           <a href="proxy_logger.html" title="ruffus.proxy_logger"
              >next</a> |</li>
         <li class="right" >
-          <a href="sharing_data_across_jobs_example_code.html" title="simpler_with_shared_logging – How to share data across jobs"
+          <a href="examples/sharing_data_across_jobs_example_code.html" title="simpler_with_shared_logging – How to share data across jobs"
              >previous</a> |</li>
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>

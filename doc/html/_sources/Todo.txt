@@ -1,5 +1,31 @@
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Future plans for *Ruffus*
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+###################################
+What is completed on this list?
+###################################
+
+.. _todo-dependencies:
+
+***************************************************************************
+*Linking the output from one task as the input to the next automatically*
+***************************************************************************
+
+    See :ref:`split <task.split>`, :ref:`transform <task.transform>` or :ref:`merge <task.merge>`
+
+
+.. _todo-combining:
+
+***************************
+*Combining files*
+***************************
+    See :ref:`merge <task.merge>`
+
+    
+
 #######################
-What is left to do:
+What is left to do?
 #######################
 
     I would appreciated feedback and help on all these issues and where
@@ -16,9 +42,7 @@ What is left to do:
     
     Others require some more user feedback about semantics:
     
-    * :ref:`Combining output from multiple jobs automatically <todo-combining>`
     * :ref:`Harvesting return values from jobs <todo-return-values>`
-    * :ref:`Linking the output from one task as the input to the next automatically <todo-dependencies>`
     
     Some issues are do-able but difficult and I don't have the experience:
     
@@ -26,23 +50,7 @@ What is left to do:
 
 
     
-.. _todo-dependencies:
 
-************************************************************************
-Linking the output from one task as the input to the next automatically
-************************************************************************
-
-    For each task, we would have to log all the output files from each job, and
-    use that as the input into the next stage.
-
-    This is, after all, what make does. 
-    
-    Except that we would be creating the dependency tree on the fly.
-    
-    Syntactically, it would make things a bit easier for the user, with
-    minor additions to the `@file` and `@file_re` syntax.
-    
-    
 
 
 
@@ -160,82 +168,6 @@ SQL hooks
 
     Ian Holmes?
     
-
-.. _todo-combining:
-
-************************
-Combining files
-************************
-
-    A common operation (See :ref:`intermediate example <intermediate-pipelines>` and
-    :ref:`complicated example <complicated-pipelines>`) seems to be combining multiple
-    input files into one or more output files (i.e. a "many->1" operation). 
-    
-    A the moment, this can be easily done by writing a simple parameter generating function
-    with a glob (see :ref:`this code <intermediate-pipelines-combining_files>`.)
-    
-    However, we could directly support this in *ruffus* in two ways, both leveraging ``@files_re``.
-    
-    The idea is that input files to be grouped together should share similar
-    traits identified by either a regular expression or a function.
-    
-    Suppose we had the following files::
-    
-        cows.mammals.animal
-        horses.mammals.animal
-        sheep.mammals.animal
-        
-        snake.reptile.animal
-        lizard.reptile.animal
-        crocodile.reptile.animal
-        
-        pufferfish.fish.animal
-        
-    and we wanted to end up with three different resulting output::
-    
-        cow.mammals.animal
-        horse.mammals.animal
-        sheep.mammals.animal
-            -> mammals.results
-        
-        snake.reptile.animal
-        lizard.reptile.animal
-        crocodile.reptile.animal
-            -> reptile.results
-        
-        pufferfish.fish.animal
-            -> fish.results
-    
-    We could either add a "combining" regex parameter::
-    
-        # \1 = species [cow, horse]
-        # \2 = phylogenetics group [mammals, reptile, fish]
-        @files_re(  "*.animal", 
-                    r"(.+)\.(.+)\.animal",        
-                    combining(r"\2"),           # regular expression showing that 
-                                                # "mammals/reptile" etc. groups files
-                    r"\1.\2.animal",            # input file
-                    r"\2.results")              # output file(s)
-        def sort_animals_into_groups(species_file, result_file):
-            " ... more code here"
-            
-    Or we could allow a grouping function like the *key* parameter 
-    in `itertools.groupby <http://docs.python.org/library/itertools.html#itertools.groupby>`_::
-    
-        @files_re(  "*.animal", 
-                    r"(.+)\.(.+)\.animal",        
-                    combining_func(lambda x: x.split(".")[1]),
-                    r"\1.\2.animal",            # input file
-                    r"\2.results")              # output file(s)
-        def sort_animals_into_groups(species_file, result_file):
-            " ... more code here"
-            
-    In both cases, the extra parameter would be wrapped by a "tagging" class 
-    (``combining`` and ``combining_func``) for clarity.
-    
-    Is this too much extra complexity for *ruffus* or ``@files_re`` to support? 
-    
-    Is the syntactic convenience worthwhile?
     
 .. _todo-return-values:
     
@@ -245,8 +177,6 @@ Return values
     Is it a good idea to allow jobs to pass back calculated values?
     
     This requires trivial modifications to run_pooled_job_without_exceptions
-    
-    The user function cannot return `False`. That is reserved for signalling breaks.
     
     The most useful thing would be to associate job parameters with results.
     

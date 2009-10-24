@@ -115,6 +115,8 @@ class PostTaskArgumentError(error_task):
     pass
 
 
+class error_transform(error_task):
+    pass
 class error_making_directory(error_task):
     pass
 class error_duplicate_task_name(error_task):

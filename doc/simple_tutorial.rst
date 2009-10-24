@@ -1,8 +1,8 @@
 .. _Simple_Tutorial:
 
-########################
-Simple 5 minute Tutorial
-########################
+################################################
+7 steps to *Ruffus* in 10 minutes
+################################################
 
 ***************************************
 Overview
@@ -19,159 +19,53 @@ Overview
 
 
 ***************************************
-A Simple example
+The first steps
 ***************************************
 
-**@follows**
-************************************
+    .. image:: images/simple_tutorial_step3.png
 
-The **@follows(. . .)** python decorator indicates the order in which tasks
-should be run::
+    This example will show you how to:
     
-    from ruffus import *
+    1. :ref:`Chain tasks (functions) together into a pipeline <Simple_Tutorial_1st_step>` 
     
-    def first_task():
-        print "First task"
-
-    @follows(first_task)
-    def second_task():
-        print "Second task"
-
-
-the ``@follows`` decorators indicate that the ``first_task`` function precedes ``second_task`` in 
-the pipeline.
-
-
-Running
-************************************
-
-    Now we can run the pipeline by::
-        
-        >>> pipeline_run([second_task])
-        
-    Which gives::
+    2. :ref:`Provide parameters to run jobs in parallel <Simple_Tutorial_2nd_step>` 
     
-        Task = first_task
-        First task
-            Job completed
-        Task = second_task
-        Second task
-            Job completed
+    3. :ref:`Displaying all the stages of your new pipeline <Simple_Tutorial_3rd_step>` 
+
+            
     
-    Because ``second_task`` depends on ``first_task`` , both
-    functions will be executed in order.
-
-
-
-**@files**
-************************************
-The **@files(. . .)** decorator provides parameters to a task.
-The task function is called in parallel with each set of parameters.
-
-(We describe each task function call as a separate **job**.)
-
-
-
-The first two parameters of each job are the input and output files (respectively).
-A job will be run only if the file timestamps are out of date.
+***************************************
+An Easy example
+***************************************
+    | A common requirement in scientific pipelines is to break a large problem into small
+      pieces which can be analysed in parallel. 
+    | When that is finished, we need to join up
+      the partial solutions into a complete solution again.
     
-Let us add i/o parameters to the previous python code::
-    
-    from ruffus import *
-    import time
-    
-    #---------------------------------------------------------------
-    #
-    #   first task
-    #
-    task1_param = [
-                        [ None, 'a.1'], # 1st job
-                        [ None, 'b.1'], # 2nd job
-                  ]
-                                        
-    @files(task1_param)
-    def first_task(no_input_file, output_file):
-        open(output_file, "w")
-    
-        # pretend we have worked hard
-        time.sleep(1)
-    
-    
-    #---------------------------------------------------------------
-    #
-    #   second task
-    #
-    task2_param = [
-                        [ 'a.1', "a.2", "    1st_job"], # 1st job
-                        [ 'b.1', "b.2", "    2nd_job"], # 2nd job
-                  ]
-    
-    @follows(first_task)
-    @files(task2_param)
-    def second_task(input_file, output_file, extra_parameter):
-        open(output_file, "w")
-        print extra_parameter
-    
-    #---------------------------------------------------------------
-    #
-    #       Run
-    #
-    pipeline_run([second_task])
-       
+    This simple example calculates the sample variance of 10,000 random numbers
 
-Gives::
-        
-    Task = first_task
-        Job = [null -> "a.1"] completed
-        Job = [null -> "b.1"] completed
-    Task = second_task
-        1st_job
-        Job = ["a.1" -> "a.2", "1st_job"] completed
-        2nd_job
-        Job = ["b.1" -> "b.2", "2nd_job"] completed
-
-        
-
-If you ran the same code a second time, nothing would happen because 
-``a.2`` is more recent than ``a.1`` and
-``b.2`` is more recent than ``b.1`` .
-    
-However, if you subsequently modified ``a.1`` again::
-
-    >>> open("a.1", "w")
-    
-
-You would see the following::
-
-    >>> pipeline_run([second_task])
-    Task = second_task
-        1st_job
-        Job = ["a.1" -> "a.2", "    1st_job"] completed
-        Job = ["b.1" -> "b.2", "    2nd_job"] unnecessary: already up to date
+   
+    * It breaks the list into 100 pieces
+    * Calculates the sum and sum of squares for each set of 1000 numbers
+    * Combine the sums to calculate the variance
 
     
-
-The 2nd job is up to date and will be skipped.
-
-
-
-
-Displaying
-***************
-
-    We can see a flowchart of our fledgling pipeline by executing::
+    4. :ref:`Split up a large task (or file) into smaller jobs <Simple_Tutorial_4th_step>`  
     
-        pipeline_printout_graph ( open("flowchart.svg", "w"),
-                                 "svg",
-                                 [second_task])
+    5. :ref:`Run all the jobs in parallel, checking dependencies <Simple_Tutorial_5th_step>`  
     
-.. ???
+    6. :ref:`Merge the results back together <Simple_Tutorial_6th_step>`  
+    
+    7. :ref:`Automatically signal the completion of each stage of our pipeline <Simple_Tutorial_7th_step>` 
 
-    or in text format with::
+
+This covers all the core functionality of *Ruffus* and allows you to use it as
+a simple replacement for, e.g., `GNU make <http://www.gnu.org/software/make/>`_
     
-        pipeline_printout(sys.stdout, [second_task])
-    
-.. ???
+
+
+
+
 
 
 

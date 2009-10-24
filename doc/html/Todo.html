@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>What is left to do: &mdash; ruffus v1.1.5c documentation</title>
+    <title>Future plans for Ruffus &mdash; ruffus v1.1.5c documentation</title>
     <link rel="stylesheet" href="_static/ruffus.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -20,8 +20,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="ruffus v1.1.5c documentation" href="index.html" />
-    <link rel="next" title="Full Tutorial" href="Tutorial.html" />
-    <link rel="prev" title="Fixed Bugs" href="history.html" /> 
+    <link rel="next" title="FAQ" href="FAQ.html" />
+    <link rel="prev" title="Bugs and updates" href="history.html" /> 
   </head>
   <body>
     <div class="related">
@@ -34,10 +34,10 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="Tutorial.html" title="Full Tutorial"
+          <a href="FAQ.html" title="FAQ"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="history.html" title="Fixed Bugs"
+          <a href="history.html" title="Bugs and updates"
              accesskey="P">previous</a> |</li>
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>
@@ -57,8 +57,23 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="what-is-left-to-do">
-<h1>What is left to do:<a class="headerlink" href="#what-is-left-to-do" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="future-plans-for-ruffus">
+<h1>Future plans for <em>Ruffus</em><a class="headerlink" href="#future-plans-for-ruffus" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="what-is-completed-on-this-list">
+<h2>What is completed on this list?<a class="headerlink" href="#what-is-completed-on-this-list" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="linking-the-output-from-one-task-as-the-input-to-the-next-automatically">
+<span id="todo-dependencies"></span><h3><em>Linking the output from one task as the input to the next automatically</em><a class="headerlink" href="#linking-the-output-from-one-task-as-the-input-to-the-next-automatically" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+See <a class="reference external" href="decorators/split.html#task-split"><em>split</em></a>, <a class="reference external" href="decorators/transform.html#task-transform"><em>transform</em></a> or <a class="reference external" href="decorators/merge.html#task-merge"><em>merge</em></a></blockquote>
+</div>
+<div class="section" id="combining-files">
+<span id="todo-combining"></span><h3><em>Combining files</em><a class="headerlink" href="#combining-files" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+See <a class="reference external" href="decorators/merge.html#task-merge"><em>merge</em></a></blockquote>
+</div>
+</div>
+<div class="section" id="what-is-left-to-do">
+<h2>What is left to do?<a class="headerlink" href="#what-is-left-to-do" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <p>I would appreciated feedback and help on all these issues and where
 next to take <em>ruffus</em>.</p>
@@ -71,28 +86,15 @@ or join the project.</p>
 </ul>
 <p>Others require some more user feedback about semantics:</p>
 <ul class="simple">
-<li><a class="reference internal" href="#todo-combining"><em>Combining output from multiple jobs automatically</em></a></li>
 <li><a class="reference internal" href="#todo-return-values"><em>Harvesting return values from jobs</em></a></li>
-<li><a class="reference internal" href="#todo-dependencies"><em>Linking the output from one task as the input to the next automatically</em></a></li>
 </ul>
 <p>Some issues are do-able but difficult and I don&#8217;t have the experience:</p>
 <ul class="simple">
 <li><a class="reference internal" href="#todo-multiprocessing"><em>Run jobs on remote (clustered) processes via SGE/Hadoop</em></a></li>
 </ul>
 </blockquote>
-<div class="section" id="linking-the-output-from-one-task-as-the-input-to-the-next-automatically">
-<span id="todo-dependencies"></span><h2>Linking the output from one task as the input to the next automatically<a class="headerlink" href="#linking-the-output-from-one-task-as-the-input-to-the-next-automatically" title="Permalink to this headline">¶</a></h2>
-<blockquote>
-<p>For each task, we would have to log all the output files from each job, and
-use that as the input into the next stage.</p>
-<p>This is, after all, what make does.</p>
-<p>Except that we would be creating the dependency tree on the fly.</p>
-<p>Syntactically, it would make things a bit easier for the user, with
-minor additions to the <cite>&#64;file</cite> and <cite>&#64;file_re</cite> syntax.</p>
-</blockquote>
-</div>
 <div class="section" id="clean-up">
-<span id="todo-cleanup"></span><h2>Clean up<a class="headerlink" href="#clean-up" title="Permalink to this headline">¶</a></h2>
+<span id="todo-cleanup"></span><h3>Clean up<a class="headerlink" href="#clean-up" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <p>The plan is to store the files and directories created via
 a standard interface.</p>
@@ -140,7 +142,7 @@ supported by <a class="reference external" href="http://docs.python.org/library/
 </blockquote>
 </div>
 <div class="section" id="plug-in-file-dependency-checking-via-md5-or-databases">
-<span id="file-dependency-checking"></span><h2>(Plug-in) File Dependency Checking via MD5 or Databases<a class="headerlink" href="#plug-in-file-dependency-checking-via-md5-or-databases" title="Permalink to this headline">¶</a></h2>
+<span id="file-dependency-checking"></span><h3>(Plug-in) File Dependency Checking via MD5 or Databases<a class="headerlink" href="#plug-in-file-dependency-checking-via-md5-or-databases" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <p>So that MD5 / a database can be used instead of coarse-grained file modification times.</p>
 <p>As always, the design is a compromise between flexibility and easy of use.</p>
@@ -180,7 +182,7 @@ get/set functions for looking up modification times from file names.</p>
 </blockquote>
 </div>
 <div class="section" id="sql-hooks">
-<h2>SQL hooks<a class="headerlink" href="#sql-hooks" title="Permalink to this headline">¶</a></h2>
+<h3>SQL hooks<a class="headerlink" href="#sql-hooks" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <p>See above.</p>
 <p>I have no experience with systems which link to SQL. What would people want from such a
@@ -188,96 +190,28 @@ feature?</p>
 <p>Ian Holmes?</p>
 </blockquote>
 </div>
-<div class="section" id="combining-files">
-<span id="todo-combining"></span><h2>Combining files<a class="headerlink" href="#combining-files" title="Permalink to this headline">¶</a></h2>
-<blockquote>
-<p>A common operation (See <a class="reference external" href="intermediate_example.html#intermediate-pipelines"><em>intermediate example</em></a> and
-<a class="reference external" href="complicated_example.html#complicated-pipelines"><em>complicated example</em></a>) seems to be combining multiple
-input files into one or more output files (i.e. a &#8220;many-&gt;1&#8221; operation).</p>
-<p>A the moment, this can be easily done by writing a simple parameter generating function
-with a glob (see <a class="reference external" href="intermediate_example.html#intermediate-pipelines-combining-files"><em>this code</em></a>.)</p>
-<p>However, we could directly support this in <em>ruffus</em> in two ways, both leveraging <tt class="docutils literal"><span class="pre">&#64;files_re</span></tt>.</p>
-<p>The idea is that input files to be grouped together should share similar
-traits identified by either a regular expression or a function.</p>
-<p>Suppose we had the following files:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">cows</span><span class="o">.</span><span class="n">mammals</span><span class="o">.</span><span class="n">animal</span>
-<span class="n">horses</span><span class="o">.</span><span class="n">mammals</span><span class="o">.</span><span class="n">animal</span>
-<span class="n">sheep</span><span class="o">.</span><span class="n">mammals</span><span class="o">.</span><span class="n">animal</span>
-
-<span class="n">snake</span><span class="o">.</span><span class="n">reptile</span><span class="o">.</span><span class="n">animal</span>
-<span class="n">lizard</span><span class="o">.</span><span class="n">reptile</span><span class="o">.</span><span class="n">animal</span>
-<span class="n">crocodile</span><span class="o">.</span><span class="n">reptile</span><span class="o">.</span><span class="n">animal</span>
-
-<span class="n">pufferfish</span><span class="o">.</span><span class="n">fish</span><span class="o">.</span><span class="n">animal</span>
-</pre></div>
-</div>
-<p>and we wanted to end up with three different resulting output:</p>
-<div class="highlight-python"><pre>cow.mammals.animal
-horse.mammals.animal
-sheep.mammals.animal
-    -&gt; mammals.results
-
-snake.reptile.animal
-lizard.reptile.animal
-crocodile.reptile.animal
-    -&gt; reptile.results
-
-pufferfish.fish.animal
-    -&gt; fish.results</pre>
-</div>
-<p>We could either add a &#8220;combining&#8221; regex parameter:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># \1 = species [cow, horse]</span>
-<span class="c"># \2 = phylogenetics group [mammals, reptile, fish]</span>
-<span class="nd">@files_re</span><span class="p">(</span>  <span class="s">&quot;*.animal&quot;</span><span class="p">,</span>
-            <span class="s">r&quot;(.+)\.(.+)\.animal&quot;</span><span class="p">,</span>
-            <span class="n">combining</span><span class="p">(</span><span class="s">r&quot;\2&quot;</span><span class="p">),</span>           <span class="c"># regular expression showing that</span>
-                                        <span class="c"># &quot;mammals/reptile&quot; etc. groups files</span>
-            <span class="s">r&quot;\1.\2.animal&quot;</span><span class="p">,</span>            <span class="c"># input file</span>
-            <span class="s">r&quot;\2.results&quot;</span><span class="p">)</span>              <span class="c"># output file(s)</span>
-<span class="k">def</span> <span class="nf">sort_animals_into_groups</span><span class="p">(</span><span class="n">species_file</span><span class="p">,</span> <span class="n">result_file</span><span class="p">):</span>
-    <span class="s">&quot; ... more code here&quot;</span>
-</pre></div>
-</div>
-<p>Or we could allow a grouping function like the <em>key</em> parameter
-in <a class="reference external" href="http://docs.python.org/library/itertools.html#itertools.groupby">itertools.groupby</a>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="nd">@files_re</span><span class="p">(</span>  <span class="s">&quot;*.animal&quot;</span><span class="p">,</span>
-            <span class="s">r&quot;(.+)\.(.+)\.animal&quot;</span><span class="p">,</span>
-            <span class="n">combining_func</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">)[</span><span class="mf">1</span><span class="p">]),</span>
-            <span class="s">r&quot;\1.\2.animal&quot;</span><span class="p">,</span>            <span class="c"># input file</span>
-            <span class="s">r&quot;\2.results&quot;</span><span class="p">)</span>              <span class="c"># output file(s)</span>
-<span class="k">def</span> <span class="nf">sort_animals_into_groups</span><span class="p">(</span><span class="n">species_file</span><span class="p">,</span> <span class="n">result_file</span><span class="p">):</span>
-    <span class="s">&quot; ... more code here&quot;</span>
-</pre></div>
-</div>
-<p>In both cases, the extra parameter would be wrapped by a &#8220;tagging&#8221; class
-(<tt class="docutils literal"><span class="pre">combining</span></tt> and <tt class="docutils literal"><span class="pre">combining_func</span></tt>) for clarity.</p>
-<p>Is this too much extra complexity for <em>ruffus</em> or <tt class="docutils literal"><span class="pre">&#64;files_re</span></tt> to support?</p>
-<p>Is the syntactic convenience worthwhile?</p>
-</blockquote>
-</div>
 <div class="section" id="return-values">
-<span id="todo-return-values"></span><h2>Return values<a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
+<span id="todo-return-values"></span><h3>Return values<a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <p>Is it a good idea to allow jobs to pass back calculated values?</p>
 <p>This requires trivial modifications to run_pooled_job_without_exceptions</p>
-<p>The user function cannot return <cite>False</cite>. That is reserved for signalling breaks.</p>
 <p>The most useful thing would be to associate job parameters with results.</p>
 <p>What should be the syntax for getting the results back?</p>
 </blockquote>
 </div>
 <div class="section" id="run-jobs-on-remote-clustered-processes-via-sge-hadoop">
-<span id="todo-multiprocessing"></span><h2>Run jobs on remote (clustered) processes via SGE/Hadoop<a class="headerlink" href="#run-jobs-on-remote-clustered-processes-via-sge-hadoop" title="Permalink to this headline">¶</a></h2>
+<span id="todo-multiprocessing"></span><h3>Run jobs on remote (clustered) processes via SGE/Hadoop<a class="headerlink" href="#run-jobs-on-remote-clustered-processes-via-sge-hadoop" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <p>Can we run jobs on remote processes using SGE / Hadoop?</p>
 <p>Can we abstract all job management using drmaa?</p>
 <p>Python examples at <a class="reference external" href="http://gridengine.sunsource.net/howto/drmaa_python.html">http://gridengine.sunsource.net/howto/drmaa_python.html</a></p>
 </blockquote>
 <div class="section" id="sge">
-<h3>SGE<a class="headerlink" href="#sge" title="Permalink to this headline">¶</a></h3>
+<h4>SGE<a class="headerlink" href="#sge" title="Permalink to this headline">¶</a></h4>
 <blockquote>
 Look at Qmake execution model:</blockquote>
 <div class="section" id="sge-nodes-are-taken-over-completely">
-<h4>1)  SGE nodes are taken over completely<a class="headerlink" href="#sge-nodes-are-taken-over-completely" title="Permalink to this headline">¶</a></h4>
+<h5>1)  SGE nodes are taken over completely<a class="headerlink" href="#sge-nodes-are-taken-over-completely" title="Permalink to this headline">¶</a></h5>
 <blockquote>
 <p>See last example in <a class="reference external" href="http://docs.python.org/library/multiprocessing.html#examples">multiprocessing</a>
 for creating a distributed queue.</p>
@@ -296,7 +230,7 @@ protracted length of time</li>
 </blockquote>
 </div>
 <div class="section" id="start-a-qrsh-per-job">
-<h4>2)  Start a qrsh per job<a class="headerlink" href="#start-a-qrsh-per-job" title="Permalink to this headline">¶</a></h4>
+<h5>2)  Start a qrsh per job<a class="headerlink" href="#start-a-qrsh-per-job" title="Permalink to this headline">¶</a></h5>
 <blockquote>
 <p>Advantages:</p>
 <ul class="simple">
@@ -314,8 +248,9 @@ way of doing things / race-conditions etc.)</li>
 </div>
 </div>
 <div class="section" id="hadoop">
-<h3>Hadoop<a class="headerlink" href="#hadoop" title="Permalink to this headline">¶</a></h3>
+<h4>Hadoop<a class="headerlink" href="#hadoop" title="Permalink to this headline">¶</a></h4>
 <p>Can anyone help me with this / have any experience?</p>
+</div>
 </div>
 </div>
 </div>
@@ -328,12 +263,16 @@ way of doing things / race-conditions etc.)</li>
         <div class="sphinxsidebarwrapper">
             <h3><a href="contents.html">Table Of Contents</a></h3>
             <ul>
-<li><a class="reference external" href="">What is left to do:</a><ul>
-<li><a class="reference external" href="#linking-the-output-from-one-task-as-the-input-to-the-next-automatically">Linking the output from one task as the input to the next automatically</a></li>
+<li><a class="reference external" href="">Future plans for <em>Ruffus</em></a><ul>
+<li><a class="reference external" href="#what-is-completed-on-this-list">What is completed on this list?</a><ul>
+<li><a class="reference external" href="#linking-the-output-from-one-task-as-the-input-to-the-next-automatically"><em>Linking the output from one task as the input to the next automatically</em></a></li>
+<li><a class="reference external" href="#combining-files"><em>Combining files</em></a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#what-is-left-to-do">What is left to do?</a><ul>
 <li><a class="reference external" href="#clean-up">Clean up</a></li>
 <li><a class="reference external" href="#plug-in-file-dependency-checking-via-md5-or-databases">(Plug-in) File Dependency Checking via MD5 or Databases</a></li>
 <li><a class="reference external" href="#sql-hooks">SQL hooks</a></li>
-<li><a class="reference external" href="#combining-files">Combining files</a></li>
 <li><a class="reference external" href="#return-values">Return values</a></li>
 <li><a class="reference external" href="#run-jobs-on-remote-clustered-processes-via-sge-hadoop">Run jobs on remote (clustered) processes via SGE/Hadoop</a><ul>
 <li><a class="reference external" href="#sge">SGE</a><ul>
@@ -347,13 +286,15 @@ way of doing things / race-conditions etc.)</li>
 </ul>
 </li>
 </ul>
+</li>
+</ul>
 
             <h4>Previous topic</h4>
             <p class="topless"><a href="history.html"
-                                  title="previous chapter">Fixed Bugs</a></p>
+                                  title="previous chapter">Bugs and updates</a></p>
             <h4>Next topic</h4>
-            <p class="topless"><a href="Tutorial.html"
-                                  title="next chapter">Full Tutorial</a></p>
+            <p class="topless"><a href="FAQ.html"
+                                  title="next chapter">FAQ</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/Todo.txt"
@@ -386,10 +327,10 @@ way of doing things / race-conditions etc.)</li>
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="Tutorial.html" title="Full Tutorial"
+          <a href="FAQ.html" title="FAQ"
              >next</a> |</li>
         <li class="right" >
-          <a href="history.html" title="Fixed Bugs"
+          <a href="history.html" title="Bugs and updates"
              >previous</a> |</li>
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>

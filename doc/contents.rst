@@ -16,35 +16,117 @@ Start Here:
 .. toctree::
    :maxdepth: 1
 
-   Introduction.rst
+   introduction.rst
    simple_tutorial.rst
+   full_tutorial.rst
 
 =====================
-Contents:
+Overview:
 =====================
 .. toctree::
    :maxdepth: 2
 
-   Introduction.rst   
-   simple_tutorial.rst
    cheatsheet.rst
-
-   Design.rst
-   Glossary.rst
-   FAQ.rst
+   introduction.rst   
+   design.rst
    Bugs and Updates <history>
-   Future plans <Todo>
+   Future plans <todo>
+   faq.rst
+   glossary.rst
+
+
+
+=====================
+Simple Tutorial
+=====================
+
+.. toctree::
+    :maxdepth: 1
+
+    simple_tutorial.rst
+    tutorials/simple_tutorial/step1_follows.rst
+    tutorials/simple_tutorial/step2_files.rst
+    tutorials/simple_tutorial/step2_files_code.rst
+    tutorials/simple_tutorial/step3_run_pipeline.rst
+    tutorials/simple_tutorial/step4_split.rst
+    tutorials/simple_tutorial/step5_transform.rst
+    tutorials/simple_tutorial/step6_merge.rst
+    tutorials/simple_tutorial/step7_posttask.rst
+
+=====================
+Full Tutorial
+=====================
+.. toctree::
+    :maxdepth: 1
+
+    full_tutorial.rst
+    tutorials/full_tutorial/step1_follows.rst
+    tutorials/full_tutorial/step2_files.rst
+    tutorials/full_tutorial/step3_dependencies.rst
+    tutorials/full_tutorial/step4_split.rst
+    tutorials/full_tutorial/step5_transform.rst
+    tutorials/full_tutorial/step6_merge.rst
+    tutorials/full_tutorial/step7_posttask.rst
+    tutorials/full_tutorial/step8_exceptions.rst
+    tutorials/full_tutorial/step9_logging.rst
+    tutorials/full_tutorial/step10_parallel.rst
+    tutorials/full_tutorial/step11_check_if_uptodate.rst
 
 =====================
 Detailed Examples:
 =====================
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    Tutorial.rst
-   intermediate_example.rst
-   complicated_example.rst
-   sharing_data_across_jobs_example.rst
+   examples/intermediate_example.rst
+   examples/complicated_example.rst
+   examples/sharing_data_across_jobs_example.rst
+
+=====================
+Decorators:
+=====================
+.. toctree::
+    :maxdepth: 1
+
+    decorators/decorators.rst
+    decorators/indicator_objects.rst
+    
+#######################
+Basic:
+#######################
+
+.. toctree::
+    :maxdepth: 1
+
+    decorators/follows.rst
+    decorators/files.rst
+
+#######################
+Core:
+#######################
+.. toctree::
+    :maxdepth: 1
+
+    decorators/split.rst
+    decorators/transform.rst
+    decorators/merge.rst
+    decorators/posttask.rst
+    
+ 
+#######################
+For advanced users:
+#######################
+.. toctree::
+    :maxdepth: 1
+
+    decorators/parallel.rst
+    decorators/check_if_uptodate.rst
+    decorators/transform_ex.rst
+    decorators/merge_ex.rst
+    decorators/files_re.rst
+
+
    
    
 =====================
@@ -52,19 +134,19 @@ Example code:
 =====================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    
-   simpler.rst
-   intermediate_example_code.rst
-   complicated_example_code.rst
-   sharing_data_across_jobs_example_code.rst
+   examples/simpler.rst
+   examples/intermediate_example_code.rst
+   examples/complicated_example_code.rst
+   examples/sharing_data_across_jobs_example_code.rst
     
 =====================
 Modules:
 =====================
    
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    task.rst
    proxy_logger.rst
