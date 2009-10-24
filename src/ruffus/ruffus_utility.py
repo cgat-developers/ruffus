@@ -51,7 +51,9 @@
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 import os,copy
 import re
+import types
 from ruffus_exceptions import *
+import glob    
 
 
                                 
@@ -130,8 +132,89 @@ def shorten_filenames_encoder (obj):
 
 
 
+#
+#_________________________________________________________________________________________
+#
+#   get_tasks_filename_globs_in_nested_sequence
+#
+#________________________________________________________________________________________ 
+glob_letters = set('*[]?')
+def is_glob(s):
+    """Check whether 's' contains ANY of glob chars"""
+    return len(glob_letters.intersection(s)) > 0
+
+def get_tasks_filename_globs_in_nested_sequence(p, treat_strings_as_tasks = False, tasks=None, filenames=None, globs = None):
+    """
+    Divide parameters into task, filenames or globs
+    """
+    # 
+    # create storage if this is not a recursive call
+    # 
+    if globs == None:
+        tasks, filenames, globs = set(), set(), set()
+
+    #
+    #   task function
+    # 
+    if (type(p) == types.FunctionType):
+        tasks.add(p)
+
+    #
+    #   output_from treats all arguments as tasks or task names
+    # 
+    elif isinstance(p, output_from):
+        for pp in p.args:
+            get_tasks_filename_globs_in_nested_sequence(pp, True,
+                                                        tasks, filenames, globs)
+    elif is_str(p):
+        if treat_strings_as_tasks:
+            tasks.add(p)
+        elif is_glob(p):
+            globs.add(p)
+        else:
+            filenames.add(p)
+
+    elif non_str_sequence (p):
+        for pp in p:
+            get_tasks_filename_globs_in_nested_sequence(pp, treat_strings_as_tasks, 
+                                                        tasks, filenames, globs)
+    return tasks, filenames, globs
    
 
+#
+#
+#_________________________________________________________________________________________
+#
+#   get_tasks_filename_globs_in_nested_sequence
+#
+#________________________________________________________________________________________ 
+def expand_filename_globs_in_nested_sequence(p):
+    """
+    Divide parameters into task, filenames or globs
+    """
+    if is_str(p):
+        if is_glob(p):
+            return glob.glob(p)
+        else:
+            return p
+    elif non_str_sequence (p):
+        return tuple(expand_filename_globs_in_nested_sequence(pp) for pp in p)
+    else:
+        return p
+
+
+#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+
+#   special markers used by @files_re
+
+#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+class combine(object):
+    def __init__ (self, *args):
+        self.args = args
+
+class output_from(object):
+    def __init__ (self, *args):
+        self.args = args
     
     
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -167,7 +250,45 @@ if __name__ == '__main__':
         #       self.assert_(element in self.seq)
         #       self.assertRaises(ValueError, random.sample, self.seq, 20)
     
-        pass
+        def check_equal (self, a,b):
+            self.assertEqual(get_tasks_filename_globs_in_nested_sequence(a), b)
+            
+        def test_expand_filename_globs_in_nested_sequence (self):
+            print expand_filename_globs_in_nested_sequence(["test1", ["test2", set([1,2]), (set(["python_modules/*.py"]))]])
+            
+        def test_get_tasks_filename_globs_in_nested_sequence(self):
+            # 
+            # test strings
+            # 
+            self.check_equal("test", (set(), set(['test']), set()))
+            self.check_equal([("test1",), "test2", 3], (set(), set(['test1', 'test2']), set()))
+            
+            #
+            # test missing
+            # 
+            self.check_equal((1,3, [5]), (set(), set(), set()))
+            self.check_equal(None, (set(), set(), set()))
+
+            #
+            # test glob
+            # 
+            self.check_equal([("test1.*",), "test?2", 3], (set(), set(), set(['test1.*', 'test?2'])))
+
+            #
+            # test glob and string
+            # 
+            self.check_equal([("test*1",), (("test3",),),"test2", 3], (set(), set(['test3', 'test2']), set(['test*1'])))
+            
+            #
+            # test function
+            # 
+            self.check_equal(is_glob, (set([is_glob]), set(), set([])))
+            self.check_equal([is_glob, [1, "this", ["that*", 5]], [(is_str,)]], (
+                            set([is_glob, is_str]), set(["this"]), set(["that*"])))
+            #
+            # test wrapper
+            # 
+            self.check_equal(output_from(is_glob, ["what", 7], 5), (set([is_glob, "what"]), set(), set([])))
 
     #
     #   debug parameter ignored if called as a module
@@ -177,17 +298,4 @@ if __name__ == '__main__':
     unittest.main()
 
 
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   special markers used by @files_re
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-class combine(object):
-    def __init__ (self, *args):
-        self.args = args
-
-class output_from(object):
-    def __init__ (self, *args):
-        self.args = args
-
+        

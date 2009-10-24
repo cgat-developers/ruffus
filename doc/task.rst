@@ -9,106 +9,36 @@ ruffus.Task
 ***************************************
 Decorators
 ***************************************
-    Task decorators include:
+    Basic Task decorators are:
     
         :ref:`@follows() <task.follows>`      
         
+        and
+        
         :ref:`@files() <task.files>`      
         
-        :ref:`@files_re() <task.files_re>`      
+    Task decorators include:
+    
+        :ref:`@split() <task.files>`      
+
+        :ref:`@transform() <task.files>`      
+
+        :ref:`@merge() <task.files>`      
+
+        :ref:`@posttask() <task.posttask>`      
+
+    More advanced users may require:
+    
+        :ref:`@transform() <task.transform_ex>`      
         
+        :ref:`@merge() <task.merge_ex>`      
+
         :ref:`@parallel() <task.parallel>`      
         
         :ref:`@check_if_uptodate() <task.check_if_uptodate>`      
 
-.. _task.follows:
-
-========================
-@follows
-========================
-.. autoclass:: ruffus.task.follows(parent_task1, "module_X.parent_task2")
-
-
-.. _task.posttask:
-
-========================
-@posttask
-========================
-.. autoclass:: posttask(custom_function, [touch_file("a.file")])
-
-
-
-.. _task.files:
-
-========================
-@files
-========================
-.. autoclass:: files([[input_files, output_files...], ...])
-
-
-.. _task.files_re:
-
-========================
-@files_re
-========================
-.. autoclass:: files_re(glob/file_list, matching_regex, input_file, output_file, [extra_parameters,...] )
-
-.. _task.parallel:
-
-========================
-@parallel
-========================
-.. autoclass:: parallel([[job1_params, ...], [job2_params, ...]...])
-
-
-
-.. _task.check_if_uptodate:
-
-========================
-@check_if_uptodate
-========================
-.. autoclass:: check_if_uptodate(custom_function)
-
-
-
-
-***************************************
-Simplified syntax (work in progress)
-***************************************
-
-.. _task.split:
-
-========================
-@split
-========================
-.. autoclass:: split(custom_function)
-
-
-.. _task.transform:
-
-========================
-@transform
-========================
-.. autoclass:: transform(custom_function)
-
-
-.. _task.merge:
-
-========================
-@merge
-========================
-.. autoclass:: merge(custom_function)
-
-
-
-
-
-
-
-
-
-.. ???
-
+        :ref:`@files_re() <task.files_re>`      
+        
 
 ***************************************
 Pipeline functions

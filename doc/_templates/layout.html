@@ -1,5 +1,21 @@
 {% extends "!layout.html" %}
 
+{% block sidebarsearch %}
+    {{ super() }}
+    <h3><a href="{{ pathto('decorators/decorators') }}">Decorators</a></h3>   <br>
+    <h3><a href="{{ pathto('decorators/indicator_objects') }}">Indicator objects</a></h3>   <br>
+    <a href="{{ pathto('decorators/follows') }}">@follows</a>                      <br>
+    <a href="{{ pathto('decorators/files') }}">@files</a>                          <br>
+    <a href="{{ pathto('decorators/split') }}">@split</a>                          <br>
+    <a href="{{ pathto('decorators/transform') }}">@transform</a>                  <br>
+    <a href="{{ pathto('decorators/merge') }}">@merge</a>                          <br>
+    <a href="{{ pathto('decorators/posttask') }}">@posttask</a>                    <br>
+    <a href="{{ pathto('decorators/transform_ex') }}">Advanced @transform</a>      <br>
+    <a href="{{ pathto('decorators/merge_ex') }}">Advanced @merge</a>              <br>
+    <a href="{{ pathto('decorators/parallel') }}">@parallel</a>                    <br>
+    <a href="{{ pathto('decorators/check_if_uptodate') }}">@check_if_uptodate</a>  <br>
+{% endblock %}
+
 {% block rootrellink %}
         Ruffus v. {{ release }}
     <li><a href="{{ pathto('index') }}">Home</a> | </li>
