@@ -164,6 +164,60 @@ def needs_update_check_modify_time (i, o, *other_parameters_ignored):
     
     
     
+class pass_thru:
+    pass
+def construct_filename_parameters_with_regex(filename, regex, p):
+    """
+    recursively replaces file name specifications using regular expressions
+    Non-strings are left alone
+    """
+    if isinstance(p, pass_thru):
+        return filename
+    elif is_str(p):
+        return regex.sub(p, filename) 
+    elif non_str_sequence (p):
+        return tuple(construct_filename_parameters_with_regex(filename, regex, pp) for pp in p)
+    else:
+        return p
+
+#_________________________________________________________________________________________
+#
+#   get_output_file_names_from_tasks
+# 
+#_________________________________________________________________________________________
+def get_output_file_names_from_tasks (tasks):
+    """
+    assumes file_source is a type of output_from
+        and that 2nd parameter contain output files
+    """
+    filenames = set()
+    for task in tasks:
+        filenames.update(tasks.get_output_files())
+    return filenames
+
+
+#_________________________________________________________________________________________
+
+#   file_names_from_tasks_list_globs 
+
+#_________________________________________________________________________________________
+def file_names_from_tasks_list_globs (tasks, filenames, globs):
+    """
+    Accumulate file names from the output of the specified tasks, lists and 
+        glob specification
+    """
+
+    filenames = copy.copy(filenames)
+
+    # add files from globs
+    for g in globs:
+        filenames.update(glob.glob(g))
+
+    # add files from tasks
+    filenames.update(get_output_file_names_from_tasks(tasks))
+
+    return filenames
+
  
     
     
@@ -190,98 +244,108 @@ def needs_update_check_modify_time (i, o, *other_parameters_ignored):
 #           if needs_update_func(*param):
 #               act_func(*param)
 #
+#       Test Usage:
+#
+#
+#       param_func = xxx_factory(tasks, filename_list, glob, ...)
+#
+#        for params in param_func():                                                                          
+#           i, o = params[0:1]
+#           print " inputs = " , i                                                                
+#           print "output  = " , o                                                                
+#
+# 
+# 
+# 
+# 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-class pass_thru:
-    pass
-def construct_filename_parameters_with_regex(filename, regex, p):
+
+
+#_________________________________________________________________________________________
+
+#   file_list_io_param_factory 
+
+#       orig_args = ["input", "output", 1, 2, ...] 
+#       orig_args = [None,    "output", 1, 2, ...] 
+#       orig_args = [
+#                       ["input0",               "output0",                1, 2, ...]
+#                       [["input1a", "input1b"], "output1",                1, 2, ...]
+#                       ["input2",               ["output2a", "output2b"], 1, 2, ...]
+#                       ["input3",               "output3",                1, 2, ...]
+#                   ] 
+#       
+#       N.B. There is not much checking of parameters up front
+#_________________________________________________________________________________________
+def check_file_list_io_param (params):
     """
-    recursively replaces file name specifications using regular expressions
-    Non-strings are left alone
+    Helper function for file_list_io_param_factory
+    Checks there are input and output files specified for each job
     """
-    if isinstance(p, pass_thru):
-        return filename
-    elif is_str(p):
-        return regex.sub(p, filename) 
-    elif non_str_sequence (p):
-        return tuple(construct_filename_parameters_with_regex(filename, regex, pp) for pp in p)
+    if not len(params):
+        return
+
+
+    try:
+        for job_param in params:
+            if len(job_param) < 1:
+                raise task_FilesArgumentsError("Missing input files for job " +   
+                                                ignore_unknown_encoder(job_param))      
+            if len(job_param) < 2:
+                raise task_FilesArgumentsError("Missing output files for job " +   
+                                                ignore_unknown_encoder(job_param))      
+            if list(job_param[0:2]) == [None, None]:                                    
+                raise task_FilesArgumentsError("Either the input or output file "       +   
+                                                "must be defined for job "              +   
+                                                ignore_unknown_encoder(job_param))      
+            if len(get_strings_in_nested_sequence(job_param[0:2])) == 0:            
+                raise task_FilesArgumentsError("Input or output file parameters should "
+                                                "contain at least one or more file names "
+                                                "(a string or nested collection of strings) "  +   
+                                                ignore_unknown_encoder(job_param))
+    except TypeError:
+        message = ("Enclosing brackets are needed even if you are "
+                   "only supplying parameters for a single job: "     +
+                    ignore_unknown_encoder(job_param))
+        raise task_FilesArgumentsError(message)
+
+def files_param_factory (orig_args):
+    """
+    Factory for functions which 
+        yield tuples of inputs, outputs / extras                            
+
+    ..Note::
+
+        1. Each job requires input/output file names
+        2. Input/output file names can be a string, an arbitrarily nested sequence
+        3. Non-string types are ignored
+        3. Either Input or output file name must contain at least one string
+
+    """
+    # multiple jobs with input/output parameters etc.
+    if len(orig_args) > 1:
+        params = copy.copy([list(orig_args)])
     else:
-        return p
+        params = copy.copy(orig_args[0])
 
-#_________________________________________________________________________________________
-#
-#   get_output_file_names_from_tasks
-# 
-#_________________________________________________________________________________________
-def get_output_file_names_from_tasks (file_source):
-    """
-    assumes file_source is a type of output_from
-        and that 2nd parameter contain output files
-    """
-    filenames = set()
-    for task in file_source.args:
+    check_file_list_io_param(params)
 
-        # skip tasks which don't have parameters
-        if task.param_generator_func == None:
-            continue
 
-        for param in task.param_generator_func():
+    def iterator():
+        for job_param in params:
+            yield job_param
+    return iterator
 
-            # skip tasks which don't have output parameters
-            if len(param) < 2:
-                continue
-
-            #   get 
-            #   
-            filenames.update(get_strings_in_nested_sequence(param[1]))
-
-    return filenames
-
-    
-#_________________________________________________________________________________________
-
-#   file_names_from_tasks_list_globs 
-
-#_________________________________________________________________________________________
-def file_names_from_tasks_list_globs (tasks, filenames, globs):
-    """
-    Accumulate file names from the output of the specified tasks, lists and 
-        glob specification
-    """
-
-    filenames = copy.copy(filenames)
-    
-    # add files from globs
-    for g in globs:
-        filenames.update(glob.glob(g))
-
-    # add files from tasks
-    filenames.update(get_output_file_names_from_tasks(tasks))
-    
-    return filenames
-    
 #_________________________________________________________________________________________
 
 #   split_param_factory
 
 #_________________________________________________________________________________________
-def split_param_factory (tasks, filenames, globs, output_files, *parameters):
+def split_param_factory (tasks, filenames, globs, output_files, *extras):
     """
-    Factory for functions which in turn
-        yield tuples of input_file_name, output_file_name, extra parameters
-
-    Usage:
-
-
-        param_func = split_param_factory(tasks, filename_list, glob, output_files)
-
-        for i, o in param_func():                                                                          
-            print " input file name = " , i                                                                
-            print "output file name = " , o                                                                
-
+    Factory for task_split
     """
-    # 
-    parameters = list(parameters)
+    extras = tuple(extras)
 
     def iterator ():
 
@@ -289,7 +353,7 @@ def split_param_factory (tasks, filenames, globs, output_files, *parameters):
             
         output_files = expand_filename_globs_in_nested_sequence(output_files)
 
-        yield filenames, output_files, *parameters
+        yield (filenames, output_files) + extras
 
 
     return iterator
@@ -306,20 +370,8 @@ def transform_param_factory (tasks, filenames, globs, regex,
                                 input_pattern, output_pattern, 
                                 regex_substitute_extra_parameters, *extras):
     """
-    Factory for functions which in turn
-        yield tuples of input_file_name, output_file_name, extra parameters
-
-    Usage:
-
-
-        param_func = split_param_factory(tasks, filename_list, glob, output_files)
-
-        for i, o in param_func():                                                                          
-            print " input file name = " , i                                                                
-            print "output file name = " , o                                                                
-
+    Factory for task_transform
     """
-    # 
     extras = tuple(extras)
     
 
@@ -338,66 +390,76 @@ def transform_param_factory (tasks, filenames, globs, regex,
                 yield tuple(construct_filename_parameters_with_regex(filename, regex, p) 
                                     for p in (input_pattern, output_pattern) + extras)
             else:
-                yield (tuple(construct_filename_parameters_with_regex(filename, regex, p) 
-                                    for p in input_pattern, output_pattern) + extras)
+                yield tuple(construct_filename_parameters_with_regex(filename, regex, p) 
+                                    for p in (input_pattern, output_pattern)) + extras
                 
 
-#
 #_________________________________________________________________________________________
 
 #   merge_param_factory
 
-#   @merge (tasks_or_file_names, regex(regex_pattern), output_pattern, [extra_parameters,...] )
-#   @merge ( tasks_or_file_names, output_file, [extra_parameters,...] )
-#   regex = 
 #_________________________________________________________________________________________
-def merge_param_factory (tasks, filenames, globs, matching_regex, 
-                                input_pattern, output_pattern, 
-                                *parameters):
+def merge_param_factory (tasks, filenames, globs, 
+                                output_files, 
+                                *extras):
     """
-    Factory for functions which in turn
-        yield tuples of input_file_name, output_file_name, extra parameters
-
-    Usage:
-
-
-        param_func = split_param_factory(tasks, filename_list, glob, output_files)
-
-        for i, o in param_func():                                                                          
-            print " input file name = " , i                                                                
-            print "output file name = " , o                                                                
-
+    Factory for task_merge
     """
     # 
-    parameters = list(parameters)
-
+    extras = list(extras)
     def iterator ():
-
         filenames = tuple(file_names_from_tasks_list_globs (tasks, filenames, globs))
-
-        # add files from globs
-        for g in globs:
-            filenames.update(glob.glob(g))
-
-        # add files from tasks
-        filenames.update(get_output_file_names_from_tasks(tasks))
-
-
-        for filename in filenames:
-            #   regular expression has to match 
-            if not regex.search(filename):
-                continue
-
-            yield tuple(construct_filename_parameters_with_regex(filename, regex, p) 
-                                    for p in parameters)
-
+        yield (filenames, output_files) + extras
+    return iterator
 
     
 #_________________________________________________________________________________________
 
+#   collate_param_factory
+
+#_________________________________________________________________________________________
+def collate_param_factory (tasks, filenames, globs, 
+                                regex,
+                                *output_and_extras):
+    """
+    Factory for task_collate
+    all [input] which lead to the same [output / extra] are combined together
+    """
+    # 
+    output_and_extras = list(output_and_extras)
+    def iterator ():
+        filenames = tuple(file_names_from_tasks_list_globs (tasks, filenames, globs))
+
+        # one job per unique [output / extra] parameter
+        input_per_output_extra_params = defaultdict(list)
+
+        for filename in filenames:
+
+            #   regular expression has to match 
+            if not regex.search(filename):
+                continue
+
+            output_param = tuple(construct_filename_parameters_with_regex(filename, regex, p) 
+                                    for p in output_and_extras[1:])
+            input_per_output_extra_params[output_param].append(filename)
+
+        # combine inputs which lead to the same output/extras into one tuple
+        for output_param, input_params in input_per_output_extra_params.iteritems():
+            yield (tuple(sorted(input_params)),) + output_param
+    return iterator
+
+
+    
+#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+
 #   Legacy code
 
-#   glob_regex_io_param_factory                                                                        
+#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+
+#_________________________________________________________________________________________
+
+
+#   files_re_param_factory                                                                        
 
 #      iterable list of input / output files from
 
@@ -406,7 +468,7 @@ def merge_param_factory (tasks, filenames, globs, matching_regex,
 #                3) input_filename_str (optional)
 #                4) output_filename_str
 #_________________________________________________________________________________________
-def glob_regex_io_param_factory (tasks, filenames, globs, matching_regex, *parameters):
+def files_re_param_factory (tasks, filenames, globs, matching_regex, *parameters):
     """
     Factory for functions which in turn
         yield tuples of input_file_name, output_file_name                                     
@@ -415,7 +477,7 @@ def glob_regex_io_param_factory (tasks, filenames, globs, matching_regex, *param
                                          
     1.::
     
-        param_func = glob_regex_io_param_factory(tasks, filename_list, glob,
+        param_func = files_re_param_factory(tasks, filename_list, glob,
                                                  "(file_)(\d+)",    # which match this regex                
                                                  "input_file_\2",   # pattern to generate input file names    
                                                  "output_file_\2")  # pattern to generate output file names  
@@ -423,7 +485,7 @@ def glob_regex_io_param_factory (tasks, filenames, globs, matching_regex, *param
     or                                                                                                 
     2.::
     
-        param_func = glob_regex_io_param_factory(tasks, filename_list, glob,
+        param_func = files_re_param_factory(tasks, filename_list, glob,
                                                  "(file_)(\d+)",   # which match this regex                
                                                  None,             # use originals as input file names     
                                                  "output_file_\2") # pattern to generate output file names   
@@ -513,7 +575,7 @@ def glob_regex_io_param_factory (tasks, filenames, globs, matching_regex, *param
                 input_params_per_output_extra_params[output_param].append(input_param)
                 
             for output_param, input_params in input_params_per_output_extra_params.iteritems():
-                yield (tuple(input_params),) + output_param
+                yield (tuple(sorted(input_params)),) + output_param
         else:
             
             for filename in filenames:
@@ -526,115 +588,6 @@ def glob_regex_io_param_factory (tasks, filenames, globs, matching_regex, *param
         
 
     return iterator
-    
-
-#_________________________________________________________________________________________
-
-#   file_list_io_param_factory 
-
-#       iterates through a list of input output files
-
-#
-#       orig_args = ["input", "output", 1, 2, ...] 
-#       orig_args = [None,    "output", 1, 2, ...] 
-#       orig_args = [
-#                       ["input0",               "output0",                1, 2, ...]
-#                       [["input1a", "input1b"], "output1",                1, 2, ...]
-#                       ["input2",               ["output2a", "output2b"], 1, 2, ...]
-#                       ["input3",               "output3",                1, 2, ...]
-#                   ] 
-#       
-#       N.B. There is not much checking of parameters up front
-#_________________________________________________________________________________________
-def check_file_list_io_param (params):
-    """
-    Helper function for file_list_io_param_factory
-    Checks there are input and output files specified for each job
-    """
-    if not len(params):
-        return
-    
-        
-    try:
-        for job_param in params:
-            if len(job_param) < 1:
-                raise task_FilesArgumentsError("Missing input files for job " +   
-                                                ignore_unknown_encoder(job_param))      
-            if len(job_param) < 2:
-                raise task_FilesArgumentsError("Missing output files for job " +   
-                                                ignore_unknown_encoder(job_param))      
-            if list(job_param[0:2]) == [None, None]:                                    
-                raise task_FilesArgumentsError("Either the input or output file "       +   
-                                                "must be defined for job "              +   
-                                                ignore_unknown_encoder(job_param))      
-            if len(get_strings_in_nested_sequence(job_param[0:2])) == 0:            
-                raise task_FilesArgumentsError("Input or output file parameters should "
-                                                "contain at least one or more file names "
-                                                "(a string or nested collection of strings) "  +   
-                                                ignore_unknown_encoder(job_param))
-    except TypeError:
-        message = ("Enclosing brackets are needed even if you are "
-                   "only supplying parameters for a single job: "     +
-                    ignore_unknown_encoder(job_param))
-        raise task_FilesArgumentsError(message)
-    
-def file_list_io_param_factory (orig_args):
-    """
-    Factory for functions which 
-        yield tuples of input_file_name, output_file_name                            
-        
-    Examples of orig_args:
-
-    1.::
-        
-        orig_args = "input1", "output1", any_other_parameters1, ...       # files for job 1 
-    
-    2.::
-        
-        orig_args = None,     "output1", any_other_parameters2, ...       # files for job 1 
-    
-    3.::
-    
-        orig_args = [                                                               
-                      ["input0",               "output0",                ...] # files for job 1
-                      [["input1a", "input1b"], "output1",                ...] # files for job 2 
-                      ["input2",               ["output2a", "output2b"], ...] # files for job 3 
-                      ["input3",               "output3",                ...] # files for job 4 
-                    ]                                                                 
-
-
-    Usage:
-
-        param_func = file_list_io_param_factory(orig_args)
-        
-        for params in param_func():                                                                          
-            i,o = params[0:2]
-            print " input file name(s) = " , i                                                                
-            print "output file name(s) = " , o                                                                
-
-
-    ..Note::
-    
-        1. Each job requires input/output file names
-        2. Input/output file names can be a string, an arbitrarily nested sequence
-        3. Non-string types are ignored
-        3. Either Input or output file name must contain at least one string
-        
-    """
-    # multiple jobs with input/output parameters etc.
-    if len(orig_args) > 1:
-        params = copy.copy([list(orig_args)])
-    else:
-        params = copy.copy(orig_args[0])
-
-    check_file_list_io_param(params)
-      
-
-    def iterator():
-        for job_param in params:
-            yield job_param
-    return iterator
-
     
     
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -670,11 +623,11 @@ if __name__ == '__main__':
 
 #=========================================================================================
 
-#   file_list_io_param_factory
+#   files_param_factory
  
 #=========================================================================================
     import unittest, time
-    class Test_file_list_io_param_factory(unittest.TestCase):
+    class Test_files_param_factory(unittest.TestCase):
     
         #       self.assertEqual(self.seq, range(10))
         #       self.assert_(element in self.seq)
@@ -685,7 +638,7 @@ if __name__ == '__main__':
             This extra function is to simulate the forwarding from the decorator to
                 the task creation function
             """
-            it = file_list_io_param_factory(params)
+            it = files_param_factory(params)
             return list(it())
     
         def test_single_job_per_task(self):
@@ -762,7 +715,7 @@ if __name__ == '__main__':
                 
 #=========================================================================================
 
-#   glob_regex_io_param_factory
+#   files_re_param_factory
 
 #=========================================================================================
     
@@ -784,7 +737,7 @@ if __name__ == '__main__':
                 yield i
         return list_generator
         
-    class Test_glob_regex_io_param_factory(unittest.TestCase):
+    class Test_files_re_param_factory(unittest.TestCase):
         def setUp(self):
             if not os.path.exists(test_path):
                 os.makedirs(test_path)
@@ -812,7 +765,9 @@ if __name__ == '__main__':
             This extra function is to simulate the forwarding from the decorator to
                 the task creation function
             """
-            it = glob_regex_io_param_factory(glob_or_str, regex, *params)
+            tasks, filenames, globs = get_tasks_filename_globs_in_nested_sequence(glob_or_str)
+            it = files_re_param_factory(tasks, filenames, globs, regex, *params)
+            print tasks
             return list(it())
             
         def check_input_files_exist(self, glob_or_str, regex, *params):
@@ -820,7 +775,8 @@ if __name__ == '__main__':
             This extra function is to simulate the forwarding from the decorator to
                 the task creation function
             """
-            it = glob_regex_io_param_factory(glob_or_str, regex, *params)
+            tasks, filenames, globs = get_tasks_filename_globs_in_nested_sequence(glob_or_str)
+            it = files_re_param_factory(tasks, filenames, globs, regex, *params)
             for param in it():
                 check_input_files_exist (*param)
             return True
@@ -830,7 +786,8 @@ if __name__ == '__main__':
             This extra function is to simulate the forwarding from the decorator to
                 the task creation function
             """
-            it = glob_regex_io_param_factory(glob_or_str, regex, *params)
+            tasks, filenames, globs = get_tasks_filename_globs_in_nested_sequence(glob_or_str)
+            it = files_re_param_factory(tasks, filenames, globs, regex, *params)
             return [needs_update_check_modify_time (*p) for p in it()]
 
 
@@ -840,9 +797,12 @@ if __name__ == '__main__':
             """
             paths = self.forwarded_function(test_path + "/*", "(.*).test$", combine(r"\1.input"), r"\1.output")
             self.assertEqual(recursive_replace(paths, test_path, "DIR"),
-                                [[['DIR/f2.input'], 'DIR/f2.output'], 
+                                [
                                  [['DIR/f0.input'], 'DIR/f0.output'], 
-                                 [['DIR/f1.input'], 'DIR/f1.output']])
+                                 [['DIR/f1.input'], 'DIR/f1.output'],
+                                 [['DIR/f2.input'], 'DIR/f2.output'], 
+                                 ]
+                )
             paths = self.forwarded_function(test_path + "/*", "(.*).test$", combine(r"\1.input"), r"combined.output")
             self.assertEqual(recursive_replace(paths, test_path, "DIR"),
                                 [[['DIR/f0.input', 
@@ -950,9 +910,10 @@ if __name__ == '__main__':
 
             #
             # No files in i/o parameters, only, for example, numbers
+            #   no longer asserts
             # 
-            self.assertRaises(task_FilesreArgumentsError, self.forwarded_function, 
-                                test_path + "/*", ".*/(.*).test$", 1, 2)
+            #self.assertRaises(task_FilesreArgumentsError, self.forwarded_function, 
+            #                    test_path + "/*", ".*/(.*).test$", 1, 2)
 
 
         def test_tasks(self):
