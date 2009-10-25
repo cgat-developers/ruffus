@@ -115,7 +115,13 @@ class PostTaskArgumentError(error_task):
     pass
 
 
-class error_transform(error_task):
+class error_task_transform(error_task):
+    pass
+class error_task_merge(error_task):
+    pass
+class error_task_collate(error_task):
+    pass
+class error_task_split(error_task):
     pass
 class error_making_directory(error_task):
     pass

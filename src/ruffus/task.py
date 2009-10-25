@@ -348,7 +348,9 @@ class task_decorator(object):
         return func
 
 
-
+#
+#   Basic decorators 
+#
 class follows(task_decorator):
     pass
     
@@ -356,31 +358,47 @@ class files(task_decorator):
     pass
     
 
-class files_re(task_decorator):
-    pass
-
     
     
-class merge(task_decorator):
-    pass
-
+#
+#   Core
+#
 class split(task_decorator):
     pass
 
-
 class transform(task_decorator):
     pass
-
-
-
-class check_if_uptodate(task_decorator):
+    
+class merge(task_decorator):
     pass
-
-class parallel(task_decorator):
-    pass
+    
 class posttask(task_decorator):
     pass
+
+    
+    
+#
+#   Advanced
+#
+class collate(task_decorator):
+    pass
+    
+#
+#   Esoteric
+#     
+class check_if_uptodate(task_decorator):
+    pass
+    
+class parallel(task_decorator):
+    pass
+    
      
+#
+#   Obsolete
+#     
+class files_re(task_decorator):
+    pass
+
         
         
         
@@ -660,6 +678,10 @@ class _task (node):
         # give makedir automatically made parent tasks unique names
         self.cnt_task_mkdir         = 0
         
+        # whether only task function itself knows what output it will produce
+        # i.e. output is a glob or something similar
+        self.indeterminate_output   = False
+        
 
     #_________________________________________________________________________________________
 
@@ -735,7 +757,7 @@ class _task (node):
         if self.param_generator_func == None:
             stream.write(indent_str + self._name + "()\n")
         else:
-            for param in self.param_generator_func():
+            for param in self.param_generator_func(check_uptodate = False):
                 job_name = self.job_descriptor(param)
                 uptodate = '   '
                 msg = ''
@@ -781,7 +803,7 @@ class _task (node):
                 #
                 #   return not up to date if ANY jobs needs update
                 # 
-                for param in self.param_generator_func():
+                for param in self.param_generator_func(check_uptodate = True):
                     if self.needs_update_func (*param):
                         return False
                 return True
@@ -802,37 +824,45 @@ class _task (node):
     #_____________________________________________________________________________________
     def get_output_files (self, flattened = True):
         """
-        Before the tasks runs: returns prospective output files using param_generator_func
-        After  the tasks runs: returns the actual output files                            
+        Cache output files
         
-        If flattened is True, returns file as a list of strints, 
-            flattening any nested structures and discarding non string names
+            If flattened is True, returns file as a list of strints, 
+                flattening any nested structures and discarding non string names
         """
-        if self.output_filenames != None:
-            if flattened:
-                return get_strings_in_nested_sequence(filenames)
-            else:
-                return filenames
-                
-        filenames = []
-
-        # skip tasks which don't have parameters
-        if task.param_generator_func == None:
-            return []
-
-        for param in self.param_generator_func():
-
-            # skip tasks which don't have output parameters
-            if len(param) >= 2:
-                filenames.extend(param[1])
-
-        if flattened:
-            return get_strings_in_nested_sequence(filenames)
+        if self.output_filenames == None:
             
-        return filenames
+            self.output_filenames = []
+
+            # skip tasks which don't have parameters
+            if task.param_generator_func != None:
+
+                for param in self.param_generator_func(check_uptodate = True):
+    
+                    # skip tasks which don't have output parameters
+                    if len(param) >= 2:
+                        self.output_filenames.extend(param[1])
+            
+        if flattened:
+            return get_strings_in_nested_sequence(self.output_filenames)
+        else:
+            return self.output_filenames
 
         
 
+    #_____________________________________________________________________________________
+
+    #   completed
+    # 
+    # 
+    #_____________________________________________________________________________________
+    def completed (self, logger):
+        """
+        called even when all jobs are up to date
+        """
+        for f in task.posttask_functions:
+            f()
+        short_task_name = job_result.task_name.replace('__main__.', '')
+        logger.info("Completed Task = " + short_task_name)
             
             
             
@@ -868,10 +898,14 @@ class _task (node):
         Splits a single set of input files into multiple output file names, 
             where the number of output files may not be known beforehand.
         """
+        #check enough arguments
+        if len(orig_args) < 2:
+            raise error_task_split("Too few arguments for @split")
+
         self.set_action_type (_task.action_task_split)
 
+        # input files
         tasks, filenames, globs = get_tasks_filename_globs_in_nested_sequence(orig_args[0])
-
         tasks = self.task_follows(tasks)
 
         self.param_generator_func = split_param_factory (tasks, filenames, globs, 
@@ -882,6 +916,9 @@ class _task (node):
         self.job_wrapper          = job_wrapper_io_files
         self.job_descriptor       = io_files_job_descriptor
 
+        # output is a glob
+        self.indeterminate_output = True
+
     #_________________________________________________________________________________________
 
     #   task_transform
@@ -891,14 +928,21 @@ class _task (node):
         """
         Merges multiple input files into a single output.
         """
+        #
+        #   check enough arguments
+        #
+        if (len(orig_args) < 3 or         
+            (isinstance(orig_args[2], inputs) and len(orig_args) < 4)):
+            raise error_task_transform("Too few arguments for @transform")
+
+
+
         self.set_action_type (_task.action_task_transform)
 
+        # input files
         tasks, filenames, globs = get_tasks_filename_globs_in_nested_sequence(orig_args[0])
-
         tasks = self.task_follows(tasks)
 
-        if len(orig_args) < 3:
-            raise error_transform("Too few arguments for @transform")
         
         # regular expression match
         if isinstance(orig_args[1], regex):
@@ -909,15 +953,14 @@ class _task (node):
         elif isinstance(orig_args[1], suffix):
             matching_regex = re.compile(re.escape(re.orig_args[1].args[0]) + "$")
             regex_substitute_extra_parameters = False
+
         else:
-            raise error_transform("@transform expects suffix() or "
+            raise error_task_transform("@transform expects suffix() or "
                                                 "regex() as the second argument")
             
         
-        if instance(orig_args[2], inputs):
+        if isinstance(orig_args[2], inputs):
             input_pattern = orig_args[2].args[0]
-            if len(orig_args) < 4:
-                raise error_transform("Too few arguments for @transform")
             output_pattern = orig_args[3]
             extras_arg_pos = 4
         else:
@@ -926,7 +969,8 @@ class _task (node):
             extras_arg_pos = 3
             
         self.param_generator_func = transform_param_factory (   tasks, filenames, globs, 
-                                                                matching_regex, input_pattern,
+                                                                matching_regex, 
+                                                                input_pattern,
                                                                 output_pattern,
                                                                 regex_substitute_extra_parameters,
                                                                 *orig_args[extras_arg_pos:])
@@ -936,6 +980,44 @@ class _task (node):
         self.job_wrapper          = job_wrapper_io_files
         self.job_descriptor       = io_files_job_descriptor
 
+    #_________________________________________________________________________________________
+
+    #   task_collate
+
+    #_________________________________________________________________________________________
+    def task_collate (self, orig_args):
+        """
+        Merges multiple input files into a single output.
+        """
+        #
+        #   check enough arguments
+        #
+        if len(orig_args) < 3:
+            raise error_task_collate("Too few arguments for @collate")
+
+        self.set_action_type (_task.action_task_collate)
+
+        # input files
+        tasks, filenames, globs = get_tasks_filename_globs_in_nested_sequence(orig_args[0])
+        tasks = self.task_follows(tasks)
+        
+        # regular expression match
+        if isinstance(orig_args[1], regex):
+            matching_regex = re.compile(orig_args[1].args[0])
+        else:
+            raise error_task_transform("@collate expects regex() as the second argument")
+
+
+        self.param_generator_func = collate_param_factory (tasks, filenames, globs, 
+                                                            matching_regex,
+                                                            *orig_args[2:])
+
+
+        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
+        self.job_wrapper          = job_wrapper_io_files
+        self.job_descriptor       = io_files_job_descriptor
+        
+        
 
     #_________________________________________________________________________________________
 
@@ -946,10 +1028,16 @@ class _task (node):
         """
         Merges multiple input files into a single output.
         """
+        #
+        #   check enough arguments
+        #
+        if len(orig_args) < 2:
+            raise error_task_merge("Too few arguments for @merge")
+
         self.set_action_type (_task.action_task_merge)
 
+        # input files
         tasks, filenames, globs = get_tasks_filename_globs_in_nested_sequence(orig_args[0])
-
         tasks = self.task_follows(tasks)
 
         self.param_generator_func = merge_param_factory (tasks, filenames, globs, 
@@ -1023,7 +1111,7 @@ class _task (node):
         #   Use parameters in supplied list
         else:
             self.set_action_type (_task.action_task_files)
-            self.param_generator_func = file_list_io_param_factory (orig_args)
+            self.param_generator_func = files_param_factory (orig_args)
 
     #_________________________________________________________________________________________
 
@@ -1052,7 +1140,7 @@ class _task (node):
         
         tasks = self.task_follows(tasks)
             
-        self.param_generator_func = glob_regex_io_param_factory (tasks, filenames, globs, 
+        self.param_generator_func = files_re_param_factory (tasks, filenames, globs, 
                                                                     *orig_args[1:])
             
             
@@ -1478,6 +1566,10 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     inprogress_tasks.add(task)
                     cnt_tasks_processed += 1
                     
+
+                    #
+                    #   recalculate output parameters 
+                    #
                     task.output_filenames = []
 
 
@@ -1492,8 +1584,17 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     cnt_jobs_created = 0
                     for param in parameters:
                         
+                        #
+                        #   save output even if uptodate 
+                        #
+                        if len(param) >= 2:
+                            task.output_filenames.append(param[1])
+
                         job_name = task.job_descriptor(param)
-                        # don't run if up to date
+
+                        # 
+                        #    don't run if up to date
+                        #
                         if force_rerun:
                             log_at_level (logger, 2, verbose, "    force task %s to rerun " % job_name)
                         else:
@@ -1507,14 +1608,13 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                                 else:
                                     log_at_level (logger, 2, verbose, "    %s %s " % (job_name, msg))
 
-                        #    Clunky hack to make sure input files exists right before 
+                        #
+                        #   Clunky hack to make sure input files exists right before 
                         #        job is called for better error messages
+                        #
                         if task.needs_update_func == needs_update_check_modify_time:
                             check_input_files_exist (*param)
                             
-                        if len(param) >= 2:
-                            task.output_filenames.append(param[1])
-                        
                         count_remaining_jobs[task] += 1
                         cnt_jobs_created += 1
                         cnt_jobs_created_for_all_tasks += 1
@@ -1525,16 +1625,11 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                                 task.user_defined_work_func)
 
                     # if no job came from this task, this task is complete
-                    #   we need to complete it here instead of normal completion at end
-                    #   of job tasks
+                    #   we need to retire it here instead of normal completion at end of job tasks
+                    #   precisely because it created no jobs
                     if cnt_jobs_created == 0:
                         incomplete_tasks.remove(task)
-
-                        #   call job completion signals
-                        for f in task.posttask_functions:
-                            f()
-                        short_task_name = task_name.replace('__main__.', '')
-                        logger.info("Completed Task = " + short_task_name)
+                        task.completed (logger)
 
             # extra tests incase final tasks do not result in jobs
             if len(incomplete_tasks) and (not cnt_tasks_processed or cnt_jobs_created_for_all_tasks):
@@ -1576,10 +1671,6 @@ def feed_job_params_to_process_pool_factory (parameter_q):
             yield param
 
         #print >>sys.stderr, "   Send param to Pooled Process END" # DEBUG PIPELINE
-        # only necessary for multiprocessing queue. Since we are not sharing th queue
-        # with any other process...
-        #parameter_q.close()
-        #print >>sys.stderr, "   Parameter queue closed" # DEBUG PIPELINE
         
     # return generator
     return feed_job_params_to_process_pool
@@ -1726,6 +1817,42 @@ def pipeline_run(target_tasks, forcedtorun_tasks = [], multiprocess = 1, logger 
     job_parameters = parameter_generator()
     fill_queue_with_job_parameters(job_parameters, parameter_q, multiprocess)
 
+    # 
+    #   N.B. 
+    #   Handling keyboard shortcuts may require 
+    #       See http://stackoverflow.com/questions/1408356/keyboard-interrupts-with-pythons-multiprocessing-pool
+    # 
+    #   When waiting for a condition in threading.Condition.wait(), KeyboardInterrupt is never sent
+    #       unless a timeout is specified
+    # 
+    #   
+    # 
+    #   #                                                              
+    #   #   whether using multiprocessing                              
+    #   #                                                              
+    #   pool = Pool(multiprocess) if multiprocess > 1 else None        
+    #   if pool:                                                       
+    #       pool_func = pool.imap_unordered                            
+    #       job_iterator_timeout = []
+    #   else:                                                          
+    #       pool_func = imap                                           
+    #       job_iterator_timeout = [999999999999]
+    # 
+    # 
+    #   ....
+    # 
+    # 
+    #   it = pool_func(run_pooled_job_without_exceptions, feed_job_params_to_process_pool())
+    #   while 1:
+    #      try:
+    #          job_result = it.next(*job_iterator_timeout)
+    # 
+    #          ...
+    #           
+    #      except StopIteration:
+    #          break
+
+
 
     #
     #   whether using multiprocessing
@@ -1751,7 +1878,6 @@ def pipeline_run(target_tasks, forcedtorun_tasks = [], multiprocess = 1, logger 
     #       Reserved for returning result from job... 
     #       How?
     # 
-    
     
     for job_result in pool_func(run_pooled_job_without_exceptions, feed_job_params_to_process_pool()):
         
@@ -1791,11 +1917,14 @@ def pipeline_run(target_tasks, forcedtorun_tasks = [], multiprocess = 1, logger 
         #             
         if last_job_in_task:
 
-            #   call job completion signals
-            for f in task.posttask_functions:
-                f()
-            short_task_name = job_result.task_name.replace('__main__.', '')
-            logger.info("Completed Task = " + short_task_name)
+            task.completed (logger)
+
+            #
+            #   indeterminate output. Check actual output again if someother tasks job function depend on it
+            #       used for @split
+            #
+            if task.indeterminate_output:
+                task.output_filenames = None
 
             
         # make sure queue is still full after each job is retired
