@@ -1,0 +1,208 @@
+.. _task.files:
+
+See :ref:`Decorators <decorators>` for more decorators
+
+
+.. |input| replace:: `input`
+.. _input: `task.files.input`_
+.. |input1| replace:: `input1`
+.. _input1: `task.files.input1`_
+.. |output| replace:: `output`
+.. _output: `task.files.output`_
+.. |output1| replace:: `output1`
+.. _output1: `task.files.output1`_
+.. |extra_parameters| replace:: `extra_parameters`
+.. _extra_parameters: `task.files.extra_parameters`_
+.. |extra_parameters1| replace:: `extra_parameters1`
+.. _extra_parameters1: `task.files.extra_parameters1`_
+.. |custom_function| replace:: `custom_function`
+.. _custom_function: `task.files.custom_function`_
+
+
+################################################
+@files for multiple jobs in parallel
+################################################
+*******************************************************************************************
+*@files* ( *((* |input|_, |output|_, [|extra_parameters|_,...] *), (...), ...)* )
+*******************************************************************************************
+    **Purpose:**
+
+        Passes each set of parameters to separate jobs which can run in parallel
+        
+        The first two parameters in each set represent the input and output which are
+        used to see if the job is out of date and needs to be (re-)run.
+        
+        By default, out of date checking uses input/output file timestamps.
+        (On some file systems, timestamps have a resolution in seconds.)
+        See :ref:`@check_if_uptodate() <task.check_if_uptodate>` for alternatives.
+
+    **Example**:
+        ::
+
+            from ruffus import *
+            parameters = [
+                                [ 'a.1', 'a.2', 'A file'], # 1st job
+                                [ 'b.1', 'b.2', 'B file'], # 2nd job
+                          ]
+    
+            @files(parameters)
+            def parallel_io_task(infile, outfile, text):
+                pass
+            pipeline_run([parallel_io_task])
+
+    is the equivalent of calling:
+        ::
+            
+            parallel_io_task('a.1', 'a.2', 'A file')
+            parallel_io_task('b.1', 'b.2', 'B file')
+
+    **Parameters:**
+
+.. _task.files.input:
+
+    * *input*
+        Input file names
+
+
+.. _task.files.output:
+
+    * *output*
+        Output file names
+    
+
+.. _task.files.extra_parameters:
+
+    * *extra_parameters*
+        optional ``extra_parameters`` are passed verbatim to each job.
+        
+.. _task.files.check_up_to_date:
+
+    **Checking if jobs are up to date:**
+        #. Strings in ``input`` and ``output`` (including in nested sequences) are interpreted as file names and
+           used to check if jobs are up-to-date.
+        #. In the absence of input files (e.g. ``input == None``), the job will run if any output file is missing.
+        #. In the absence of output files (e.g. ``output == None``), the job will always run.
+        #. If any of the output files is missing, the job will run.
+        #. If any of the input files is missing when the job is run, a
+           ``MissingInputFileError`` exception will be raised.
+
+########################################################################
+Passing parameters to @files with a custom function
+########################################################################
+*******************************************************************************************
+*@files* (|custom_function|_)
+*******************************************************************************************
+    **Purpose:**
+
+        Uses a custom function to generate sets of parameters to separate jobs which can run in parallel.
+        
+        The first two parameters in each set represent the input and output which are
+        used to see if the job is out of date and needs to be (re-)run.
+        
+        By default, out of date checking uses input/output file timestamps.
+        (On some file systems, timestamps have a resolution in seconds.)
+        See :ref:`@check_if_uptodate() <task.check_if_uptodate>` for alternatives.
+
+    **Example**:
+        ::
+
+            from ruffus import *
+            def generate_parameters_on_the_fly():
+                parameters = [
+                                    ['input_file1', 'output_file1', 1, 2], # 1st job
+                                    ['input_file2', 'output_file2', 3, 4], # 2nd job
+                                    ['input_file3', 'output_file3', 5, 6], # 3rd job
+                             ]
+                for job_parameters in parameters:
+                    yield job_parameters
+    
+            @files(generate_parameters_on_the_fly)
+            def parallel_io_task(input_file, output_file, param1, param2):
+                pass
+            
+            pipeline_run([parallel_task])
+        
+    is the equivalent of calling:
+        ::
+    
+            parallel_io_task('input_file1', 'output_file1', 1, 2)
+            parallel_io_task('input_file2', 'output_file2', 3, 4)
+            parallel_io_task('input_file3', 'output_file3', 5, 6)
+    
+
+    **Parameters:**
+    
+
+.. _task.files.custom_function:
+
+        * *custom_function*:
+            Generator function which yields each time a complete set of parameters for one job
+            
+    **Checking if jobs are up to date:**
+        Strings in ``input`` and ``output`` (including in nested sequences) are interpreted as file names and
+        used to check if jobs are up-to-date. 
+
+        See :ref:`above <task.files.check_up_to_date>` for more details
+            
+            
+
+
+########################
+@files for a single job
+########################
+
+*******************************************************************************************
+*@files* (|input1|_, |output1|_, [|extra_parameters1|_, ...])
+*******************************************************************************************
+
+    **Purpose:**
+        Provides parameters to run a task.
+        
+        The first two parameters in each set represent the input and output which are
+        used to see if the job is out of date and needs to be (re-)run.
+        
+        By default, out of date checking uses input/output file timestamps.
+        (On some file systems, timestamps have a resolution in seconds.)
+        See :ref:`@check_if_uptodate() <task.check_if_uptodate>` for alternatives.
+            
+    
+    **Example**:
+        ::
+
+            from ruffus import *
+            @files('a.1', 'a.2', 'A file')
+            def transform_files(infile, outfile, text):
+                pass
+            pipeline_run([transform_files])
+
+    If ``a.2`` is missing or was created before ``a.1``, then the following will be called:
+        ::
+        
+            transform_files('a.1', 'a.2', 'A file')
+
+    **Parameters:**
+
+.. _task.files.input1:
+
+    * *input*
+        Input file names
+
+
+.. _task.files.output1:
+
+    * *output*
+        Output file names
+    
+
+.. _task.files.extra_parameters1:
+
+    * *extra_parameters*
+        optional ``extra_parameters`` are passed verbatim to each job.
+
+
+    **Checking if jobs are up to date:**
+        Strings in ``input`` and ``output`` (including in nested sequences) are interpreted as file names and
+        used to check if jobs are up-to-date. 
+
+        See :ref:`above <task.files.check_up_to_date>` for more details
+
