@@ -50,19 +50,19 @@ A simple example
 -------------------------------------    
         The pipeline in ``example_scripts/simpler.py`` has four successive tasks::
         
-            python simpler.py -F "jpg" -d ../images/tutorial_four_stage_pipeline.jpg -t task4  -K -H
+            python simpler.py -F "jpg" -d "../../images/tutorial_four_stage_pipeline.jpg" -t task4  -K -H
         
         .. ???
 
         producing the following flowchart
         
-        .. image:: images/tutorial_four_stage_pipeline.jpg
+        .. image:: ../../images/tutorial_four_stage_pipeline.jpg
         
         
 
         Flow Chart Key:
         
-        .. image:: images/tutorial_pipeline_key.jpg
+        .. image:: ../../images/tutorial_pipeline_key.jpg
         
 
         
@@ -79,12 +79,12 @@ A simple example
 
         After the pipeline runs (``python simpler.py -d ""``), all tasks are up to date and the flowchart shows::
         
-            python simpler.py -F "jpg" -d ../images/tutorial_complete.jpg -t task4 -K -H
+            python simpler.py -F "jpg" -d ../../images/tutorial_complete.jpg -t task4 -K -H
         
         
         .. ???
 
-        .. image:: images/tutorial_complete.jpg
+        .. image:: ../../images/tutorial_complete.jpg
     
         
 .. ???
@@ -105,12 +105,12 @@ A simple example
 
         the flowchart would show::
         
-            python simpler.py -F "jpg" -d ../images/tutorial_maximal_mode.jpg -t task4  -K -H
+            python simpler.py -F "jpg" -d ../../images/tutorial_maximal_mode.jpg -t task4  -K -H
         
         
         .. ???
 
-        .. image:: images/tutorial_maximal_mode.jpg
+        .. image:: ../../images/tutorial_maximal_mode.jpg
             
         
 
@@ -129,7 +129,7 @@ Minimal Reruns
     In fact, you could point out that ``task3`` is not out of date. And if we were only interested
     in the immediate dependencies of ``task4``, we might not need task2 to rerun at all, only ``task4``.
     
-    .. image:: images/tutorial_minimal_mode.jpg
+    .. image:: ../../images/tutorial_minimal_mode.jpg
     
         
 
@@ -163,7 +163,7 @@ Forced Reruns
 
     will run all tasks from ``task1`` to ``task4``
     
-    .. image:: images/tutorial_force_from_task1.jpg
+    .. image:: ../../images/tutorial_force_from_task1.jpg
     
         
 

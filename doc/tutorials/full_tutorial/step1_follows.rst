@@ -61,7 +61,7 @@ Displaying
     
     producing the following flowchart
     
-    .. image:: images/tutorial_flowchart_ex1.jpg
+    .. image:: ../../images/tutorial_flowchart_ex1.jpg
         
 .. ???
 
