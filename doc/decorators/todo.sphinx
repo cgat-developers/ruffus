@@ -1,0 +1,40 @@
+html_logo¶
+
+    If given, this must be the name of an image file that is the logo of the docs. It is placed at the top of the sidebar; its width should therefore not exceed 200 pixels. Default: None.
+
+    New in version 0.4.1: The image file will be copied to the _static directory of the output HTML, so an already existing file with that name will be overwritten.
+
+html_favicon¶
+html_show_sphinx¶
+
+    If true, \u201cCreated using Sphinx\u201d is shown in the HTML footer. Default is True.
+
+    New in version 0.4
+
+:term:` `
+
+:file:` `
+
+.. literalinclude:: example.py
+   :lines: 1,3,5-10,20-
+
+
+.. warning::
+
+.. versionadded:: version¶
+
+.. centered:: LICENSE AGREEMENT
+
+
+.. glossary::
+
+   environment
+      A structure where information about all documents under the root is
+      saved, and used for cross-referencing.  The environment is pickled
+      after the parsing stage, so that successive runs only need to read
+      and parse new and changed documents.
+
+   source directory
+      The directory which, including its subdirectories, contains all
+      source files for one Sphinx project.
+
