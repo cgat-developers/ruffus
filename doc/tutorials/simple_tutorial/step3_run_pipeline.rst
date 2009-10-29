@@ -1,17 +1,19 @@
 .. _Simple_Tutorial_3rd_step:
 
-
 ###################################################################
-Step 3: Displaying the pipeline as a graphic
+Step 3: Displaying the pipeline visually
 ###################################################################
-* :ref:`Up <Simple_Tutorial>` 
-* :ref:`Prev <Simple_Tutorial_2nd_step>` 
-* :ref:`Next <Simple_Tutorial_4th_step>` 
-* :ref:`pipeline functions <task.pipeline_functions>` in detail
+    * :ref:`Simple tutorial overview <Simple_Tutorial>` 
+    * :ref:`pipeline functions <task.pipeline_functions>` in detail
 
+=============================================
+Remember to look at the example code:
+=============================================
+    * :ref:`Python Code for step 3 <Simple_Tutorial_3nd_step_code>` 
 =============================================
 Printing out a flowchart of our pipeline
 =============================================
+
 
     We can see a flowchart of our fledgling pipeline by executing:
         ::
@@ -25,6 +27,7 @@ Printing out a flowchart of our pipeline
     producing the following flowchart
     
     .. image:: ../../images/simple_tutorial_step3.png
+        :scale: 50
 
 
 

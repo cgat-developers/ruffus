@@ -3,9 +3,8 @@
 ###################################################################
 Step 1: Arranging tasks into a pipeline
 ###################################################################
-* :ref:`Up <Simple_Tutorial>` 
-* :ref:`Next <Simple_Tutorial_2nd_step>` 
-* :ref:`More on @follows in the full tutorial <Full_Tutorial_1st_step>`
+* :ref:`Simple tutorial overview <Simple_Tutorial>` 
+* :ref:`More on @follows in the full tutorial <manual_1st_chapter>`
 * :ref:`@follows syntax in detail <task.follows>`
 
 

@@ -1,5 +1,13 @@
 .. _Simple_Tutorial:
 
+.. |task| replace:: **task**
+.. _task: glossary.html#term-task
+.. |job| replace:: **job**
+.. _job: glossary.html#term-job
+.. |decorator| replace:: **decorator**
+.. _decorator: glossary.html#term-decorator
+
+
 ################################################
 7 steps to *Ruffus* in 10 minutes
 ################################################
@@ -8,21 +16,21 @@
 Overview
 ***************************************
 
-
     The ``ruffus`` module is a lightweight way to add support 
     for running computational pipelines.
     
     Computational pipelines are often conceptually quite simple, especially
-    if we breakdown the process into simple stages, or separate **tasks**.
+    if we breakdown the process into simple stages, or separate |task|_\ s.
     
-    Each **task** is represented by a python function
+    Each |task|_ is represented by a python function
 
 
 ***************************************
-The first steps
+The first steps (1-3)
 ***************************************
 
     .. image:: images/simple_tutorial_step3.png
+        :scale: 50
 
     This example will show you how to:
     
@@ -35,7 +43,7 @@ The first steps
             
     
 ***************************************
-An Easy example
+An Easy example (steps 4-7)
 ***************************************
     | A common requirement in scientific pipelines is to break a large problem into small
       pieces which can be analysed in parallel. 
@@ -44,6 +52,8 @@ An Easy example
     
     This simple example calculates the sample variance of 10,000 random numbers
 
+    .. image:: images/simple_tutorial_step4.png
+        :scale: 50
    
     * It breaks the list into 100 pieces
     * Calculates the sum and sum of squares for each set of 1000 numbers
@@ -59,8 +69,7 @@ An Easy example
     7. :ref:`Automatically signal the completion of each stage of our pipeline <Simple_Tutorial_7th_step>` 
 
 
-This covers all the core functionality of *Ruffus* and allows you to use it as
-a simple replacement for, e.g., `GNU make <http://www.gnu.org/software/make/>`_
+This covers all the core functionality of *Ruffus*.
     
 
 
@@ -68,21 +77,21 @@ a simple replacement for, e.g., `GNU make <http://www.gnu.org/software/make/>`_
 
 
 
-
-***************************************
-More
-***************************************
-
-See the :ref:`full tutorial <Tutorial>` for more detail on:
-
-  * :ref:`Ordering tasks <follows>`
-  * :ref:`Using files as parameters <files>`
-  * :ref:`Generating parameters on the fly <on_the_fly>`
-  * :ref:`Multi Processing <multi_processing>`
-  * :ref:`Run jobs in parallel <parallel>`
-  * :ref:`Handling errors and exceptions <exceptions>`
-  * :ref:`Generating parameters using regular expressions <files_re>`
-  * :ref:`Manual dependency checking <check_if_uptodate>`
-  * :ref:`Signalling the completion of each task <posttask>`
-  * :ref:`Logging messages <logging-tasks>`
-
+.. comment::
+    ***************************************
+    More
+    ***************************************
+    
+    See the :ref:`full tutorial <Tutorial>` for more detail on:
+    
+      * :ref:`Ordering tasks <follows>`
+      * :ref:`Using files as parameters <files>`
+      * :ref:`Generating parameters on the fly <on_the_fly>`
+      * :ref:`Multi Processing <multi_processing>`
+      * :ref:`Run jobs in parallel <parallel>`
+      * :ref:`Handling errors and exceptions <exceptions>`
+      * :ref:`Generating parameters using regular expressions <files_re>`
+      * :ref:`Manual dependency checking <check_if_uptodate>`
+      * :ref:`Signalling the completion of each task <posttask>`
+      * :ref:`Logging messages <logging-tasks>`
+    
