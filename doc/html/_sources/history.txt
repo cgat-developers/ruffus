@@ -1,10 +1,6 @@
 ^^^^^^^^^^^^^^^^^^^^^^
-Bugs and updates
-^^^^^^^^^^^^^^^^^^^^^^
-************
 Fixed Bugs
-************
-
+^^^^^^^^^^^^^^^^^^^^^^
 ########    
 Issue3    
 ########
@@ -88,4 +84,8 @@ Resolution
     #) Changes to task.py
     #) Ignores cases (especially race conditions) when the directory already exists
     #) Added test case test/test_follows_mkdir.py
+
+^^^^^^^^^^^^^^^^^^^^^^
+Updates
+^^^^^^^^^^^^^^^^^^^^^^
 

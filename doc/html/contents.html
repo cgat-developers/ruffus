@@ -38,8 +38,9 @@
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>
         <li><a href="">Contents</a> | </li>
+        <li><a href="simple_tutorial.html">Simple tutorial</a>  | </li>
         <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
-        <li><a href="Tutorial.html">Full tutorial</a>  | </li>
+        <li><a href="full_tutorial.html">Full tutorial</a>  | </li>
         <li><a href="FAQ.html">FAQ</a>  | </li>
         <li><a href="Todo.html">Future plans</a>  | </li>
         <li><a href="search.html">Search</a> &raquo;</li>
@@ -62,7 +63,7 @@ for running computational pipelines.</p>
 <ul>
 <li class="toctree-l1"><a class="reference external" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference external" href="simple_tutorial.html">7 steps to <em>Ruffus</em> in 10 minutes</a></li>
-<li class="toctree-l1"><a class="reference external" href="full_tutorial.html">Full Tutorial</a></li>
+<li class="toctree-l1"><a class="reference external" href="full_tutorial.html">Full Tutorial: Work in Progress</a></li>
 </ul>
 </div>
 <div class="section" id="overview">
@@ -86,10 +87,12 @@ for running computational pipelines.</p>
 <li class="toctree-l2"><a class="reference external" href="design.html#acknowledgements">Acknowledgements</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference external" href="history.html">Bugs and Updates</a><ul>
-<li class="toctree-l2"><a class="reference external" href="history.html#fixed-bugs">Fixed Bugs</a></li>
+<li class="toctree-l1"><a class="reference external" href="history.html">Fixed Bugs</a><ul>
+<li class="toctree-l2"><a class="reference external" href="history.html#issue3">Issue3</a></li>
+<li class="toctree-l2"><a class="reference external" href="history.html#mkdir">mkdir</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference external" href="history.html#updates">Updates</a></li>
 <li class="toctree-l1"><a class="reference external" href="todo.html">Future plans</a><ul>
 <li class="toctree-l2"><a class="reference external" href="todo.html#what-is-completed-on-this-list">What is completed on this list?</a></li>
 <li class="toctree-l2"><a class="reference external" href="todo.html#what-is-left-to-do">What is left to do?</a></li>
@@ -110,18 +113,21 @@ for running computational pipelines.</p>
 <li class="toctree-l1"><a class="reference external" href="simple_tutorial.html">7 steps to <em>Ruffus</em> in 10 minutes</a></li>
 <li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step1_follows.html">Step 1: Arranging tasks into a pipeline</a></li>
 <li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step2_files.html">Step 2: Passing parameters to the pipeline</a></li>
-<li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step2_files_code.html">Code for Step 2: Passing parameters to the pipeline</a></li>
-<li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step3_run_pipeline.html">Step 3: Displaying the pipeline as a graphic</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step3_run_pipeline.html">Step 3: Displaying the pipeline visually</a></li>
 <li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step4_split.html">Step 4: Splitting up large tasks / files</a></li>
 <li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step5_transform.html">Step 5: Running jobs in parallel</a></li>
-<li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step6_merge.html">Step 5: Merging results back together</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step6_merge.html">Step 6: Merging results back together</a></li>
 <li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step7_posttask.html">Step 7: Signal the completion of each stage of our pipeline</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step2_files_code.html">Code for Step 2: Passing parameters to the pipeline</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step3_run_pipeline_code.html">Code for Step 3: Displaying the pipeline visually</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step4_split_code.html">Code for Step 4: Splitting up large tasks / files</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/simple_tutorial/step5_transform_code.html">Code for Step 5: Running jobs in parallel</a></li>
 </ul>
 </div>
 <div class="section" id="full-tutorial">
 <h2>Full Tutorial<a class="headerlink" href="#full-tutorial" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li class="toctree-l1"><a class="reference external" href="full_tutorial.html">Full Tutorial</a></li>
+<li class="toctree-l1"><a class="reference external" href="full_tutorial.html">Full Tutorial: Work in Progress</a></li>
 <li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step1_follows.html">Step 1: Arranging tasks into a pipeline</a></li>
 <li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step2_files.html">Step 2: Passing parameters to the pipeline</a></li>
 <li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step3_dependencies.html">Step 3: Running / displaying the pipeline</a></li>
@@ -131,14 +137,15 @@ for running computational pipelines.</p>
 <li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step7_posttask.html">Step 7: Signal the completion of each stage of our pipeline</a></li>
 <li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step8_exceptions.html">Step 8: Handling Exceptions in <em>Ruffus</em></a></li>
 <li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step9_logging.html">Step 9: Logging in <em>Ruffus</em></a></li>
-<li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step10_parallel.html">Step 10: Esoteric: Running jobs in parallel with full control</a></li>
-<li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step11_check_if_uptodate.html">Step 11: Esoteric: Writing custom functions to decide which jobs are up to date</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step10_collate.html">Step 10: Esoteric: Running jobs in parallel with full control</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step11_advanced_transform.html">Step 11: Esoteric: Writing custom functions to decide which jobs are up to date</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step12_parallel.html">Step 10: Esoteric: Running jobs in parallel with full control</a></li>
+<li class="toctree-l1"><a class="reference external" href="tutorials/full_tutorial/step13_check_if_uptodate.html">Step 11: Esoteric: Writing custom functions to decide which jobs are up to date</a></li>
 </ul>
 </div>
 <div class="section" id="detailed-examples">
 <h2>Detailed Examples:<a class="headerlink" href="#detailed-examples" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li class="toctree-l1"><a class="reference external" href="Tutorial.html">Full Tutorial</a></li>
 <li class="toctree-l1"><a class="reference external" href="examples/intermediate_example.html">A real-world example</a></li>
 <li class="toctree-l1"><a class="reference external" href="examples/complicated_example.html">A more ambitious real-world example</a></li>
 <li class="toctree-l1"><a class="reference external" href="examples/sharing_data_across_jobs_example.html">How to share data across jobs</a></li>
@@ -147,7 +154,7 @@ for running computational pipelines.</p>
 <div class="section" id="decorators">
 <h2>Decorators:<a class="headerlink" href="#decorators" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li class="toctree-l1"><a class="reference external" href="decorators/decorators.html">Decorators</a></li>
+<li class="toctree-l1"><a class="reference external" href="decorators/decorators.html">List of Decorators</a></li>
 <li class="toctree-l1"><a class="reference external" href="decorators/indicator_objects.html">Indicator Objects</a></li>
 </ul>
 <div class="section" id="basic">
@@ -174,7 +181,7 @@ for running computational pipelines.</p>
 <li class="toctree-l1"><a class="reference external" href="decorators/parallel.html">&#64;parallel</a></li>
 <li class="toctree-l1"><a class="reference external" href="decorators/check_if_uptodate.html">&#64;check_if_uptodate</a></li>
 <li class="toctree-l1"><a class="reference external" href="decorators/transform_ex.html">Advanced usage of &#64;transform:</a></li>
-<li class="toctree-l1"><a class="reference external" href="decorators/merge_ex.html">Advanced use of &#64;merge</a></li>
+<li class="toctree-l1"><a class="reference external" href="decorators/collate.html">&#64;collate</a></li>
 <li class="toctree-l1"><a class="reference external" href="decorators/files_re.html">&#64;files_re</a></li>
 </ul>
 </div>
@@ -287,8 +294,8 @@ for running computational pipelines.</p>
               </p>
           </div>
           <script type="text/javascript">$('#searchbox').show(0);</script>
-    <h3><a href="decorators/decorators.html">Decorators</a></h3>   <br>
-    <h3><a href="decorators/indicator_objects.html">Indicator objects</a></h3>   <br>
+    <h3><a href="decorators/decorators.html">Decorators:</a></h3>   
+        <br>
     <a href="decorators/follows.html">@follows</a>                      <br>
     <a href="decorators/files.html">@files</a>                          <br>
     <a href="decorators/split.html">@split</a>                          <br>
@@ -296,9 +303,10 @@ for running computational pipelines.</p>
     <a href="decorators/merge.html">@merge</a>                          <br>
     <a href="decorators/posttask.html">@posttask</a>                    <br>
     <a href="decorators/transform_ex.html">Advanced @transform</a>      <br>
-    <a href="decorators/merge_ex.html">Advanced @merge</a>              <br>
+    <a href="decorators/collate.html">@collate</a>              <br>
     <a href="decorators/parallel.html">@parallel</a>                    <br>
     <a href="decorators/check_if_uptodate.html">@check_if_uptodate</a>  <br>
+    <h3><a href="decorators/indicator_objects.html">Indicator objects</a></h3>   <br>
 
         </div>
       </div>
@@ -319,8 +327,9 @@ for running computational pipelines.</p>
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>
         <li><a href="">Contents</a> | </li>
+        <li><a href="simple_tutorial.html">Simple tutorial</a>  | </li>
         <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
-        <li><a href="Tutorial.html">Full tutorial</a>  | </li>
+        <li><a href="full_tutorial.html">Full tutorial</a>  | </li>
         <li><a href="FAQ.html">FAQ</a>  | </li>
         <li><a href="Todo.html">Future plans</a>  | </li>
         <li><a href="search.html">Search</a> &raquo;</li>
