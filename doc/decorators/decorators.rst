@@ -1,5 +1,5 @@
 #######################
-Decorators
+List of Decorators
 #######################
 
 .. seealso::
@@ -23,8 +23,8 @@ Decorators
    
    "**@follows**
 
-   - Indicates task dependency (:ref:`see tutorial <follows>`)
-   - optional :ref:`mkdir <task.follows.directory_name>` prerequisite (:ref:`see tutorial <follow-mkdir>`)
+   - Indicates task dependency (:ref:`see tutorial <full_tutorial_follows>`)
+   - optional :ref:`mkdir <task.follows.directory_name>` prerequisite (:ref:`see tutorial <full_tutorial_follow_mkdir>`)
    
    ", "
    * :ref:`@follows <task.follows>` ( ``task1``, ``'task2'`` ))
@@ -33,7 +33,7 @@ Decorators
       \ 
    
    ", ""
-   "**@files** (:ref:`Tutorial <files>`)
+   "**@files** (:ref:`Tutorial <full_tutorial_files>`)
    
    - I/O parameters
    - skips up-to-date jobs
@@ -55,7 +55,7 @@ Decorators
    :header: "Decorator", "Examples"
    :widths: 400, 600,1
 
-   "**@split** (:ref:`Tutorial <tutorial_split>`)   
+   "**@split** (:ref:`Tutorial <full_tutorial_split>`)   
    
    - Splits a single input into multiple output
    - Globs in ``output`` can specify an indeterminate number of files.
@@ -65,7 +65,7 @@ Decorators
            \ 
 
    ", ""
-   "**@transform** (:ref:`Tutorial <tutorial_transform>`)   
+   "**@transform** (:ref:`Tutorial <full_tutorial_transform>`)   
     
    - Applies the task function to transform input data to output.
     
@@ -76,17 +76,18 @@ Decorators
            \ 
    
    ", ""
-   "**@merge** (:ref:`Tutorial <tutorial_merge>`)   
+   "**@merge** (:ref:`Tutorial <full_tutorial_merge>`)   
 
    - Merges multiple input files into a single output.
    
    ", "
    * :ref:`@merge <task.merge>` (``tasks_or_file_names``, ``output``, [``extra_parameters``,...] )
+           \
           ", ""
    "**@posttask**
 
-   - Calls function after task completes (:ref:`see tutorial <posttask>`)
-   - Optional :ref:`touch_file <task.posttask.file_name>` indicator (:ref:`see tutorial <posttask-touch-file>`)
+   - Calls function after task completes (:ref:`see tutorial <full_tutorial_posttask>`)
+   - Optional :ref:`touch_file <task.posttask.file_name>` indicator (:ref:`see tutorial <full_tutorial_posttask_touch_file>`)
 
    ", "
    * :ref:`@posttask <task.posttask>` ( ``signal_task_completion_function`` )
@@ -103,7 +104,17 @@ Decorators
    :header: "Decorator", "Examples"
    :widths: 400, 600,1
 
-   "**@transform** (:ref:`Tutorial <tutorial_transform_ex>`)   
+   "**@collate** (:ref:`Tutorial <full_tutorial_collate>`)   
+
+   - Groups multiple input files using regular expression matching
+   - Input resulting in the same output after substitution will be collated together.
+   
+   ", "
+   * :ref:`@collate <task.collate>` (``tasks_or_file_names``, :ref:`regex <task.transform.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , ``output_pattern``, [``extra_parameters``,...] )
+           \ 
+
+   ", ""
+   "**@transform** (:ref:`Tutorial <full_tutorial_transform_ex>`)   
 
    - Infers input as well as output from regular expression substitutions
    - Useful for adding additional file dependencies
@@ -114,16 +125,6 @@ Decorators
    * :ref:`@transform <task.transform_ex>` ( ``tasks_or_file_names``, :ref:`regex <task.transform.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , :ref:`inputs <task.inputs>`\ *(*\ ``input_pattern``\ *)*\ ,  ``output_pattern``, [``extra_parameters``,...] )
            \ 
       
-   ", ""
-   "**@merge** (:ref:`Tutorial <tutorial_merge_ex>`)   
-
-   - Groups multiple input files using regular expression matching
-   - Input resulting in the same output after substitution will be collated together.
-   
-   ", "
-   * :ref:`@merge <task.merge_ex>` (``tasks_or_file_names``, :ref:`regex <task.transform.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , ``output_pattern``, [``extra_parameters``,...] )
-           \ 
-
    ", ""
 
 
@@ -138,16 +139,16 @@ Decorators
    "**@parallel**
 
    - By default, does not check if jobs are up to date
-   - Best used in conjuction with :ref:`@check_if_uptodate <check_if_uptodate>`
+   - Best used in conjuction with :ref:`@check_if_uptodate <task.check_if_uptodate>`
 
    ", "
-   * :ref:`@parallel <task.parallel>` ( ``parameter_list`` ) (:ref:`see tutorial <parallel>`)
+   * :ref:`@parallel <task.parallel>` ( ``parameter_list`` ) (:ref:`see tutorial <full_tutorial_parallel>`)
            \ 
-   * :ref:`@parallel <task.parallel>` ( ``parameter_generating_function`` ) (:ref:`see tutorial <on_the_fly>`)
+   * :ref:`@parallel <task.parallel>` ( ``parameter_generating_function`` ) (:ref:`see tutorial <full_tutorial_on_the_fly>`)
            \ 
    
    ", ""
-   "**@check_if_uptodate** (:ref:`Tutorial <check_if_uptodate>`)
+   "**@check_if_uptodate** (:ref:`Tutorial <full_tutorial_check_if_uptodate>`)
 
    - Custom function to determine if jobs need to be run
    

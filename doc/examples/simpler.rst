@@ -122,4 +122,5 @@ To print flowchart:
 Code:
 ****************************
 .. literalinclude:: _static/example_scripts/simpler.py
+    
 

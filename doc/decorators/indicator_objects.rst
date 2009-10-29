@@ -32,7 +32,7 @@ Indicator Objects
     **Used by:**
 
         * :ref:`@transform <task.transform>`
-        * The advanced form of :ref:`@merge <task.merge_ex>`
+        * :ref:`@collate <task.collate>`
         * The advanced form of :ref:`@transform <task.transform_ex>`
         * The deprecated :ref:`@files_re <task.files_re>`
    

@@ -3,7 +3,7 @@
 .. seealso::
 
     * :ref:`Decorators <decorators>` for more decorators
-    * More on @follows in :ref:`step 1 <Full_Tutorial_1st_step>` of the full tutorial
+    * More on @follows in :ref:`step 1 <manual_1st_chapter>` of the full tutorial
 
 
 ############

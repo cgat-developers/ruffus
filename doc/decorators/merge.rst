@@ -54,6 +54,6 @@ See :ref:`Decorators <decorators>` for more decorators
 
 
 
-See :ref:`here <task.merge_ex>` for more advanced uses of merge.
+See :ref:`here <task.collate>` for more advanced uses of merging.
 
 
