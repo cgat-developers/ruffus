@@ -68,7 +68,7 @@ Conceptual Flow chart:
     4. Summarise per (previously) unknown gene set
     5. Produce overall summary
     
-    .. image:: images/complex_conceptual.jpg
+    .. image:: ../images/complex_conceptual.jpg
  
     This is a simple list of sequential tasks which are conceptually easy (for genome
     scientists!) to grasp, and should be straightforward to code using *ruffus*.
@@ -87,7 +87,7 @@ Flow chart of file dependencies:
  
     This complexity is obvious in even this simplified flowchart:
  
-    .. image:: images/complex_file_dag.jpg
+    .. image:: ../images/complex_file_dag.jpg
 
     These operations are *particularly* horrible to describe using 
     ``gmake`` or ``scons`` which rely on file dependency trees:
@@ -122,7 +122,7 @@ Flow chart of file dependencies:
     8. Summary per unknown gene set
     9. Overall summary
 
-    .. image:: images/complex_ruffus.jpg
+    .. image:: ../images/complex_ruffus.jpg
 
     Extra tasks 1, 2, 4, 5 and 7 involve splitting up the work for 
     parallel jobs, or re-combining them afterwards.
