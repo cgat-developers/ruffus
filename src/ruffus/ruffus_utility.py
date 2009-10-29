@@ -143,21 +143,26 @@ def is_glob(s):
     """Check whether 's' contains ANY of glob chars"""
     return len(glob_letters.intersection(s)) > 0
 
-def get_tasks_filename_globs_in_nested_sequence(p, treat_strings_as_tasks = False, tasks=None, filenames=None, globs = None):
+def get_tasks_filename_globs_in_nested_sequence(p, treat_strings_as_tasks = False, 
+                                                tasks=None, filenames=None, globs = None,
+                                                singleton = None):
     """
     Divide parameters into task, filenames or globs
+    Signal singleton if original specification was a single filename
     """
     # 
     # create storage if this is not a recursive call
     # 
     if globs == None:
         tasks, filenames, globs = set(), set(), set()
+        singleton = [True]
 
     #
     #   task function
     # 
     if (type(p) == types.FunctionType):
         tasks.add(p)
+        singleton[0] = False
 
     #
     #   output_from treats all arguments as tasks or task names
@@ -165,20 +170,24 @@ def get_tasks_filename_globs_in_nested_sequence(p, treat_strings_as_tasks = Fals
     elif isinstance(p, output_from):
         for pp in p.args:
             get_tasks_filename_globs_in_nested_sequence(pp, True,
-                                                        tasks, filenames, globs)
+                                                        tasks, filenames, globs, singleton)
+        singleton[0] = False
+        
     elif is_str(p):
         if treat_strings_as_tasks:
             tasks.add(p)
         elif is_glob(p):
             globs.add(p)
+            singleton[0] = False
         else:
             filenames.add(p)
 
     elif non_str_sequence (p):
         for pp in p:
             get_tasks_filename_globs_in_nested_sequence(pp, treat_strings_as_tasks, 
-                                                        tasks, filenames, globs)
-    return tasks, filenames, globs
+                                                        tasks, filenames, globs, singleton)
+        singleton[0] = False
+    return tasks, filenames, globs, singleton
    
 
 #
@@ -256,39 +265,41 @@ if __name__ == '__main__':
         def test_expand_filename_globs_in_nested_sequence (self):
             print expand_filename_globs_in_nested_sequence(["test1", ["test2", set([1,2]), (set(["python_modules/*.py"]))]])
             
+        import task
         def test_get_tasks_filename_globs_in_nested_sequence(self):
+
             # 
             # test strings
             # 
-            self.check_equal("test", (set(), set(['test']), set()))
-            self.check_equal([("test1",), "test2", 3], (set(), set(['test1', 'test2']), set()))
+            self.check_equal("test", (set(), set(['test']), set(), [True]))
+            self.check_equal([("test1",), "test2", 3], (set(), set(['test1', 'test2']), set(), [False]))
             
             #
             # test missing
             # 
-            self.check_equal((1,3, [5]), (set(), set(), set()))
-            self.check_equal(None, (set(), set(), set()))
+            self.check_equal((1,3, [5]), (set(), set(), set(), [False]))
+            self.check_equal(None, (set(), set(), set(), [True]))
 
             #
             # test glob
             # 
-            self.check_equal([("test1.*",), "test?2", 3], (set(), set(), set(['test1.*', 'test?2'])))
+            self.check_equal([("test1.*",), "test?2", 3], (set(), set(), set(['test1.*', 'test?2']), [False]))
 
             #
             # test glob and string
             # 
-            self.check_equal([("test*1",), (("test3",),),"test2", 3], (set(), set(['test3', 'test2']), set(['test*1'])))
+            self.check_equal([("test*1",), (("test3",),),"test2", 3], (set(), set(['test3', 'test2']), set(['test*1']), [False]))
             
             #
             # test function
             # 
-            self.check_equal(is_glob, (set([is_glob]), set(), set([])))
+            self.check_equal(is_glob, (set([is_glob]), set(), set([]), [False]))
             self.check_equal([is_glob, [1, "this", ["that*", 5]], [(is_str,)]], (
-                            set([is_glob, is_str]), set(["this"]), set(["that*"])))
+                            set([is_glob, is_str]), set(["this"]), set(["that*"]), [False]))
             #
             # test wrapper
             # 
-            self.check_equal(output_from(is_glob, ["what", 7], 5), (set([is_glob, "what"]), set(), set([])))
+            self.check_equal(output_from(is_glob, ["what", 7], 5), (set([is_glob, "what"]), set(), set([]), [False]))
 
     #
     #   debug parameter ignored if called as a module
