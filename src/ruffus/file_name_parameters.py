@@ -94,23 +94,25 @@ from ruffus_utility import *
 #   check_input_files_exist
 
 #_________________________________________________________________________________________
-def check_input_files_exist (input_files, *other_parameters_ignored):
+def check_input_files_exist (*params):
     """
     Clunky hack to make sure input files exists right before 
         job is called for better error messages
     Input files in first argument
     """
-    for f in get_strings_in_nested_sequence(input_files):
-        if not os.path.exists(f):
-            raise MissingInputFileError("No way to run job: "+
-                                        "Input file ['%s'] does not exist" % f)
+    if len(params):
+        input_files = params[0]
+        for f in get_strings_in_nested_sequence(input_files):
+            if not os.path.exists(f):
+                raise MissingInputFileError("No way to run job: "+
+                                            "Input file ['%s'] does not exist" % f)
 
 #_________________________________________________________________________________________
 
 #   needs_update_check_modify_time
 
 #_________________________________________________________________________________________
-def needs_update_check_modify_time (i, o, *other_parameters_ignored):
+def needs_update_check_modify_time (*params):
     """
     Given input and output files, see if all exist and whether output files are later than input files
     Each can be 
@@ -119,6 +121,12 @@ def needs_update_check_modify_time (i, o, *other_parameters_ignored):
         #. arbitrary nested sequence of (1) and (2)
         
     """
+    # missing output means build
+    if len(params) < 2:
+        return True
+
+
+    i, o = params[0:2]
     i = get_strings_in_nested_sequence(i)
     o = get_strings_in_nested_sequence(o)
 
@@ -157,7 +165,7 @@ def needs_update_check_modify_time (i, o, *other_parameters_ignored):
     #   update if any input file >= (more recent) output fifle
     #
     if max(file_times[0]) >= min(file_times[1]):
-        return True, "Need update %s" % str(filename_to_times)
+        return True, "Need update file times= %s" % str(filename_to_times)
     return False, "Up to date"
 
 
@@ -192,7 +200,7 @@ def get_output_file_names_from_tasks (tasks):
     """
     filenames = set()
     for task in tasks:
-        filenames.update(tasks.get_output_files())
+        filenames.update(task.get_output_files())
     return filenames
 
 
@@ -201,22 +209,27 @@ def get_output_file_names_from_tasks (tasks):
 #   file_names_from_tasks_list_globs 
 
 #_________________________________________________________________________________________
-def file_names_from_tasks_list_globs (tasks, filenames, globs):
+def file_names_from_tasks_list_globs (tasks, filenames, globs, singleton = False):
     """
     Accumulate file names from the output of the specified tasks, lists and 
         glob specification
     """
 
-    filenames = copy.copy(filenames)
+    all_filenames = copy.copy(filenames)
 
     # add files from globs
     for g in globs:
-        filenames.update(glob.glob(g))
+        all_filenames.update(glob.glob(g))
 
     # add files from tasks
-    filenames.update(get_output_file_names_from_tasks(tasks))
+    all_filenames.update(get_output_file_names_from_tasks(tasks))
+    
+    all_filenames = tuple(all_filenames)
+    
+    if len(all_filenames) == 1 and singleton:
+        return all_filenames[0]
 
-    return filenames
+    return tuple(all_filenames)
 
  
     
@@ -341,19 +354,19 @@ def files_param_factory (orig_args):
 #   split_param_factory
 
 #_________________________________________________________________________________________
-def split_param_factory (tasks, filenames, globs, output_files, *extras):
+def split_param_factory (tasks, filenames, globs, singleton, output_files_specification, *extras):
     """
     Factory for task_split
     """
     extras = tuple(extras)
 
-    def iterator ():
+    def iterator():
 
-        filenames = tuple(file_names_from_tasks_list_globs (tasks, filenames, globs))
-            
-        output_files = expand_filename_globs_in_nested_sequence(output_files)
+        orig_filenames = file_names_from_tasks_list_globs (tasks, filenames, globs, singleton)
 
-        yield (filenames, output_files) + extras
+        output_files = expand_filename_globs_in_nested_sequence(output_files_specification)
+
+        yield (orig_filenames, output_files) + extras
 
 
     return iterator
@@ -373,14 +386,13 @@ def transform_param_factory (tasks, filenames, globs, regex,
     Factory for task_transform
     """
     extras = tuple(extras)
-    
 
-    def iterator ():
+    def iterator():
 
-        filenames = tuple(file_names_from_tasks_list_globs (tasks, filenames, globs))
+        orig_filenames = file_names_from_tasks_list_globs (tasks, filenames, globs)
 
 
-        for filename in filenames:
+        for filename in orig_filenames:
 
             #   regular expression has to match 
             if not regex.search(filename):
@@ -392,6 +404,7 @@ def transform_param_factory (tasks, filenames, globs, regex,
             else:
                 yield tuple(construct_filename_parameters_with_regex(filename, regex, p) 
                                     for p in (input_pattern, output_pattern)) + extras
+    return iterator
                 
 
 #_________________________________________________________________________________________
@@ -399,7 +412,7 @@ def transform_param_factory (tasks, filenames, globs, regex,
 #   merge_param_factory
 
 #_________________________________________________________________________________________
-def merge_param_factory (tasks, filenames, globs, 
+def merge_param_factory (tasks, filenames, globs, singleton, 
                                 output_files, 
                                 *extras):
     """
@@ -407,9 +420,9 @@ def merge_param_factory (tasks, filenames, globs,
     """
     # 
     extras = list(extras)
-    def iterator ():
-        filenames = tuple(file_names_from_tasks_list_globs (tasks, filenames, globs))
-        yield (filenames, output_files) + extras
+    def iterator():
+        orig_filenames = file_names_from_tasks_list_globs (tasks, filenames, globs, singleton)
+        yield (orig_filenames, output_files) + tuple(extras)
     return iterator
 
     
@@ -427,20 +440,23 @@ def collate_param_factory (tasks, filenames, globs,
     """
     # 
     output_and_extras = list(output_and_extras)
-    def iterator ():
-        filenames = tuple(file_names_from_tasks_list_globs (tasks, filenames, globs))
+    def iterator():
+        orig_filenames = file_names_from_tasks_list_globs (tasks, filenames, globs)
 
         # one job per unique [output / extra] parameter
         input_per_output_extra_params = defaultdict(list)
 
-        for filename in filenames:
+        for filename in orig_filenames:
 
             #   regular expression has to match 
             if not regex.search(filename):
                 continue
 
             output_param = tuple(construct_filename_parameters_with_regex(filename, regex, p) 
-                                    for p in output_and_extras[1:])
+                                    for p in output_and_extras)
+            # nothing matched
+            if len(output_param) == 0:
+                continue
             input_per_output_extra_params[output_param].append(filename)
 
         # combine inputs which lead to the same output/extras into one tuple
@@ -468,7 +484,7 @@ def collate_param_factory (tasks, filenames, globs,
 #                3) input_filename_str (optional)
 #                4) output_filename_str
 #_________________________________________________________________________________________
-def files_re_param_factory (tasks, filenames, globs, matching_regex, *parameters):
+def files_re_param_factory (tasks, filenames, globs, singleton, matching_regex, *parameters):
     """
     Factory for functions which in turn
         yield tuples of input_file_name, output_file_name                                     
@@ -533,8 +549,8 @@ def files_re_param_factory (tasks, filenames, globs, matching_regex, *parameters
         else:
             matching_regex = matching_regex.args
         
-        
     regex = re.compile(matching_regex)
+        
 
     #  make (expensive) copy so that changes to the original sequence don't confuse us
     parameters = copy.copy(parameters)
@@ -546,15 +562,13 @@ def files_re_param_factory (tasks, filenames, globs, matching_regex, *parameters
         
 
             
-    def iterator ():
+    def iterator():
 
-        # add files from globs
-        for g in globs:
-            filenames.update(glob.glob(g))
-
-        # add files from tasks
-        filenames.update(get_output_file_names_from_tasks(tasks))
         
+        
+        # add files from globs
+        orig_filenames = file_names_from_tasks_list_globs (tasks, filenames, globs, False)
+
         if combining_all_jobs:
             #
             # This is intended as a many -> few combining operation 
@@ -562,7 +576,7 @@ def files_re_param_factory (tasks, filenames, globs, matching_regex, *parameters
             # 
             # This function delivers one job per unique [output / extra] parameter
             input_params_per_output_extra_params = defaultdict(list)
-            for filename in filenames:
+            for filename in orig_filenames:
                 #   regular expression has to match 
                 if not regex.search(filename):
                     continue
@@ -574,11 +588,12 @@ def files_re_param_factory (tasks, filenames, globs, matching_regex, *parameters
                                         for p in parameters[1:])
                 input_params_per_output_extra_params[output_param].append(input_param)
                 
-            for output_param, input_params in input_params_per_output_extra_params.iteritems():
-                yield (tuple(sorted(input_params)),) + output_param
+            for output_param in sorted(input_params_per_output_extra_params.keys()):
+                input_param = input_params_per_output_extra_params[output_param]
+                yield (tuple(sorted(input_param)),) + output_param
         else:
             
-            for filename in filenames:
+            for filename in sorted(list(orig_filenames)):
                 #   regular expression has to match 
                 if not regex.search(filename):
                     continue
@@ -765,9 +780,8 @@ if __name__ == '__main__':
             This extra function is to simulate the forwarding from the decorator to
                 the task creation function
             """
-            tasks, filenames, globs = get_tasks_filename_globs_in_nested_sequence(glob_or_str)
-            it = files_re_param_factory(tasks, filenames, globs, regex, *params)
-            print tasks
+            tasks, filenames, globs, singleton = get_tasks_filename_globs_in_nested_sequence(glob_or_str)
+            it = files_re_param_factory(tasks, filenames, globs, singleton, regex, *params)
             return list(it())
             
         def check_input_files_exist(self, glob_or_str, regex, *params):
@@ -775,8 +789,8 @@ if __name__ == '__main__':
             This extra function is to simulate the forwarding from the decorator to
                 the task creation function
             """
-            tasks, filenames, globs = get_tasks_filename_globs_in_nested_sequence(glob_or_str)
-            it = files_re_param_factory(tasks, filenames, globs, regex, *params)
+            tasks, filenames, globs, singleton = get_tasks_filename_globs_in_nested_sequence(glob_or_str)
+            it = files_re_param_factory(tasks, filenames, globs, singleton, regex, *params)
             for param in it():
                 check_input_files_exist (*param)
             return True
@@ -786,8 +800,8 @@ if __name__ == '__main__':
             This extra function is to simulate the forwarding from the decorator to
                 the task creation function
             """
-            tasks, filenames, globs = get_tasks_filename_globs_in_nested_sequence(glob_or_str)
-            it = files_re_param_factory(tasks, filenames, globs, regex, *params)
+            tasks, filenames, globs, singleton = get_tasks_filename_globs_in_nested_sequence(glob_or_str)
+            it = files_re_param_factory(tasks, filenames, globs, singleton, regex, *params)
             return [needs_update_check_modify_time (*p) for p in it()]
 
 
@@ -851,14 +865,14 @@ if __name__ == '__main__':
             #
             # check simple is up to date
             # 
-            self.assertEqual(self.needs_update_check_modify_time(test_path + "/*", 
-                                "(.*).test$", r"\1.output"), [True, False, False])
+            self.assertEqual([res[0] for res in self.needs_update_check_modify_time(test_path + "/*", 
+                                "(.*).test$", r"\1.output")], [True, False, False])
             #
             # check complex is up to date
             # 
-            self.assertEqual(self.needs_update_check_modify_time(test_path + "/*", 
+            self.assertEqual([res[0] for res in self.needs_update_check_modify_time(test_path + "/*", 
                                 "(.*).test$", [1,2,[[r"\1.output", 
-                                                     r"\1.output"]]]), [True, False, False])
+                                                     r"\1.output"]]])], [True, False, False])
             
         def test_filelist(self):
             """
@@ -930,7 +944,9 @@ if __name__ == '__main__':
             t3 = task._task("module", "func3"); t3.param_generator_func = list_generator_factory(l3)
             t4 = task._task("module", "func4"); t4.param_generator_func = list_generator_factory(l4)
             t5 = task._task("module", "func5"); t5.param_generator_func = None
-            self.assertEqual(self.forwarded_function(output_from(t1, t2, t3, t4, t5), r"(.*)", r"\1.yes"),
+
+            it = files_re_param_factory(set([t1, t2, t3, t4, t5]), set(), set(), False, r"(.*)", r"\1.yes")
+            self.assertEqual(list(it()),
                             [('output1', 'output1.yes'), 
                              ('output2', 'output2.yes'), 
                              ('output3', 'output3.yes'), 

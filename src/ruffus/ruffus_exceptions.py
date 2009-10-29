@@ -69,17 +69,29 @@ class error_task(Exception):
         
         task_names = "\n".join(task_names)
         if len(self.main_msg):
-            return "\n\n" + self.main_msg + " for\n%s\n" % task_names
+            return "\n\n" + self.main_msg + " for\n\n%s\n" % task_names
         else:
             return "\n\n%s\n" % task_names
         
         
     def __str__(self):
-        return self.get_main_msg() + " ".join(map(str, self.args))
+        #indent
+        msg = self.get_main_msg() + " ".join(map(str, self.args))
+        return "    " + msg.replace("\n", "\n    ")
 
     def specify_task (self, task, main_msg):
         self.tasks.append(task)
         self.main_msg = main_msg
+        return self
+
+class error_task_contruction(error_task):
+    """
+    Exceptions when contructing pipeline tasks
+    """
+
+    def __init__(self, task, main_msg, *errmsg):
+        error_task.__init__(self, *errmsg)
+        self.specify_task (task, main_msg)
 
 class RethrownJobError(error_task):
     """
@@ -115,13 +127,13 @@ class PostTaskArgumentError(error_task):
     pass
 
 
-class error_task_transform(error_task):
+class error_task_transform(error_task_contruction):
     pass
-class error_task_merge(error_task):
+class error_task_merge(error_task_contruction):
     pass
-class error_task_collate(error_task):
+class error_task_collate(error_task_contruction):
     pass
-class error_task_split(error_task):
+class error_task_split(error_task_contruction):
     pass
 class error_making_directory(error_task):
     pass

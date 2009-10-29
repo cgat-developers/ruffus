@@ -751,7 +751,6 @@ def topologically_sorted_nodes( to_leaves,
     else:
         signalling_nodes = set()
         
-        
     if gather_all_non_signalled:
         #
         #   get whole tree, ignoring signalling
@@ -790,6 +789,7 @@ def topologically_sorted_nodes( to_leaves,
             nodes_to_include.add(n)
             nodes_to_include.update(get_parent_nodes([n]))
 
+        
         reversed_nodes = v.topological_sorted()
         for n in reversed_nodes:
             if n in nodes_to_include:
@@ -801,6 +801,7 @@ def topologically_sorted_nodes( to_leaves,
             else:
                 signalling_nodes.add(n)
                 #sys.stderr.write(json.dumps(n, cls=node_to_json, sort_keys=1) + "\n")
+        
         
         return ([n for n in v.topological_sorted() if n in nodes_to_include],
                 signalling_nodes,
@@ -827,6 +828,7 @@ def topologically_sorted_nodes( to_leaves,
 
             v = topological_sort_visitor(forced_nodes_and_dependencies, 
                                             topological_sort_visitor.END_ON_SIGNAL)
+
 
         #
         #   Forward graph iteration
