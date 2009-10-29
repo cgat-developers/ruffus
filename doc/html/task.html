@@ -42,8 +42,9 @@
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>
         <li><a href="contents.html">Contents</a> | </li>
+        <li><a href="simple_tutorial.html">Simple tutorial</a>  | </li>
         <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
-        <li><a href="Tutorial.html">Full tutorial</a>  | </li>
+        <li><a href="full_tutorial.html">Full tutorial</a>  | </li>
         <li><a href="FAQ.html">FAQ</a>  | </li>
         <li><a href="Todo.html">Future plans</a>  | </li>
         <li><a href="search.html">Search</a> &raquo;</li>
@@ -113,7 +114,7 @@ run in parallel.</p>
 <p>More advanced users may require:</p>
 <blockquote>
 <p><a class="reference external" href="decorators/transform_ex.html#task-transform-ex"><em>&#64;transform()</em></a></p>
-<p><a class="reference external" href="decorators/merge_ex.html#task-merge-ex"><em>&#64;merge()</em></a></p>
+<p><a class="reference external" href="decorators/collate.html#task-collate"><em>&#64;collate()</em></a></p>
 <p><a class="reference external" href="decorators/parallel.html#task-parallel"><em>&#64;parallel()</em></a></p>
 <p><a class="reference external" href="decorators/check_if_uptodate.html#task-check-if-uptodate"><em>&#64;check_if_uptodate()</em></a></p>
 <p><a class="reference external" href="decorators/files_re.html#task-files-re"><em>&#64;files_re()</em></a></p>
@@ -232,58 +233,26 @@ class </em><tt class="descclassname">ruffus.task.</tt><tt class="descname">t_std
 <div class="section" id="parameter-factories">
 <h3>Parameter factories:<a class="headerlink" href="#parameter-factories" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
-<dt id="ruffus.task.file_list_io_param_factory">
-<tt class="descclassname">ruffus.task.</tt><tt class="descname">file_list_io_param_factory</tt><big>(</big><em>orig_args</em><big>)</big><a class="headerlink" href="#ruffus.task.file_list_io_param_factory" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Factory for functions which </dt>
-<dd>yield tuples of input_file_name, output_file_name</dd>
-</dl>
-<p>Examples of orig_args:</p>
-<p>1.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">orig_args</span> <span class="o">=</span> <span class="s">&quot;input1&quot;</span><span class="p">,</span> <span class="s">&quot;output1&quot;</span><span class="p">,</span> <span class="n">any_other_parameters1</span><span class="p">,</span> <span class="o">...</span>       <span class="c"># files for job 1 </span>
-</pre></div>
-</div>
-<p>2.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">orig_args</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>     <span class="s">&quot;output1&quot;</span><span class="p">,</span> <span class="n">any_other_parameters2</span><span class="p">,</span> <span class="o">...</span>       <span class="c"># files for job 1 </span>
-</pre></div>
-</div>
-<p>3.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">orig_args</span> <span class="o">=</span> <span class="p">[</span>                                                               
-              <span class="p">[</span><span class="s">&quot;input0&quot;</span><span class="p">,</span>               <span class="s">&quot;output0&quot;</span><span class="p">,</span>                <span class="o">...</span><span class="p">]</span> <span class="c"># files for job 1</span>
-              <span class="p">[[</span><span class="s">&quot;input1a&quot;</span><span class="p">,</span> <span class="s">&quot;input1b&quot;</span><span class="p">],</span> <span class="s">&quot;output1&quot;</span><span class="p">,</span>                <span class="o">...</span><span class="p">]</span> <span class="c"># files for job 2 </span>
-              <span class="p">[</span><span class="s">&quot;input2&quot;</span><span class="p">,</span>               <span class="p">[</span><span class="s">&quot;output2a&quot;</span><span class="p">,</span> <span class="s">&quot;output2b&quot;</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="c"># files for job 3 </span>
-              <span class="p">[</span><span class="s">&quot;input3&quot;</span><span class="p">,</span>               <span class="s">&quot;output3&quot;</span><span class="p">,</span>                <span class="o">...</span><span class="p">]</span> <span class="c"># files for job 4 </span>
-            <span class="p">]</span>                                                                 
-</pre></div>
-</div>
-<p>Usage:</p>
-<blockquote>
-<p>param_func = file_list_io_param_factory(orig_args)</p>
-<dl class="docutils">
-<dt>for params in param_func():                                                                          </dt>
-<dd>i,o = params[0:2]
-print &#8221; input file name(s) = &#8221; , i                                                                
-print &#8220;output file name(s) = &#8221; , o</dd>
-</dl>
-</blockquote>
-<p>..Note:</p>
-<div class="highlight-python"><pre>1. Each job requires input/output file names
-2. Input/output file names can be a string, an arbitrarily nested sequence
-3. Non-string types are ignored
-3. Either Input or output file name must contain at least one string</pre>
-</div>
-</dd></dl>
+<dt id="ruffus.task.merge_param_factory">
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">merge_param_factory</tt><big>(</big><em>tasks</em>, <em>filenames</em>, <em>globs</em>, <em>singleton</em>, <em>output_files</em>, <em>*extras</em><big>)</big><a class="headerlink" href="#ruffus.task.merge_param_factory" title="Permalink to this definition">¶</a></dt>
+<dd>Factory for task_merge</dd></dl>
 
 <dl class="function">
-<dt id="ruffus.task.glob_regex_io_param_factory">
-<tt class="descclassname">ruffus.task.</tt><tt class="descname">glob_regex_io_param_factory</tt><big>(</big><em>file_source</em>, <em>matching_regex</em>, <em>*parameters</em><big>)</big><a class="headerlink" href="#ruffus.task.glob_regex_io_param_factory" title="Permalink to this definition">¶</a></dt>
+<dt id="ruffus.task.collate_param_factory">
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">collate_param_factory</tt><big>(</big><em>tasks</em>, <em>filenames</em>, <em>globs</em>, <em>regex</em>, <em>*output_and_extras</em><big>)</big><a class="headerlink" href="#ruffus.task.collate_param_factory" title="Permalink to this definition">¶</a></dt>
+<dd>Factory for task_collate
+all [input] which lead to the same [output / extra] are combined together</dd></dl>
+
+<dl class="function">
+<dt id="ruffus.task.files_re_param_factory">
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">files_re_param_factory</tt><big>(</big><em>tasks</em>, <em>filenames</em>, <em>globs</em>, <em>singleton</em>, <em>matching_regex</em>, <em>*parameters</em><big>)</big><a class="headerlink" href="#ruffus.task.files_re_param_factory" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Factory for functions which in turn</dt>
 <dd>yield tuples of input_file_name, output_file_name</dd>
 </dl>
 <p>Usage:</p>
 <p>1.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">param_func</span> <span class="o">=</span> <span class="n">glob_regex_io_param_factory</span><span class="p">(</span><span class="s">&quot;/etc/*&quot;</span><span class="p">,</span>          <span class="c"># glob                                  </span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">param_func</span> <span class="o">=</span> <span class="n">files_re_param_factory</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">filename_list</span><span class="p">,</span> <span class="n">glob</span><span class="p">,</span>
                                          <span class="s">&quot;(file_)(\d+)&quot;</span><span class="p">,</span>    <span class="c"># which match this regex                </span>
                                          <span class="s">&quot;input_file_&quot;</span><span class="p">,</span>   <span class="c"># pattern to generate input file names    </span>
                                          <span class="s">&quot;output_file_&quot;</span><span class="p">)</span>  <span class="c"># pattern to generate output file names  </span>
@@ -291,15 +260,7 @@ print &#8220;output file name(s) = &#8221; , o</dd>
 </div>
 <p>or                                                                                                 
 2.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">param_func</span> <span class="o">=</span> <span class="n">glob_regex_io_param_factory</span><span class="p">(</span><span class="s">&quot;/etc/*&quot;</span><span class="p">,</span>         <span class="c"># glob                                  </span>
-                                         <span class="s">&quot;(file_)(\d+)&quot;</span><span class="p">,</span>   <span class="c"># which match this regex                </span>
-                                         <span class="bp">None</span><span class="p">,</span>             <span class="c"># use originals as input file names     </span>
-                                         <span class="s">&quot;output_file_&quot;</span><span class="p">)</span> <span class="c"># pattern to generate output file names   </span>
-</pre></div>
-</div>
-<p>or 
-3.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">param_func</span> <span class="o">=</span> <span class="n">glob_regex_io_param_factory</span><span class="p">(</span><span class="n">file_list</span><span class="p">,</span>        <span class="c"># list of files</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">param_func</span> <span class="o">=</span> <span class="n">files_re_param_factory</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">filename_list</span><span class="p">,</span> <span class="n">glob</span><span class="p">,</span>
                                          <span class="s">&quot;(file_)(\d+)&quot;</span><span class="p">,</span>   <span class="c"># which match this regex                </span>
                                          <span class="bp">None</span><span class="p">,</span>             <span class="c"># use originals as input file names     </span>
                                          <span class="s">&quot;output_file_&quot;</span><span class="p">)</span> <span class="c"># pattern to generate output file names   </span>
@@ -322,6 +283,55 @@ to the input/export files</li>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="function">
+<dt id="ruffus.task.transform_param_factory">
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">transform_param_factory</tt><big>(</big><em>tasks</em>, <em>filenames</em>, <em>globs</em>, <em>regex</em>, <em>input_pattern</em>, <em>output_pattern</em>, <em>regex_substitute_extra_parameters</em>, <em>*extras</em><big>)</big><a class="headerlink" href="#ruffus.task.transform_param_factory" title="Permalink to this definition">¶</a></dt>
+<dd>Factory for task_transform</dd></dl>
+
+<dl class="function">
+<dt id="ruffus.task.files_param_factory">
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">files_param_factory</tt><big>(</big><em>orig_args</em><big>)</big><a class="headerlink" href="#ruffus.task.files_param_factory" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Factory for functions which </dt>
+<dd>yield tuples of inputs, outputs / extras</dd>
+</dl>
+<p>..Note:</p>
+<div class="highlight-python"><pre>1. Each job requires input/output file names
+2. Input/output file names can be a string, an arbitrarily nested sequence
+3. Non-string types are ignored
+3. Either Input or output file name must contain at least one string</pre>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="ruffus.task.args_param_factory">
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">args_param_factory</tt><big>(</big><em>orig_args</em><big>)</big><a class="headerlink" href="#ruffus.task.args_param_factory" title="Permalink to this definition">¶</a></dt>
+<dd><p>so that:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@parallel</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">)</span> 
+<span class="k">def</span> <span class="nf">task_func</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">):</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>and:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">parameters</span><span class="o">=</span><span class="p">[</span>
+             <span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">],</span>        <span class="c"># first job</span>
+           <span class="p">]</span>        
+<span class="nd">@parallel</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span> 
+<span class="k">def</span> <span class="nf">task_func</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">):</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>both call:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">task_func</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="n">B</span> <span class="o">=</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="s">&#39;c&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="ruffus.task.split_param_factory">
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">split_param_factory</tt><big>(</big><em>tasks</em>, <em>filenames</em>, <em>globs</em>, <em>singleton</em>, <em>output_files_specification</em>, <em>*extras</em><big>)</big><a class="headerlink" href="#ruffus.task.split_param_factory" title="Permalink to this definition">¶</a></dt>
+<dd>Factory for task_split</dd></dl>
 
 </div>
 <div class="section" id="wrappers-around-jobs">
@@ -410,7 +420,7 @@ Is it an ordinary file not a directory? (throw exception</dd>
 
             <h4>Previous topic</h4>
             <p class="topless"><a href="examples/sharing_data_across_jobs_example_code.html"
-                                  title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">simpler_with_shared_logging</span></tt> &#8211; How to share data across jobs</a></p>
+                                  title="previous chapter"><tt class="docutils literal"><span class="pre">simpler_with_shared_logging</span></tt> &#8211; How to share data across jobs</a></p>
             <h4>Next topic</h4>
             <p class="topless"><a href="proxy_logger.html"
                                   title="next chapter">ruffus.proxy_logger</a></p>
@@ -433,8 +443,8 @@ Is it an ordinary file not a directory? (throw exception</dd>
               </p>
           </div>
           <script type="text/javascript">$('#searchbox').show(0);</script>
-    <h3><a href="decorators/decorators.html">Decorators</a></h3>   <br>
-    <h3><a href="decorators/indicator_objects.html">Indicator objects</a></h3>   <br>
+    <h3><a href="decorators/decorators.html">Decorators:</a></h3>   
+        <br>
     <a href="decorators/follows.html">@follows</a>                      <br>
     <a href="decorators/files.html">@files</a>                          <br>
     <a href="decorators/split.html">@split</a>                          <br>
@@ -442,9 +452,10 @@ Is it an ordinary file not a directory? (throw exception</dd>
     <a href="decorators/merge.html">@merge</a>                          <br>
     <a href="decorators/posttask.html">@posttask</a>                    <br>
     <a href="decorators/transform_ex.html">Advanced @transform</a>      <br>
-    <a href="decorators/merge_ex.html">Advanced @merge</a>              <br>
+    <a href="decorators/collate.html">@collate</a>              <br>
     <a href="decorators/parallel.html">@parallel</a>                    <br>
     <a href="decorators/check_if_uptodate.html">@check_if_uptodate</a>  <br>
+    <h3><a href="decorators/indicator_objects.html">Indicator objects</a></h3>   <br>
 
         </div>
       </div>
@@ -468,8 +479,9 @@ Is it an ordinary file not a directory? (throw exception</dd>
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>
         <li><a href="contents.html">Contents</a> | </li>
+        <li><a href="simple_tutorial.html">Simple tutorial</a>  | </li>
         <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
-        <li><a href="Tutorial.html">Full tutorial</a>  | </li>
+        <li><a href="full_tutorial.html">Full tutorial</a>  | </li>
         <li><a href="FAQ.html">FAQ</a>  | </li>
         <li><a href="Todo.html">Future plans</a>  | </li>
         <li><a href="search.html">Search</a> &raquo;</li>

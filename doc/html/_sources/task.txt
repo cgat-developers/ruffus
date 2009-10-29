@@ -31,7 +31,7 @@ Decorators
     
         :ref:`@transform() <task.transform_ex>`      
         
-        :ref:`@merge() <task.merge_ex>`      
+        :ref:`@collate() <task.collate>`      
 
         :ref:`@parallel() <task.parallel>`      
         
@@ -77,8 +77,13 @@ Implementation:
 =================================
 Parameter factories:
 =================================
-.. autofunction:: file_list_io_param_factory
-.. autofunction:: glob_regex_io_param_factory
+.. autofunction:: merge_param_factory
+.. autofunction:: collate_param_factory
+.. autofunction:: files_re_param_factory                                                                        
+.. autofunction:: transform_param_factory
+.. autofunction:: files_param_factory
+.. autofunction:: args_param_factory
+.. autofunction:: split_param_factory
 
 .. ???
     

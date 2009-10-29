@@ -21,7 +21,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="ruffus v1.1.5c documentation" href="index.html" />
     <link rel="next" title="Introduction" href="introduction.html" />
-    <link rel="prev" title="Full Tutorial" href="full_tutorial.html" /> 
+    <link rel="prev" title="Full Tutorial: Work in Progress" href="full_tutorial.html" /> 
   </head>
   <body>
     <div class="related">
@@ -37,13 +37,14 @@
           <a href="introduction.html" title="Introduction"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="full_tutorial.html" title="Full Tutorial"
+          <a href="full_tutorial.html" title="Full Tutorial: Work in Progress"
              accesskey="P">previous</a> |</li>
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>
         <li><a href="contents.html">Contents</a> | </li>
+        <li><a href="simple_tutorial.html">Simple tutorial</a>  | </li>
         <li><a href="">Cheat sheet</a> | </li>
-        <li><a href="Tutorial.html">Full tutorial</a>  | </li>
+        <li><a href="full_tutorial.html">Full tutorial</a>  | </li>
         <li><a href="FAQ.html">FAQ</a>  | </li>
         <li><a href="Todo.html">Future plans</a>  | </li>
         <li><a href="search.html">Search</a> &raquo;</li>
@@ -84,8 +85,8 @@ for running computational pipelines.</p>
 <tbody valign="top">
 <tr><td><p class="first"><strong>&#64;follows</strong></p>
 <ul class="last simple">
-<li>Indicates task dependency (<a class="reference external" href="full_tutorial.html#follows"><em>see tutorial</em></a>)</li>
-<li>optional <a class="reference external" href="decorators/follows.html#task-follows-directory-name"><em>mkdir</em></a> prerequisite (<a class="reference external" href="full_tutorial.html#follow-mkdir"><em>see tutorial</em></a>)</li>
+<li>Indicates task dependency (<a class="reference external" href="Tutorial.html#follows"><em>see tutorial</em></a>)</li>
+<li>optional <a class="reference external" href="decorators/follows.html#task-follows-directory-name"><em>mkdir</em></a> prerequisite (<a class="reference external" href="tutorials/full_tutorial/step1_follows.html#follow-mkdir"><em>see tutorial</em></a>)</li>
 </ul>
 </td>
 <td><div class="first last line-block">
@@ -95,7 +96,7 @@ for running computational pipelines.</p>
 </td>
 <td>&nbsp;</td>
 </tr>
-<tr><td><p class="first"><strong>&#64;files</strong> (<a class="reference external" href="full_tutorial.html#files"><em>Tutorial</em></a>)</p>
+<tr><td><p class="first"><strong>&#64;files</strong> (<a class="reference external" href="Tutorial.html#files"><em>Tutorial</em></a>)</p>
 <ul class="last simple">
 <li>I/O parameters</li>
 <li>skips up-to-date jobs</li>
@@ -158,8 +159,8 @@ for running computational pipelines.</p>
 </tr>
 <tr><td><p class="first"><strong>&#64;posttask</strong></p>
 <ul class="last simple">
-<li>Calls function after task completes (<a class="reference external" href="full_tutorial.html#posttask"><em>see tutorial</em></a>)</li>
-<li>Optional <a class="reference external" href="decorators/posttask.html#task-posttask-file-name"><em>touch_file</em></a> indicator (<a class="reference external" href="full_tutorial.html#posttask-touch-file"><em>see tutorial</em></a>)</li>
+<li>Calls function after task completes (<a class="reference external" href="Tutorial.html#posttask"><em>see tutorial</em></a>)</li>
+<li>Optional <a class="reference external" href="decorators/posttask.html#task-posttask-file-name"><em>touch_file</em></a> indicator (<a class="reference external" href="Tutorial.html#posttask-touch-file"><em>see tutorial</em></a>)</li>
 </ul>
 </td>
 <td><div class="first last line-block">
@@ -199,7 +200,7 @@ for running computational pipelines.</p>
 <h2>3. Run the pipeline<a class="headerlink" href="#run-the-pipeline" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python"><pre>pipeline_run(list_of_target_tasks, [list_of_tasks_forced_to_rerun, multiprocess = N_PARALLEL_JOBS])</pre>
 </div>
-<p>See the <a class="reference external" href="full_tutorial.html#tutorial"><em>Full Tutorial</em></a> for a more complete introduction on how to add support
+<p>See the <a class="reference external" href="Tutorial.html#tutorial"><em>Full Tutorial</em></a> for a more complete introduction on how to add support
 for ruffus.</p>
 </div>
 </div>
@@ -227,7 +228,7 @@ for ruffus.</p>
 
             <h4>Previous topic</h4>
             <p class="topless"><a href="full_tutorial.html"
-                                  title="previous chapter">Full Tutorial</a></p>
+                                  title="previous chapter">Full Tutorial: Work in Progress</a></p>
             <h4>Next topic</h4>
             <p class="topless"><a href="introduction.html"
                                   title="next chapter">Introduction</a></p>
@@ -250,8 +251,8 @@ for ruffus.</p>
               </p>
           </div>
           <script type="text/javascript">$('#searchbox').show(0);</script>
-    <h3><a href="decorators/decorators.html">Decorators</a></h3>   <br>
-    <h3><a href="decorators/indicator_objects.html">Indicator objects</a></h3>   <br>
+    <h3><a href="decorators/decorators.html">Decorators:</a></h3>   
+        <br>
     <a href="decorators/follows.html">@follows</a>                      <br>
     <a href="decorators/files.html">@files</a>                          <br>
     <a href="decorators/split.html">@split</a>                          <br>
@@ -259,9 +260,10 @@ for ruffus.</p>
     <a href="decorators/merge.html">@merge</a>                          <br>
     <a href="decorators/posttask.html">@posttask</a>                    <br>
     <a href="decorators/transform_ex.html">Advanced @transform</a>      <br>
-    <a href="decorators/merge_ex.html">Advanced @merge</a>              <br>
+    <a href="decorators/collate.html">@collate</a>              <br>
     <a href="decorators/parallel.html">@parallel</a>                    <br>
     <a href="decorators/check_if_uptodate.html">@check_if_uptodate</a>  <br>
+    <h3><a href="decorators/indicator_objects.html">Indicator objects</a></h3>   <br>
 
         </div>
       </div>
@@ -280,13 +282,14 @@ for ruffus.</p>
           <a href="introduction.html" title="Introduction"
              >next</a> |</li>
         <li class="right" >
-          <a href="full_tutorial.html" title="Full Tutorial"
+          <a href="full_tutorial.html" title="Full Tutorial: Work in Progress"
              >previous</a> |</li>
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>
         <li><a href="contents.html">Contents</a> | </li>
+        <li><a href="simple_tutorial.html">Simple tutorial</a>  | </li>
         <li><a href="">Cheat sheet</a> | </li>
-        <li><a href="Tutorial.html">Full tutorial</a>  | </li>
+        <li><a href="full_tutorial.html">Full tutorial</a>  | </li>
         <li><a href="FAQ.html">FAQ</a>  | </li>
         <li><a href="Todo.html">Future plans</a>  | </li>
         <li><a href="search.html">Search</a> &raquo;</li>

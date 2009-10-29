@@ -42,8 +42,9 @@
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>
         <li><a href="contents.html">Contents</a> | </li>
+        <li><a href="">Simple tutorial</a>  | </li>
         <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
-        <li><a href="Tutorial.html">Full tutorial</a>  | </li>
+        <li><a href="full_tutorial.html">Full tutorial</a>  | </li>
         <li><a href="FAQ.html">FAQ</a>  | </li>
         <li><a href="Todo.html">Future plans</a>  | </li>
         <li><a href="search.html">Search</a> &raquo;</li>
@@ -57,22 +58,22 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="steps-to-ruffus-in-10-minutes">
-<span id="simple-tutorial"></span><h1>7 steps to <em>Ruffus</em> in 10 minutes<a class="headerlink" href="#steps-to-ruffus-in-10-minutes" title="Permalink to this headline">¶</a></h1>
+  <span class="target" id="simple-tutorial"></span><div class="section" id="steps-to-ruffus-in-10-minutes">
+<h1>7 steps to <em>Ruffus</em> in 10 minutes<a class="headerlink" href="#steps-to-ruffus-in-10-minutes" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <p>The <tt class="docutils literal"><span class="pre">ruffus</span></tt> module is a lightweight way to add support
 for running computational pipelines.</p>
 <p>Computational pipelines are often conceptually quite simple, especially
-if we breakdown the process into simple stages, or separate <strong>tasks</strong>.</p>
-<p>Each <strong>task</strong> is represented by a python function</p>
+if we breakdown the process into simple stages, or separate <a class="reference external" href="glossary.html#term-task"><strong>task</strong></a>s.</p>
+<p>Each <a class="reference external" href="glossary.html#term-task"><strong>task</strong></a> is represented by a python function</p>
 </blockquote>
 </div>
-<div class="section" id="the-first-steps">
-<h2>The first steps<a class="headerlink" href="#the-first-steps" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="the-first-steps-1-3">
+<h2>The first steps (1-3)<a class="headerlink" href="#the-first-steps-1-3" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<img alt="_images/simple_tutorial_step3.png" src="_images/simple_tutorial_step3.png" />
+<a class="reference external image-reference" href="_images/simple_tutorial_step3.png"><img alt="_images/simple_tutorial_step3.png" src="_images/simple_tutorial_step3.png" style="width: 172.0px; height: 157.5px;" /></a>
 <p>This example will show you how to:</p>
 <ol class="arabic simple">
 <li><a class="reference external" href="tutorials/simple_tutorial/step1_follows.html#simple-tutorial-1st-step"><em>Chain tasks (functions) together into a pipeline</em></a></li>
@@ -81,8 +82,8 @@ if we breakdown the process into simple stages, or separate <strong>tasks</stron
 </ol>
 </blockquote>
 </div>
-<div class="section" id="an-easy-example">
-<h2>An Easy example<a class="headerlink" href="#an-easy-example" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="an-easy-example-steps-4-7">
+<h2>An Easy example (steps 4-7)<a class="headerlink" href="#an-easy-example-steps-4-7" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div class="line-block">
 <div class="line">A common requirement in scientific pipelines is to break a large problem into small
@@ -91,6 +92,7 @@ pieces which can be analysed in parallel.</div>
 the partial solutions into a complete solution again.</div>
 </div>
 <p>This simple example calculates the sample variance of 10,000 random numbers</p>
+<a class="reference external image-reference" href="_images/simple_tutorial_step4.png"><img alt="_images/simple_tutorial_step4.png" src="_images/simple_tutorial_step4.png" style="width: 288.0px; height: 249.5px;" /></a>
 <ul class="simple">
 <li>It breaks the list into 100 pieces</li>
 <li>Calculates the sum and sum of squares for each set of 1000 numbers</li>
@@ -103,26 +105,7 @@ the partial solutions into a complete solution again.</div>
 <li><a class="reference external" href="tutorials/simple_tutorial/step7_posttask.html#simple-tutorial-7th-step"><em>Automatically signal the completion of each stage of our pipeline</em></a></li>
 </ol>
 </blockquote>
-<p>This covers all the core functionality of <em>Ruffus</em> and allows you to use it as
-a simple replacement for, e.g., <a class="reference external" href="http://www.gnu.org/software/make/">GNU make</a></p>
-</div>
-<div class="section" id="more">
-<h2>More<a class="headerlink" href="#more" title="Permalink to this headline">¶</a></h2>
-<p>See the <a class="reference external" href="full_tutorial.html#tutorial"><em>full tutorial</em></a> for more detail on:</p>
-<blockquote>
-<ul class="simple">
-<li><a class="reference external" href="full_tutorial.html#follows"><em>Ordering tasks</em></a></li>
-<li><a class="reference external" href="full_tutorial.html#files"><em>Using files as parameters</em></a></li>
-<li><a class="reference external" href="tutorials/full_tutorial/step2_files.html#on-the-fly"><em>Generating parameters on the fly</em></a></li>
-<li><a class="reference external" href="full_tutorial.html#multi-processing"><em>Multi Processing</em></a></li>
-<li><a class="reference external" href="full_tutorial.html#parallel"><em>Run jobs in parallel</em></a></li>
-<li><a class="reference external" href="tutorials/full_tutorial/step2_files.html#exceptions"><em>Handling errors and exceptions</em></a></li>
-<li><a class="reference external" href="full_tutorial.html#files-re"><em>Generating parameters using regular expressions</em></a></li>
-<li><a class="reference external" href="full_tutorial.html#check-if-uptodate"><em>Manual dependency checking</em></a></li>
-<li><a class="reference external" href="full_tutorial.html#posttask"><em>Signalling the completion of each task</em></a></li>
-<li><a class="reference external" href="full_tutorial.html#logging-tasks"><em>Logging messages</em></a></li>
-</ul>
-</blockquote>
+<p>This covers all the core functionality of <em>Ruffus</em>.</p>
 </div>
 </div>
 
@@ -136,9 +119,8 @@ a simple replacement for, e.g., <a class="reference external" href="http://www.g
             <ul>
 <li><a class="reference external" href="">7 steps to <em>Ruffus</em> in 10 minutes</a><ul>
 <li><a class="reference external" href="#overview">Overview</a></li>
-<li><a class="reference external" href="#the-first-steps">The first steps</a></li>
-<li><a class="reference external" href="#an-easy-example">An Easy example</a></li>
-<li><a class="reference external" href="#more">More</a></li>
+<li><a class="reference external" href="#the-first-steps-1-3">The first steps (1-3)</a></li>
+<li><a class="reference external" href="#an-easy-example-steps-4-7">An Easy example (steps 4-7)</a></li>
 </ul>
 </li>
 </ul>
@@ -168,8 +150,8 @@ a simple replacement for, e.g., <a class="reference external" href="http://www.g
               </p>
           </div>
           <script type="text/javascript">$('#searchbox').show(0);</script>
-    <h3><a href="decorators/decorators.html">Decorators</a></h3>   <br>
-    <h3><a href="decorators/indicator_objects.html">Indicator objects</a></h3>   <br>
+    <h3><a href="decorators/decorators.html">Decorators:</a></h3>   
+        <br>
     <a href="decorators/follows.html">@follows</a>                      <br>
     <a href="decorators/files.html">@files</a>                          <br>
     <a href="decorators/split.html">@split</a>                          <br>
@@ -177,9 +159,10 @@ a simple replacement for, e.g., <a class="reference external" href="http://www.g
     <a href="decorators/merge.html">@merge</a>                          <br>
     <a href="decorators/posttask.html">@posttask</a>                    <br>
     <a href="decorators/transform_ex.html">Advanced @transform</a>      <br>
-    <a href="decorators/merge_ex.html">Advanced @merge</a>              <br>
+    <a href="decorators/collate.html">@collate</a>              <br>
     <a href="decorators/parallel.html">@parallel</a>                    <br>
     <a href="decorators/check_if_uptodate.html">@check_if_uptodate</a>  <br>
+    <h3><a href="decorators/indicator_objects.html">Indicator objects</a></h3>   <br>
 
         </div>
       </div>
@@ -203,8 +186,9 @@ a simple replacement for, e.g., <a class="reference external" href="http://www.g
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>
         <li><a href="contents.html">Contents</a> | </li>
+        <li><a href="">Simple tutorial</a>  | </li>
         <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
-        <li><a href="Tutorial.html">Full tutorial</a>  | </li>
+        <li><a href="full_tutorial.html">Full tutorial</a>  | </li>
         <li><a href="FAQ.html">FAQ</a>  | </li>
         <li><a href="Todo.html">Future plans</a>  | </li>
         <li><a href="search.html">Search</a> &raquo;</li>
