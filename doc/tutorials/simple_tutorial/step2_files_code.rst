@@ -1,11 +1,9 @@
 .. _Simple_Tutorial_2nd_step_code:
-
-
 ###################################################################
 Code for Step 2: Passing parameters to the pipeline
 ###################################################################
 * :ref:`Up <Simple_Tutorial>` 
-* :ref:`Prev <Simple_Tutorial_2nd_step>` 
+* :ref:`Back <Simple_Tutorial_2nd_step>` 
 * :ref:`@files syntax <task.files>` in detail
 
 ************************************
