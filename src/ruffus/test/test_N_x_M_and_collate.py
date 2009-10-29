@@ -63,7 +63,7 @@ from itertools import izip
 
 from optparse import OptionParser
 parser = OptionParser(version="%prog 1.0")
-parser.add_option("-d", "--debug", dest = "debug",
+parser.add_option("-D", "--debug", dest = "debug",
                   action="store_true", default=False,
                   help="Run as unit test with default values.")
 parser.add_option("-k", "--keep", dest = "keep",
@@ -107,7 +107,7 @@ parser.add_option("-w", "--working_dir", dest="working_dir",
 parser.add_option("-v", "--verbose", dest = "verbose",
                   action="count", default=0,
                   help="Print more verbose messages for each additional verbose level.")
-parser.add_option("-D", "--dependency", dest="dependency_file",
+parser.add_option("-d", "--dependency", dest="dependency_file",
                   metavar="FILE", 
                   type="string",
                   help="Print a dependency graph of the pipeline that would be executed "
