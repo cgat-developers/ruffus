@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """
 
-    intermediate_example.py
+    test_N_x_M_and_collate.py
+    
     
         This script takes N pairs of input file pairs
                                 (with the suffices .gene and .gwas)
@@ -28,12 +29,25 @@
             
             n_file.*.simulation_res -> n_file.mean
             
+
+        n = CNT_GENE_GWAS_FILES
+        m = CNT_SIMULATION_FILES
+            
         
 
 """
 
+CNT_GENE_GWAS_FILES     = 10
+CNT_SIMULATION_FILES    = 5
+
+
+
 import os, sys
 exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
+sys.path.insert(0, os.path.abspath(os.path.join(exe_path,"..", "..")))
+
+    
+    
 from ruffus import *
 from time import sleep
 import random
@@ -49,6 +63,12 @@ from itertools import izip
 
 from optparse import OptionParser
 parser = OptionParser(version="%prog 1.0")
+parser.add_option("-d", "--debug", dest = "debug",
+                  action="store_true", default=False,
+                  help="Run as unit test with default values.")
+parser.add_option("-k", "--keep", dest = "keep",
+                  action="store_true", default=False,
+                  help="Do not cleanup after unit test runs.")
 parser.add_option("-t", "--target_tasks", dest="target_tasks",
                   action="append",
                   default = ["statistical_summary"],
@@ -68,25 +88,25 @@ parser.add_option("-j", "--jobs", dest="jobs",
                   help="Specifies the number of jobs (commands) to run simultaneously.")
 
 parser.add_option("-g", "--gene_data_dir", dest="gene_data_dir",
-                  default="%s/data_for_intermediate_example/genes" % exe_path,
+                  default="%s/temp_gene_data_for_intermediate_example" % exe_path,
                   metavar="PATH", 
                   type="string",
                   help="Directory with gene data [*.genes / *.gwas].")
 parser.add_option("-s", "--simulation_data_dir", dest="simulation_data_dir",
-                  default="%s/data_for_intermediate_example/simulation" % exe_path,
+                  default="%s/temp_simulation_data_for_intermediate_example" % exe_path,
                   metavar="PATH", 
                   type="string",
                   help="Directory with simulation data [*.simulation].")
 parser.add_option("-w", "--working_dir", dest="working_dir",
-                  default="/working_dir",
+                  default="%s/working_dir_for_intermediate_example" % exe_path,
                   metavar="PATH", 
                   type="string",
                   help="Working directory.")
 
 
 parser.add_option("-v", "--verbose", dest = "verbose",
-                  action="store_true", default=False,
-                  help="Do not echo to shell but only print to log.")
+                  action="count", default=0,
+                  help="Print more verbose messages for each additional verbose level.")
 parser.add_option("-D", "--dependency", dest="dependency_file",
                   metavar="FILE", 
                   type="string",
@@ -127,7 +147,6 @@ import glob
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
 
 #_________________________________________________________________________________________
 #
@@ -201,6 +220,82 @@ working_dir = options.working_dir
 
 
 #_________________________________________________________________________________________
+# 
+#   setup_simulation_data
+# 
+#_________________________________________________________________________________________
+
+# 
+# mkdir: makes sure output directories exist before task    
+#
+@follows(mkdir(options.gene_data_dir, options.simulation_data_dir))
+def setup_simulation_data ():
+    """
+    create simulation files
+    """
+    for i in range(CNT_GENE_GWAS_FILES):
+        open(os.path.join(options.gene_data_dir, "%03d.gene" % i), "w")
+        open(os.path.join(options.gene_data_dir, "%03d.gwas" % i), "w")
+
+    # gene files without corresponding gwas and vice versa
+    open(os.path.join(options.gene_data_dir, "orphan1.gene"), "w")
+    open(os.path.join(options.gene_data_dir, "orphan2.gwas"), "w")
+    open(os.path.join(options.gene_data_dir, "orphan3.gwas"), "w")
+
+    for i in range(CNT_SIMULATION_FILES):
+        open(os.path.join(options.simulation_data_dir, "%03d.simulation" % i), "w")
+
+
+
+
+#_________________________________________________________________________________________
+# 
+#   cleanup_simulation_data
+# 
+#_________________________________________________________________________________________
+def try_rmdir (d):
+    if os.path.exists(d):
+        try:    
+            os.rmdir(d)
+        except OSError:
+            sys.stderr.write("Warning:\t%s is not empty and will not be removed.\n" % d)
+
+def cleanup_simulation_data ():
+    """
+    cleanup files
+    """
+    sys.stdout.write("Cleanup working directory and simulation files.\n")
+    
+    #   
+    #   cleanup gene and gwas files
+    # 
+    for f in glob.glob(os.path.join(options.gene_data_dir, "*.gene")):
+        os.unlink(f)
+    for f in glob.glob(os.path.join(options.gene_data_dir, "*.gwas")):
+        os.unlink(f)
+    try_rmdir(options.gene_data_dir)
+
+    #   
+    #   cleanup simulation
+    # 
+    for f in glob.glob(os.path.join(options.simulation_data_dir, "*.simulation")):
+        os.unlink(f)
+    try_rmdir(options.simulation_data_dir)
+                
+
+    #   
+    #   cleanup working_dir
+    # 
+    for f in glob.glob(os.path.join(working_dir, "simulation_results", "*.simulation_res")):
+        os.unlink(f)
+    try_rmdir(os.path.join(working_dir, "simulation_results"))
+
+    for f in glob.glob(os.path.join(working_dir, "*.mean")):
+        os.unlink(f)
+    try_rmdir(working_dir)
+
+
+#_________________________________________________________________________________________
 #
 #   Step 1:
 #       
@@ -258,23 +353,37 @@ def gwas_simulation(input_files, result_file_path, gene_file_root, sim_file_root
 #               -> working_dir/n.mean
 #       
 #_________________________________________________________________________________________
-def generate_statistical_summary_params():
-    """
-    Custom function to summarising simulation results files per gene / gwas file pair
-    """
-    gene_gwas_file_pairs, gene_gwas_file_roots =  get_gene_gwas_file_pairs()
-
-    for (gene, gwas), gene_file_root in izip(gene_gwas_file_pairs, gene_gwas_file_roots):
-            result_glob_spec = "%s.*.simulation_res" % (gene_file_root)
-            result_files     = glob.glob(os.path.join(working_dir, "simulation_results", result_glob_spec))
-            summary_file     = os.path.join(working_dir, gene_file_root + ".mean")
-                
-            yield result_files, summary_file
-                
 
 
-@follows(gwas_simulation)
-@files(generate_statistical_summary_params)
+
+# 
+# All this commented code is replaced by the single line beginning with @collate
+# 
+# 
+# 
+# 
+# def generate_statistical_summary_params():
+#     """
+#     Custom function to summarising simulation results files per gene / gwas file pair
+#     """
+#     gene_gwas_file_pairs, gene_gwas_file_roots =  get_gene_gwas_file_pairs()
+# 
+#     for (gene, gwas), gene_file_root in izip(gene_gwas_file_pairs, gene_gwas_file_roots):
+#             result_glob_spec = "%s.*.simulation_res" % (gene_file_root)
+#             result_files     = glob.glob(os.path.join(working_dir, "simulation_results", result_glob_spec))
+#             summary_file     = os.path.join(working_dir, gene_file_root + ".mean")
+#                 
+#             yield result_files, summary_file
+#                 
+# 
+#
+# @follows(gwas_simulation)
+# @files(generate_statistical_summary_params)
+
+
+
+
+@collate(gwas_simulation, regex(r"simulation_results/(\d+).\d+.simulation_res"), r"\1.mean")
 @posttask(lambda : sys.stdout.write("\nAll finished: hooray!!!\n"))
 def statistical_summary (result_files, summary_file):
     """
@@ -285,7 +394,6 @@ def statistical_summary (result_files, summary_file):
     for f in result_files:
         summary_file.write(open(f).read())
     sleep(1)
-    
 
 
 
@@ -306,8 +414,19 @@ def statistical_summary (result_files, summary_file):
 #
 if __name__ == '__main__':
     try:
+        if options.debug:
+            if not len(options.target_tasks):
+                options.target_tasks.append([statistical_summary])
+            pipeline_run([setup_simulation_data], [setup_simulation_data], multiprocess = options.jobs, verbose = 0)
+        else:
+            if (not len(get_gene_gwas_file_pairs(  )[0]) or 
+                not len (get_simulation_files(  )[0])):
+                print "Warning!!\n\n\tNo *.gene / *.gwas or *.simulation: Run --debug to create simulation files first\n\n"
+                sys.exit(1)
+
+
         if options.just_print:
-            pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks, long_winded=True)
+            pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks, verbose=options.verbose)
         
         elif options.dependency_file:
             graph_printout (     open(options.dependency_file, "w"),
@@ -315,7 +434,14 @@ if __name__ == '__main__':
                                  options.target_tasks, 
                                  options.forced_tasks)
         else:    
-            pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs)
+            pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, verbose = options.verbose)
+        print "Done"
+
+
+        if options.debug and not options.keep:
+            cleanup_simulation_data ()
+
     except Exception, e:
         print e.args
+        raise
 
