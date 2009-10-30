@@ -1,7 +1,7 @@
 .. _manual_9th_chapter:
 
 ###################################################################
-Step 9: Logging in *Ruffus*
+Step 9: Logging messages with *Ruffus*
 ###################################################################
 * :ref:`Up <manual>` 
 * :ref:`Prev <manual_8th_chapter>` 

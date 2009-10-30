@@ -1,8 +1,8 @@
 .. _manual_11th_chapter:
 
-###################################################################################
-Step 11: Esoteric: Writing custom functions to decide which jobs are up to date
-###################################################################################
+######################################################################################################################################################################
+Step 11: Deprecated: Generating parameters using regular expressions the old fashioned way
+######################################################################################################################################################################
 * :ref:`Up <manual>` 
 * :ref:`Prev <manual_10th_chapter>` 
 * :ref:`@check_if_uptodate<decorators.check_if_uptodate>` syntax in detail

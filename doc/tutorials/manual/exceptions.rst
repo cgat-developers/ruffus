@@ -1,7 +1,7 @@
 .. _manual_8th_chapter:
 
 ###################################################################
-Step 8: Handling Exceptions in *Ruffus*
+Step 8: Handling errors and exceptions in *Ruffus*
 ###################################################################
 * :ref:`Up <manual>` 
 * :ref:`Prev <manual_7th_chapter>` 
