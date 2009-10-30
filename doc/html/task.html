@@ -42,9 +42,9 @@
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>
         <li><a href="contents.html">Contents</a> | </li>
-        <li><a href="simple_tutorial.html">Simple tutorial</a>  | </li>
+        <li><a href="tutorials/simple_tutorial/simple_tutorial.html">Simple tutorial</a>  | </li>
         <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
-        <li><a href="full_tutorial.html">Full tutorial</a>  | </li>
+        <li><a href="tutorials/manual/manual_introduction.html">Manual</a>  | </li>
         <li><a href="FAQ.html">FAQ</a>  | </li>
         <li><a href="Todo.html">Future plans</a>  | </li>
         <li><a href="search.html">Search</a> &raquo;</li>
@@ -100,24 +100,24 @@ run in parallel.</p>
 <blockquote>
 <p>Basic Task decorators are:</p>
 <blockquote>
-<p><a class="reference external" href="decorators/follows.html#task-follows"><em>&#64;follows()</em></a></p>
+<p><a class="reference external" href="decorators/follows.html#decorators-follows"><em>&#64;follows()</em></a></p>
 <p>and</p>
-<p><a class="reference external" href="decorators/files.html#task-files"><em>&#64;files()</em></a></p>
+<p><a class="reference external" href="decorators/files.html#decorators-files"><em>&#64;files()</em></a></p>
 </blockquote>
 <p>Task decorators include:</p>
 <blockquote>
-<p><a class="reference external" href="decorators/files.html#task-files"><em>&#64;split()</em></a></p>
-<p><a class="reference external" href="decorators/files.html#task-files"><em>&#64;transform()</em></a></p>
-<p><a class="reference external" href="decorators/files.html#task-files"><em>&#64;merge()</em></a></p>
-<p><a class="reference external" href="decorators/posttask.html#task-posttask"><em>&#64;posttask()</em></a></p>
+<p><a class="reference external" href="decorators/files.html#decorators-files"><em>&#64;split()</em></a></p>
+<p><a class="reference external" href="decorators/files.html#decorators-files"><em>&#64;transform()</em></a></p>
+<p><a class="reference external" href="decorators/files.html#decorators-files"><em>&#64;merge()</em></a></p>
+<p><a class="reference external" href="decorators/posttask.html#decorators-posttask"><em>&#64;posttask()</em></a></p>
 </blockquote>
 <p>More advanced users may require:</p>
 <blockquote>
-<p><a class="reference external" href="decorators/transform_ex.html#task-transform-ex"><em>&#64;transform()</em></a></p>
-<p><a class="reference external" href="decorators/collate.html#task-collate"><em>&#64;collate()</em></a></p>
-<p><a class="reference external" href="decorators/parallel.html#task-parallel"><em>&#64;parallel()</em></a></p>
-<p><a class="reference external" href="decorators/check_if_uptodate.html#task-check-if-uptodate"><em>&#64;check_if_uptodate()</em></a></p>
-<p><a class="reference external" href="decorators/files_re.html#task-files-re"><em>&#64;files_re()</em></a></p>
+<p><a class="reference external" href="decorators/transform_ex.html#decorators-transform-ex"><em>&#64;transform()</em></a></p>
+<p><a class="reference external" href="decorators/collate.html#decorators-collate"><em>&#64;collate()</em></a></p>
+<p><a class="reference external" href="decorators/parallel.html#decorators-parallel"><em>&#64;parallel()</em></a></p>
+<p><a class="reference external" href="decorators/check_if_uptodate.html#decorators-check-if-uptodate"><em>&#64;check_if_uptodate()</em></a></p>
+<p><a class="reference external" href="decorators/files_re.html#decorators-files-re"><em>&#64;files_re()</em></a></p>
 </blockquote>
 </blockquote>
 </div>
@@ -140,10 +140,11 @@ run in parallel.</p>
 <li><em>logger</em> (<a class="reference external" href="http://docs.python.org/library/logging.html">logging</a> objects) &#8211; Where progress will be logged. Defaults to stderr output.</li>
 <li><em>gnu_make_maximal_rebuild_mode</em> &#8211; Defaults to re-running <em>all</em> out-of-date tasks. Runs minimal
 set to build targets if set to <tt class="xref docutils literal"><span class="pre">True</span></tt>. Use with caution.</li>
-<li><em>verbose</em> &#8211; level 0: logs completed jobs/tasks; 
-level 1: logs up to date jobs;
-level 2: logs reason for running job;
-level 3: logs pipeline debug messages</li>
+<li><em>verbose</em> &#8211; level 0: nothing
+level 1: logs completed jobs/tasks; 
+level 2: logs up to date jobs in incomplete tasks
+level 3: logs reason for running job;
+level 4: logs messages useful only for debug ruffus pipeline code</li>
 </ul>
 </td>
 </tr>
@@ -356,7 +357,7 @@ to the input/export files</li>
 <h3>Checking if job is update:<a class="headerlink" href="#checking-if-job-is-update" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="ruffus.task.needs_update_check_modify_time">
-<tt class="descclassname">ruffus.task.</tt><tt class="descname">needs_update_check_modify_time</tt><big>(</big><em>i</em>, <em>o</em>, <em>*other_parameters_ignored</em><big>)</big><a class="headerlink" href="#ruffus.task.needs_update_check_modify_time" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">ruffus.task.</tt><tt class="descname">needs_update_check_modify_time</tt><big>(</big><em>*params</em><big>)</big><a class="headerlink" href="#ruffus.task.needs_update_check_modify_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given input and output files, see if all exist and whether output files are later than input files
 Each can be</p>
 <blockquote>
@@ -420,7 +421,7 @@ Is it an ordinary file not a directory? (throw exception</dd>
 
             <h4>Previous topic</h4>
             <p class="topless"><a href="examples/sharing_data_across_jobs_example_code.html"
-                                  title="previous chapter"><tt class="docutils literal"><span class="pre">simpler_with_shared_logging</span></tt> &#8211; How to share data across jobs</a></p>
+                                  title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">simpler_with_shared_logging</span></tt> &#8211; How to share data across jobs</a></p>
             <h4>Next topic</h4>
             <p class="topless"><a href="proxy_logger.html"
                                   title="next chapter">ruffus.proxy_logger</a></p>
@@ -479,9 +480,9 @@ Is it an ordinary file not a directory? (throw exception</dd>
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>
         <li><a href="contents.html">Contents</a> | </li>
-        <li><a href="simple_tutorial.html">Simple tutorial</a>  | </li>
+        <li><a href="tutorials/simple_tutorial/simple_tutorial.html">Simple tutorial</a>  | </li>
         <li><a href="cheatsheet.html">Cheat sheet</a> | </li>
-        <li><a href="full_tutorial.html">Full tutorial</a>  | </li>
+        <li><a href="tutorials/manual/manual_introduction.html">Manual</a>  | </li>
         <li><a href="FAQ.html">FAQ</a>  | </li>
         <li><a href="Todo.html">Future plans</a>  | </li>
         <li><a href="search.html">Search</a> &raquo;</li>

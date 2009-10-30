@@ -43,34 +43,46 @@ Simple Tutorial
 .. toctree::
     :maxdepth: 1
 
-    simple_tutorial.rst
+    tutorials/simple_tutorial/simple_tutorial.rst
     tutorials/simple_tutorial/step1_follows.rst
     tutorials/simple_tutorial/step2_files.rst
-    tutorials/simple_tutorial/step2_files_code.rst
     tutorials/simple_tutorial/step3_run_pipeline.rst
     tutorials/simple_tutorial/step4_split.rst
     tutorials/simple_tutorial/step5_transform.rst
     tutorials/simple_tutorial/step6_merge.rst
     tutorials/simple_tutorial/step7_posttask.rst
 
+    tutorials/simple_tutorial/step2_files_code.rst
+    tutorials/simple_tutorial/step3_run_pipeline_code.rst
+    tutorials/simple_tutorial/step4_split_code.rst
+    tutorials/simple_tutorial/step5_transform_code.rst
+    tutorials/simple_tutorial/step6_merge_code.rst
+    tutorials/simple_tutorial/step7_posttask_code.rst
+
 =====================
-Full Tutorial
+Manual
 =====================
 .. toctree::
     :maxdepth: 1
 
-    full_tutorial.rst
-    tutorials/full_tutorial/step1_follows.rst
-    tutorials/full_tutorial/step2_files.rst
-    tutorials/full_tutorial/step3_dependencies.rst
-    tutorials/full_tutorial/step4_split.rst
-    tutorials/full_tutorial/step5_transform.rst
-    tutorials/full_tutorial/step6_merge.rst
-    tutorials/full_tutorial/step7_posttask.rst
-    tutorials/full_tutorial/step8_exceptions.rst
-    tutorials/full_tutorial/step9_logging.rst
-    tutorials/full_tutorial/step10_parallel.rst
-    tutorials/full_tutorial/step11_check_if_uptodate.rst
+    tutorials/manual/manual_introduction.rst
+    tutorials/manual/follows.rst
+    tutorials/manual/tasks_as_recipes.rst
+    tutorials/manual/parallel_processing.rst
+    tutorials/manual/files.rst
+    tutorials/manual/split.rst
+    tutorials/manual/transform.rst
+    tutorials/manual/posttask.rst
+    tutorials/manual/merge.rst
+    tutorials/manual/dependencies.rst
+    tutorials/manual/onthefly.rst
+    tutorials/manual/collate.rst
+    tutorials/manual/advanced_transform.rst
+    tutorials/manual/parallel.rst
+    tutorials/manual/check_if_uptodate.rst
+    tutorials/manual/exceptions.rst
+    tutorials/manual/logging.rst
+    tutorials/manual/files_re.rst
 
 =====================
 Detailed Examples:
@@ -78,7 +90,6 @@ Detailed Examples:
 .. toctree::
    :maxdepth: 1
 
-   Tutorial.rst
    examples/intermediate_example.rst
    examples/complicated_example.rst
    examples/sharing_data_across_jobs_example.rst
@@ -123,7 +134,7 @@ For advanced users:
     decorators/parallel.rst
     decorators/check_if_uptodate.rst
     decorators/transform_ex.rst
-    decorators/merge_ex.rst
+    decorators/collate.rst
     decorators/files_re.rst
 
 

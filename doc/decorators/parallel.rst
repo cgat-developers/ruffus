@@ -1,4 +1,4 @@
-.. _task.parallel:
+.. _decorators.parallel:
 
 See :ref:`Decorators <decorators>` for more decorators
 
@@ -8,9 +8,9 @@ See :ref:`Decorators <decorators>` for more decorators
 ########################
 
 .. |job_params| replace:: `job_params`
-.. _job_params: `task.parallel.job_params`_
+.. _job_params: `decorators.parallel.job_params`_
 .. |parameter_generating_function| replace:: `parameter_generating_function`
-.. _parameter_generating_function: `task.parallel.parameter_generating_function`_
+.. _parameter_generating_function: `decorators.parallel.parameter_generating_function`_
 
 
 *****************************************************************************************************************************************
@@ -19,7 +19,7 @@ See :ref:`Decorators <decorators>` for more decorators
     **Purpose:**
         To apply the (task) function to a set of parameters in parallel without file dependency checking.
     
-        Most useful allied to :ref:`@check_if_uptodate() <task.check_if_uptodate>`
+        Most useful allied to :ref:`@check_if_uptodate() <decorators.check_if_uptodate>`
 
     **Example**::
     
@@ -39,7 +39,7 @@ See :ref:`Decorators <decorators>` for more decorators
     **Parameters:**
     
                 
-.. _task.parallel.job_params:
+.. _decorators.parallel.job_params:
 
     * *job_params*: 
         Requires a sequence of parameters, one set for each job.
@@ -66,7 +66,7 @@ See :ref:`Decorators <decorators>` for more decorators
     
 
                 
-.. _task.parallel.parameter_generating_function:
+.. _decorators.parallel.parameter_generating_function:
 
     * *parameter_generating_function*
         #. A generator yielding  set of parameters (as above) in turn and on the fly

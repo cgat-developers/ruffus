@@ -1,4 +1,4 @@
-.. _task.transform_ex:
+.. _decorators.transform_ex:
 
 
 See :ref:`Decorators <decorators>` for more decorators
@@ -8,24 +8,24 @@ Advanced usage of @transform:
 ################################################
 
 .. |tasks_or_file_names| replace:: `tasks_or_file_names`
-.. _tasks_or_file_names: `task.transform.tasks_or_file_names`_
+.. _tasks_or_file_names: `decorators.transform.tasks_or_file_names`_
 .. |extra_parameters| replace:: `extra_parameters`
-.. _extra_parameters: `task.transform.extra_parameters`_
+.. _extra_parameters: `decorators.transform.extra_parameters`_
 .. |output_pattern| replace:: `output_pattern`
-.. _output_pattern: `task.transform.output_pattern`_
+.. _output_pattern: `decorators.transform.output_pattern`_
 .. |input_pattern| replace:: `input_pattern`
-.. _input_pattern: `task.transform.input_pattern`_
+.. _input_pattern: `decorators.transform.input_pattern`_
 .. |matching_regex| replace:: `matching_regex`
-.. _matching_regex: `task.transform.matching_regex`_
+.. _matching_regex: `decorators.transform.matching_regex`_
 .. |suffix_string| replace:: `suffix_string`
-.. _suffix_string: `task.transform.suffix_string`_
+.. _suffix_string: `decorators.transform.suffix_string`_
 
 .. |suffix| replace:: *suffix*
-.. _suffix: indicator_objects.html#task.suffix
+.. _suffix: indicator_objects.html#decorators.suffix
 .. |regex| replace:: *regex*
-.. _regex: indicator_objects.html#task.regex
+.. _regex: indicator_objects.html#decorators.regex
 .. |inputs| replace:: *inputs*
-.. _inputs: indicator_objects.html#task.inputs
+.. _inputs: indicator_objects.html#decorators.inputs
 
 
 
@@ -71,7 +71,7 @@ Advanced usage of @transform:
 
     **Parameters:**
                 
-.. _task.transform.tasks_or_file_names:
+.. _decorators.transform.tasks_or_file_names:
 
     * *tasks_or_file_names*
        can be a:
@@ -82,7 +82,7 @@ Advanced usage of @transform:
             File names containing ``*[]?`` will be expanded as a glob.
              E.g.:``"a.*" => "a.1", "a.2"``
 
-.. _task.transform.suffix_string:
+.. _decorators.transform.suffix_string:
 
     * *suffix_string*
        must be wrapped in a ``suffix`` indicator object.
@@ -100,7 +100,7 @@ Advanced usage of @transform:
              
        File names which do not match suffix_string will be ignored
     
-.. _task.transform.matching_regex:
+.. _decorators.transform.matching_regex:
 
     * *matching_regex*
        is a python regular expression string, which must be wrapped in
@@ -109,19 +109,19 @@ Advanced usage of @transform:
        documentation for details of regular expression syntax
        Each output file name is created using regular expression substitution with ``output_pattern``
 
-.. _task.transform.input_pattern:
+.. _decorators.transform.input_pattern:
 
     * *input_pattern*
        Specifies the resulting input file name(s).
        
        Must be wrapped in a ``inputs`` indicator object.
 
-.. _task.transform.output_pattern:
+.. _decorators.transform.output_pattern:
 
     * *output_pattern*
        Specifies the resulting output file name(s).
                 
-.. _task.transform.extra_parameters:
+.. _decorators.transform.extra_parameters:
 
     * [*extra_parameters, ...*]
        Any extra parameters are passed to the task function.
@@ -143,4 +143,4 @@ Advanced usage of @transform:
              compile(["2.c", "2.h", "universal.h"], "2.o", "2")
                     
        
-See :ref:`here <task.transform>` for more straightforward ways to use transform.       
+See :ref:`here <decorators.transform>` for more straightforward ways to use transform.       

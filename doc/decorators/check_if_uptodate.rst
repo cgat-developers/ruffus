@@ -1,9 +1,9 @@
-.. _task.check_if_uptodate:
+.. _decorators.check_if_uptodate:
 
 See :ref:`Decorators <decorators>` for more decorators
 
 .. |dependency_checking_function| replace:: `dependency_checking_function`
-.. _dependency_checking_function: `task.check_if_uptodate.dependency_checking_function`_
+.. _dependency_checking_function: `decorators.check_if_uptodate.dependency_checking_function`_
 
 ########################
 @check_if_uptodate
@@ -16,7 +16,7 @@ See :ref:`Decorators <decorators>` for more decorators
     **Purpose:**
         Checks to see if a job is up to date, and needs to be run.
         
-        Usually used in conjunction with :ref:`@parallel() <task.parallel>`
+        Usually used in conjunction with :ref:`@parallel() <decorators.parallel>`
         
     **Example**::
 
@@ -51,7 +51,7 @@ See :ref:`Decorators <decorators>` for more decorators
 
     **Parameters:**
 
-.. _task.check_if_uptodate.dependency_checking_function:
+.. _decorators.check_if_uptodate.dependency_checking_function:
     
     * *dependency_checking_function*: 
             returns two parameters: if job needs to be run, and a message explaining why

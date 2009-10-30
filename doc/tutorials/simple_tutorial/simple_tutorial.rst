@@ -29,7 +29,7 @@ Overview
 The first steps (1-3)
 ***************************************
 
-    .. image:: images/simple_tutorial_step3.png
+    .. image:: ../../images/simple_tutorial_step3.png
         :scale: 50
 
     This example will show you how to:
@@ -52,7 +52,7 @@ An Easy example (steps 4-7)
     
     This simple example calculates the sample variance of 10,000 random numbers
 
-    .. image:: images/simple_tutorial_step4.png
+    .. image:: ../../images/simple_tutorial_step4.png
         :scale: 50
    
     * It breaks the list into 100 pieces
@@ -77,21 +77,3 @@ This covers all the core functionality of *Ruffus*.
 
 
 
-.. comment::
-    ***************************************
-    More
-    ***************************************
-    
-    See the :ref:`full tutorial <Tutorial>` for more detail on:
-    
-      * :ref:`Ordering tasks <follows>`
-      * :ref:`Using files as parameters <files>`
-      * :ref:`Generating parameters on the fly <on_the_fly>`
-      * :ref:`Multi Processing <multi_processing>`
-      * :ref:`Run jobs in parallel <parallel>`
-      * :ref:`Handling errors and exceptions <exceptions>`
-      * :ref:`Generating parameters using regular expressions <files_re>`
-      * :ref:`Manual dependency checking <check_if_uptodate>`
-      * :ref:`Signalling the completion of each task <posttask>`
-      * :ref:`Logging messages <logging-tasks>`
-    

@@ -1,4 +1,4 @@
-.. _task.follows:
+.. _decorators.follows:
 
 .. seealso::
 
@@ -11,14 +11,14 @@
 ############
 
 .. |task| replace:: `task`
-.. _task: `task.follows.task`_
+.. _task: `decorators.follows.task`_
 .. |task_name| replace:: `"task_name"`
-.. _task_name: `task.follows.task_name`_
+.. _task_name: `decorators.follows.task_name`_
 .. |directory_name| replace:: `directory_name`
-.. _directory_name: `task.follows.directory_name`_
+.. _directory_name: `decorators.follows.directory_name`_
 
 .. |mkdir| replace:: *mkdir*
-.. _mkdir: indicator_objects.html#task.mkdir
+.. _mkdir: indicator_objects.html#decorators.mkdir
 
 *******************************************************************************************
 *@follows*\ (|task|_ | |task_name|_ | |mkdir|_ (|directory_name|_), [more_tasks, ...])
@@ -40,12 +40,12 @@
 
     **Parameters:**
                 
-.. _task.follows.task:
+.. _decorators.follows.task:
  
     * *task*: 
         a list of tasks which have to be run **before** this function
                 
-.. _task.follows.task_name:
+.. _decorators.follows.task_name:
  
     * *"task_name"*: 
         Dependencies can be quoted function names.
@@ -54,7 +54,7 @@
         Functions in other modules need to be fully qualified.
                 
                 
-.. _task.follows.directory_name:
+.. _decorators.follows.directory_name:
  
     * *directory_name*:
         Directories which need to be created (if they don't exist) before

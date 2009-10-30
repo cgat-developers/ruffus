@@ -1,4 +1,4 @@
-.. _task.files_re:
+.. _decorators.files_re:
 
 See :ref:`Decorators <decorators>` for more decorators
 
@@ -7,28 +7,28 @@ See :ref:`Decorators <decorators>` for more decorators
 @files_re
 ########################
 .. |tasks_or_file_names| replace:: `tasks_or_file_names`
-.. _tasks_or_file_names: `task.files_re.tasks_or_file_names`_
+.. _tasks_or_file_names: `decorators.files_re.tasks_or_file_names`_
 .. |extra_parameters| replace:: `extra_parameters`
-.. _extra_parameters: `task.files_re.extra_parameters`_
+.. _extra_parameters: `decorators.files_re.extra_parameters`_
 .. |output_pattern| replace:: `output_pattern`
-.. _output_pattern: `task.files_re.output_pattern`_
+.. _output_pattern: `decorators.files_re.output_pattern`_
 .. |input_pattern| replace:: `input_pattern`
-.. _input_pattern: `task.files_re.input_pattern`_
+.. _input_pattern: `decorators.files_re.input_pattern`_
 .. |matching_regex| replace:: `matching_regex`
-.. _matching_regex: `task.files_re.matching_regex`_
+.. _matching_regex: `decorators.files_re.matching_regex`_
 
 *****************************************************************************************************************************************
 *@files_re* (|tasks_or_file_names|_, |matching_regex|_, [|input_pattern|_], |output_pattern|_, [|extra_parameters|_,...])
 *****************************************************************************************************************************************
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Legacy design now deprecated. We suggest using :ref:`@transform() <task.transform>` instead
+Legacy design now deprecated. We suggest using :ref:`@transform() <decorators.transform>` instead
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     **Purpose:**
     
-        All singing, all dancing decorator which can do everything that :ref:`@merge() <task.merge>` and
-        :ref:`@transform() <task.transform>` can do.
+        All singing, all dancing decorator which can do everything that :ref:`@merge() <decorators.merge>` and
+        :ref:`@transform() <decorators.transform>` can do.
         
         Applies the task function to transform data from input to output files.
 
@@ -59,7 +59,7 @@ Legacy design now deprecated. We suggest using :ref:`@transform() <task.transfor
             
     **Parameters:**
     
-.. _task.files_re.tasks_or_file_names:
+.. _decorators.files_re.tasks_or_file_names:
 
     * *tasks_or_file_names*
        can be a:
@@ -70,7 +70,7 @@ Legacy design now deprecated. We suggest using :ref:`@transform() <task.transfor
             File names containing ``*[]?`` will be expanded as a glob.
              E.g.:``"a.*" => "a.1", "a.2"``
 
-.. _task.files_re.matching_regex:
+.. _decorators.files_re.matching_regex:
 
     * *matching_regex*
        a python regular expression string.
@@ -78,17 +78,17 @@ Legacy design now deprecated. We suggest using :ref:`@transform() <task.transfor
        | See python `regular expression (re) <http://docs.python.org/library/re.html>`_ documentation for details of regular expression syntax
        | Each output file name is created using regular expression substitution with |output_pattern|_
 
-.. _task.files_re.input_pattern:
+.. _decorators.files_re.input_pattern:
 
     * *input_pattern*
        Optionally specifies the resulting input file name(s).
        
-.. _task.files_re.output_pattern:
+.. _decorators.files_re.output_pattern:
 
     * *output_pattern*
        Specifies the resulting output file name(s).
                 
-.. _task.files_re.extra_parameters:
+.. _decorators.files_re.extra_parameters:
 
     * [*extra_parameters, ...*]
        Any extra parameters are passed to the task function.

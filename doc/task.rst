@@ -11,33 +11,33 @@ Decorators
 ***************************************
     Basic Task decorators are:
     
-        :ref:`@follows() <task.follows>`      
+        :ref:`@follows() <decorators.follows>`      
         
         and
         
-        :ref:`@files() <task.files>`      
+        :ref:`@files() <decorators.files>`      
         
     Task decorators include:
     
-        :ref:`@split() <task.files>`      
+        :ref:`@split() <decorators.files>`      
 
-        :ref:`@transform() <task.files>`      
+        :ref:`@transform() <decorators.files>`      
 
-        :ref:`@merge() <task.files>`      
+        :ref:`@merge() <decorators.files>`      
 
-        :ref:`@posttask() <task.posttask>`      
+        :ref:`@posttask() <decorators.posttask>`      
 
     More advanced users may require:
     
-        :ref:`@transform() <task.transform_ex>`      
+        :ref:`@transform() <decorators.transform_ex>`      
         
-        :ref:`@merge() <task.merge_ex>`      
+        :ref:`@collate() <decorators.collate>`      
 
-        :ref:`@parallel() <task.parallel>`      
+        :ref:`@parallel() <decorators.parallel>`      
         
-        :ref:`@check_if_uptodate() <task.check_if_uptodate>`      
+        :ref:`@check_if_uptodate() <decorators.check_if_uptodate>`      
 
-        :ref:`@files_re() <task.files_re>`      
+        :ref:`@files_re() <decorators.files_re>`      
         
 
 ***************************************
@@ -77,8 +77,13 @@ Implementation:
 =================================
 Parameter factories:
 =================================
-.. autofunction:: file_list_io_param_factory
-.. autofunction:: glob_regex_io_param_factory
+.. autofunction:: merge_param_factory
+.. autofunction:: collate_param_factory
+.. autofunction:: files_re_param_factory                                                                        
+.. autofunction:: transform_param_factory
+.. autofunction:: files_param_factory
+.. autofunction:: args_param_factory
+.. autofunction:: split_param_factory
 
 .. ???
     
