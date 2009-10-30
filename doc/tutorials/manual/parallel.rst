@@ -1,12 +1,30 @@
-.. _manual_10th_chapter:
+.. _manual_13th_chapter:
+.. |task| replace:: **task**
+.. _task: ../../glossary.html#term-task
+.. |job| replace:: **job**
+.. _job: ../../glossary.html#term-job
+.. |decorator| replace:: **decorator**
+.. _decorator: ../../glossary.html#term-decorator
+.. |pipeline_run| replace:: **pipeline_run**
+.. _pipeline_run: ../../pipeline_functions.html#pipeline_run
 
-###################################################################
-Step 10: Esoteric: Running jobs in parallel with full control
-###################################################################
-* :ref:`Up <manual>` 
-* :ref:`Prev <manual_9th_chapter>` 
-* :ref:`Next <manual_11th_chapter>` 
-* :ref:`@parallel<decorators.parallel>` syntax in detail
+###################################################################################
+Chapter 13: Esoteric: Running jobs in parallel without using files
+###################################################################################
+
+    .. hlist::
+
+        * :ref:`Manual overview <manual>` 
+        * :ref:`@parallel<decorators.parallel>` syntax in detail
+
+    
+.. index:: 
+    single: @parallel; Manual
+    
+.. _manual.parallel:
+
+
+
 
 ***************************************
 **@parallel** 

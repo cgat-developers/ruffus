@@ -11,6 +11,7 @@
 Step 2: Passing parameters to the pipeline
 ###################################################################
 .. hlist::
+
    * :ref:`Simple tutorial overview <Simple_Tutorial>` 
    * :ref:`@files syntax in detail <decorators.files>`
 

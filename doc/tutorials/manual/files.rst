@@ -12,22 +12,68 @@
 ###################################################################
 Chapter 4: Passing parameters to the pipeline
 ###################################################################
-.. hlist::
-   * :ref:`Manual overview <manual>` 
-   * :ref:`@files syntax in detail <decorators.files>`
+    .. hlist::
+    
+       * :ref:`Manual overview <manual>` 
+       * :ref:`@files syntax in detail <decorators.files>`
 
 
     The easiest way to supply parameters to *Ruffus* |task|_ functions, to run
     as separate jobs, is to use the :ref:`@files <decorators.files>` decorator.
     
+.. index:: 
+    single: @files; Manual
+    
+.. _manual.files:
+
 ***************************************
 **@files**
 ***************************************
+    
+    Running this code:
+    
+        ::    
+    
+            from ruffus import *
+    
+            @files('a.1', ['a.2', 'b.2'], 'A file')
+            def single_job_io_task(infile, outfile, text):
+                pass
+            
+            pipeline_run()
+            
+            
+        Produces:
+            ::
+            
+                >>> pipeline_run()
+                    Job = [a.1 -> [a.2, b.2], A file] completed
+                Completed Task = single_job_io_task
 
-    Quite simply, each parameter in @files will be sent to a separate job which 
-    may run in parallel if necessary. For example, if a sequence
+    **Ruffus** will automatically check if your task is up to date. The second time ``pipeline_run()``
+    is called, nothing will happen. But if you supply an updated or new ``a.1``, the task will rerun.
+    See the :ref:`previous chapter <manual.skip_up_to_date>` for a more in-depth discussion.
+
+
+.. index:: 
+    single: @files; in parallel
+
+.. _manual.files.parallel:
+
+******************************************************************************
+Running the same code on different parameters in parallel
+******************************************************************************
+
+    Your pipeline may require the same function to be called multiple times on independent parameters.
+    In which case, you can supply all the parameters to @files, each will be sent to a separate job which 
+    may run in parallel if necessary. **Ruffus** will check if each separate |job|_ is up-to-date using
+    the first two *input* and *output* parameters (See the :ref:`previous chapter <manual.io_parameters>` ).
+
+
+    For example, if a sequence
     (e.g. a list or tuple) of 5 parameters are passed to **@files**, that indicates
     there will also be 5 separate jobs:
+
         ::
 
             from ruffus import *
@@ -47,7 +93,9 @@ Chapter 4: Passing parameters to the pipeline
     passed to each job.
     
     Thus the above code is equivalent to calling:
+    
         ::
+        
              task_file('job1.file')
              task_file('job2.file', 4)
              task_file('job3.file', [3, 2])   
@@ -74,8 +122,13 @@ Chapter 4: Passing parameters to the pipeline
         |   The solitary output filename is ``job4.file``
         
 
+.. index:: 
+    single: @files; example
+    
+.. _manual.files.example:
+
 =======================================
-Skip jobs which are up to date
+Checking if jobs are up to date
 =======================================
 
     | Usually we do not want to run all the stages in a pipeline but only where
@@ -142,32 +195,7 @@ Skip jobs which are up to date
         
     The 2nd job is up to date and will be skipped.
 
-.. index:: timestamp, resolution, precision
 
-
-***********************************************
-Short hand for simple tasks with single jobs
-***********************************************
-
-    If you are specifying the parameters for only one job, you can leave off the brackets,
-    greatly improving clarity::
-    
-        from ruffus import *
-        @files('a.1', ['a.2', 'b.2'], 'A file')
-        def single_job_io_task(infile, outfile, text):
-            pass
-        
-        pipeline_run()
-        
-        
-    Produces:
-        ::
-        
-            >>> pipeline_run()
-                Job = [a.1 -> [a.2, b.2], A file] completed
-            Completed Task = single_job_io_task
-
-            
 
 
 

@@ -17,8 +17,7 @@ Start Here:
    :maxdepth: 1
 
    introduction.rst
-   simple_tutorial.rst
-   full_tutorial.rst
+   tutorials/simple_tutorial/simple_tutorial.rst
 
 =====================
 Overview:
@@ -52,6 +51,13 @@ Simple Tutorial
     tutorials/simple_tutorial/step6_merge.rst
     tutorials/simple_tutorial/step7_posttask.rst
 
+*********************
+Accompanying code
+*********************
+
+.. toctree::
+    :maxdepth: 1
+
     tutorials/simple_tutorial/step2_files_code.rst
     tutorials/simple_tutorial/step3_run_pipeline_code.rst
     tutorials/simple_tutorial/step4_split_code.rst
@@ -65,24 +71,7 @@ Manual
 .. toctree::
     :maxdepth: 1
 
-    tutorials/manual/manual_introduction.rst
-    tutorials/manual/follows.rst
-    tutorials/manual/tasks_as_recipes.rst
-    tutorials/manual/parallel_processing.rst
-    tutorials/manual/files.rst
-    tutorials/manual/split.rst
-    tutorials/manual/transform.rst
-    tutorials/manual/posttask.rst
-    tutorials/manual/merge.rst
-    tutorials/manual/dependencies.rst
-    tutorials/manual/onthefly.rst
-    tutorials/manual/collate.rst
-    tutorials/manual/advanced_transform.rst
-    tutorials/manual/parallel.rst
-    tutorials/manual/check_if_uptodate.rst
-    tutorials/manual/exceptions.rst
-    tutorials/manual/logging.rst
-    tutorials/manual/files_re.rst
+    Manual <tutorials/manual/manual_contents.rst>
 
 =====================
 Detailed Examples:

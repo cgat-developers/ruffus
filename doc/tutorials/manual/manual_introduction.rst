@@ -1,15 +1,15 @@
-.. _manual:
+.. _manual.introduction:
 
-##################################
-Manual: Introduction
-##################################
+####################################################################
+**Ruffus** Manual: A work in progress
+####################################################################
 
 .. |task| replace:: **task**
-.. _task: glossary.html#term-task
+.. _task: ../../glossary.html#term-task
 .. |job| replace:: **job**
-.. _job: glossary.html#term-job
+.. _job: ../../glossary.html#term-job
 .. |decorator| replace:: **decorator**
-.. _decorator: glossary.html#term-decorator
+.. _decorator: ../../glossary.html#term-decorator
 
 
 ***************************************
@@ -43,4 +43,9 @@ Introduction
     *Ruffus* |decorator|_\ s can be added (stacked on top of) to any function in any order.
 
 
-
+    The following chapters go through each of the features of **Ruffus** in turn.
+    Many of these (especially those labelled **esoteric** or **deprecated**) may not
+    be of interest to all users of **Ruffus**.
+    
+    If you are looking for a quick introduction to **Ruffus**, you may want to look at the
+    :ref:`Simple Tutorial <Simple_Tutorial>` first.

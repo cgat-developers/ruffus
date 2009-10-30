@@ -1,8 +1,8 @@
 .. _Simple_Tutorial_7th_step:
 .. |task| replace:: **task**
-.. _task: glossary.html#term-task
+.. _task: ../../glossary.html#term-task
 .. |jobs| replace:: **jobs**
-.. _jobs: glossary.html#term-job
+.. _jobs: ../../glossary.html#term-job
 .. |touch_file| replace:: *touch_file*
 .. _touch_file: indicator_objects.html#decorators.touch_file
 
