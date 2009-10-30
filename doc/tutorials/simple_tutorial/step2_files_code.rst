@@ -4,7 +4,7 @@ Code for Step 2: Passing parameters to the pipeline
 ###################################################################
 * :ref:`Up <Simple_Tutorial>` 
 * :ref:`Back <Simple_Tutorial_2nd_step>` 
-* :ref:`@files syntax <task.files>` in detail
+* :ref:`@files syntax <decorators.files>` in detail
 
 ************************************
 Code

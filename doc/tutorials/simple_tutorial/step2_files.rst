@@ -12,7 +12,7 @@ Step 2: Passing parameters to the pipeline
 ###################################################################
 .. hlist::
    * :ref:`Simple tutorial overview <Simple_Tutorial>` 
-   * :ref:`@files syntax in detail <task.files>`
+   * :ref:`@files syntax in detail <decorators.files>`
 
 
 ************************************************
@@ -39,7 +39,7 @@ Overview
 ************************************
 *@files*
 ************************************
-    | The :ref:`@files <task.files>` |decorator|_ provides parameters to a task.
+    | The :ref:`@files <decorators.files>` |decorator|_ provides parameters to a task.
     
     
     | The first two parameters of each job contain input and output files (respectively).

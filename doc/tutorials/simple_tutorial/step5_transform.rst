@@ -4,7 +4,7 @@
 Step 5: Running jobs in parallel
 ###################################################################
 * :ref:`Simple tutorial overview <Simple_Tutorial>` 
-* :ref:`@transform in detail <task.transform>`
+* :ref:`@transform in detail <decorators.transform>`
 
 **************************************************************************************
 Remember to look at the example code:
@@ -42,7 +42,7 @@ Calculating sums and sum of squares in parallel
         :scale: 50
        
 
-    The :ref:`@transform <task.transform>` decorator tells *Ruffus* to take files from the step 4 task (i.e. ``*.chunks``),
+    The :ref:`@transform <decorators.transform>` decorator tells *Ruffus* to take files from the step 4 task (i.e. ``*.chunks``),
     and produce files having the ``.sums`` suffix instead.
     ending.
     

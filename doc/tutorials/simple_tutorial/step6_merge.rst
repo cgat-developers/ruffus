@@ -4,7 +4,7 @@
 Step 6: Merging results back together
 ###################################################################
 * :ref:`Simple tutorial overview <Simple_Tutorial>` 
-* :ref:`@merge in detail <task.merge>`
+* :ref:`@merge in detail <decorators.merge>`
 
 **************************************************************************************
 Remember to look at the example code:
@@ -45,7 +45,7 @@ Calculating variances from the sums and sum of squares of all chunks
         :scale: 50
        
 
-    The :ref:`@merge <task.merge>` decorator tells *Ruffus* to take all the files from the step 5 task (i.e. ``*.sums``),
+    The :ref:`@merge <decorators.merge>` decorator tells *Ruffus* to take all the files from the step 5 task (i.e. ``*.sums``),
     and produced a merge file in the form of ``variance.result``.
     
     Thus if ``step_5_calculate_sum_of_squares`` created

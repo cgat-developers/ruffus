@@ -4,7 +4,7 @@
 Code for Step 5: Running jobs in parallel
 ###################################################################
 * :ref:`Simple tutorial overview <Simple_Tutorial>` 
-* :ref:`@transform in detail <task.transform>`
+* :ref:`@transform in detail <decorators.transform>`
 * :ref:`back to step 5 <Simple_Tutorial_5th_step>`
 
 ************************************

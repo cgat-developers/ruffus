@@ -4,7 +4,7 @@
 Code for Step 4: Splitting up large tasks / files
 ###################################################################
     * :ref:`Simple tutorial overview <Simple_Tutorial>` 
-    * :ref:`@split in detail <task.split>`
+    * :ref:`@split in detail <decorators.split>`
     * :ref:`back to step 4 <Simple_Tutorial_4th_step>`
 
 ************************************

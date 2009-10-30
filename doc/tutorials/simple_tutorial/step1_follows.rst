@@ -5,7 +5,7 @@ Step 1: Arranging tasks into a pipeline
 ###################################################################
 * :ref:`Simple tutorial overview <Simple_Tutorial>` 
 * :ref:`More on @follows in the full tutorial <manual_1st_chapter>`
-* :ref:`@follows syntax in detail <task.follows>`
+* :ref:`@follows syntax in detail <decorators.follows>`
 
 
 
@@ -14,7 +14,7 @@ Step 1: Arranging tasks into a pipeline
 *@follows*
 ************************************
 
-The :ref:`@follows(...) <task.follows>` python decorator indicates the order in which tasks
+The :ref:`@follows(...) <decorators.follows>` python decorator indicates the order in which tasks
 should be run:
 
     ::

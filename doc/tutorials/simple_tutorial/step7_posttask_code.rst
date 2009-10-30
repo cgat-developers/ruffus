@@ -4,7 +4,7 @@
 Code for Step 7: Signal the completion of each stage of our pipeline
 #########################################################################
 * :ref:`Simple tutorial overview <Simple_Tutorial>` 
-* :ref:`@posttask in detail <task.posttask>`
+* :ref:`@posttask in detail <decorators.posttask>`
 * :ref:`back to step 7 <Simple_Tutorial_7th_step>`
 
 ************************************
