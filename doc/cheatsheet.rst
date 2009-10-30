@@ -9,6 +9,7 @@ for running computational pipelines.
 
 | Each stage or **task** in a computational pipeline is represented by a python function
 | Each python function can be called in parallel to run multiple **jobs**.
+
 .. |suffix| replace:: `suffix`
 .. _suffix: decorators/indicator_objects.html#decorators.suffix
 .. |mkdir| replace:: `mkdir`
@@ -34,15 +35,15 @@ Basic
    
    "**@follows**
 
-   - Indicates task dependency (:ref:`see tutorial <follows>`)
-   - optional :ref:`mkdir <decorators.follows.directory_name>` prerequisite (:ref:`see tutorial <follow-mkdir>`)
+   - Indicates task dependency (:ref:`see Manual <manual.follows>`)
+   - optional :ref:`mkdir <decorators.follows.directory_name>` prerequisite (:ref:`see Manual <manual.follows.mkdir>`)
    
    ", "
    | :ref:`@follows <decorators.follows>` ( ``task1``, ``'task2'`` ))
    | :ref:`@follows <decorators.follows>` ( ``task1``,  :ref:`mkdir <decorators.follows.directory_name>`\ ( ``'my/directory/for/results'`` ))
    
    ", ""
-   "**@files** (:ref:`Tutorial <files>`)
+   "**@files** (:ref:`Manual <manual.files>`)
    
    - I/O parameters
    - skips up-to-date jobs
@@ -61,7 +62,7 @@ Core
    :header: "Decorator", "Examples"
    :widths: 400, 600,1
 
-   "**@split** (:ref:`Tutorial <manual.split>`)   
+   "**@split** (:ref:`Manual <manual.split>`)   
    
    - Splits a single input into multiple output
    - Globs in ``output`` can specify an indeterminate number of files.
@@ -69,7 +70,7 @@ Core
    ", "
    :ref:`@split <decorators.split>` ( ``tasks_or_file_names``, ``output_files``, [``extra_parameters``,...] )
    ", ""
-   "**@transform** (:ref:`Tutorial <manual.transform>`)   
+   "**@transform** (:ref:`Manual <manual.transform>`)   
     
    - Applies the task function to transform input data to output.
     
@@ -78,7 +79,7 @@ Core
    | :ref:`@transform <decorators.transform>` ( ``tasks_or_file_names``, :ref:`regex <decorators.transform.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , ``output_pattern``, [``extra_parameters``,...] )
    
    ", ""
-   "**@merge** (:ref:`Tutorial <manual.merge>`)   
+   "**@merge** (:ref:`Manual <manual.merge>`)   
 
    - Merges multiple input files into a single output.
    
@@ -87,8 +88,8 @@ Core
    ", ""
    "**@posttask**
 
-   - Calls function after task completes (:ref:`see tutorial <posttask>`)
-   - Optional :ref:`touch_file <decorators.posttask.file_name>` indicator (:ref:`see tutorial <posttask-touch-file>`)
+   - Calls function after task completes (:ref:`see Manual <posttask>`)
+   - Optional :ref:`touch_file <decorators.posttask.file_name>` indicator (:ref:`see Manual <manual.posttask.touch_file>`)
 
    ", "
    | :ref:`@posttask <decorators.posttask>` ( ``signal_task_completion_function`` )
@@ -129,7 +130,7 @@ See :ref:`Decorators <decorators>` for a complete list of decorators
     pipeline_run(list_of_target_tasks, [list_of_tasks_forced_to_rerun, multiprocess = N_PARALLEL_JOBS])
 
 
-See the :ref:`Tutorial` for a more complete introduction on how to add support
+See the :ref:`Simple Tutorial <Simple_Tutorial>` for a quick introduction on how to add support
 for ruffus.
 
 

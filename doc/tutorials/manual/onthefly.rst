@@ -8,6 +8,7 @@
 .. |pipeline_run| replace:: **pipeline_run**
 .. _pipeline_run: ../../pipeline_functions.html#pipeline_run
 
+.. _manual.on_the_fly:
 
 ###################################################################
 Chapter 10: Generating parameters on the fly
