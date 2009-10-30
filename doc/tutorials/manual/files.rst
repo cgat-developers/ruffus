@@ -1,4 +1,4 @@
-.. _manual_3rd_chapter:
+.. _manual_4th_chapter:
 .. |task| replace:: **task**
 .. _task: ../../glossary.html#term-task
 .. |job| replace:: **job**
@@ -10,7 +10,7 @@
 
 
 ###################################################################
-Chapter 3: Passing parameters to the pipeline
+Chapter 4: Passing parameters to the pipeline
 ###################################################################
 .. hlist::
    * :ref:`Manual overview <manual>` 
