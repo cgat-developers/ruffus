@@ -16,7 +16,7 @@ Manual: Introduction
 Introduction
 ***************************************
 
-    The ``ruffus`` module is a lightweight way to add support 
+    The **Ruffus** module is a lightweight way to add support 
     for running computational pipelines.
     
     Computational pipelines are often conceptually quite simple, especially
@@ -26,7 +26,7 @@ Introduction
     
     Membership of a *Ruffus* pipeline is indicated using special |decorator|_\ s, such as 
     :ref:`@follows <decorators.follows>` (which governs the order of tasks should run, 
-    (see :ref:`step 1 <manual_1st_chapter>` of this tutorial for more details.)
+    (see :ref:`chapter 1 <manual_1st_chapter>` of this manual for more details.)
     
         ::
         
@@ -40,18 +40,7 @@ Introduction
     | However, these remain ordinary python functions which can still be
       called normally, outside of *Ruffus*.
     
-    *Ruffus* |decorator|_\ s can be added in any order.
+    *Ruffus* |decorator|_\ s can be added (stacked on top of) to any function in any order.
 
 
-
-.. comment::
-
-    Because of this, each |task|_ represent not only a single action in a pipeline,
-    but also a recipe or `rule <http://www.gnu.org/software/make/manual/make.html#Rule-Introduction>`_  
-    which can be applied at the same time to many different parameters.
-    
-    For example, one can have a *compile task* which will compile any source code, or
-    a *count_lines task* which will count the number of lines in any file.
-    
-    Each |task|_, then, is a recipe for making specified files using supplied parameters.
 
