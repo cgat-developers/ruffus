@@ -40,6 +40,9 @@ Glossary
         
     
     decorator
+        Ruffus decorators allow functions to be incorporated into a computational
+        pipeline, with automatic generation of parameters, dependency checking etc.,
+        without modifying any code within the function.
         Quoting from the `python wiki <http://wiki.python.org/moin/PythonDecorators>`_:
             A Python decorator is a specific change to the Python syntax that 
             allows us to more conveniently alter functions and methods.
@@ -48,9 +51,6 @@ Glossary
             class without having to directly use subclasses or change the source code 
             of the function being decorated.
             
-        Ruffus decorators allow functions to be incorporated into a computational
-        pipeline, with automatic generation of parameters, dependency checking etc.,
-        without modifying any code within the function.
 
     
     generator

@@ -1,4 +1,4 @@
-.. _task.collate:
+.. _decorators.collate:
 
 See :ref:`Decorators <decorators>` for more decorators
 
@@ -7,16 +7,16 @@ See :ref:`Decorators <decorators>` for more decorators
 ########################
 
 .. |tasks_or_file_names| replace:: `tasks_or_file_names`
-.. _tasks_or_file_names: `task.collate.tasks_or_file_names`_
+.. _tasks_or_file_names: `decorators.collate.tasks_or_file_names`_
 .. |extra_parameters| replace:: `extra_parameters`
-.. _extra_parameters: `task.collate.extra_parameters`_
+.. _extra_parameters: `decorators.collate.extra_parameters`_
 .. |output_pattern| replace:: `output_pattern`
-.. _output_pattern: `task.collate.output_pattern`_
+.. _output_pattern: `decorators.collate.output_pattern`_
 .. |matching_regex| replace:: `matching_regex`
-.. _matching_regex: `task.collate.matching_regex`_
+.. _matching_regex: `decorators.collate.matching_regex`_
 
 .. |regex| replace:: *regex*
-.. _regex: indicator_objects.html#task.regex
+.. _regex: indicator_objects.html#decorators.regex
 
 
 ***********************************************************************************************************************************************************
@@ -39,7 +39,7 @@ See :ref:`Decorators <decorators>` for more decorators
     **Parameters:**
                 
                 
-.. _task.collate.tasks_or_file_names:
+.. _decorators.collate.tasks_or_file_names:
 
     * *tasks_or_file_names*
        can be a:
@@ -51,7 +51,7 @@ See :ref:`Decorators <decorators>` for more decorators
              E.g.:``"a.*" => "a.1", "a.2"``
            
                 
-.. _task.collate.matching_regex:
+.. _decorators.collate.matching_regex:
 
     * *matching_regex*
        is a python regular expression string, which must be wrapped in
@@ -59,12 +59,12 @@ See :ref:`Decorators <decorators>` for more decorators
        See python `regular expression (re) <http://docs.python.org/library/re.html>`_ 
        documentation for details of regular expression syntax
                 
-.. _task.collate.output_pattern:
+.. _decorators.collate.output_pattern:
 
     * *output_pattern*
         Specifies the resulting output file name(s).
                 
-.. _task.collate.extra_parameters:
+.. _decorators.collate.extra_parameters:
 
     * *extra_parameters*
         Any extra parameters are passed verbatim to the task function
@@ -119,4 +119,4 @@ See :ref:`Decorators <decorators>` for more decorators
 
 
 
-See :ref:`here <task.merge>` for more straightforward ways to merge files.       
+See :ref:`here <decorators.merge>` for more straightforward ways to merge files.       

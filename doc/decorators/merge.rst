@@ -1,13 +1,13 @@
-.. _task.merge:
+.. _decorators.merge:
 
 See :ref:`Decorators <decorators>` for more decorators
 
 .. |tasks_or_file_names| replace:: `tasks_or_file_names`
-.. _tasks_or_file_names: `task.merge.tasks_or_file_names`_
+.. _tasks_or_file_names: `decorators.merge.tasks_or_file_names`_
 .. |extra_parameters| replace:: `extra_parameters`
-.. _extra_parameters: `task.merge.extra_parameters`_
+.. _extra_parameters: `decorators.merge.extra_parameters`_
 .. |output_file| replace:: `output_file`
-.. _output_file: `task.merge.output_file`_
+.. _output_file: `decorators.merge.output_file`_
 
 ########################
 @merge
@@ -30,7 +30,7 @@ See :ref:`Decorators <decorators>` for more decorators
     **Parameters:**
                 
                 
-.. _task.merge.tasks_or_file_names:
+.. _decorators.merge.tasks_or_file_names:
 
     * *tasks_or_file_names*
        can be a:
@@ -42,18 +42,18 @@ See :ref:`Decorators <decorators>` for more decorators
              E.g.:``"a.*" => "a.1", "a.2"``
              
                 
-.. _task.merge.output_file:
+.. _decorators.merge.output_file:
 
     * *output_file*
         Specifies the resulting output file name(s).
                 
-.. _task.merge.extra_parameters:
+.. _decorators.merge.extra_parameters:
 
     * *extra_parameters, ...*
         Any optional extra parameters are passed verbatim to the task function
 
 
 
-See :ref:`here <task.collate>` for more advanced uses of merging.
+See :ref:`here <decorators.collate>` for more advanced uses of merging.
 
 

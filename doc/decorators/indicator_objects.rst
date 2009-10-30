@@ -17,7 +17,7 @@ Indicator Objects
     Indicator objects are also "self-documenting" so you can see
     exactly what is happening clearly.
     
-.. _task.regex:
+.. _decorators.regex:
 
 *********************************************
 *regex(*\ `regular_expression`\ *)*
@@ -31,10 +31,10 @@ Indicator Objects
 
     **Used by:**
 
-        * :ref:`@transform <task.transform>`
-        * :ref:`@collate <task.collate>`
-        * The advanced form of :ref:`@transform <task.transform_ex>`
-        * The deprecated :ref:`@files_re <task.files_re>`
+        * :ref:`@transform <decorators.transform>`
+        * :ref:`@collate <decorators.collate>`
+        * The advanced form of :ref:`@transform <decorators.transform_ex>`
+        * The deprecated :ref:`@files_re <decorators.files_re>`
    
     **Example**:
         ::
@@ -44,7 +44,7 @@ Indicator Objects
                 pass
 
 
-.. _task.suffix:
+.. _decorators.suffix:
 
 *********************************************
 *suffix(*\ `string`\ *)*
@@ -54,8 +54,8 @@ Indicator Objects
     
 
     **Used by:**
-        * :ref:`@transform <task.transform>`
-        * The advanced form of :ref:`@transform <task.transform_ex>`
+        * :ref:`@transform <decorators.transform>`
+        * The advanced form of :ref:`@transform <decorators.transform_ex>`
    
     **Example**:
         ::
@@ -67,7 +67,7 @@ Indicator Objects
             def compile(infile, outfile):
                 pass
 
-.. _task.inputs:
+.. _decorators.inputs:
 
 ***************************************
 *inputs(*\ `input_file_pattern`\ *)*
@@ -76,7 +76,7 @@ Indicator Objects
     names. 
 
     **Used by:**
-        * The advanced form of :ref:`@transform <task.transform_ex>`
+        * The advanced form of :ref:`@transform <decorators.transform_ex>`
    
     **Example**:
         ::
@@ -97,7 +97,7 @@ Indicator Objects
             job1:   "x.c", "x.h"
             job2:   "y.c", "y.h"
             
-.. _task.mkdir:
+.. _decorators.mkdir:
 
 ******************************************************************************************
 *mkdir(*\ `directory_name1`, [`directory_name2`, ...]\ *)*
@@ -106,7 +106,7 @@ Indicator Objects
     These directories will be created as part of the prerequisites of running a task.
 
     **Used by:**
-        * :ref:`@follows <task.follows>`
+        * :ref:`@follows <decorators.follows>`
         
     **Example:**
         ::
@@ -116,7 +116,7 @@ Indicator Objects
                 pass
 
 
-.. _task.touch_file:
+.. _decorators.touch_file:
 
 
 ******************************************************************************************
@@ -130,7 +130,7 @@ Indicator Objects
         
     
     **Used by:**
-        * :ref:`@posttask <task.posttask>`
+        * :ref:`@posttask <decorators.posttask>`
         
     **Example:**
         ::

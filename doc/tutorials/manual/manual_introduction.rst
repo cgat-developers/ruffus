@@ -16,7 +16,7 @@ Manual: Introduction
 Introduction
 ***************************************
 
-    The ``ruffus`` module is a lightweight way to add support 
+    The **Ruffus** module is a lightweight way to add support 
     for running computational pipelines.
     
     Computational pipelines are often conceptually quite simple, especially
@@ -25,8 +25,8 @@ Introduction
     Each stage or |task|_ of a pipeline is represented by an ordinary python function.
     
     Membership of a *Ruffus* pipeline is indicated using special |decorator|_\ s, such as 
-    :ref:`@follows <task.follows>` (which governs the order of tasks should run, 
-    (see :ref:`step 1 <manual_1st_chapter>` of this tutorial for more details.)
+    :ref:`@follows <decorators.follows>` (which governs the order of tasks should run, 
+    (see :ref:`chapter 1 <manual_1st_chapter>` of this manual for more details.)
     
         ::
         
@@ -40,7 +40,7 @@ Introduction
     | However, these remain ordinary python functions which can still be
       called normally, outside of *Ruffus*.
     
-    *Ruffus* |decorator|_\ s can be added in any order.
+    *Ruffus* |decorator|_\ s can be added (stacked on top of) to any function in any order.
 
 
 

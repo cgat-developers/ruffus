@@ -1,13 +1,13 @@
-.. _task.posttask:
+.. _decorators.posttask:
 
 See :ref:`Decorators <decorators>` for more decorators
 
 .. |function| replace:: `function`
-.. _function: `task.posttask.function`_
+.. _function: `decorators.posttask.function`_
 .. |file_name| replace:: `file_name`
-.. _file_name: `task.posttask.file_name`_
+.. _file_name: `decorators.posttask.file_name`_
 .. |touch_file| replace:: *touch_file*
-.. _touch_file: indicator_objects.html#task.touch_file
+.. _touch_file: indicator_objects.html#decorators.touch_file
 
 ########################
 @posttask
@@ -35,7 +35,7 @@ See :ref:`Decorators <decorators>` for more decorators
 
     **Parameters:**
     
-.. _task.posttask.function:
+.. _decorators.posttask.function:
 
     * *function*: 
         ``function()`` will be called when the ruffus passes through a task.
@@ -44,7 +44,7 @@ See :ref:`Decorators <decorators>` for more decorators
         when a upstream task is out-of-date, and the execution passes through
         this point in the pipeline
         
-.. _task.posttask.file_name:
+.. _decorators.posttask.file_name:
 
     * *file_name*    
         Files to be ``touch``\ -ed after the task is executed.

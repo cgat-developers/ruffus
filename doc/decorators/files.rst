@@ -1,22 +1,22 @@
-.. _task.files:
+.. _decorators.files:
 
 See :ref:`Decorators <decorators>` for more decorators
 
 
 .. |input| replace:: `input`
-.. _input: `task.files.input`_
+.. _input: `decorators.files.input`_
 .. |input1| replace:: `input1`
-.. _input1: `task.files.input1`_
+.. _input1: `decorators.files.input1`_
 .. |output| replace:: `output`
-.. _output: `task.files.output`_
+.. _output: `decorators.files.output`_
 .. |output1| replace:: `output1`
-.. _output1: `task.files.output1`_
+.. _output1: `decorators.files.output1`_
 .. |extra_parameters| replace:: `extra_parameters`
-.. _extra_parameters: `task.files.extra_parameters`_
+.. _extra_parameters: `decorators.files.extra_parameters`_
 .. |extra_parameters1| replace:: `extra_parameters1`
-.. _extra_parameters1: `task.files.extra_parameters1`_
+.. _extra_parameters1: `decorators.files.extra_parameters1`_
 .. |custom_function| replace:: `custom_function`
-.. _custom_function: `task.files.custom_function`_
+.. _custom_function: `decorators.files.custom_function`_
 
 
 ################################################
@@ -34,7 +34,7 @@ See :ref:`Decorators <decorators>` for more decorators
         
         By default, out of date checking uses input/output file timestamps.
         (On some file systems, timestamps have a resolution in seconds.)
-        See :ref:`@check_if_uptodate() <task.check_if_uptodate>` for alternatives.
+        See :ref:`@check_if_uptodate() <decorators.check_if_uptodate>` for alternatives.
 
     **Example**:
         ::
@@ -58,24 +58,24 @@ See :ref:`Decorators <decorators>` for more decorators
 
     **Parameters:**
 
-.. _task.files.input:
+.. _decorators.files.input:
 
     * *input*
         Input file names
 
 
-.. _task.files.output:
+.. _decorators.files.output:
 
     * *output*
         Output file names
     
 
-.. _task.files.extra_parameters:
+.. _decorators.files.extra_parameters:
 
     * *extra_parameters*
         optional ``extra_parameters`` are passed verbatim to each job.
         
-.. _task.files.check_up_to_date:
+.. _decorators.files.check_up_to_date:
 
     **Checking if jobs are up to date:**
         #. Strings in ``input`` and ``output`` (including in nested sequences) are interpreted as file names and
@@ -101,7 +101,7 @@ Passing parameters to @files with a custom function
         
         By default, out of date checking uses input/output file timestamps.
         (On some file systems, timestamps have a resolution in seconds.)
-        See :ref:`@check_if_uptodate() <task.check_if_uptodate>` for alternatives.
+        See :ref:`@check_if_uptodate() <decorators.check_if_uptodate>` for alternatives.
 
     **Example**:
         ::
@@ -133,7 +133,7 @@ Passing parameters to @files with a custom function
     **Parameters:**
     
 
-.. _task.files.custom_function:
+.. _decorators.files.custom_function:
 
         * *custom_function*:
             Generator function which yields each time a complete set of parameters for one job
@@ -142,7 +142,7 @@ Passing parameters to @files with a custom function
         Strings in ``input`` and ``output`` (including in nested sequences) are interpreted as file names and
         used to check if jobs are up-to-date. 
 
-        See :ref:`above <task.files.check_up_to_date>` for more details
+        See :ref:`above <decorators.files.check_up_to_date>` for more details
             
             
 
@@ -163,7 +163,7 @@ Passing parameters to @files with a custom function
         
         By default, out of date checking uses input/output file timestamps.
         (On some file systems, timestamps have a resolution in seconds.)
-        See :ref:`@check_if_uptodate() <task.check_if_uptodate>` for alternatives.
+        See :ref:`@check_if_uptodate() <decorators.check_if_uptodate>` for alternatives.
             
     
     **Example**:
@@ -182,19 +182,19 @@ Passing parameters to @files with a custom function
 
     **Parameters:**
 
-.. _task.files.input1:
+.. _decorators.files.input1:
 
     * *input*
         Input file names
 
 
-.. _task.files.output1:
+.. _decorators.files.output1:
 
     * *output*
         Output file names
     
 
-.. _task.files.extra_parameters1:
+.. _decorators.files.extra_parameters1:
 
     * *extra_parameters*
         optional ``extra_parameters`` are passed verbatim to each job.
@@ -204,5 +204,5 @@ Passing parameters to @files with a custom function
         Strings in ``input`` and ``output`` (including in nested sequences) are interpreted as file names and
         used to check if jobs are up-to-date. 
 
-        See :ref:`above <task.files.check_up_to_date>` for more details
+        See :ref:`above <decorators.files.check_up_to_date>` for more details
 

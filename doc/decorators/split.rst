@@ -1,4 +1,4 @@
-.. _task.split:
+.. _decorators.split:
 
 See :ref:`Decorators <decorators>` for more decorators
 
@@ -8,11 +8,11 @@ See :ref:`Decorators <decorators>` for more decorators
 ########################
 
 .. |tasks_or_file_names| replace:: `tasks_or_file_names`
-.. _tasks_or_file_names: `task.split.tasks_or_file_names`_
+.. _tasks_or_file_names: `decorators.split.tasks_or_file_names`_
 .. |extra_parameters| replace:: `extra_parameters`
-.. _extra_parameters: `task.split.extra_parameters`_
+.. _extra_parameters: `decorators.split.extra_parameters`_
 .. |output_files| replace:: `output_files`
-.. _output_files: `task.split.output_files`_
+.. _output_files: `decorators.split.output_files`_
 
 *****************************************************************************************************************************************
 *@split* ( |tasks_or_file_names|_, |output_files|_, [|extra_parameters|_,...]  )
@@ -39,7 +39,7 @@ See :ref:`Decorators <decorators>` for more decorators
         
     **Parameters:**
                 
-.. _task.split.tasks_or_file_names:
+.. _decorators.split.tasks_or_file_names:
 
                 
     * *tasks_or_file_names*
@@ -55,7 +55,7 @@ See :ref:`Decorators <decorators>` for more decorators
             File names are taken from the output of the specified task(s)
 
                 
-.. _task.split.output_files:
+.. _decorators.split.output_files:
 
     * *output_files*
        Specifies the resulting output file name(s).
@@ -72,7 +72,7 @@ See :ref:`Decorators <decorators>` for more decorators
                 pass    
                 
                 
-.. _task.split.extra_parameters:
+.. _decorators.split.extra_parameters:
 
     * [*extra_parameters, ...*]
         Any extra parameters are passed verbatim to the task function

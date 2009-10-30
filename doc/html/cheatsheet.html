@@ -21,7 +21,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="ruffus v1.1.5c documentation" href="index.html" />
     <link rel="next" title="Introduction" href="introduction.html" />
-    <link rel="prev" title="Full Tutorial: Work in Progress" href="full_tutorial.html" /> 
+    <link rel="prev" title="Manual: Introduction" href="full_tutorial.html" /> 
   </head>
   <body>
     <div class="related">
@@ -37,14 +37,14 @@
           <a href="introduction.html" title="Introduction"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="full_tutorial.html" title="Full Tutorial: Work in Progress"
+          <a href="full_tutorial.html" title="Manual: Introduction"
              accesskey="P">previous</a> |</li>
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>
         <li><a href="contents.html">Contents</a> | </li>
-        <li><a href="simple_tutorial.html">Simple tutorial</a>  | </li>
+        <li><a href="tutorials/simple_tutorial/simple_tutorial.html">Simple tutorial</a>  | </li>
         <li><a href="">Cheat sheet</a> | </li>
-        <li><a href="full_tutorial.html">Full tutorial</a>  | </li>
+        <li><a href="tutorials/manual/manual_introduction.html">Manual</a>  | </li>
         <li><a href="FAQ.html">FAQ</a>  | </li>
         <li><a href="Todo.html">Future plans</a>  | </li>
         <li><a href="search.html">Search</a> &raquo;</li>
@@ -86,12 +86,12 @@ for running computational pipelines.</p>
 <tr><td><p class="first"><strong>&#64;follows</strong></p>
 <ul class="last simple">
 <li>Indicates task dependency (<a class="reference external" href="Tutorial.html#follows"><em>see tutorial</em></a>)</li>
-<li>optional <a class="reference external" href="decorators/follows.html#task-follows-directory-name"><em>mkdir</em></a> prerequisite (<a class="reference external" href="tutorials/full_tutorial/step1_follows.html#follow-mkdir"><em>see tutorial</em></a>)</li>
+<li>optional <a class="reference external" href="decorators/follows.html#decorators-follows-directory-name"><em>mkdir</em></a> prerequisite (<a class="reference external" href="Tutorial.html#follow-mkdir"><em>see tutorial</em></a>)</li>
 </ul>
 </td>
 <td><div class="first last line-block">
-<div class="line"><a class="reference external" href="decorators/follows.html#task-follows"><em>&#64;follows</em></a> ( <tt class="docutils literal"><span class="pre">task1</span></tt>, <tt class="docutils literal"><span class="pre">'task2'</span></tt> ))</div>
-<div class="line"><a class="reference external" href="decorators/follows.html#task-follows"><em>&#64;follows</em></a> ( <tt class="docutils literal"><span class="pre">task1</span></tt>,  <a class="reference external" href="decorators/follows.html#task-follows-directory-name"><em>mkdir</em></a>( <tt class="docutils literal"><span class="pre">'my/directory/for/results'</span></tt> ))</div>
+<div class="line"><a class="reference external" href="decorators/follows.html#decorators-follows"><em>&#64;follows</em></a> ( <tt class="docutils literal"><span class="pre">task1</span></tt>, <tt class="docutils literal"><span class="pre">'task2'</span></tt> ))</div>
+<div class="line"><a class="reference external" href="decorators/follows.html#decorators-follows"><em>&#64;follows</em></a> ( <tt class="docutils literal"><span class="pre">task1</span></tt>,  <a class="reference external" href="decorators/follows.html#decorators-follows-directory-name"><em>mkdir</em></a>( <tt class="docutils literal"><span class="pre">'my/directory/for/results'</span></tt> ))</div>
 </div>
 </td>
 <td>&nbsp;</td>
@@ -103,9 +103,9 @@ for running computational pipelines.</p>
 </ul>
 </td>
 <td><div class="first last line-block">
-<div class="line"><a class="reference external" href="decorators/files.html#task-files"><em>&#64;files</em></a>( <tt class="docutils literal"><span class="pre">parameter_list</span></tt> )</div>
-<div class="line"><a class="reference external" href="decorators/files.html#task-files"><em>&#64;files</em></a>( <tt class="docutils literal"><span class="pre">parameter_generating_function</span></tt> )</div>
-<div class="line"><a class="reference external" href="decorators/files.html#task-files"><em>&#64;files</em></a> ( <tt class="docutils literal"><span class="pre">input_file</span></tt>, <tt class="docutils literal"><span class="pre">output_file</span></tt>, <tt class="docutils literal"><span class="pre">other_params</span></tt>, ... )</div>
+<div class="line"><a class="reference external" href="decorators/files.html#decorators-files"><em>&#64;files</em></a>( <tt class="docutils literal"><span class="pre">parameter_list</span></tt> )</div>
+<div class="line"><a class="reference external" href="decorators/files.html#decorators-files"><em>&#64;files</em></a>( <tt class="docutils literal"><span class="pre">parameter_generating_function</span></tt> )</div>
+<div class="line"><a class="reference external" href="decorators/files.html#decorators-files"><em>&#64;files</em></a> ( <tt class="docutils literal"><span class="pre">input_file</span></tt>, <tt class="docutils literal"><span class="pre">output_file</span></tt>, <tt class="docutils literal"><span class="pre">other_params</span></tt>, ... )</div>
 </div>
 </td>
 <td>&nbsp;</td>
@@ -134,7 +134,7 @@ for running computational pipelines.</p>
 <li>Globs in <tt class="docutils literal"><span class="pre">output</span></tt> can specify an indeterminate number of files.</li>
 </ul>
 </td>
-<td><a class="reference external" href="decorators/split.html#task-split"><em>&#64;split</em></a> ( <tt class="docutils literal"><span class="pre">tasks_or_file_names</span></tt>, <tt class="docutils literal"><span class="pre">output_files</span></tt>, [<tt class="docutils literal"><span class="pre">extra_parameters</span></tt>,...] )</td>
+<td><a class="reference external" href="decorators/split.html#decorators-split"><em>&#64;split</em></a> ( <tt class="docutils literal"><span class="pre">tasks_or_file_names</span></tt>, <tt class="docutils literal"><span class="pre">output_files</span></tt>, [<tt class="docutils literal"><span class="pre">extra_parameters</span></tt>,...] )</td>
 <td>&nbsp;</td>
 </tr>
 <tr><td><p class="first"><strong>&#64;transform</strong> (<em class="xref">Tutorial</em>)</p>
@@ -143,8 +143,8 @@ for running computational pipelines.</p>
 </ul>
 </td>
 <td><div class="first last line-block">
-<div class="line"><a class="reference external" href="decorators/transform.html#task-transform"><em>&#64;transform</em></a> ( <tt class="docutils literal"><span class="pre">tasks_or_file_names</span></tt>, <a class="reference external" href="decorators/transform_ex.html#task-transform-suffix-string"><em>suffix</em></a><em>(</em><tt class="docutils literal"><span class="pre">suffix_string</span></tt><em>)</em>, <tt class="docutils literal"><span class="pre">output_pattern</span></tt>, [<tt class="docutils literal"><span class="pre">extra_parameters</span></tt>,...] )</div>
-<div class="line"><a class="reference external" href="decorators/transform.html#task-transform"><em>&#64;transform</em></a> ( <tt class="docutils literal"><span class="pre">tasks_or_file_names</span></tt>, <a class="reference external" href="decorators/transform_ex.html#task-transform-matching-regex"><em>regex</em></a><em>(</em><tt class="docutils literal"><span class="pre">regex_pattern</span></tt><em>)</em>, <tt class="docutils literal"><span class="pre">output_pattern</span></tt>, [<tt class="docutils literal"><span class="pre">extra_parameters</span></tt>,...] )</div>
+<div class="line"><a class="reference external" href="decorators/transform.html#decorators-transform"><em>&#64;transform</em></a> ( <tt class="docutils literal"><span class="pre">tasks_or_file_names</span></tt>, <a class="reference external" href="decorators/transform_ex.html#decorators-transform-suffix-string"><em>suffix</em></a><em>(</em><tt class="docutils literal"><span class="pre">suffix_string</span></tt><em>)</em>, <tt class="docutils literal"><span class="pre">output_pattern</span></tt>, [<tt class="docutils literal"><span class="pre">extra_parameters</span></tt>,...] )</div>
+<div class="line"><a class="reference external" href="decorators/transform.html#decorators-transform"><em>&#64;transform</em></a> ( <tt class="docutils literal"><span class="pre">tasks_or_file_names</span></tt>, <a class="reference external" href="decorators/transform_ex.html#decorators-transform-matching-regex"><em>regex</em></a><em>(</em><tt class="docutils literal"><span class="pre">regex_pattern</span></tt><em>)</em>, <tt class="docutils literal"><span class="pre">output_pattern</span></tt>, [<tt class="docutils literal"><span class="pre">extra_parameters</span></tt>,...] )</div>
 </div>
 </td>
 <td>&nbsp;</td>
@@ -154,18 +154,18 @@ for running computational pipelines.</p>
 <li>Merges multiple input files into a single output.</li>
 </ul>
 </td>
-<td><a class="reference external" href="decorators/merge.html#task-merge"><em>&#64;merge</em></a> (<tt class="docutils literal"><span class="pre">tasks_or_file_names</span></tt>, <tt class="docutils literal"><span class="pre">output</span></tt>, [<tt class="docutils literal"><span class="pre">extra_parameters</span></tt>,...] )</td>
+<td><a class="reference external" href="decorators/merge.html#decorators-merge"><em>&#64;merge</em></a> (<tt class="docutils literal"><span class="pre">tasks_or_file_names</span></tt>, <tt class="docutils literal"><span class="pre">output</span></tt>, [<tt class="docutils literal"><span class="pre">extra_parameters</span></tt>,...] )</td>
 <td>&nbsp;</td>
 </tr>
 <tr><td><p class="first"><strong>&#64;posttask</strong></p>
 <ul class="last simple">
 <li>Calls function after task completes (<a class="reference external" href="Tutorial.html#posttask"><em>see tutorial</em></a>)</li>
-<li>Optional <a class="reference external" href="decorators/posttask.html#task-posttask-file-name"><em>touch_file</em></a> indicator (<a class="reference external" href="Tutorial.html#posttask-touch-file"><em>see tutorial</em></a>)</li>
+<li>Optional <a class="reference external" href="decorators/posttask.html#decorators-posttask-file-name"><em>touch_file</em></a> indicator (<a class="reference external" href="tutorials/manual/posttask.html#posttask-touch-file"><em>see tutorial</em></a>)</li>
 </ul>
 </td>
 <td><div class="first last line-block">
-<div class="line"><a class="reference external" href="decorators/posttask.html#task-posttask"><em>&#64;posttask</em></a> ( <tt class="docutils literal"><span class="pre">signal_task_completion_function</span></tt> )</div>
-<div class="line"><a class="reference external" href="decorators/posttask.html#task-posttask"><em>&#64;posttask</em></a> (<a class="reference external" href="decorators/indicator_objects.html#task-touch-file"><em>touch_file</em></a>( <tt class="docutils literal"><span class="pre">'task1.completed'</span></tt> ))</div>
+<div class="line"><a class="reference external" href="decorators/posttask.html#decorators-posttask"><em>&#64;posttask</em></a> ( <tt class="docutils literal"><span class="pre">signal_task_completion_function</span></tt> )</div>
+<div class="line"><a class="reference external" href="decorators/posttask.html#decorators-posttask"><em>&#64;posttask</em></a> (<a class="reference external" href="decorators/indicator_objects.html#decorators-touch-file"><em>touch_file</em></a>( <tt class="docutils literal"><span class="pre">'task1.completed'</span></tt> ))</div>
 </div>
 </td>
 <td>&nbsp;</td>
@@ -174,7 +174,7 @@ for running computational pipelines.</p>
 </table>
 </div>
 <div class="section" id="see-decorators-for-a-complete-list-of-decorators">
-<h3>See <a class="reference external" href="decorators/decorators.html#id1"><em>Decorators</em></a> for a complete list of decorators<a class="headerlink" href="#see-decorators-for-a-complete-list-of-decorators" title="Permalink to this headline">¶</a></h3>
+<h3>See <a class="reference external" href="decorators/decorators.html#decorators"><em>Decorators</em></a> for a complete list of decorators<a class="headerlink" href="#see-decorators-for-a-complete-list-of-decorators" title="Permalink to this headline">¶</a></h3>
 </div>
 </div>
 <div class="section" id="print-dependency-graph-if-you-necessary">
@@ -200,7 +200,7 @@ for running computational pipelines.</p>
 <h2>3. Run the pipeline<a class="headerlink" href="#run-the-pipeline" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python"><pre>pipeline_run(list_of_target_tasks, [list_of_tasks_forced_to_rerun, multiprocess = N_PARALLEL_JOBS])</pre>
 </div>
-<p>See the <a class="reference external" href="Tutorial.html#tutorial"><em>Full Tutorial</em></a> for a more complete introduction on how to add support
+<p>See the <em class="xref">Tutorial</em> for a more complete introduction on how to add support
 for ruffus.</p>
 </div>
 </div>
@@ -228,7 +228,7 @@ for ruffus.</p>
 
             <h4>Previous topic</h4>
             <p class="topless"><a href="full_tutorial.html"
-                                  title="previous chapter">Full Tutorial: Work in Progress</a></p>
+                                  title="previous chapter">Manual: Introduction</a></p>
             <h4>Next topic</h4>
             <p class="topless"><a href="introduction.html"
                                   title="next chapter">Introduction</a></p>
@@ -282,14 +282,14 @@ for ruffus.</p>
           <a href="introduction.html" title="Introduction"
              >next</a> |</li>
         <li class="right" >
-          <a href="full_tutorial.html" title="Full Tutorial: Work in Progress"
+          <a href="full_tutorial.html" title="Manual: Introduction"
              >previous</a> |</li>
         Ruffus v. 1.1.5c
     <li><a href="index.html">Home</a> | </li>
         <li><a href="contents.html">Contents</a> | </li>
-        <li><a href="simple_tutorial.html">Simple tutorial</a>  | </li>
+        <li><a href="tutorials/simple_tutorial/simple_tutorial.html">Simple tutorial</a>  | </li>
         <li><a href="">Cheat sheet</a> | </li>
-        <li><a href="full_tutorial.html">Full tutorial</a>  | </li>
+        <li><a href="tutorials/manual/manual_introduction.html">Manual</a>  | </li>
         <li><a href="FAQ.html">FAQ</a>  | </li>
         <li><a href="Todo.html">Future plans</a>  | </li>
         <li><a href="search.html">Search</a> &raquo;</li>
