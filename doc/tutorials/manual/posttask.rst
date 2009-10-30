@@ -75,7 +75,7 @@ Signalling the completion of each task
 .. index:: 
     pair: @posttask; touch_file
 
-.. _posttask-touch-file:
+.. _manual.posttask.touch_file:
 
 =======================================
 **touch_file**

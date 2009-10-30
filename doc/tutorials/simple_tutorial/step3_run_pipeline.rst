@@ -4,12 +4,13 @@
 Step 3: Displaying the pipeline visually
 ###################################################################
     * :ref:`Simple tutorial overview <Simple_Tutorial>` 
-    * :ref:`pipeline functions <decorators.pipeline_functions>` in detail
+    * :ref:`pipeline functions <pipeline_functions>` in detail
 
 =============================================
 Remember to look at the example code:
 =============================================
     * :ref:`Python Code for step 3 <Simple_Tutorial_3nd_step_code>` 
+    
 =============================================
 Printing out a flowchart of our pipeline
 =============================================
@@ -22,7 +23,6 @@ Printing out a flowchart of our pipeline
                                      "svg",
                                      [second_task])
         
-    .. ???
     
     producing the following flowchart
     

@@ -5,7 +5,7 @@
 Code for Step 3: Displaying the pipeline visually
 ###################################################################
 * :ref:`Simple tutorial overview <Simple_Tutorial>` 
-* :ref:`pipeline functions <decorators.pipeline_functions>` in detail
+* :ref:`pipeline functions <pipeline_functions>` in detail
 * :ref:`Back to Step 3 <Simple_Tutorial_3rd_step>` 
 
 ************************************

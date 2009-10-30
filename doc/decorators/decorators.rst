@@ -24,7 +24,7 @@ List of Decorators
    "**@follows**
 
    - Indicates task dependency (:ref:`see tutorial <manual.follows>`)
-   - optional :ref:`mkdir <decorators.follows.directory_name>` prerequisite (:ref:`see tutorial <manual.follow_mkdir>`)
+   - optional :ref:`mkdir <decorators.follows.directory_name>` prerequisite (:ref:`see tutorial <manual.follows.mkdir>`)
    
    ", "
    * :ref:`@follows <decorators.follows>` ( ``task1``, ``'task2'`` ))
@@ -87,7 +87,7 @@ List of Decorators
    "**@posttask**
 
    - Calls function after task completes (:ref:`see tutorial <manual.posttask>`)
-   - Optional :ref:`touch_file <decorators.posttask.file_name>` indicator (:ref:`see tutorial <manual.posttask_touch_file>`)
+   - Optional :ref:`touch_file <decorators.posttask.file_name>` indicator (:ref:`see tutorial <manual.posttask.touch_file>`)
 
    ", "
    * :ref:`@posttask <decorators.posttask>` ( ``signal_task_completion_function`` )
