@@ -1,7 +1,7 @@
 .. _Tutorial:
 
 ########################
-Full Tutorial
+Manual
 ########################
 
 ***************************************
@@ -574,7 +574,7 @@ A simple example
 -------------------------------------    
         The pipeline in ``example_scripts/simpler.py`` has four successive tasks::
         
-            python simpler.py -F "jpg" -d ../images/tutorial_four_stage_pipeline.jpg -t task4  -K -H
+            python simpler.py -F "jpg" -d images/tutorial_four_stage_pipeline.jpg -t task4  -K -H
         
         .. ???
 
@@ -603,7 +603,7 @@ A simple example
 
         After the pipeline runs (``python simpler.py -d ""``), all tasks are up to date and the flowchart shows::
         
-            python simpler.py -F "jpg" -d ../images/tutorial_complete.jpg -t task4 -K -H
+            python simpler.py -F "jpg" -d images/tutorial_complete.jpg -t task4 -K -H
         
         
         .. ???
@@ -687,6 +687,7 @@ Forced Reruns
 
     will run all tasks from ``task1`` to ``task4``
     
+
     .. image:: images/tutorial_force_from_task1.jpg
     
         
