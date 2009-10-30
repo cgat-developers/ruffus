@@ -4,7 +4,7 @@
 Step 3: Displaying the pipeline visually
 ###################################################################
     * :ref:`Simple tutorial overview <Simple_Tutorial>` 
-    * :ref:`pipeline functions <task.pipeline_functions>` in detail
+    * :ref:`pipeline functions <decorators.pipeline_functions>` in detail
 
 =============================================
 Remember to look at the example code:

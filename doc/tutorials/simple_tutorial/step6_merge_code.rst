@@ -4,7 +4,7 @@
 Code for Step 6: Merging results back together
 ###################################################################
 * :ref:`Simple tutorial overview <Simple_Tutorial>` 
-* :ref:`@merge in detail <task.merge>`
+* :ref:`@merge in detail <decorators.merge>`
 * :ref:`back to step 6 <Simple_Tutorial_6th_step>`
 
 ************************************

@@ -4,13 +4,13 @@
 .. |jobs| replace:: **jobs**
 .. _jobs: glossary.html#term-job
 .. |touch_file| replace:: *touch_file*
-.. _touch_file: indicator_objects.html#task.touch_file
+.. _touch_file: indicator_objects.html#decorators.touch_file
 
 ###################################################################
 Step 7: Signal the completion of each stage of our pipeline
 ###################################################################
 * :ref:`Simple tutorial overview <Simple_Tutorial>` 
-* :ref:`@posttask<task.posttask>` in detail
+* :ref:`@posttask<decorators.posttask>` in detail
 
 **************************************************************************************
 Remember to look at the example code:
@@ -30,7 +30,7 @@ Running some code to show that a stage of the pipeline has finished
     This is particular useful if the |task|_ is a recipe apply to an unspecified number
     of parameters in parallel in different |jobs|_
     
-    This can be added to a *Ruffus* pipeline using the :ref:`@posttask<task.posttask>`
+    This can be added to a *Ruffus* pipeline using the :ref:`@posttask<decorators.posttask>`
     decorator.
     
     Let us print a "hooray" message to show that we have finished calculating variances.
@@ -75,7 +75,7 @@ Running some code to show that a stage of the pipeline has finished
 Adding several post task actions
 **************************************************************************************
     You can, of course, add more than one different action to be taken on completion of the 
-    task, either by stacking up :ref:`@posttask<task.posttask>` decorators or by including
+    task, either by stacking up :ref:`@posttask<decorators.posttask>` decorators or by including
     several functions in the same **@posttask**:
     
         ::

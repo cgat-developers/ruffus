@@ -4,7 +4,7 @@
 Step 4: Splitting up large tasks / files
 ###################################################################
 * :ref:`Simple tutorial overview <Simple_Tutorial>` 
-* :ref:`@split in detail <task.split>`
+* :ref:`@split in detail <decorators.split>`
 
 **************************************************************************************
 Remember to look at the example code:
@@ -36,7 +36,7 @@ Splitting up a long list of random numbers to calculate their variance
         :scale: 50
        
 
-    The code for this is easy to write because of the *Ruffus* decorator :ref:`@split<task.split>` which is
+    The code for this is easy to write because of the *Ruffus* decorator :ref:`@split<decorators.split>` which is
     designed to specifically for splitting up input into an indeterminate ``NNN`` number of 
     output files:
     
