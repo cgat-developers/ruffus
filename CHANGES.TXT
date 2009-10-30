@@ -1,3 +1,37 @@
+= v. 2.0 beta=
+    _30/October/2009_
+    With the experience and feedback over the past few months, I have reworked **Ruffus** 
+    completely mainly to make the syntax more transparent, with fewer gotchas.
+    Previous limitations to do with parameters have been removed.
+    The experience with what *Ruffus* calls "Indicator Objects" has been very positive
+    and there are more of them. 
+    These are dummy classes with obvious names like "regex" or "suffix" which indicate the
+    type of optional parameters much like named parameters.
+
+    ==New Decorators:==
+        * @split
+        * @merge
+        * @transform
+        * @collate
+
+    ==Deprecated Decorators:==
+        * @files_re
+          Functionality is divided among the new decorators
+            
+    ==New Features:==
+        * Files can be chained from task to task, implicit dependencies are inferred automatically
+        * Limitations on parameters removed. Any degree of nesting is allowed.
+        * Strings contain glob letters ``[]?*`` automatically inferred as globs and expanded
+        * input and output parameters containing strings assumed to be filenames, whatever the nested data structures they are found in
+
+    ==Documentation:==
+        * New documentation almost complete
+        * New Simplified 7 step tutorial
+        * New manual work in progress
+
+    ==Bug Fix:==
+        * Scheduling errors
+
 = v. 1.1.4=
     _15/October/2009_
 

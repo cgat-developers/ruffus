@@ -192,25 +192,11 @@ Usage
 
      )
 
-#setup.py
-#   src/
-#       ruffus/
-#           __init__.py
-#           adjacent_pairs.py
-#           graph.py
-#           print_dependencies.py
-#           task.py
-#   doc/
-#   CHANGES.txt
-#   README.txt
-#   USAGE.txt
 #
 #  http://pypi.python.org/pypi
 #  http://docs.python.org/distutils/packageindex.html
 #   
 # 
 # 
-#   python setup.py register
-# python setup.py sdist  upload --formats=gztar,zip
-# python setup.py bdist --format=rpm,gztar,zip,wininst sdist --format=gztar,zip upload
+# python setup.py register
 # python setup.py sdist --format=gztar,zip upload
