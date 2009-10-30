@@ -1,12 +1,26 @@
-.. _manual_3rd_chapter:
+.. _manual_9th_chapter:
+.. |task| replace:: **task**
+.. _task: ../../glossary.html#term-task
+.. |job| replace:: **job**
+.. _job: ../../glossary.html#term-job
+.. |decorator| replace:: **decorator**
+.. _decorator: ../../glossary.html#term-decorator
+.. |pipeline_run| replace:: **pipeline_run**
+.. _pipeline_run: ../../pipeline_functions.html#pipeline_run
 
-###################################################################
-Step 3: Running / displaying the pipeline
-###################################################################
-* :ref:`Up <manual>` 
-* :ref:`Prev <manual_2nd_chapter>` 
-* :ref:`Next <manual_4th_chapter>` 
-* :ref:`pipeline functions <decorators.pipeline_functions>` in detail
+##################################################################
+Chapter 9: Checking dependencies to run tasks in order
+##################################################################
+
+    .. hlist::
+
+        * :ref:`Manual overview <manual>` 
+
+    
+.. index:: 
+    single: dependencies; Manual
+    
+.. _manual.dependencies:
 
 ***************************************
 Automatic dependency checking

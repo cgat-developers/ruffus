@@ -1,4 +1,4 @@
-.. _manual_3rd_chapter:
+.. _manual_10th_chapter:
 .. |task| replace:: **task**
 .. _task: ../../glossary.html#term-task
 .. |job| replace:: **job**
@@ -10,11 +10,12 @@
 
 
 ###################################################################
-Chapter XX: Generating parameters on the fly
+Chapter 10: Generating parameters on the fly
 ###################################################################
-.. hlist::
-   * :ref:`Manual overview <manual>` 
-   * :ref:`@files syntax in detail <decorators.files>`
+    .. hlist::
+    
+       * :ref:`Manual overview <manual>` 
+       * :ref:`@files syntax in detail <decorators.files>`
 
     Sometimes, it is necessary, or perhaps more convenient, to generate parameters on the fly or
     at runtime. This provides the maximum flexibility

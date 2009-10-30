@@ -1,11 +1,11 @@
 .. _manual_1st_chapter:
 
 .. |task| replace:: **task**
-.. _task: glossary.html#term-task
+.. _task: ../../glossary.html#term-task
 .. |job| replace:: **job**
-.. _job: glossary.html#term-job
+.. _job: ../../glossary.html#term-job
 .. |decorator| replace:: **decorator**
-.. _decorator: glossary.html#term-decorator
+.. _decorator: ../../glossary.html#term-decorator
 
 ###################################################################
 Chapter 1: Arranging tasks into a pipeline
@@ -13,8 +13,11 @@ Chapter 1: Arranging tasks into a pipeline
 * :ref:`Manual overview <manual>` 
 * :ref:`@follows syntax in detail <decorators.follows>`
 
+.. index:: 
+    single: @follows; Manual
 
 .. _manual.follows:
+
 ***************************************
 **@follows**
 ***************************************
@@ -45,9 +48,13 @@ Chapter 1: Arranging tasks into a pipeline
 
 .. note::
 
-    We shall see in later chapters that the order of pipeline |task|_\ s can also be set implicitly in the
-    :ref:`@split(...) <manual.split>`, :ref:`@transform(...) <manual.transform>`, :ref:`@merge(...) <manual.merge>`,
-    and :ref:`@collate(...) <manual.collate>` decorators. 
+    We shall see in :ref:`Chapter 2 <manual.tasks_as_input>` that the order of pipeline |task|_\ s can also be inferred implicitly 
+    for the following decorators
+
+        * :ref:`@split(...) <manual.split>`
+        * :ref:`@transform(...) <manual.transform>`
+        * :ref:`@merge(...) <manual.merge>`
+        * :ref:`@collate(...) <manual.collate>`
 
 =====================
 Running
@@ -94,6 +101,9 @@ Displaying
 
     
 
+.. index:: 
+    single: @follows; referring to functions before they are defined
+    single: @follows; out of order
 .. _manual.follows.out_of_order:
 
 ***************************************
@@ -104,7 +114,9 @@ Defining pipeline tasks out of order
     (``first_task`` before ``second_task`` before ``final_task``)
     
     | This is usually the most sensible way to arrange your code.
+
     If you wish to refer to tasks which are not yet defined, you can do so by quoting the function name as a string:
+
         ::
         
             @follows("second_task")
@@ -113,11 +125,15 @@ Defining pipeline tasks out of order
 
     You can refer to tasks (functions) in other modules, in which case the full 
     qualified name must be used:
+
         ::
         
             @follows("other_module.second_task")
             def final_task():
                 print "Final task"
+    
+.. index:: 
+    single: @follows; multiple dependencies
     
 .. _manual.follows.multiple_dependencies:
 
@@ -143,10 +159,11 @@ Multiple dependencies
             def final_task():
                 ""
     
-.. _manual.follows.mkdir
+.. _manual.follows.mkdir:
 
 .. index:: 
-    pair: @follows; mkdir
+    single: @follows; mkdir
+    single: mkdir
 
 ******************************************************************************
 Making directories automatically with :ref:`mkdir <decorators.mkdir>`

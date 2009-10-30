@@ -13,6 +13,7 @@
 Chapter 3: Running Tasks and Jobs in parallel
 ###################################################################
 .. hlist::
+
    * :ref:`Manual overview <manual>` 
 
 =====================

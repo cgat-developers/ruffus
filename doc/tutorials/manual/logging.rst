@@ -1,16 +1,26 @@
-.. _manual_9th_chapter:
+.. _manual_16th_chapter:
+.. |task| replace:: **task**
+.. _task: ../../glossary.html#term-task
+.. |job| replace:: **job**
+.. _job: ../../glossary.html#term-job
+.. |decorator| replace:: **decorator**
+.. _decorator: ../../glossary.html#term-decorator
+.. |pipeline_run| replace:: **pipeline_run**
+.. _pipeline_run: ../../pipeline_functions.html#pipeline_run
 
-###################################################################
-Step 9: Logging messages with *Ruffus*
-###################################################################
-* :ref:`Up <manual>` 
-* :ref:`Prev <manual_8th_chapter>` 
-* :ref:`Next <manual_10th_chapter>` 
-* :ref:`logging<ruffus.logging>` syntax in detail
+###################################################################################
+Chapter 16: Logging progress through a pipeline
+###################################################################################
 
-***************************************
-Logging
-***************************************
+    .. hlist::
+
+        * :ref:`Manual overview <manual>` 
+
+    
+.. index:: 
+    single: Logging; Manual
+    
+.. _manual.logging:
 
 =================================
 Logging task/job completion

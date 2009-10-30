@@ -1,12 +1,26 @@
-.. _manual_8th_chapter:
+.. _manual_15th_chapter:
+.. |task| replace:: **task**
+.. _task: ../../glossary.html#term-task
+.. |job| replace:: **job**
+.. _job: ../../glossary.html#term-job
+.. |decorator| replace:: **decorator**
+.. _decorator: ../../glossary.html#term-decorator
+.. |pipeline_run| replace:: **pipeline_run**
+.. _pipeline_run: ../../pipeline_functions.html#pipeline_run
 
-###################################################################
-Step 8: Handling errors and exceptions in *Ruffus*
-###################################################################
-* :ref:`Up <manual>` 
-* :ref:`Prev <manual_7th_chapter>` 
-* :ref:`Next <manual_9th_chapter>` 
-* ruffus :ref:`exceptions<ruffus.exceptions>` in detail
+###################################################################################
+Chapter 15: Exceptions thrown inside a pipeline
+###################################################################################
+
+    .. hlist::
+
+        * :ref:`Manual overview <manual>` 
+
+    
+.. index:: 
+    single: Exceptions; Manual
+    
+.. _manual.exceptions:
 
 =====================
 Exceptions
@@ -70,17 +84,19 @@ Exceptions
 Interrupting the pipeline
 =================================
 
-    If your task function returns false, this will halt the pipeline at that point.::
+    If your task function raises a ``Ruffus.JobSignalledBreak`` Exception, this will immediately
+    halt the pipeline at that point, without waiting for other jobs in the queue to complete:
     
-        from ruffus import *
-        @parallel([['A', 1], ['B',3]])
-        def parallel_task(name, param1):
-            if name == 'A': return False
+        ::
         
-        pipeline_run([parallel_task])
-    
+            from ruffus import *
+            @parallel([['A', 1], ['B',3]])
+            def parallel_task(name, param1):
+                if name == 'A': return False
+            
+            pipeline_run([parallel_task])
         
-    .. ???
+            
 
     produces the following (abbreviated)::
     

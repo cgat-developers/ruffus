@@ -1,11 +1,11 @@
 .. _Simple_Tutorial:
 
 .. |task| replace:: **task**
-.. _task: glossary.html#term-task
+.. _task: ../../glossary.html#term-task
 .. |job| replace:: **job**
-.. _job: glossary.html#term-job
+.. _job: ../../glossary.html#term-job
 .. |decorator| replace:: **decorator**
-.. _decorator: glossary.html#term-decorator
+.. _decorator: ../../glossary.html#term-decorator
 
 
 ################################################

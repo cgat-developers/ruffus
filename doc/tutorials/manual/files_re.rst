@@ -1,14 +1,28 @@
-.. _manual_11th_chapter:
+.. _manual_17th_chapter:
+.. |task| replace:: **task**
+.. _task: ../../glossary.html#term-task
+.. |job| replace:: **job**
+.. _job: ../../glossary.html#term-job
+.. |decorator| replace:: **decorator**
+.. _decorator: ../../glossary.html#term-decorator
+.. |pipeline_run| replace:: **pipeline_run**
+.. _pipeline_run: ../../pipeline_functions.html#pipeline_run
 
-######################################################################################################################################################################
-Step 11: Deprecated: Generating parameters using regular expressions the old fashioned way
-######################################################################################################################################################################
-* :ref:`Up <manual>` 
-* :ref:`Prev <manual_10th_chapter>` 
-* :ref:`@check_if_uptodate<decorators.check_if_uptodate>` syntax in detail
+###############################################################################################
+Chapter 17: Deprecated: Generating parameters using regular expressions the old fashioned way
+###############################################################################################
+
+    .. hlist::
+
+        * :ref:`Manual overview <manual>` 
+
+    
+.. index:: 
+    single: @files_re; Manual
+    
+.. _manual.files_re:
 
 
-.. _files_re:
 
 ***************************************
 **@files_re**
