@@ -379,7 +379,7 @@ if __name__ == '__main__':
         check_job_order_correct(tempdir + "jobs.start")
         check_job_order_correct(tempdir + "jobs.finish")
         os.system("rm -rf %s" % tempdir)
-        print "Done"
+        print "OK"
     else:
         pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, 
                             logger = stderr_logger if options.verbose else black_hole_logger,

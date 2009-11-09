@@ -157,7 +157,7 @@ tempdir = "temp_filesre_combine/"
 #
 #    task1
 #
-@follows(mkdir(tempdir))
+@follows(mkdir(tempdir, tempdir + "test"))
 @posttask(lambda: open(tempdir + "task.done", "a").write("Task 1 Done\n"))
 def prepare_files ():
     for grouping in species_list.keys():
@@ -239,8 +239,8 @@ if __name__ == '__main__':
 
 
         check_species_correct()
-        os.system("rm -rf %s" % tempdir)
-        print "Done"
+        #os.system("rm -rf %s" % tempdir)
+        print "OK"
     else:
         pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
                             logger = stderr_logger if options.verbose else black_hole_logger,

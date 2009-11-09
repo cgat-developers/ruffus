@@ -161,6 +161,11 @@ tempdir = "temp_filesre_split_and_combine/"
 def sleep_a_while ():
     time.sleep(1)
 
+    
+if options.verbose:
+    verbose_output = sys.stderr
+else:
+    verbose_output =open("/dev/null", "w")
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Tasks
@@ -171,7 +176,7 @@ def sleep_a_while ():
 #    split_fasta_file
 #
 @posttask(sleep_a_while)
-@posttask(lambda: sys.stderr.write("Split into %d files\n" % options.jobs_per_task))
+@posttask(lambda: verbose_output.write("Split into %d files\n" % options.jobs_per_task))
 @files(tempdir  + "original.fa", tempdir  + "files.split.success")
 def split_fasta_file (input_file, success_flag):
     # 
@@ -196,7 +201,7 @@ def split_fasta_file (input_file, success_flag):
 #    align_sequences
 #
 @posttask(sleep_a_while)
-@posttask(lambda: sys.stderr.write("Sequences aligned\n"))
+@posttask(lambda: verbose_output.write("Sequences aligned\n"))
 @follows(split_fasta_file)
 @files_re(tempdir  + "files.split.*.fa",       # find all .fa files
             ".fa$", ".aln")                     # fa -> aln
@@ -210,7 +215,7 @@ def align_sequences (input_file, output_filename):
 #    percentage_identity
 #
 @posttask(sleep_a_while)
-@posttask(lambda: sys.stderr.write("%Identity calculated\n"))
+@posttask(lambda: verbose_output.write("%Identity calculated\n"))
 @files_re(align_sequences,                     # find all results from align_sequences
             r"(.*\.)(.+).aln$",                # match file name root and substitute
             r'\g<0>',                          #    the original file
@@ -228,7 +233,7 @@ def percentage_identity (input_file, output_files, split_index):
 #
 #    combine_results
 #
-@posttask(lambda: sys.stderr.write("Results recombined\n"))
+@posttask(lambda: verbose_output.write("Results recombined\n"))
 @posttask(sleep_a_while)
 @files_re(percentage_identity, combine(r".*.pcid$"),
                                       [tempdir + "all.combine_results", 
@@ -239,7 +244,7 @@ def combine_results (input_files, output_files):
     """
     (output_filename, success_flag_filename) = output_files
     out = open(output_filename, "w")
-    for inp in input_files:
+    for inp, flag in input_files:
         out.write(open(inp).read())
     open(success_flag_filename, "w")
 
@@ -249,7 +254,7 @@ def start_pipeline_afresh ():
     """
     Recreate directory and starting file
     """
-    print >>sys.stderr, "Start again"
+    print >>verbose_output, "Start again"
     import os
     os.system("rm -rf %s" % tempdir)
     os.makedirs(tempdir)
@@ -279,7 +284,7 @@ if __name__ == '__main__':
                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                             verbose = options.verbose)
         os.system("rm -rf %s" % tempdir)
-        print "Done"
+        print "OK"
     else:
         pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
                             logger = stderr_logger if options.verbose else black_hole_logger,

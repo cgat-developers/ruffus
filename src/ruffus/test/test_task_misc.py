@@ -15,53 +15,9 @@ if __name__ != '__main__':
 
 
 exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.append(os.path.abspath(os.path.join(exe_path,"..", "..")))
+sys.path.insert(0, os.path.abspath(os.path.join(exe_path,"..", "..")))
 from ruffus import *
 
-class TestMiscFunctions(unittest.TestCase):
-
-    #       self.assertEqual(self.seq, range(10))
-    #       self.assert_(element in self.seq)
-    #       self.assertRaises(ValueError, random.sample, self.seq, 20)
-
-
-
-    def test_is_str(self):
-        """
-            task.is_str()
-        """
-        test_str1 = "asfas"
-        test_str2 = str()
-        test_str3 = list(test_str1)
-        test_str4 = list(test_str2)
-        self.assert_(task.is_str(test_str1))
-        self.assert_(task.is_str(test_str2))
-        self.assert_(not task.is_str(test_str3))
-        self.assert_(not task.is_str(test_str4))
-        
-    def test_non_str_sequence (self):
-        """
-            task.is_str()
-        """
-        test_str1 = "asfas"
-        class inherited_str (str):
-            #
-            # use __new__ instead of init because str is immutable
-            #
-            def __new__( cls, a):               
-                obj = super( inherited_str, cls).__new__( inherited_str, a )
-                return obj                          
-                
-        test_str2 = inherited_str("test")
-        class inherited_list (list):
-            def __init__ (self, *param):
-                list.__init__(self, *param)
-        test_str3 = list(test_str1)
-        test_str4 = inherited_list(test_str2)
-        self.assert_(not task.non_str_sequence(test_str1))
-        self.assert_(not task.non_str_sequence(test_str2))
-        self.assert_(task.non_str_sequence(test_str3))
-        self.assert_(task.non_str_sequence(test_str4))
         
         
    
@@ -92,8 +48,8 @@ class Test_needs_update_check_directory_missing(unittest.TestCase):
         #   lists of files
         # 
         
-        self.assert_(not task.needs_update_check_directory_missing ([self.directory]))
-        self.assert_(    task.needs_update_check_directory_missing (["missing directory"]))
+        self.assert_(not task.needs_update_check_directory_missing ([self.directory])[0])
+        self.assert_(    task.needs_update_check_directory_missing (["missing directory"])[0])
         self.assertRaises(task.error_not_a_directory,
                             task.needs_update_check_directory_missing, [self.tempfile])
 

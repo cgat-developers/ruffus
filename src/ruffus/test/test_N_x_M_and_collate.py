@@ -264,7 +264,8 @@ def cleanup_simulation_data ():
     """
     cleanup files
     """
-    sys.stdout.write("Cleanup working directory and simulation files.\n")
+    if options.verbose:
+        sys.stderr.write("Cleanup working directory and simulation files.\n")
     
     #   
     #   cleanup gene and gwas files
@@ -384,7 +385,7 @@ def gwas_simulation(input_files, result_file_path, gene_file_root, sim_file_root
 
 
 @collate(gwas_simulation, regex(r"simulation_results/(\d+).\d+.simulation_res"), r"\1.mean")
-@posttask(lambda : sys.stdout.write("\nAll finished: hooray!!!\n"))
+@posttask(lambda : sys.stdout.write("\nOK\n"))
 def statistical_summary (result_files, summary_file):
     """
     Simulate statistical summary
@@ -435,7 +436,6 @@ if __name__ == '__main__':
                                  options.forced_tasks)
         else:    
             pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, verbose = options.verbose)
-        print "Done"
 
 
         if options.debug and not options.keep:

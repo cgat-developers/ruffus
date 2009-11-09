@@ -7,7 +7,7 @@
 
 ################################################################################
 #
-#   exceptions
+#   exceptions.py
 #
 #
 #   Copyright (c) 10/9/2009 Leo Goodstadt
@@ -42,8 +42,9 @@ from collections import defaultdict
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-if __name__ != '__main__':
-    import task
+#if __name__ != '__main__':
+#    import task
+    
 class error_task(Exception):
     def __init__(self, *errmsg):
         Exception.__init__(self, *errmsg)
@@ -63,7 +64,7 @@ class error_task(Exception):
         task_names = []
         for t in self.tasks:
             task_name = t._name.replace('__main__.', '')
-            if t._action_type != task._task.action_mkdir:
+            if t.action_names[t._action_type] != "task_mkdir":
                 task_name = "'def %s(...):'" % (task_name)
             task_names.append(task_name)
         
@@ -110,7 +111,6 @@ class RethrownJobError(error_task):
         #
         for i, (task_name, job_name, exception_name, exception_value, exception_stack) in enumerate(self.args):
             message += "\nException #%d\n" % (i + 1)
-            message += "\nException #%d\n" % (i + 1)
             message += "%s%s:\n" % (exception_name, exception_value)
             message += "for %s.%s\n\n%s\n" % (task_name, job_name, exception_stack)
         return (self.get_main_msg() + "".join(message)).replace("\n", "\n    ")
@@ -126,7 +126,8 @@ class JobSignalledBreak(error_task):
 class PostTaskArgumentError(error_task):
     pass
 
-
+class error_task_get_output(error_task_contruction):
+    pass
 class error_task_transform(error_task_contruction):
     pass
 class error_task_merge(error_task_contruction):
@@ -134,6 +135,12 @@ class error_task_merge(error_task_contruction):
 class error_task_collate(error_task_contruction):
     pass
 class error_task_split(error_task_contruction):
+    pass
+class error_task_files_re(error_task_contruction):
+    pass
+class error_task_files(error_task_contruction):
+    pass
+class error_task_parallel(error_task_contruction):
     pass
 class error_making_directory(error_task):
     pass
@@ -205,14 +212,15 @@ if __name__ == '__main__':
             e.specify_task (fake_mkdir_task3, "Some message 2")
             e.specify_task (fake_mkdir_task4, "Some message 3")
             self.assertEqual(str(e), 
-"""
-
-Some message 3 for
-'def task1(...):'
-'def task2(...):'
-task3
-task4
-""")
+"""    
+    
+    Some message 3 for
+    
+    'def task1(...):'
+    'def task2(...):'
+    task3
+    task4
+    """)
 
         def test_RethrownJobError(self):
             """
@@ -249,6 +257,7 @@ task4
 """
     
     Exceptions running jobs for
+    
     'def task1(...):'
     'def task2(...):'
     task3
