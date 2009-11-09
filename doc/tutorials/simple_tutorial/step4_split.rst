@@ -52,15 +52,17 @@ Splitting up a long list of random numbers to calculate their variance
     
     ``output_files`` is a list of files which match ``*.chunks``.
     
-    The first time you run this function ``*.chunks`` will return an empty list but at other
-    times, ``*.chunks`` will match a list of previously created file names some of which will 
-    be out of date or superfluous.
-
-    These do not in any way constrain the number of files you actually want to split ``random_numbers.list``
-    into.
-
-    However, they may be useful for cleaning up detritus from previous runs 
+    The first time you run this function ``*.chunks`` will return an empty list because
+    no ``.chunks`` files have been created.
+    
+    After that ``*.chunks`` will match the list of current ``.chunks`` files created by
+    the previous pipeline run. Some of these files will be out of date or superfluous.
+    These file names are still useful for removing detritus from previous runs 
     (have a look at :ref:`step_4_split_numbers_into_chunks(...) <Simple_Tutorial_4th_step_code>`).
+    
+    Otherwise, you should create the exact ``.chunks`` files which result from
+    splitting up ``random_numbers.list`` without considering what is contained in ``output_files``.
+
 
 
 

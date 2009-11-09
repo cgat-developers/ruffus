@@ -51,6 +51,7 @@ Calculating variances from the sums and sum of squares of all chunks
     Thus if ``step_5_calculate_sum_of_squares`` created
         | ``1.sums`` and 
         | ``2.sums`` etc.
+        
     This would result in the following function call:
     
         ::
