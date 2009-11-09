@@ -1,4 +1,29 @@
 #!/usr/bin/env python
+################################################################################
+#
+# 
+#   task.py
+#
+#   Copyright (c) 10/9/2009 Leo Goodstadt
+#   
+#   Permission is hereby granted, free of charge, to any person obtaining a copy
+#   of this software and associated documentation files (the "Software"), to deal
+#   in the Software without restriction, including without limitation the rights
+#   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#   copies of the Software, and to permit persons to whom the Software is
+#   furnished to do so, subject to the following conditions:
+#   
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#   
+#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#   THE SOFTWARE.
+#################################################################################
 """
 
 ********************************************
@@ -51,15 +76,6 @@ Running the pipeline
 
 import os,sys,copy, multiprocessing
 from collections import namedtuple
-# add self to search path for testing
-if __name__ == '__main__':
-    exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-    sys.path.append(os.path.abspath(os.path.join(exe_path,"..", "python_modules")))
-    myname = os.path.split(sys.argv[0])[1]
-    myname = os.path.splitext(myname)[0];
-else:
-    myname = __name__
-
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -75,6 +91,10 @@ import traceback
 import types
 from itertools import imap 
 
+
+if __name__ == '__main__':
+    import sys
+    sys.path.insert(0,".")
 
 from graph import *
 from print_dependencies import *
@@ -119,25 +139,15 @@ class t_stderr_logger:
     Everything to stderr
     """
     def info (self, message):
-        print >>sys.stderr, message
+        sys.stderr.write(message + "\n")
     def debug (self, message):
-         print >>sys.stderr, message
+        sys.stderr.write(message + "\n")
 
 
 black_hole_logger = t_black_hole_logger()
 stderr_logger     = t_stderr_logger()
 
 
-def wrap_exception_as_string ():
-    """
-    return exception as string to be rethrown
-    """
-    exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-    msg = "%s.%s" % (exceptionType.__module__, exceptionType.__name__)
-    exception_value  = str(exceptionValue)
-    if len(exception_value):
-        return msg + ": (%s)" % exception_value
-    return msg
 
 #_________________________________________________________________________________________
 #
@@ -153,49 +163,6 @@ def log_at_level (logger, message_level, verbose_level, msg):
 
         
 
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   needs_update_func
-
-#       functions which are called to see if a job needs to be updated
-#
-#   Each task is a series of parallel jobs
-#           each of which has the following pseudo-code
-# 
-#   for param in param_generator_func():
-#       if needs_update_func(*param):
-#           job_wrapper(*param)
-# 
-#   N.B. param_generator_func yields iterators of *sequences*
-#   if you are generating single parameters, turn them into lists:
-#   
-#       for a in alist:
-#           yield (a,)
-#
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#_________________________________________________________________________________________
-
-#   needs_update_check_directory_missing 
-
-#       N.B. throws exception if this is an ordinary file, not a directory
-
-
-#_________________________________________________________________________________________
-def needs_update_check_directory_missing (dirs):
-    """
-    Called per directory:
-        Does it exist?
-        Is it an ordinary file not a directory? (throw exception
-    """
-    for d in dirs:
-        #print >>sys.stderr, "check directory missing %d " % os.path.exists(d) # DEBUG
-        if not os.path.exists(d):
-            return True, "Directory [%s] is missing" % d
-        if not os.path.isdir(d):
-            raise error_not_a_directory("%s already exists but as a file, not a directory" % d )
-    return False, "All directories exist"
 
     
     
@@ -219,97 +186,6 @@ class waiting_for_more_tasks_to_complete:
     pass
 
     
-    
-    
-    
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   param_factories
-
-#       makes python generators which yield parameters for
-#
-#           A) needs_update_func 
-#           B) job_wrapper
-
-#       Each task is a series of parallel jobs
-#           each of which has the following pseudo-code
-# 
-#       for param in param_generator_func():
-#           if needs_update_func(*param):
-#               act_func(*param)
-#
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-
-#_________________________________________________________________________________________
-
-#   args_param_factory
-
-#       iterates through supplied list 
-#_________________________________________________________________________________________
-def args_param_factory (orig_args):
-    """
-so that::
-    
-        @parallel('a', 'b', 'c') 
-        def task_func (A, B, C):
-            pass
-
-and::
-   
-        parameters=[
-                     ['a', 'b', 'c'],        # first job
-                   ]        
-        @parallel(parameters) 
-        def task_func (A, B, C):
-            pass
-
-both call::
-    
-            task_func(A='a', B = 'b', C = 'c')
-    """
-    # multiple jobs with input/output parameters etc.
-    if len(orig_args) > 1:
-        params = copy.copy([list(orig_args)])
-    else:
-        params = copy.copy(orig_args[0])
-
-    def iterator():
-        for job_param in params:
-            #print >> sys.stderr, dumps(job_param, indent=4) # DEBUG
-            yield job_param
-    return iterator
-
-    
-    
-    
-    
-    
-    
-#_________________________________________________________________________________________
-
-#   touch_file_factory
-
-#_________________________________________________________________________________________
-def _touch_file_factory (orig_args, register_cleanup):
-    """
-    Creates function, which when called, will touch files
-    """
-    file_names = orig_args
-    if is_str (orig_args):
-        file_names = [orig_args]
-    else:
-        # make copy so when original is modifies, we don't get confused!
-        file_names = list(orig_args)
-        
-    def do_touch_file ():
-        for f  in file_names:
-            if not os.path.exists(f):
-                open(f, 'w')
-            else:
-                os.utime(f, None)
-            register_cleanup(f, "touch")
-    return do_touch_file
         
     
     
@@ -438,23 +314,6 @@ class touch_file(object):
         self.args = args
         
 
-#_________________________________________________________________________________________
-
-#   suffix
-
-#_________________________________________________________________________________________
-class suffix(object):
-    def __init__ (self, *args):
-        self.args = args
-
-#_________________________________________________________________________________________
-
-#   regex
-
-#_________________________________________________________________________________________
-class regex(object):
-    def __init__ (self, *args):
-        self.args = args
 
 #_________________________________________________________________________________________
 
@@ -546,7 +405,7 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup):
     #
     if o == None:
         return
-    elif is_str(o):
+    elif isinstance(o, str):
         register_cleanup(o, "file")
     else:
         for f in o:
@@ -622,7 +481,13 @@ def run_pooled_job_without_exceptions (process_parameters):
                              exception_value, 
                              exception_stack])
         
+        
+        
+#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
+#   Helper function
+
+#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #_________________________________________________________________________________________
 
@@ -701,6 +566,13 @@ class _task (node):
 
         return t
 
+    #_________________________________________________________________________________________
+
+    #   get_action_name
+
+    #_________________________________________________________________________________________
+    def get_action_name (self):
+        return _task.action_mkdir[self._action_type]
 
     #_________________________________________________________________________________________
 
@@ -729,6 +601,10 @@ class _task (node):
         
         # 
         self.job_descriptor         = generic_job_descriptor
+        
+        # jobs which produce a single output. 
+        # special handling for task.get_output_files for dependency chaining
+        self.single_job_single_output = False
 
         # function which is decorated and does the actual work
         self.user_defined_work_func = None
@@ -885,13 +761,17 @@ class _task (node):
     # 
     # 
     #_____________________________________________________________________________________
-    def get_output_files (self, flattened = True):
+    def get_output_files (self, do_not_expand_single_job_tasks = False):
         """
         Cache output files
         
             If flattened is True, returns file as a list of strints, 
                 flattening any nested structures and discarding non string names
+            Normally returns a list with one item for each job or a just a list of file names.
+            For "single_job_single_output" i.e. @merge and @files with single jobs,
+                returns the output of a single job (i.e. can be a string)
         """
+        flattened = False
         if self.output_filenames == None:
             
             self.output_filenames = []
@@ -904,10 +784,27 @@ class _task (node):
                     # skip tasks which don't have output parameters
                     if len(param) >= 2:
                         self.output_filenames.append(param[1])
-            
+
+                # for merging into a single file, return that as the output
+                if self.single_job_single_output:
+                    if len(self.output_filenames) != 1:
+                         raise error_task_get_output(this, 
+                                "Task which is supposed to produce a single output "
+                                "somehow has more than one job.")
+                         
+
         if flattened:
+            # if single file name, return that
+            if (do_not_expand_single_job_tasks and 
+                len(self.output_filenames) and 
+                isinstance(self.output_filenames[0], str)):
+                return self.output_filenames
             return get_strings_in_nested_sequence(self.output_filenames)
         else:
+            # special handling for jobs which have a single task, 
+            if (do_not_expand_single_job_tasks and 
+                len(self.output_filenames) ):
+                return self.output_filenames[0]
             return self.output_filenames
 
         
@@ -935,7 +832,31 @@ class _task (node):
             
             
             
-            
+    #_________________________________________________________________________________________
+
+    #   handle_tasks_globs_in_inputs
+
+    #_________________________________________________________________________________________
+    def handle_tasks_globs_in_inputs(self, input_params):
+        """
+        Helper function for tasks which 
+            1) Notes globs and tasks
+            2) Replaces tasks names and functions with actual tasks
+            3) Adds task dependencies automatically via task_follows
+        """
+        # 
+        # get list of function/function names and globs
+        # 
+        function_or_func_names, globs = get_nested_tasks_or_globs(input_params)
+
+        # 
+        # replace function / function names with tasks
+        # 
+        tasks = self.task_follows(function_or_func_names)
+        functions_to_tasks = dict(zip(function_or_func_names, tasks))
+        input_params = replace_func_names_with_tasks(input_params, functions_to_tasks)
+        
+        return tasks, globs, input_params
             
             
             
@@ -970,19 +891,22 @@ class _task (node):
 
         self.set_action_type (_task.action_task_split)
 
-        # input files
-        tasks, filenames, globs, singleton = get_tasks_filename_globs_in_nested_sequence(orig_args[0])
-        singleton = singleton[0]
-        tasks = self.task_follows(tasks)
-
-        self.param_generator_func = split_param_factory (tasks, filenames, globs, singleton,
-                                                           *orig_args[1:])
+        # 
+        # replace function / function names with tasks
+        # 
+        tasks, globs, input_params = self.handle_tasks_globs_in_inputs(orig_args[0])
+        output_tasks, output_globs, output_params = self.handle_tasks_globs_in_inputs(orig_args[1])
+        if len(output_tasks):
+            raise error_task_split(self, "@split cannot output to another task. "
+                                            "Do not include tasks in output parameters.")
+        
+        extra_params = orig_args[1:]
+        self.param_generator_func = split_param_factory (tasks, globs, input_params, output_globs, *extra_params)
 
 
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
         self.job_descriptor       = split_job_descriptor_factory (orig_args[1])
-        #io_files_job_descriptor
 
         # output is a glob
         self.indeterminate_output = True
@@ -1007,34 +931,20 @@ class _task (node):
 
         self.set_action_type (_task.action_task_transform)
 
-        # input files
-        tasks, filenames, globs, singleton = get_tasks_filename_globs_in_nested_sequence(orig_args[0])
-        singleton = singleton[0]
-        tasks = self.task_follows(tasks)
+        # 
+        # replace function / function names with tasks
+        # 
+        tasks, globs, input_param = self.handle_tasks_globs_in_inputs(orig_args[0])
 
         
         # regular expression match
         if isinstance(orig_args[1], regex):
-            regex_str = orig_args[1].args[0]
-            try:
-                matching_regex = re.compile(regex_str)
-            except:
-                raise error_task_transform(self, "@transform: regular expression " +
-                                                            "regex('%s') " % regex_str + 
-                                                           "is malformed\n" +
-                                                            "[%s]" %  wrap_exception_as_string())
-
+            matching_regex = compile_regex(self, orig_args[1], error_task_transform, "@transform")
             regex_substitute_extra_parameters = True
             
         # simulate end of string (suffix) match
         elif isinstance(orig_args[1], suffix):
-            suffix_str = orig_args[1].args[0]
-            try:
-                matching_regex = re.compile(re.escape(suffix_str) + "$")
-            except:
-                raise error_task_transform(self, "@transform: suffix('%s') " % suffix_str +
-                                                                "is somehow malformed\n" +
-                                                                "[%s]" %  wrap_exception_as_string())
+            matching_regex = compile_suffix(self, orig_args[1], error_task_transform, "@transform")
             regex_substitute_extra_parameters = False
 
         else:
@@ -1042,24 +952,22 @@ class _task (node):
                                                             "regex() as the second argument")
             
         
+        #
+        #   inputs also defined by pattern match
+        #         
         if isinstance(orig_args[2], inputs):
             input_pattern = orig_args[2].args[0]
-            output_pattern = orig_args[3]
-            extras_arg_pos = 4
+            output_pattern_extras = orig_args[3:]
         else:
-            input_pattern = r"\g<0>"
-            output_pattern = orig_args[2]
-            extras_arg_pos = 3
+            input_pattern = None
+            output_pattern_extras = orig_args[2:]
             
-        # ignore singleton
-        self.param_generator_func = transform_param_factory (   tasks, filenames, globs,
+        self.param_generator_func = transform_param_factory (   tasks, globs, input_param,
+                                                                False, # flatten input
                                                                 matching_regex, 
-                                                                input_pattern,
-                                                                output_pattern,
                                                                 regex_substitute_extra_parameters,
-                                                                *orig_args[extras_arg_pos:])
-
-
+                                                                input_pattern,
+                                                                *output_pattern_extras)
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
         self.job_descriptor       = io_files_job_descriptor
@@ -1081,29 +989,35 @@ class _task (node):
 
         self.set_action_type (_task.action_task_collate)
 
-        # input files
-        tasks, filenames, globs, singleton = get_tasks_filename_globs_in_nested_sequence(orig_args[0])
-        singleton = singleton[0]
-        tasks = self.task_follows(tasks)
+        # 
+        # replace function / function names with tasks
+        # 
+        tasks, globs, input_param = self.handle_tasks_globs_in_inputs(orig_args[0])
+
         
         # regular expression match
         if isinstance(orig_args[1], regex):
-            regex_str = orig_args[1].args[0]
-            try:
-                matching_regex = re.compile(regex_str)
-            except:
-                raise error_task_collate(self, "@collate: regular expression " +
-                                                           "regex('%s') is malformed\n" % regex_str +
-                                                            "[%s]" %  wrap_exception_as_string())
+            matching_regex = compile_regex(self, orig_args[1], error_task_collate, "@collate")
         else:
-            raise error_task_transform(self, "@collate expects regex() as the second argument")
+            raise error_task_collate(self, "@collate expects regex() as the second argument")
 
+        #
+        #   inputs also defined by pattern match
+        #         
+        if isinstance(orig_args[2], inputs):
+            input_pattern = orig_args[2].args[0]
+            output_pattern_extras = orig_args[3:]
+        else:
+            input_pattern = None
+            output_pattern_extras = orig_args[2:]
 
-        self.param_generator_func = collate_param_factory (tasks, filenames, globs, 
-                                                            matching_regex,
-                                                            *orig_args[2:])
+        extra_params = orig_args[2:]
 
-
+        self.param_generator_func = collate_param_factory (tasks, globs, input_param, 
+                                                            False, # flatten input
+                                                            matching_regex, 
+                                                            input_pattern,
+                                                            *output_pattern_extras)
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
         self.job_descriptor       = io_files_job_descriptor
@@ -1127,15 +1041,17 @@ class _task (node):
 
         self.set_action_type (_task.action_task_merge)
 
-        # input files
-        tasks, filenames, globs, singleton = get_tasks_filename_globs_in_nested_sequence(orig_args[0])
-        singleton = singleton[0]
-        tasks = self.task_follows(tasks)
+        # 
+        # replace function / function names with tasks
+        # 
+        tasks, globs, input_param = self.handle_tasks_globs_in_inputs(orig_args[0])
 
-        self.param_generator_func = merge_param_factory (tasks, filenames, globs, singleton,
-                                                           *orig_args[1:])
+        extra_params = orig_args[1:]
+        self.param_generator_func = merge_param_factory (tasks, globs, input_param,
+                                                           *extra_params)
 
 
+        self.single_job_single_output = True
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
         self.job_descriptor       = io_files_job_descriptor
@@ -1159,19 +1075,25 @@ class _task (node):
         # self.job_wrapper          = job_wrapper_generic
         # self.job_descriptor       = io_files_job_descriptor
 
-
-
-        # no passed: single call
         if len(orig_args) == 0:
-            self.param_generator_func = None
+            raise error_task_parallel(self, "Too few arguments for @parallel")
 
-        # custom function will generate params 
-        elif type(orig_args[0]) == types.FunctionType:
+        #   Use parameters generated by a custom function
+        if len(orig_args) == 1 and type(orig_args[0]) == types.FunctionType:
             self.param_generator_func = orig_args[0]
 
         # list of  params 
         else:
-            self.param_generator_func = args_param_factory(orig_args)
+            if len(orig_args) > 1:
+                # single jobs
+                params = copy.copy([orig_args])
+                self.single_job_single_output = True
+            else:
+                # multiple jobs with input/output parameters etc.
+                params = copy.copy(orig_args[0])
+                check_parallel_parameters (self, params, error_task_parallel)
+
+            self.param_generator_func = args_param_factory (params)
 
 
 
@@ -1195,6 +1117,9 @@ class _task (node):
         self.job_wrapper          = job_wrapper_io_files
         self.job_descriptor       = io_files_job_descriptor
 
+        if len(orig_args) == 0:
+            raise error_task_files(self, "Too few arguments for @files")
+
         #   Use parameters generated by a custom function
         if len(orig_args) == 1 and type(orig_args[0]) == types.FunctionType:
             self.set_action_type (_task.action_task_files_func)
@@ -1203,14 +1128,57 @@ class _task (node):
         #   Use parameters in supplied list
         else:
             self.set_action_type (_task.action_task_files)
-            self.param_generator_func = files_param_factory (orig_args)
+
+            if len(orig_args) > 1:
+
+                # single jobs
+                params = copy.copy([orig_args])
+                self.single_job_single_output = True
+            else:
+
+                # multiple jobs with input/output parameters etc.
+                params = copy.copy(orig_args[0])
+                self.single_job_single_output = False
+
+            check_files_io_parameters (self, params, error_task_files)
+            
+            # 
+            # get list of function/function names and globs for all job params
+            # 
+            function_or_func_names, globs = set(), set()
+            input_params = []
+            for j in params:
+                func1job, glob1job = get_nested_tasks_or_globs(j[0])
+                function_or_func_names |= func1job
+                globs                  |= glob1job
+                input_params.append(j[0])
+
+            # 
+            # replace function / function names with tasks
+            # 
+            tasks = self.task_follows(function_or_func_names)
+            functions_to_tasks = dict(zip(function_or_func_names, tasks))
+            input_params = [replace_func_names_with_tasks(i, functions_to_tasks) 
+                                                            for i in input_params]
+
+            #
+            #   extra params 
+            #
+            output_extra_params = [tuple(j[1:]) for j in params]
+                
+            self.param_generator_func = files_param_factory (tasks, globs, input_params,
+                                                             False, # flatten input
+                                                             True,  # do_not_expand_single_job_tasks
+                                                             output_extra_params)
+                                                             
+            
 
     #_________________________________________________________________________________________
 
     #   task_files_re
 
     #_________________________________________________________________________________________
-    def task_files_re (self, orig_args):
+    def task_files_re (self, old_args):
         """
         calls user function in parallel
             with input_files, output_files, parameters
@@ -1226,15 +1194,47 @@ class _task (node):
                   outputfiles = all files in glob which match the regular expression and
                                           generated from the "to" replacement string
         """
+        #
+        #   check enough arguments
+        #
+        if len(old_args) < 3:
+            raise error_task_files_re(self, "Too few arguments for @files_re")
+            
         self.set_action_type (_task.action_task_files_re)
 
-        tasks, filenames, globs, singleton = get_tasks_filename_globs_in_nested_sequence(orig_args[0])
-        singleton = singleton[0]
-        
-        tasks = self.task_follows(tasks)
-            
-        self.param_generator_func = files_re_param_factory (tasks, filenames, globs, singleton,
-                                                                    *orig_args[1:])
+        # check if parameters wrapped in combine
+        combining_all_jobs, orig_args = is_file_re_combining(old_args)
+
+        # 
+        # replace function / function names with tasks
+        # 
+        tasks, globs, input_param = self.handle_tasks_globs_in_inputs(orig_args[0])
+
+        matching_regex = compile_regex(self, regex(orig_args[1]), error_task_files_re, "@files_re")
+
+        # if the input file term is missing, just use the original
+        if len(orig_args) == 3:
+            input_pattern = None
+            output_and_extras = [orig_args[2]]
+        else:
+            input_pattern = orig_args[2]
+            output_and_extras = orig_args[3:]
+
+
+        if combining_all_jobs:
+            self.param_generator_func = collate_param_factory (tasks, globs, input_param, 
+                                                                False,                  # flatten
+                                                                matching_regex,
+                                                                input_pattern, 
+                                                                *output_and_extras)
+        else:
+
+            self.param_generator_func = transform_param_factory (tasks, globs, input_param, 
+                                                                    False,              # flatten
+                                                                    matching_regex, 
+                                                                    True,               # substitute all parameters
+                                                                    input_pattern, 
+                                                                    *output_and_extras)
             
             
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
@@ -1247,8 +1247,8 @@ class _task (node):
 
     #   task_mkdir
     
-    #       only called within task_follow
-
+    #       only called within task_follows
+    
     #_________________________________________________________________________________________
     def task_mkdir (self, orig_args):
         """
@@ -1256,12 +1256,17 @@ class _task (node):
         Creates directory if missing
         """
         #   jump through hoops 
-        #   all directories created in one job to avoid race conditions
-        #    so we are converting [a,b,c] into [   [[a, b,c]]   ]
         self.set_action_type (_task.action_mkdir)
-        if not is_str(orig_args[0]):
+        
+        # the mkdir decorator accepts one string, multiple strings or a list of strings
+        # convert everything into the multiple strings format
+        if not isinstance(orig_args[0], str):
             orig_args = orig_args[0]
-        param_func                = args_param_factory([[[sorted(orig_args)]]])
+        #   all directories created in one job to reduce race conditions
+        #    so we are converting [a,b,c] into [   [(a, b,c)]   ]
+        #    where orig_args = (a,b,c)
+        #   i.e. one job whose solitory argument is a tuple/list of directory names
+        param_func                = args_param_factory([[sorted(orig_args)]])
         
         #print >>sys.stderr, dumps(list(param_func()), indent = 4) # DEBUG
         
@@ -1308,7 +1313,7 @@ class _task (node):
             #
             #   specified by string 
             #
-            if is_str(arg):
+            if isinstance(arg, str):
                 # string looks up to defined task, use that
                 if node.is_node(arg):
                     arg = node.lookup_node_from_name(arg)
@@ -1477,7 +1482,7 @@ def task_names_to_tasks (task_description, task_names):
     #
     #   In case we are given a single item instead of a list
     #
-    if is_str(task_names) or type(task_names) == types.FunctionType:
+    if isinstance(task_names, str) or type(task_names) == types.FunctionType:
         task_names = [task_names]
 
     task_nodes = []
@@ -2046,3 +2051,21 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
 #   N.B. File modify times / stat values have 1 second precision for many file systems
 #       and may not be accurate to boot, especially over the network.
 os.stat_float_times(True)
+
+
+if __name__ == '__main__':
+    import unittest
+    
+    
+
+
+    #
+    #   debug parameter ignored if called as a module
+    #     
+    if sys.argv.count("--debug"):
+        sys.argv.remove("--debug")
+    unittest.main()
+
+
+
+

@@ -164,7 +164,8 @@ helpstr = f.getvalue()
 @parallel([['A', 1], ['B',3], ['C',3], ['D',4], ['E',4], ['F',4]])
 def parallel_task(name, param1):
     time.sleep(2)
-    sys.stderr.write("    Parallel task %s: \n\n" % name)
+    if options.verbose:
+        sys.stderr.write("    Parallel task %s: \n\n" % name)
     raise task.JobSignalledBreak("Oops! I did it again!")
 
 
@@ -201,7 +202,7 @@ if __name__ == '__main__':
     except Exception, e:
         if (e.args[0][2] == "ruffus.ruffus_exceptions.JobSignalledBreak" and
             'Oops! I did it again!' in e.args[0][3]):
-            print "\nCorrect\n"
+            print "\nOK\n"
             sys.exit()
         raise
 
