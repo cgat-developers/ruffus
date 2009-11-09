@@ -49,6 +49,7 @@ Calculating sums and sum of squares in parallel
     Thus if ``step_4_split_numbers_into_chunks`` created
         | ``1.chunks`` and 
         | ``2.chunks`` etc.
+        
     This would result in the following function calls:
     
         ::

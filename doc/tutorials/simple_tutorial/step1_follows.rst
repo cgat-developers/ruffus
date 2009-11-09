@@ -1,4 +1,6 @@
 .. _Simple_Tutorial_1st_step:
+.. |task| replace:: **task**
+.. _task: ../../glossary.html#term-task
 
 ###################################################################
 Step 1: Arranging tasks into a pipeline
@@ -15,7 +17,12 @@ Step 1: Arranging tasks into a pipeline
 ************************************
 
 The :ref:`@follows(...) <decorators.follows>` python decorator indicates the order in which tasks
-should be run:
+should be run. Remember that each stage or |task|_ of a pipeline is represented by an ordinary python function.
+To show that one task function should always run after another task, we need to *decorate* the
+function with **@follows**. 
+
+(See the line above ``def second_task()``:
+
 
     ::
     

@@ -13,18 +13,41 @@
 ################################################
 
 ***************************************
-Overview
+Introduction
 ***************************************
 
-    The ``ruffus`` module is a lightweight way to add support 
+    The **Ruffus** module is a lightweight way to add support 
     for running computational pipelines.
-    
     Computational pipelines are often conceptually quite simple, especially
     if we breakdown the process into simple stages, or separate |task|_\ s.
+    Each stage or |task|_ of a pipeline is represented by an ordinary python function.
+    These functions do not have to be rewritten to be part of a **Ruffus** pipeline.    
+    Functions can be made part a pipeline by **decorating** them using
+    special **Ruffus** |decorator|_\ s.
     
-    Each |task|_ is represented by a python function
+    | |decorator|_\ s are the way python uses to store additional information about a function.
+    | They have similar syntax to python function calls with a number of parameters in parenthesis. 
+    | However, decorator names must start with the ``@`` prefix.
+
+    For example, the **ruffus** decorator :ref:`@follows <decorators.follows>` puts the stages of a pipeline in order
+    (see :ref:`Step 1 <Simple_Tutorial_1st_step>` of this tutorial for more details.)
+    
+        ::
+        
+            @follows(first_task)
+            def second_stage():
+                ""
+
+    | Multiple |decorator|_\ s can be used for each |task|_ function to add functionality
+      to *Ruffus* pipeline functions. 
+    | However, these remain ordinary python functions which can still be
+      called normally, outside of *Ruffus*.
+    | *Ruffus* |decorator|_\ s can be added (stacked on top of) to any function in any order.
 
 
+    All the code in the tutorial can be pasted into and run from the python interpreter after
+    **ruffus** has been installed.
+    
 ***************************************
 The first steps (1-3)
 ***************************************
@@ -32,7 +55,7 @@ The first steps (1-3)
     .. image:: ../../images/simple_tutorial_step3.png
         :scale: 50
 
-    This example will show you how to:
+    The first half of the tutorial will show you how to:
     
     1. :ref:`Chain tasks (functions) together into a pipeline <Simple_Tutorial_1st_step>` 
     

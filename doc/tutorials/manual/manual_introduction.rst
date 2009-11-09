@@ -1,7 +1,7 @@
 .. _manual.introduction:
 
 ####################################################################
-**Ruffus** Manual: A work in progress
+**Ruffus** Manual: (This is a work in progress...)
 ####################################################################
 
 .. |task| replace:: **task**
@@ -24,8 +24,13 @@ Introduction
     
     Each stage or |task|_ of a pipeline is represented by an ordinary python function.
     
-    Membership of a *Ruffus* pipeline is indicated using special |decorator|_\ s, such as 
-    :ref:`@follows <decorators.follows>` (which governs the order of tasks should run, 
+    These functions do not have to be rewritten to be part of a **Ruffus** pipeline.    
+    Functions can be made part a pipeline by **decorating** them using
+    special **Ruffus** |decorator|_\ s.
+    
+    Decorators look a bit like python function calls. They are have a ``@`` prefix,
+    followed by a number of parameters in parenthesis. For example, the **ruffus**
+    decorator :ref:`@follows <decorators.follows>` orders the pipeline stages 
     (see :ref:`chapter 1 <manual_1st_chapter>` of this manual for more details.)
     
         ::
@@ -39,8 +44,7 @@ Introduction
       to *Ruffus* pipeline functions. 
     | However, these remain ordinary python functions which can still be
       called normally, outside of *Ruffus*.
-    
-    *Ruffus* |decorator|_\ s can be added (stacked on top of) to any function in any order.
+    | *Ruffus* |decorator|_\ s can be added (stacked on top of) to any function in any order.
 
 
     The following chapters go through each of the features of **Ruffus** in turn.
