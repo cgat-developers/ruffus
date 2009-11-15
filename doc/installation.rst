@@ -1,17 +1,11 @@
-.. _Introduction:
-
-************************************
-Installation
-************************************
-
-The :mod:`ruffus` module is a lightweight way to add support 
-for running computational pipelines.
-
 .. _Installation:
-
-==================
+************************************
 Installation
-==================
+************************************
+
+The :mod:`ruffus` is a lightweight python module to support 
+running computational pipelines.
+
 
 The easy way 
 ============
