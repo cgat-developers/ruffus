@@ -1,24 +1,11 @@
 .. _Introduction:
 
-************
-Introduction
-************
+************************************
+Installation
+************************************
 
 The :mod:`ruffus` module is a lightweight way to add support 
 for running computational pipelines.
-
-============
-Features
-============
-
-The :mod:`ruffus` provides automatic support for
- 
-        * Managing dependencies
-        * Parallel jobs
-        * Re-starting from arbitrary points, especially after errors
-        * Display of the pipeline as a flowchart
-        * Reporting
-
 
 .. _Installation:
 
@@ -41,6 +28,7 @@ The easy way
     #) Install *Ruffus* automatically::
     
         easy_install -U ruffus
+        
 
 The most up-to-date code:
 ==============================
@@ -62,44 +50,25 @@ The most up-to-date code:
            python setup.py install
 
 
-=============================
-Whence the name *Ruffus*?
-=============================
+======================
+Graphical flowcharts
+======================
 
-.. image:: images/wikimedia_cyl_ruffus.jpg
+    **Ruffus** relies on the ``dot`` programme from :ref:`Graphviz<http://www.graphviz.org/>`_
+    ("Graph visualisation") to make pretty flowchart representations of your pipelines in multiple
+    graphical formats (e.g. ``png``, ``jpg``). The crossplatform Graphviz package can be downloaded 
+    :ref:`here<http://www.graphviz.org/Download.php`_ for Windows, Linux, Macs and Solaris. Some Linux
+    distributions may include prebuilt packages. 
 
-**Cylindrophis ruffus** is the name of the 
-`red-tailed pipe snake <http://en.wikipedia.org/wiki/Cylindrophis_ruffus>`_ (bad python-y pun)
-which can be found in `Hong Kong <http://www.discoverhongkong.com/eng/index.html>`_ where the author comes from.
-Be careful not to step on one when running down country park lanes at full speed 
-in Hong Kong: this snake is a `rare breed <http://www.hkras.org/eng/info/hkspp.htm>`_!
+    For Fedora, try
+        ::
+        
+            yum list 'graphviz*' 
+            
+    For ubuntu / Debian, try
+        ::
 
-*Ruffus* is a shy creature, and pretends to be a cobra by putting up its red tail and ducking its
-head in its coils when startled. It does most of its work at night and sleeps during the day:
-typical of many python programmers!
-
-The original image is from `wikimedia <http://upload.wikimedia.org/wikipedia/commons/a/a1/Cyl_ruffus_061212_2025_tdp.jpg>`_
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            sudo apt-get install graphviz
 
 
 
