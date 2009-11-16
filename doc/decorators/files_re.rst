@@ -1,4 +1,6 @@
 .. _decorators.files_re:
+.. index:: 
+    pair: @files_re; Syntax
 
 See :ref:`Decorators <decorators>` for more decorators
 

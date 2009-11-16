@@ -1,16 +1,7 @@
 .. _manual_4th_chapter:
-.. |task| replace:: **task**
-.. _task: ../../glossary.html#term-task
-.. |job| replace:: **job**
-.. _job: ../../glossary.html#term-job
-.. |decorator| replace:: **decorator**
-.. _decorator: ../../glossary.html#term-decorator
-.. |pipeline_run| replace:: **pipeline_run**
-.. _pipeline_run: ../../pipeline_functions.html#pipeline_run
-
 
 ###################################################################
-Chapter 4: Passing parameters to the pipeline
+**Chapter 4**: `Passing parameters to the pipeline with` **@files**
 ###################################################################
     .. hlist::
     
@@ -18,11 +9,16 @@ Chapter 4: Passing parameters to the pipeline
        * :ref:`@files syntax in detail <decorators.files>`
 
 
-    The easiest way to supply parameters to *Ruffus* |task|_ functions, to run
-    as separate jobs, is to use the :ref:`@files <decorators.files>` decorator.
+    | The python functions which do the actual work of each stage  or
+      :term:`task` of a **Ruffus** pipeline are written by you.
+    | The role of **Ruffus** is to make sure these functions are called in the right order, 
+      with the right parameters, running in parallel using multiprocessing if desired.
+
+    The easiest way to specify parameters to *Ruffus* :term:`task` functions is to use 
+    the :ref:`@files <decorators.files>` decorator.
     
 .. index:: 
-    single: @files; Manual
+    pair: @files; Manual
     
 .. _manual.files:
 
@@ -37,26 +33,44 @@ Chapter 4: Passing parameters to the pipeline
             from ruffus import *
     
             @files('a.1', ['a.2', 'b.2'], 'A file')
-            def single_job_io_task(infile, outfile, text):
-                pass
+            def single_job_io_task(infile, outfiles, text):
+                for o in outfiles: open(o, "w")
+            
+            # prepare input file
+            open('a.1', "w")
             
             pipeline_run()
             
+        
+        Is equivalent to calling:
+            ::
             
-        Produces:
+                single_job_io_task('a.1', ['a.2', 'b.2'], 'A file')
+
+                
+        And produces:
             ::
             
                 >>> pipeline_run()
                     Job = [a.1 -> [a.2, b.2], A file] completed
                 Completed Task = single_job_io_task
 
-    **Ruffus** will automatically check if your task is up to date. The second time ``pipeline_run()``
-    is called, nothing will happen. But if you supply an updated or new ``a.1``, the task will rerun.
-    See the :ref:`previous chapter <manual.skip_up_to_date>` for a more in-depth discussion.
+    **Ruffus** will automatically check if your task is up to date. The second time :ref:`pipeline_run() <pipeline_functions.pipeline_run>`
+    is called, nothing will happen. But if you update ``a.1``, the task will rerun:
+    
+        ::
+        
+            >>> open('a.1', "w")
+            >>> pipeline_run()
+                Job = [a.1 -> [a.2, b.2], A file] completed
+            Completed Task = single_job_io_task
+    
+    See :ref:`chapter 2<manual.skip_up_to_date>` for a more in-depth discussion of how **Ruffus**
+    decides which parts of the pipeline are complete and up-to-date.
 
 
 .. index:: 
-    single: @files; in parallel
+    pair: @files; in parallel
 
 .. _manual.files.parallel:
 
@@ -65,9 +79,9 @@ Running the same code on different parameters in parallel
 ******************************************************************************
 
     Your pipeline may require the same function to be called multiple times on independent parameters.
-    In which case, you can supply all the parameters to @files, each will be sent to a separate job which 
-    may run in parallel if necessary. **Ruffus** will check if each separate |job|_ is up-to-date using
-    the first two *input* and *output* parameters (See the :ref:`previous chapter <manual.io_parameters>` ).
+    In which case, you can supply all the parameters to @files, each will be sent to separate jobs that 
+    may run in parallel if necessary. **Ruffus** will check if each separate :term:`job` is up-to-date using
+    the *inputs* and *outputs* (first two) parameters (See the :ref:`chapter 2<manual.io_parameters>` ).
 
 
     For example, if a sequence
@@ -81,16 +95,16 @@ Running the same code on different parameters in parallel
                                 [ 'job1.file'           ],             # 1st job
                                 [ 'job2.file', 4        ],             # 2st job
                                 [ 'job3.file', [3, 2]   ],             # 3st job
-                                [ 67, [13, 'job4.file']],             # 4st job
+                                [ 67, [13, 'job4.file'] ],             # 4st job
                                 [ 'job5.file'           ],             # 5st job
                           ]
             @files(parameters)
             def task_file(*params):
                 ""
 
-    **Ruffus** creates as many jobs as there are elements in ``parameters``.
-    Each element consist of another sequence of the actual parameters which will be
-    passed to each job.
+    | **Ruffus** creates as many jobs as there are elements in ``parameters``.
+    | In turn, each of these elements consist of series of parameters which will be
+      passed to each separate job.
     
     Thus the above code is equivalent to calling:
     
@@ -103,29 +117,29 @@ Running the same code on different parameters in parallel
              task_file('job5.file')
         
         
-    What task_file does with these parameters is up to you!
+    What ``task_file()`` does with these parameters is up to you!
     
     The only constraint on the parameters is that **Ruffus** will treat any first 
-    parameter of each job as the ``input`` and any second as the ``output``. Any
-    ``input`` or ``output`` parameters which are strings, or contain strings in
-    any nested sequence will be treated as a file name.
+    parameter of each job as the *inputs* and any second as the *output*. Any
+    strings in the *inputs* or *output* parameters (including those nested in sequences)
+    will be treated as file names.
 
-    Thus in the job above:
+    Thus, to pick the parameters out of one of the above jobs:
         
         ::
         
              task_file(67, [13, 'job4.file'])
     
-        | ``input`` == ``67``
-        | ``output`` == ``[13, 'job4.file']``
+        | *inputs*  == ``67``
+        | *outputs* == ``[13, 'job4.file']``
         |
         |   The solitary output filename is ``job4.file``
         
 
 .. index:: 
-    single: @files; example
+    pair: @files; check if up to date
     
-.. _manual.files.example:
+.. _manual.files.is_uptodate:
 
 =======================================
 Checking if jobs are up to date
@@ -175,7 +189,7 @@ Checking if jobs are up to date
             Completed Task = parallel_io_task
 
         
-    | If you called pipeline_run() again, nothing would happen because the files are up to date:
+    | If you called :ref:`pipeline_run() <pipeline_functions.pipeline_run>` again, nothing would happen because the files are up to date:
     | ``a.2`` is more recent than ``a.1`` and
     | ``b.2`` is more recent than ``b.1``
     

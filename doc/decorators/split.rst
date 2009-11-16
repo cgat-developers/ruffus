@@ -1,4 +1,6 @@
 .. _decorators.split:
+.. index:: 
+    pair: @split; Syntax
 
 See :ref:`Decorators <decorators>` for more decorators
 

@@ -1,4 +1,5 @@
 .. _Installation:
+
 ************************************
 Installation
 ************************************
@@ -48,10 +49,11 @@ The most up-to-date code:
 Graphical flowcharts
 ======================
 
-    **Ruffus** relies on the ``dot`` programme from :ref:`Graphviz<http://www.graphviz.org/>`_
+    **Ruffus** relies on the ``dot`` programme from `Graphviz <http://www.graphviz.org/>`_
     ("Graph visualisation") to make pretty flowchart representations of your pipelines in multiple
-    graphical formats (e.g. ``png``, ``jpg``). The crossplatform Graphviz package can be downloaded 
-    :ref:`here<http://www.graphviz.org/Download.php`_ for Windows, Linux, Macs and Solaris. Some Linux
+    graphical formats (e.g. ``png``, ``jpg``). The crossplatform Graphviz package can be 
+    `downloaded here <http://www.graphviz.org/Download.php>`_ for Windows, 
+    Linux, Macs and Solaris. Some Linux
     distributions may include prebuilt packages. 
 
     For Fedora, try

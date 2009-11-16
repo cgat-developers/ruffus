@@ -1,16 +1,8 @@
 .. _manual_13th_chapter:
-.. |task| replace:: **task**
-.. _task: ../../glossary.html#term-task
-.. |job| replace:: **job**
-.. _job: ../../glossary.html#term-job
-.. |decorator| replace:: **decorator**
-.. _decorator: ../../glossary.html#term-decorator
-.. |pipeline_run| replace:: **pipeline_run**
-.. _pipeline_run: ../../pipeline_functions.html#pipeline_run
 
-###################################################################################
-Chapter 13: Esoteric: Running jobs in parallel without using files
-###################################################################################
+###################################################################################################
+**Chapter 13**: `Esoteric: Running jobs in parallel without using files with` **@parallel**
+###################################################################################################
 
     .. hlist::
 
@@ -19,7 +11,7 @@ Chapter 13: Esoteric: Running jobs in parallel without using files
 
     
 .. index:: 
-    single: @parallel; Manual
+    pair: @parallel; Manual
     
 .. _manual.parallel:
 
@@ -30,35 +22,42 @@ Chapter 13: Esoteric: Running jobs in parallel without using files
 **@parallel** 
 ***************************************
 
-    Often each task consists of multiple **jobs** (in GNU make terminology) which can be
-    run concurrently. 
+    **@parallel** supplies parameters for multiple **jobs** exactly like :ref:`@files<manual.files>` except that:
     
-    Each **job** is a separate call to the same task function but with different parameters.
-    Let us try to add up (1+2), (3+4) and (5+6) in parallel::
+        #. The first two parameters are not treated like *inputs* and *ouputs* parameters, 
+           and strings are not assumed to be file names
+        #. Thus no checking of whether each job is up-to-date is made using *inputs* and *outputs* files
+        #. No expansions of `glob patterns <http://docs.python.org/library/glob.html>`_  or *output* from previous tasks is carried out.
+        
+    This syntax is most useful when a pipeline stage does not involve creating or consuming any files, and
+    you wish to forego the conveniences of :ref:`@files<manual.files>`, :ref:`@transform<manual.transform>` etc.
     
-        from ruffus import *
-        parameters = [
-                         ['A', 1, 2], # 1st job
-                         ['B', 3, 4], # 2nd job
-                         ['C', 5, 6], # 3rd job
-                     ]
-        @parallel(parameters)                                                     
-        def parallel_task(name, param1, param2):                                  
-            sys.stderr.write("    Parallel task %s: " % name)                     
-            sys.stderr.write("%d + %d = %d\n" % (param1, param2, param1 + param2))
-        
-        pipeline_run([parallel_task])
-        
-    .. ???
+    The following code performs some arithmetic in parallel:
+    
+        ::
 
-    Produces the following::
-    
-        Task = parallel_task
-            Parallel task A: 1 + 2 = 3
-            Job = ["A", 1, 2] completed
-            Parallel task B: 3 + 4 = 7
-            Job = ["B", 3, 4] completed
-            Parallel task C: 5 + 6 = 11
-            Job = ["C", 5, 6] completed
+            import sys
+            from ruffus import *
+            parameters = [
+                             ['A', 1, 2], # 1st job
+                             ['B', 3, 4], # 2nd job
+                             ['C', 5, 6], # 3rd job
+                         ]
+            @parallel(parameters)                                                     
+            def parallel_task(name, param1, param2):                                  
+                sys.stderr.write("    Parallel task %s: " % name)                     
+                sys.stderr.write("%d + %d = %d\n" % (param1, param2, param1 + param2))
+            
+            pipeline_run([parallel_task])
+            
+        produces the following::
         
-
+            Task = parallel_task
+                Parallel task A: 1 + 2 = 3
+                Job = ["A", 1, 2] completed
+                Parallel task B: 3 + 4 = 7
+                Job = ["B", 3, 4] completed
+                Parallel task C: 5 + 6 = 11
+                Job = ["C", 5, 6] completed
+            
+    

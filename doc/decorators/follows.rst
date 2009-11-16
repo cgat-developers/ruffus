@@ -1,4 +1,6 @@
 .. _decorators.follows:
+.. index:: 
+    pair: @follows; Syntax
 
 .. seealso::
 
@@ -17,12 +19,9 @@
 .. |directory_name| replace:: `directory_name`
 .. _directory_name: `decorators.follows.directory_name`_
 
-.. |mkdir| replace:: *mkdir*
-.. _mkdir: indicator_objects.html#decorators.mkdir
-
-*******************************************************************************************
-*@follows*\ (|task|_ | |task_name|_ | |mkdir|_ (|directory_name|_), [more_tasks, ...])
-*******************************************************************************************
+***************************************************************************************************************************************************
+*@follows*\ (|task|_ | |task_name|_ | :ref:`mkdir<decorators.mkdir>` (|directory_name|_), [more_tasks, ...])
+***************************************************************************************************************************************************
     **Purpose:**
     
         Indicates task dependencies

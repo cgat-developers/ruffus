@@ -7,6 +7,8 @@
 Indicator Objects
 ########################
 
+.. index:: 
+    single: Indicator Object (Disambiguating parameters)
 .. _indicator_objects:
 
 
@@ -18,6 +20,8 @@ Indicator Objects
     exactly what is happening clearly.
     
 .. _decorators.regex:
+.. index:: 
+    pair: regex; Indicator Object (Disambiguating parameters)
 
 *********************************************
 *regex(*\ `regular_expression`\ *)*
@@ -45,6 +49,8 @@ Indicator Objects
 
 
 .. _decorators.suffix:
+.. index:: 
+    pair: suffix; Indicator Object (Disambiguating parameters)
 
 *********************************************
 *suffix(*\ `string`\ *)*
@@ -68,6 +74,8 @@ Indicator Objects
                 pass
 
 .. _decorators.inputs:
+.. index:: 
+    pair: inputs; Indicator Object (Disambiguating parameters)
 
 ***************************************
 *inputs(*\ `input_file_pattern`\ *)*
@@ -98,6 +106,8 @@ Indicator Objects
             job2:   "y.c", "y.h"
             
 .. _decorators.mkdir:
+.. index:: 
+    pair: mkdir; Indicator Object (Disambiguating parameters)
 
 ******************************************************************************************
 *mkdir(*\ `directory_name1`, [`directory_name2`, ...]\ *)*
@@ -117,6 +127,8 @@ Indicator Objects
 
 
 .. _decorators.touch_file:
+.. index:: 
+    pair: touch_file; Indicator Object (Disambiguating parameters)
 
 
 ******************************************************************************************
@@ -140,4 +152,13 @@ Indicator Objects
             def do_task(input_file, output_file):
                 pass
 
+
+.. _decorators.combine:
+.. index:: 
+    pair: combine; Indicator Object (Disambiguating parameters)
+
+
+.. _decorators.output_from:
+.. index:: 
+    pair: output_from; Indicator Object (Disambiguating parameters)
 

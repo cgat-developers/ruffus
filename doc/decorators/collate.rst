@@ -1,4 +1,6 @@
 .. _decorators.collate:
+.. index:: 
+    pair: @collate; Syntax
 
 See :ref:`Decorators <decorators>` for more decorators
 
@@ -15,12 +17,9 @@ See :ref:`Decorators <decorators>` for more decorators
 .. |matching_regex| replace:: `matching_regex`
 .. _matching_regex: `decorators.collate.matching_regex`_
 
-.. |regex| replace:: *regex*
-.. _regex: indicator_objects.html#decorators.regex
-
 
 ***********************************************************************************************************************************************************
-*@collate* ( |tasks_or_file_names|_, |regex|_\ *(*\ |matching_regex|_\ *)*\ , |output_pattern|_, [|extra_parameters|_,...] ) 
+*@collate* ( |tasks_or_file_names|_, :ref:`regex<decorators.regex>`\ *(*\ |matching_regex|_\ *)*\ , |output_pattern|_, [|extra_parameters|_,...] ) 
 ***********************************************************************************************************************************************************
     **Purpose:**
         Groups / collates sets of input files, each into a separate summary. 
@@ -55,7 +54,7 @@ See :ref:`Decorators <decorators>` for more decorators
 
     * *matching_regex*
        is a python regular expression string, which must be wrapped in
-       a ``regex`` indicator object
+       a :ref:`regex<decorators.regex>` indicator object
        See python `regular expression (re) <http://docs.python.org/library/re.html>`_ 
        documentation for details of regular expression syntax
                 
@@ -69,7 +68,7 @@ See :ref:`Decorators <decorators>` for more decorators
     * *extra_parameters*
         Any extra parameters are passed verbatim to the task function
 
-    #. Output and option extra parameters are passed to the functions after regular expression
+    #. *outputs* and optional extra parameters are passed to the functions after regular expression
        substitution in any strings. Non-string values are passed through unchanged.
     #. Each collate job consists of input files which are aggregated by regular expression substitution
        to a single set of output / extra parameter matches
@@ -119,4 +118,4 @@ See :ref:`Decorators <decorators>` for more decorators
 
 
 
-See :ref:`here <decorators.merge>` for more straightforward ways to merge files.       
+See :ref:`@merge <decorators.merge>` for an alternative way to summarise files.       

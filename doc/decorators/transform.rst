@@ -1,4 +1,6 @@
 .. _decorators.transform:
+.. index:: 
+    pair: @transform; Syntax
 
 See :ref:`Decorators <decorators>` for more decorators
 
@@ -16,13 +18,9 @@ See :ref:`Decorators <decorators>` for more decorators
 .. _matching_regex: `decorators.transform.matching_regex`_
 .. |suffix_string| replace:: `suffix_string`
 .. _suffix_string: `decorators.transform.suffix_string`_
-.. |suffix| replace:: *suffix*
-.. _suffix: indicator_objects.html#decorators.suffix
-.. |regex| replace:: *regex*
-.. _regex: indicator_objects.html#decorators.regex
 
 *********************************************************************************************************************************************************************************************************************
-*@transform* ( |tasks_or_file_names|_, |suffix|_\ *(*\ |suffix_string|_\ *)*\ | |regex|_\ *(*\ |matching_regex|_\ *)*\ , |output_pattern|_, [|extra_parameters|_,...] )
+*@transform* ( |tasks_or_file_names|_, :ref:`suffix<decorators.suffix`\ *(*\ |suffix_string|_\ *)*\ | :ref:`regex<decorators.regex`\ *(*\ |matching_regex|_\ *)*\ , |output_pattern|_, [|extra_parameters|_,...] )
 *********************************************************************************************************************************************************************************************************************
     **Purpose:**
         Applies the task function to transform data from input to output files.
@@ -65,7 +63,7 @@ See :ref:`Decorators <decorators>` for more decorators
 .. _decorators.transform.suffix_string:
 
     * *suffix_string*
-       must be wrapped in a ``suffix`` indicator object.
+       must be wrapped in a :ref:`suffix<decorators.suffix` indicator object.
        The end of each input file name which matches ``suffix_string`` will be replaced by ``output_pattern``.
        Thus::
 
@@ -84,7 +82,7 @@ See :ref:`Decorators <decorators>` for more decorators
 
     * *matching_regex*
        is a python regular expression string, which must be wrapped in
-       a ``regex`` indicator object
+       a :ref:`regex<decorators.regex`\  indicator object
        See python `regular expression (re) <http://docs.python.org/library/re.html>`_ 
        documentation for details of regular expression syntax
        Each output file name is created using regular expression substitution with ``output_pattern``

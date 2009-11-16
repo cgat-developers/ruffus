@@ -1,16 +1,8 @@
 .. _manual_5th_chapter:
-.. |task| replace:: **task**
-.. _task: ../../glossary.html#term-task
-.. |job| replace:: **job**
-.. _job: ../../glossary.html#term-job
-.. |decorator| replace:: **decorator**
-.. _decorator: ../../glossary.html#term-decorator
-.. |pipeline_run| replace:: **pipeline_run**
-.. _pipeline_run: ../../pipeline_functions.html#pipeline_run
 
-###################################################################
-Chapter 5: Splitting up large tasks / files
-###################################################################
+###################################################################################
+**Chapter 5**: `Splitting up large tasks / files with` **@split**
+###################################################################################
     .. hlist::
     
         * :ref:`Manual overview <manual>` 
@@ -22,54 +14,59 @@ Chapter 5: Splitting up large tasks / files
     task, and cannot be known for sure beforehand. 
 
     *Ruffus* uses the :ref:`@split <decorators.split>` decorator to indicate that
-    the |task|_ functions produces an indeterminate number of output files.
+    the :term:`task` function will produce an indeterminate number of output files.
     
     
     
 .. index:: 
-    single: @split; Manual
+    pair: @split; Manual
     
 .. _manual.split:
 
 =================
 **@split**
 =================
-This example is from :ref:`step 4 <Simple_Tutorial_4th_step>` of the simple tutorial.
+This example is borrowed from :ref:`step 4 <Simple_Tutorial_4th_step>` of the simple tutorial.
 
-
-**************************************************************************************
-Remember to look at the example code:
-**************************************************************************************
-* :ref:`Python Code for Simple Tutorial step 4 <Simple_Tutorial_4th_step_code>` 
+    .. note :: See :ref:`accompanying Python Code <Simple_Tutorial_4th_step_code>` 
     
 **************************************************************************************
 Splitting up a long list of random numbers to calculate their variance
 **************************************************************************************
 
-    Suppose we had a list of 100,000 random numbers:
+    .. csv-table:: 
+        :widths: 1,99
+        :class: borderless
 
-        ::
+        ".. centered::
+            Step 4 from:
+
+        .. image:: ../../images/simple_tutorial_step4.png", "
+            Suppose we had a list of 100,000 random numbers in the file ``random_numbers.list``:
+            
+                ::
+                
+                    import random
+                    f = open('random_numbers.list', 'w')
+                    for i in range(NUMBER_OF_RANDOMS):
+                        f.write('%g\n' % (random.random() * 100.0))
+            
+            
+            We might want to calculate the sample variance more quickly by splitting them 
+            into ``NNN`` parcels of 1000 numbers each and working on them in parallel. 
+            In this case we known that ``NNN == 100`` but usually the number of resulting files
+            is only apparent after we have finished processing our starting file."
+    
+
+    Our pipeline function needs to take the random numbers file ``random_numbers.list``,
+    read the random numbers from it, and write to a new file every 100 lines.
+    
+    The *Ruffus* decorator :ref:`@split<decorators.split>` is designed specifically for 
+    splitting up *inputs* into an indeterminate ``NNN`` number of *outputs*:
+    
+        .. image:: ../../images/simple_tutorial_split.png
         
-            import random
-            f = open(output_file_name, "w")
-            for i in range(NUMBER_OF_RANDOMS):
-                f.write("%g\n" % (random.random() * 100.0))
-
-    
-    We might want to calculate the sample variance for these numbers more quickly by splitting them 
-    into ``NNN`` parcels of 1000 numbers each and working on them in parallel. 
-    In this case we known that ``NNN`` == ``100`` but usually the number of resulting files
-    is only apparent after we have finished processing the starting file.
-    
-    This is step 4 from:
-    
-    .. image:: ../../images/simple_tutorial_step4.png
-        :scale: 50
-       
-
-    The code for this is easy to write because of the *Ruffus* decorator :ref:`@split<decorators.split>` which is
-    designed to specifically for splitting up input into an indeterminate ``NNN`` number of 
-    output files:
+    .. ::
     
         ::
         
@@ -79,7 +76,12 @@ Splitting up a long list of random numbers to calculate their variance
                 """code goes here"""
             
 
-    ``input_file_name`` will be set to the starting file, in this case, ``random_numbers.list``.
+    Ruffus will set 
+
+        | ``input_file_name`` to ``"random_numbers.list"``
+        | ``output_files`` to all files which match ``*.chunks`` (i.e. ``"1.chunks"``, ``"2.chunks"`` etc.).
+    
+
     
 .. _manual.split.output_files:
 
@@ -87,30 +89,63 @@ Splitting up a long list of random numbers to calculate their variance
 Output files
 =================
 
-    The second, ``output`` parameter of **@split** usually contains a glob specification like
+    The *output* (second) parameter of **@split** usually contains a 
+    `glob matching pattern <http://docs.python.org/library/glob.html>`_ like
     the ``*.chunks`` above. 
 
     .. note::
         **Ruffus** is quite relaxed about the contents of the ``output`` parameter.
-        Strings are treated as file names. Strings containing glob specifications are expanded.
+        Strings are treated as file names. Strings containing `glob pattern <http://docs.python.org/library/glob.html>`_ are expanded.
         Other types are passed verbatim to the decorated task function.
     
-    The files which match the glob specification will be passed as the actual parameters to the job
-    function. These lists of files do not in any way constrain the number of files you actually 
-    want to produce. The contents of ``output`` are unknown, beforehand, after all. Otherwise,
-    you could just use :ref:`@files <manual.files>`!
-    
-    Thus in the above example, the first time you run ``step_4_split_numbers_into_chunks``, no ``*.chunks``
-    files will have been created so the task function receives the following parameters:
+    The files which match the `glob pattern <http://docs.python.org/library/glob.html>`_  will be passed as the actual parameters to the job
+    function. Thus, the first time you run the example code ``*.chunks`` will return an empty list because
+    no ``.chunks`` files have been created, resulting in the following:
     
         ::
         
-            step_4_split_numbers_into_chunks("random_numbers.list", [])
+            step_4_split_numbers_into_chunks ("random_numbers.list", [])
+    
+    After that ``*.chunks`` will match the list of current ``.chunks`` files created by
+    the previous pipeline run. 
+
+
+
+    File names in *output* are generally out of date or superfluous. They are useful 
+    mainly for cleaning-up detritus from previous runs 
+    (have a look at :ref:`step_4_split_numbers_into_chunks(...) <Simple_Tutorial_4th_step_code>`).
+    
+    .. note ::
+
+        It is important, nevertheless, to specify correctly the list of *output* files.
+        Otherwise, dependent tasks will not know what files you have created, and it will
+        not be possible automatically to chain together the *ouput* of this pipeline task into the
+        *inputs* of the next step.
+        
+        You can specify multiple `glob patterns <http://docs.python.org/library/glob.html>`_  to match *all* the files which are the
+        result of the splitting task function. These can even cover different directories, 
+        or groups of file names. This is a more extreme example:
+        
+            ::
             
+                @split("input.file", ['a*.bits', 'b*.pieces', 'somewhere_else/c*.stuff'])
+                def split_function (input_filename, output_files):
+                    "Code to split up 'input.file'"
+                    
+
+
+    The actual resulting files of this task function are not constrained by the file names
+    in the *output* parameter of the function. The whole point of **@split** is that number 
+    of resulting output files cannot be known beforehand, after all. 
+    
+******************
+Example
+******************
+
+    
     Suppose random_numbers.list can be split into four pieces, this function will create
         ``1.chunks``, ``2.chunks``, ``3.chunks``, ``4.chunks``
         
-
     Subsequently, we receive a larger ``random_numbers.list`` which should be split into 10
     pieces. If the pipeline is called again, the task function receives the following parameters:
     
@@ -125,19 +160,16 @@ Output files
 
     This doesn't stop the function from creating the extra ``5.chunks``, ``6.chunks`` etc.
 
-    This list of existing files may be useful for cleaning up detritus from previous runs 
-    (have a look at :ref:`step_4_split_numbers_into_chunks(...) <Simple_Tutorial_4th_step_code>`).
-    In some cases, existing files may be out of date or superfluous but you are free to retain
-    them if necessary.    
-
     .. note::
+    
         Any tasks **@follow**\ ing and specifying 
-        ``step_4_split_numbers_into_chunks(...)`` as its *input* parameter is going to receive
+        ``step_4_split_numbers_into_chunks(...)`` as its *inputs* parameter is going to receive
         ``1.chunks``, ``...``, ``10.chunks`` and not merely the first four files.
 
-        In other words, Dependent / down stream tasks which obtain output files automatically from the task decorated by @split
-        receive the most current file list. The glob specifications will be matched again to see exactly what files the task function
-        has created in reality *after* it runs.
+        In other words, dependent / down-stream tasks which obtain output files automatically 
+        from the task decorated by **@split** receive the most current file list. 
+        The `glob patterns <http://docs.python.org/library/glob.html>`_  will be matched again to see exactly what files the task function
+        has created in reality *after* the task completes.
 
     
 

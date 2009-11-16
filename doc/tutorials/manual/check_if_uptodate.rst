@@ -1,36 +1,23 @@
 .. _manual_14th_chapter:
-.. |task| replace:: **task**
-.. _task: ../../glossary.html#term-task
-.. |job| replace:: **job**
-.. _job: ../../glossary.html#term-job
-.. |decorator| replace:: **decorator**
-.. _decorator: ../../glossary.html#term-decorator
-.. |pipeline_run| replace:: **pipeline_run**
-.. _pipeline_run: ../../pipeline_functions.html#pipeline_run
 
-###################################################################################
-Chapter 14: Writing custom functions to decide which jobs are up to date
-###################################################################################
+###################################################################################################
+**Chapter 14**: `Writing custom functions to decide which jobs are up to date`
+###################################################################################################
 
-    .. hlist::
+.. hlist::
 
-        * :ref:`Manual overview <manual>` 
-        * :ref:`@check_if_uptodate<decorators.check_if_uptodate>` syntax in detail
+    * :ref:`Manual overview <manual>` 
+    * :ref:`@check_if_uptodate  syntax in detail<decorators.check_if_uptodate>`
 
     
 .. index:: 
-    single: @check_if_uptodate; Manual
+    pair: @check_if_uptodate; Manual
     
 .. _manual.check_if_uptodate:
 
-
-***************************************
-**@check_if_uptodate**
-***************************************
-
-=======================================
-Manual dependency checking
-=======================================
+******************************************************************************
+**@check_if_uptodate** : Manual dependency checking
+******************************************************************************
     tasks specified with 
         * :ref:`@files <manual.files>`
         * :ref:`@split <manual.split>` 
@@ -41,49 +28,52 @@ Manual dependency checking
     have automatic dependency checking based on file modification times.
     
     Sometimes, you might want to decide have more control over whether to run jobs, especially
-    if a task does not rely on or produce files (i.e. with :ref:`@parallel <parallel>`)
+    if a task does not rely on or produce files (i.e. with :ref:`@parallel <manual.parallel>`)
     
     You can write your own custom function to decide whether to run a job.
-    This takes as many parameters as your task function, and needs to return True if an
-    update is needed.
+    This takes as many parameters as your task function, and needs to return a
+    tuple for whether an update is required, and why (i.e. ``tuple(bool, str)``)
     
-    This simple example which create ``a.1`` if it does not exist::
-        
-        from ruffus import *
-        @files(None, "a.1")
-        def create_if_necessary(input_file, output_file):
-            open(output_file, "w")
-                    
-        pipeline_run([create_if_necessary])
+    This simple example which creates the file ``"a.1"`` if it does not exist:
 
-
-        
-    .. ???
-
-    Could be rewritten as::
+        ::
+            
+            from ruffus import *
+            @files(None, "a.1")
+            def create_if_necessary(input_file, output_file):
+                open(output_file, "w")
+                        
+            pipeline_run([create_if_necessary])
     
-        
-        from ruffus import *
-        import os
-        def check_file_exists(input_file, output_file):
-            return not os.path.exists(output_file)
-        
-        @parallel([[None, "a.1"]])
-        @check_if_uptodate(check_file_exists)
-        def create_if_necessary(input_file, output_file):
-            open(output_file, "w")
-        
-        pipeline_run([create_if_necessary])
-        
-        
-    .. ???
 
-    Both produce the same output::
-    
-        Task = create_if_necessary
-            Job = [null, "a.1"] completed
         
-.. ???
+    could be rewritten more laboriously as:
+
+        ::
+        
+            
+            from ruffus import *
+            import os
+            def check_file_exists(input_file, output_file):
+                if os.path.exists(output_file):
+                    return False, "File already exists"
+                return True, "%s is missing" % output_file
+            
+            @parallel([[None, "a.1"]])
+            @check_if_uptodate(check_file_exists)
+            def create_if_necessary(input_file, output_file):
+                open(output_file, "w")
+            
+            pipeline_run([create_if_necessary])
+            
+        
+
+    Both produce the same output:
+        ::
+        
+            Task = create_if_necessary
+                Job = [null, "a.1"] completed
+        
 
     
     

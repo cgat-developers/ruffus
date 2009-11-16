@@ -1,4 +1,6 @@
 .. _decorators.files:
+.. index:: 
+    pair: @files; Syntax
 
 See :ref:`Decorators <decorators>` for more decorators
 
@@ -19,12 +21,75 @@ See :ref:`Decorators <decorators>` for more decorators
 .. _custom_function: `decorators.files.custom_function`_
 
 
-################################################
-@files for multiple jobs in parallel
-################################################
+########################
+@files
+########################
+
+*******************************************************************************************
+*@files* (|input1|_, |output1|_, [|extra_parameters1|_, ...])
+*******************************************************************************************
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+@files for single jobs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    **Purpose:**
+        Provides parameters to run a task.
+        
+        The first two parameters in each set represent the input and output which are
+        used to see if the job is out of date and needs to be (re-)run.
+        
+        By default, out of date checking uses input/output file timestamps.
+        (On some file systems, timestamps have a resolution in seconds.)
+        See :ref:`@check_if_uptodate() <decorators.check_if_uptodate>` for alternatives.
+            
+    
+    **Example**:
+        ::
+
+            from ruffus import *
+            @files('a.1', 'a.2', 'A file')
+            def transform_files(infile, outfile, text):
+                pass
+            pipeline_run([transform_files])
+
+    If ``a.2`` is missing or was created before ``a.1``, then the following will be called:
+        ::
+        
+            transform_files('a.1', 'a.2', 'A file')
+
+    **Parameters:**
+
+.. _decorators.files.input1:
+
+    * *input*
+        Input file names
+
+
+.. _decorators.files.output1:
+
+    * *output*
+        Output file names
+    
+
+.. _decorators.files.extra_parameters1:
+
+    * *extra_parameters*
+        optional ``extra_parameters`` are passed verbatim to each job.
+
+
+    **Checking if jobs are up to date:**
+        Strings in ``input`` and ``output`` (including in nested sequences) are interpreted as file names and
+        used to check if jobs are up-to-date. 
+
+        See :ref:`above <decorators.files.check_up_to_date>` for more details
+
+
 *******************************************************************************************
 *@files* ( *((* |input|_, |output|_, [|extra_parameters|_,...] *), (...), ...)* )
 *******************************************************************************************
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+@files in parallel
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     **Purpose:**
 
         Passes each set of parameters to separate jobs which can run in parallel
@@ -86,123 +151,4 @@ See :ref:`Decorators <decorators>` for more decorators
         #. If any of the input files is missing when the job is run, a
            ``MissingInputFileError`` exception will be raised.
 
-########################################################################
-Passing parameters to @files with a custom function
-########################################################################
-*******************************************************************************************
-*@files* (|custom_function|_)
-*******************************************************************************************
-    **Purpose:**
-
-        Uses a custom function to generate sets of parameters to separate jobs which can run in parallel.
-        
-        The first two parameters in each set represent the input and output which are
-        used to see if the job is out of date and needs to be (re-)run.
-        
-        By default, out of date checking uses input/output file timestamps.
-        (On some file systems, timestamps have a resolution in seconds.)
-        See :ref:`@check_if_uptodate() <decorators.check_if_uptodate>` for alternatives.
-
-    **Example**:
-        ::
-
-            from ruffus import *
-            def generate_parameters_on_the_fly():
-                parameters = [
-                                    ['input_file1', 'output_file1', 1, 2], # 1st job
-                                    ['input_file2', 'output_file2', 3, 4], # 2nd job
-                                    ['input_file3', 'output_file3', 5, 6], # 3rd job
-                             ]
-                for job_parameters in parameters:
-                    yield job_parameters
-    
-            @files(generate_parameters_on_the_fly)
-            def parallel_io_task(input_file, output_file, param1, param2):
-                pass
-            
-            pipeline_run([parallel_task])
-        
-    is the equivalent of calling:
-        ::
-    
-            parallel_io_task('input_file1', 'output_file1', 1, 2)
-            parallel_io_task('input_file2', 'output_file2', 3, 4)
-            parallel_io_task('input_file3', 'output_file3', 5, 6)
-    
-
-    **Parameters:**
-    
-
-.. _decorators.files.custom_function:
-
-        * *custom_function*:
-            Generator function which yields each time a complete set of parameters for one job
-            
-    **Checking if jobs are up to date:**
-        Strings in ``input`` and ``output`` (including in nested sequences) are interpreted as file names and
-        used to check if jobs are up-to-date. 
-
-        See :ref:`above <decorators.files.check_up_to_date>` for more details
-            
-            
-
-
-########################
-@files for a single job
-########################
-
-*******************************************************************************************
-*@files* (|input1|_, |output1|_, [|extra_parameters1|_, ...])
-*******************************************************************************************
-
-    **Purpose:**
-        Provides parameters to run a task.
-        
-        The first two parameters in each set represent the input and output which are
-        used to see if the job is out of date and needs to be (re-)run.
-        
-        By default, out of date checking uses input/output file timestamps.
-        (On some file systems, timestamps have a resolution in seconds.)
-        See :ref:`@check_if_uptodate() <decorators.check_if_uptodate>` for alternatives.
-            
-    
-    **Example**:
-        ::
-
-            from ruffus import *
-            @files('a.1', 'a.2', 'A file')
-            def transform_files(infile, outfile, text):
-                pass
-            pipeline_run([transform_files])
-
-    If ``a.2`` is missing or was created before ``a.1``, then the following will be called:
-        ::
-        
-            transform_files('a.1', 'a.2', 'A file')
-
-    **Parameters:**
-
-.. _decorators.files.input1:
-
-    * *input*
-        Input file names
-
-
-.. _decorators.files.output1:
-
-    * *output*
-        Output file names
-    
-
-.. _decorators.files.extra_parameters1:
-
-    * *extra_parameters*
-        optional ``extra_parameters`` are passed verbatim to each job.
-
-
-    **Checking if jobs are up to date:**
-        Strings in ``input`` and ``output`` (including in nested sequences) are interpreted as file names and
-        used to check if jobs are up-to-date. 
-
-        See :ref:`above <decorators.files.check_up_to_date>` for more details
 

@@ -1,4 +1,6 @@
 .. _decorators.transform_ex:
+.. index:: 
+    pair: @transform (Advanced Usage); Syntax
 
 
 See :ref:`Decorators <decorators>` for more decorators
@@ -20,19 +22,13 @@ Advanced usage of @transform:
 .. |suffix_string| replace:: `suffix_string`
 .. _suffix_string: `decorators.transform.suffix_string`_
 
-.. |suffix| replace:: *suffix*
-.. _suffix: indicator_objects.html#decorators.suffix
-.. |regex| replace:: *regex*
-.. _regex: indicator_objects.html#decorators.regex
-.. |inputs| replace:: *inputs*
-.. _inputs: indicator_objects.html#decorators.inputs
 
 
 
 
-*********************************************************************************************************************************************************************************************************************
-*@transform* ( |tasks_or_file_names|_, |suffix|_\ *(*\ |suffix_string|_\ *)*\ | |regex|_\ *(*\ |matching_regex|_\ *)*\ , |inputs|_\ *(*\ |input_pattern|_\ *)*\ , |output_pattern|_, [|extra_parameters|_,...] )
-*********************************************************************************************************************************************************************************************************************
+*************************************************************************************************************************************************************************************************************************************************************************************************************************************
+*@transform* ( |tasks_or_file_names|_, :ref:`suffix<decorators.suffix>`\ *(*\ |suffix_string|_\ *)*\ | :ref:`regex<decorators.regex>`\ *(*\ |matching_regex|_\ *)*\ , :ref:`inputs<decorators.inputs>`\ *(*\ |input_pattern|_\ *)*\ , |output_pattern|_, [|extra_parameters|_,...] )
+*************************************************************************************************************************************************************************************************************************************************************************************************************************************
     **Purpose:**
         This variant of ``@transform`` provides maximum flexibility to set **input** as well as output file names.
         This is especially useful to **add** an extra dependency to the task.
@@ -85,7 +81,7 @@ Advanced usage of @transform:
 .. _decorators.transform.suffix_string:
 
     * *suffix_string*
-       must be wrapped in a ``suffix`` indicator object.
+       must be wrapped in a :ref:`suffix<decorators.suffix>` indicator object.
        The end of each file name which matches suffix_string will be replaced by `output_pattern`.
        Thus::
 
@@ -104,7 +100,7 @@ Advanced usage of @transform:
 
     * *matching_regex*
        is a python regular expression string, which must be wrapped in
-       a ``regex`` indicator object
+       a :ref:`regex<decorators.regex>` indicator object
        See python `regular expression (re) <http://docs.python.org/library/re.html>`_ 
        documentation for details of regular expression syntax
        Each output file name is created using regular expression substitution with ``output_pattern``
@@ -114,7 +110,7 @@ Advanced usage of @transform:
     * *input_pattern*
        Specifies the resulting input file name(s).
        
-       Must be wrapped in a ``inputs`` indicator object.
+       Must be wrapped in a :ref:`inputs<decorators.inputs>` indicator object.
 
 .. _decorators.transform.output_pattern:
 
@@ -126,7 +122,7 @@ Advanced usage of @transform:
     * [*extra_parameters, ...*]
        Any extra parameters are passed to the task function.
        
-       If `regex(matching_regex)` parameter is used, then regular expression substitution
+       If :ref:`regex<decorators.regex>`\ `(matching_regex)` parameter is used, then regular expression substitution
        is first applied to (even nested) string parameters. Other data types are passed
        verbatim.
        
