@@ -1,4 +1,6 @@
 .. _decorators.parallel:
+.. index:: 
+    pair: @parallel; Syntax
 
 See :ref:`Decorators <decorators>` for more decorators
 

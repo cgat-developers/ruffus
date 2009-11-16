@@ -1,62 +1,137 @@
 .. _Simple_Tutorial_1st_step:
-.. |task| replace:: **task**
-.. _task: ../../glossary.html#term-task
+    
 
 ###################################################################
-Step 1: Arranging tasks into a pipeline
+Step 1: An introduction to Ruffus pipelines
 ###################################################################
-* :ref:`Simple tutorial overview <Simple_Tutorial>` 
-* :ref:`More on @follows in the full tutorial <manual_1st_chapter>`
-* :ref:`@follows syntax in detail <decorators.follows>`
+
+    * :ref:`Simple tutorial overview <Simple_Tutorial>` 
 
 
-
-
-************************************
-*@follows*
-************************************
-
-The :ref:`@follows(...) <decorators.follows>` python decorator indicates the order in which tasks
-should be run. Remember that each stage or |task|_ of a pipeline is represented by an ordinary python function.
-To show that one task function should always run after another task, we need to *decorate* the
-function with **@follows**. 
-
-(See the line above ``def second_task()``:
-
-
-    ::
+    Computational pipelines often become quite simple
+    if we breakdown the process into simple stages.
     
-        from ruffus import *
+    .. note::
         
-        def first_task():
-            print "First task"
+        Ruffus refers to each stage of your pipeline as a :term:`task`.
+
+    | Let us start with the usual "Hello World". 
+    | We have the following two python functions which
+      we would like to turn into an automatic pipeline:
+      
     
-        @follows(first_task)
-        def second_task():
-            print "Second task"
+        .. image:: ../../images/simple_tutorial_hello_world.png
 
-
-the ``@follows`` decorator indicate that ``first_task`` function precedes ``second_task`` in 
-the pipeline.
-
-
-************************************
-Running our pipeline
-************************************
-
-    Now we can run the pipeline by::
+    .. ::
+    
+        ::
         
-        >>> pipeline_run([second_task])
+            def first_task():
+                print "Hello "
         
-    Which gives::
+            def second_task():
+                print "world"
+
     
-        Task = first_task
-        First task
-            Job completed
-        Task = second_task
-        Second task
-            Job completed
+    The simplest **Ruffus** pipeline would look like this:
     
-    Because ``second_task`` depends on ``first_task`` , both
-    functions will be executed in order.
+        .. image:: ../../images/simple_tutorial_intro_follows.png
+    
+    .. ::
+    
+        ::
+        
+            from ruffus import *
+            
+            def first_task():
+                print "Hello "
+        
+            @follows(first_task)
+            def second_task():
+                print "world"
+    
+            pipeline_run([second_task])
+
+    
+    The functions which do the actual work of each stage of the pipeline remain unchanged.
+    The role of **Ruffus** is to make sure these functions are called in the right order, 
+    with the right parameters, running in parallel using multiprocessing if desired.
+        
+    There are three simple parts to building a **ruffus** pipeline
+
+        #. importing ruffus
+        #. "Decorating" functions which are part of the pipeline
+        #. Running the pipeline!
+    
+.. index:: 
+    pair: decorators; Tutorial
+    
+
+****************************
+"Decorating" functions
+****************************
+
+    You need to tag or :term:`decorator` existing code to tell **Ruffus** that they are part
+    of the pipeline.
+    
+    .. note::
+        
+        :term:`decorator`\ s are ways to tag or mark out functions. 
+
+        They start with a ``@`` prefix and take a number of parameters in parenthesis.
+
+        .. image:: ../../images/simple_tutorial_decorator_syntax.png
+                
+    The **ruffus** decorator :ref:`@follows <decorators.follows>` makes sure that
+    ``second_task`` follows ``first_task``.
+    
+
+    | Multiple :term:`decorator`\ s can be used for each :term:`task` function to add functionality
+      to *Ruffus* pipeline functions. 
+    | However, the decorated python functions can still be
+      called normally, outside of *Ruffus*.
+    | *Ruffus* :term:`decorator`\ s can be added to (stacked on top of) any function in any order.
+
+    * :ref:`More on @follows in the full tutorial <manual_1st_chapter>`
+    * :ref:`@follows syntax in detail <decorators.follows>`
+
+
+.. index:: 
+    pair: pipeline_run; Tutorial
+
+****************************
+Running the pipeline
+****************************
+
+    We run the pipeline by specifying the **last** stage (:term:`task` function) of your pipeline.
+    Ruffus will know what other functions this depends on, following the appropriate chain of
+    dependencies automatically, making sure that the entire pipeline is up-to-date.
+
+    Because ``second_task`` depends on ``first_task``, both functions are executed in order.
+
+        ::
+            
+            >>> pipeline_run([second_task], verbose = 1)
+        
+    Ruffus by default prints out the ``verbose`` progress through your pipeline, 
+    interleaved with our ``Hello`` and ``World``.
+    
+        .. image:: ../../images/simple_tutorial_hello_world_output.png
+
+    .. ::
+    
+        ::
+            
+            >>> pipeline_run([second_task], verbose = 1)
+            Start Task = first_task
+            Hello
+                Job completed
+            Completed Task = first_task
+            Start Task = second_task
+            world
+                Job completed
+            Completed Task = second_task
+    
+    
+    
 

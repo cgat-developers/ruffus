@@ -1,16 +1,8 @@
 .. _manual_7th_chapter:
-.. |task| replace:: **task**
-.. _task: ../../glossary.html#term-task
-.. |job| replace:: **job**
-.. _job: ../../glossary.html#term-job
-.. |decorator| replace:: **decorator**
-.. _decorator: ../../glossary.html#term-decorator
-.. |pipeline_run| replace:: **pipeline_run**
-.. _pipeline_run: ../../pipeline_functions.html#pipeline_run
 
-#####################################################
-Chapter 7: Merging many files into a single result
-#####################################################
+#####################################################################
+**Chapter 7**: **Merge** `multiple input into a single result`
+#####################################################################
 
     .. hlist::
 
@@ -18,8 +10,8 @@ Chapter 7: Merging many files into a single result
         * :ref:`@merge <decorators.merge>` syntax in detail
 
     At the conclusion of our pipeline, or at key selected points, we might need a 
-    summary of our progress, gathering data from a multitude of files or disparate *input*, 
-    and summarised in the *output*  of a single |job|_.
+    summary of our progress, gathering data from a multitude of files or disparate *inputs*, 
+    and summarised in the *output*  of a single :term:`job`.
     
     *Ruffus* uses the :ref:`@merge <decorators.merge>` decorator for this purpose.
     
@@ -27,38 +19,52 @@ Chapter 7: Merging many files into a single result
     is again agnostic as to the sort of data contained within *output*. It can be a single
     (string) file name, or an arbitrary complicated nested structure with numbers, objects etc.
     As always, strings contained (even with nested sequences) within *output* will be treated
-    as file names for the purpose of checking if the |task|_ is up-to-date.
+    as file names for the purpose of checking if the :term:`task` is up-to-date.
     
 .. index:: 
-    single: @merge; Manual
+    pair: @merge; Manual
     
 .. _manual.merge:
 
 =================
 **@merge**
 =================
-This example is from :ref:`step 6 <Simple_Tutorial_6th_step>` of the simple tutorial.
+
+This example is borrowed from :ref:`step 6 <Simple_Tutorial_6th_step>` of the simple tutorial.
+
+    .. note:: :ref:`Accompanying Python Code  <Simple_Tutorial_6th_step_code>` 
 
 **************************************************************************************
-Remember to look at the example code:
-**************************************************************************************
-* :ref:`Python Code for step 6 <Simple_Tutorial_6th_step_code>` 
-
-**************************************************************************************
-Calculating variances from the sums and sum of squares of all chunks
+Combining partial solutions: Calculating variances
 **************************************************************************************
 
-    If we add up all the sums, and sum of squares we calculated previously, we can
-    obtain the variance as follows::
+    .. csv-table:: 
+        :widths: 1,99
+        :class: borderless
+
+        ".. centered::
+            Step 6 from:
+
+        .. image:: ../../images/simple_tutorial_step4.png", "
+            We wanted to calculate the sample variance of a large list of random numbers. We                                 
+            have seen previously how we can split up this large problem into small pieces                                      
+            (using @merge in :ref:`chapter 5 <manual_5th_chapter>`), and work out the                                        
+            partial solutions for each sub-problem (calculaing sums with @transform in                                       
+            :ref:`chapter 6 <manual_6th_chapter>`).                                                                          
+                                                                                                                             
+            All that remains is to join up the partial solutions from the different ``.sums`` files                          
+            and turn these into the variance as follows::                                                                    
+                                                                                                                             
+                variance = (sum_squared - sum * sum / N)/N                                                                   
+                                                                                                                             
+            where ``N`` is the number of values                                                                              
+                                                                                                                             
+            See the `wikipedia <http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance>`_ entry for a discussion of
+            why this is a very naive approach!"
+
     
-        variance = (sum_squared - sum * sum / N)/N
-        
-    where ``N`` is the number of values
-
-    See the `wikipedia <http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance>`_ entry for a discussion of 
-    why this is a very naive approach!
     
-    To do this, all we have to do is merge together all the values in ``*.sums``, i.e.
+    To do this, all we have to do is go through all the values in ``*.sums``, i.e.
     add up the ``sums`` and ``sum_squared`` for each chunk. We can then apply the above (naive) formula.
     
     Merging files is straightforward in **Ruffus**:
@@ -71,12 +77,6 @@ Calculating variances from the sums and sum of squares of all chunks
                 #       calculate variance and write to output_file_name
                 ""
 
-
-    This is step 6 from:
-    
-    .. image:: ../../images/simple_tutorial_step4.png
-        :scale: 50
-       
 
     The :ref:`@merge <decorators.merge>` decorator tells *Ruffus* to take all the files from the step 5 task (i.e. ``*.sums``),
     and produced a merge file in the form of ``variance.result``.

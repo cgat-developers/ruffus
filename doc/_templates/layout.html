@@ -2,6 +2,8 @@
 
 {% block sidebarsearch %}
     {{ super() }}
+    <a href="{{ pathto('faq') }}">FAQ</a> <br>
+    <a href="{{ pathto('todo') }}">Future plans</a> <br>
     <h3><a href="{{ pathto('decorators/decorators') }}">Decorators:</a></h3>   
         <br>
     <a href="{{ pathto('decorators/follows') }}">@follows</a>                      <br>
@@ -10,8 +12,9 @@
     <a href="{{ pathto('decorators/transform') }}">@transform</a>                  <br>
     <a href="{{ pathto('decorators/merge') }}">@merge</a>                          <br>
     <a href="{{ pathto('decorators/posttask') }}">@posttask</a>                    <br>
-    <a href="{{ pathto('decorators/transform_ex') }}">Advanced @transform</a>      <br>
-    <a href="{{ pathto('decorators/collate') }}">@collate</a>              <br>
+    <a href="{{ pathto('decorators/transform_ex') }}">@transform (advanced uses) </a>      <br>
+    <a href="{{ pathto('decorators/collate') }}">@collate</a>                      <br>
+    <a href="{{ pathto('decorators/files_ex') }}">@files (on the fly)</a>               <br>
     <a href="{{ pathto('decorators/parallel') }}">@parallel</a>                    <br>
     <a href="{{ pathto('decorators/check_if_uptodate') }}">@check_if_uptodate</a>  <br>
     <h3><a href="{{ pathto('decorators/indicator_objects') }}">Indicator objects</a></h3>   <br>
@@ -20,12 +23,11 @@
 {% block rootrellink %}
         Ruffus v. {{ release }}
     <li><a href="{{ pathto('index') }}">Home</a> | </li>
-        <li><a href="{{ pathto('contents') }}">Contents</a> | </li>
-        <li><a href="{{ pathto('tutorials/simple_tutorial/simple_tutorial') }}">Simple tutorial</a>  | </li>
-        <li><a href="{{ pathto('cheatsheet') }}">Cheat sheet</a> | </li>
+        <li><a href="{{ pathto('installation') }}">Download</a>  | </li>
+        <li><a href="{{ pathto('tutorials/simple_tutorial/simple_tutorial') }}">Tutorial</a>  | </li>
         <li><a href="{{ pathto('tutorials/manual/manual_introduction') }}">Manual</a>  | </li>
-        <li><a href="{{ pathto('faq') }}">FAQ</a>  | </li>
-        <li><a href="{{ pathto('todo') }}">Future plans</a>  | </li>
+        <li><a href="{{ pathto('cheatsheet') }}">Cheat sheet</a> | </li>
+        <li><a href="{{ pathto('contents') }}">Contents</a> | </li>
         <li><a href="{{ pathto('search') }}">Search</a> &raquo;</li>
      
 {% endblock %}

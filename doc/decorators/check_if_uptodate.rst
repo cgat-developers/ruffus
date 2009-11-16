@@ -1,4 +1,6 @@
 .. _decorators.check_if_uptodate:
+.. index:: 
+    pair: @check_if_uptodate; Syntax
 
 See :ref:`Decorators <decorators>` for more decorators
 

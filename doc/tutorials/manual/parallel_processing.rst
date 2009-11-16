@@ -1,16 +1,7 @@
-.. _manual_2nd_chapter:
-.. |task| replace:: **task**
-.. _task: ../../glossary.html#term-task
-.. |job| replace:: **job**
-.. _job: ../../glossary.html#term-job
-.. |decorator| replace:: **decorator**
-.. _decorator: ../../glossary.html#term-decorator
-.. |pipeline_run| replace:: **pipeline_run**
-.. _pipeline_run: ../../pipeline_functions.html#pipeline_run
-
+.. _manual_3rd_chapter:
 
 ###################################################################
-Chapter 3: Running Tasks and Jobs in parallel
+**Chapter 3**: `Running Tasks and Jobs in parallel`
 ###################################################################
 .. hlist::
 
@@ -28,7 +19,7 @@ Multi Processing
     
     Tasks that are independent (i.e. do not precede each other) may be run in parallel as well.
     
-    The number of concurrent jobs can be set in |pipeline_run|_:
+    The number of concurrent jobs can be set in :ref:`pipeline_run<pipeline_functions.pipeline_run>`:
 
         ::
         

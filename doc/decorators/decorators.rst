@@ -1,23 +1,22 @@
 #######################
-List of Decorators
+Ruffus Decorators
 #######################
 
-.. seealso::
-    :ref:`Indicator objects <indicator_objects>`
 
-        * :ref:`regex <decorators.regex>`
-        * :ref:`suffix <decorators.suffix>`
-        * :ref:`inputs <decorators.inputs>`
-        * :ref:`mkdir <decorators.mkdir>`
-        * :ref:`touch_file <decorators.touch_file>`
+.. Note::
+    See also:
 
-
+    .. toctree::
+        :maxdepth: 1
+    
+        indicator_objects.rst
+    
 .. _decorators:
 
 =============================================
 *Basic*
 =============================================
- .. csv-table::
+.. csv-table::
    :header: "Decorator", "Examples"
    :widths: 400, 600,1
    
@@ -51,7 +50,7 @@ List of Decorators
 =============================================
 *Core*
 =============================================
- .. csv-table::
+.. csv-table::
    :header: "Decorator", "Examples"
    :widths: 400, 600,1
 

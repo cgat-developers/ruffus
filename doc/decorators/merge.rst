@@ -1,4 +1,6 @@
 .. _decorators.merge:
+.. index:: 
+    pair: @merge; Syntax
 
 See :ref:`Decorators <decorators>` for more decorators
 

@@ -1,4 +1,6 @@
 .. _decorators.posttask:
+.. index:: 
+    pair: @posttask; Syntax
 
 See :ref:`Decorators <decorators>` for more decorators
 
@@ -6,15 +8,13 @@ See :ref:`Decorators <decorators>` for more decorators
 .. _function: `decorators.posttask.function`_
 .. |file_name| replace:: `file_name`
 .. _file_name: `decorators.posttask.file_name`_
-.. |touch_file| replace:: *touch_file*
-.. _touch_file: indicator_objects.html#decorators.touch_file
 
 ########################
 @posttask
 ########################
 
 *****************************************************************************************************************************************
-*@posttask* (|function|_ | |touch_file|_\ *(*\ |file_name|_\ *)*\)
+*@posttask* (|function|_ | :ref:`touch_file<decorators.touch_file>`\ *(*\ |file_name|_\ *)*\)
 *****************************************************************************************************************************************
     **Purpose:**
         Calls functions to signal the completion of each task
@@ -52,7 +52,7 @@ See :ref:`Decorators <decorators>` for more decorators
         This will change the date/time stamp of the ``file_name`` to the current date/time. 
         If the file does not exist, an empty file will be created.
         
-        Requires to be wrapped in a ``touch_file`` indicator object::
+        Requires to be wrapped in a :ref:`touch_file<decorators.touch_file>` indicator object::
 
             from ruffus import *
     

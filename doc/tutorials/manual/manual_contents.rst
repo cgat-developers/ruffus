@@ -4,19 +4,8 @@
 **Ruffus** Manual: Table of Contents:
 ####################################################################
 
-************************************
-Work in progress
-************************************
-.. |task| replace:: **task**
-.. _task: ../../glossary.html#term-task
-.. |job| replace:: **job**
-.. _job: ../../glossary.html#term-job
-.. |decorator| replace:: **decorator**
-.. _decorator: ../../glossary.html#term-decorator
-
-
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     manual_introduction.rst
     follows.rst                            
@@ -36,4 +25,6 @@ Work in progress
     exceptions.rst
     logging.rst
     files_re.rst
+
+
 

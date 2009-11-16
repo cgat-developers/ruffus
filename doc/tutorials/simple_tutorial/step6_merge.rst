@@ -1,15 +1,24 @@
 .. _Simple_Tutorial_6th_step:
 
+.. index:: 
+    pair: @merge; Tutorial
+
+
 ###################################################################
 Step 6: Merging results back together
 ###################################################################
 * :ref:`Simple tutorial overview <Simple_Tutorial>` 
 * :ref:`@merge in detail <decorators.merge>`
 
-**************************************************************************************
-Remember to look at the example code:
-**************************************************************************************
-* :ref:`Python Code for step 6 <Simple_Tutorial_6th_step_code>` 
+.. note::
+    Remember to look at the example code:
+
+    * :ref:`Python Code for step 6 <Simple_Tutorial_6th_step_code>` 
+
+
+Now that we have all the partial solutions in ``*.sums``, we can merge them
+together to generate the final answer: the variance of all 100,000 random
+numbers.
 
 **************************************************************************************
 Calculating variances from the sums and sum of squares of all chunks
@@ -29,6 +38,11 @@ Calculating variances from the sums and sum of squares of all chunks
     add up the ``sums`` and ``sum_squared`` for each chunk. We can then apply the above (naive) formula.
     
     Merging files is straightforward in **Ruffus**:
+    
+        .. image:: ../../images/simple_tutorial_merge1.png
+    
+    .. ::
+        
         ::
 
             @merge(step_5_calculate_sum_of_squares, "variance.result")
@@ -39,14 +53,8 @@ Calculating variances from the sums and sum of squares of all chunks
                 ""
 
 
-    This is step 6 from:
-    
-    .. image:: ../../images/simple_tutorial_step4.png
-        :scale: 50
-       
-
     The :ref:`@merge <decorators.merge>` decorator tells *Ruffus* to take all the files from the step 5 task (i.e. ``*.sums``),
-    and produced a merge file in the form of ``variance.result``.
+    and produced a merged file in the form of ``"variance.result"``.
     
     Thus if ``step_5_calculate_sum_of_squares`` created
         | ``1.sums`` and 
@@ -54,12 +62,16 @@ Calculating variances from the sums and sum of squares of all chunks
         
     This would result in the following function call:
     
+        .. image:: ../../images/simple_tutorial_merge2.png
+
+    .. ::
+
         ::
         
             step_6_calculate_variance (["1.sums", "2.sums"], "variance.result")
             
 
-    The final result is, of course, in ``variance.result``.
+    The final result is, of course, in ``"variance.result"``.
             
 
 

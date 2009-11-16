@@ -10,17 +10,6 @@ for running computational pipelines.
 | Each stage or **task** in a computational pipeline is represented by a python function
 | Each python function can be called in parallel to run multiple **jobs**.
 
-.. |suffix| replace:: `suffix`
-.. _suffix: decorators/indicator_objects.html#decorators.suffix
-.. |mkdir| replace:: `mkdir`
-.. _mkdir: decorators/indicator_objects.html#decorators.mkdir
-.. |touch_file| replace:: `touch_file`
-.. _touch_file: decorators/indicator_objects.html#decorators.touch_file
-.. |regex| replace:: `regex`
-.. _regex: decorators/indicator_objects.html#decorators.regex
-.. |inputs| replace:: *inputs*
-.. _inputs: decorators/indicator_objects.html#decorators.inputs
-
 ================================================
 1. Annotate functions with **Ruffus** decorators
 ================================================

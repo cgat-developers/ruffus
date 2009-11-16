@@ -3,7 +3,11 @@ Glossary
 ****************
 .. _Glossary:
 
+.. _glossary.task:
+
 .. glossary::
+    
+    
     
     task
         A stage in a computational pipeline.
