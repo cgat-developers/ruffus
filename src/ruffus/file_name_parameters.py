@@ -254,7 +254,8 @@ def file_names_from_tasks_globs(input_params, tasks, globs, do_not_expand_single
     for g in globs:
         task_or_glob_to_files[g] = sorted(glob.glob(g))
     for t in tasks:
-        task_or_glob_to_files[t] = t.get_output_files(False)
+        of = t.get_output_files(False)
+        task_or_glob_to_files[t] = of
         
 
     return expand_nested_tasks_or_globs(input_params, task_or_glob_to_files)
@@ -304,12 +305,12 @@ def file_names_from_tasks_globs(input_params, tasks, globs, do_not_expand_single
 #   touch_file_factory
 
 #_________________________________________________________________________________________
-def _touch_file_factory (orig_args, register_cleanup):
+def touch_file_factory (orig_args, register_cleanup):
     """
     Creates function, which when called, will touch files
     """
     file_names = orig_args
-    if is_str (orig_args):
+    if isinstance (orig_args, str):
         file_names = [orig_args]
     else:
         # make copy so when original is modifies, we don't get confused!

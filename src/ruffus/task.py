@@ -791,8 +791,11 @@ class _task (node):
                          raise error_task_get_output(this, 
                                 "Task which is supposed to produce a single output "
                                 "somehow has more than one job.")
-                         
 
+                # the output of split should be treated as multiple jobs
+                if self.indeterminate_output:
+                    self.output_filenames = self.output_filenames[0]
+    
         if flattened:
             # if single file name, return that
             if (do_not_expand_single_job_tasks and 
@@ -800,6 +803,7 @@ class _task (node):
                 isinstance(self.output_filenames[0], str)):
                 return self.output_filenames
             return get_strings_in_nested_sequence(self.output_filenames)
+                
         else:
             # special handling for jobs which have a single task, 
             if (do_not_expand_single_job_tasks and 
@@ -827,6 +831,13 @@ class _task (node):
         else:
             logger.info("Completed Task = " + short_task_name)
             
+
+        #
+        #   indeterminate output. Check actual output again if someother tasks job function depend on it
+        #       used for @split
+        #
+        if self.indeterminate_output:
+            self.output_filenames = None
             
             
             
@@ -1406,7 +1417,7 @@ class _task (node):
         """
         for arg in args:
             if isinstance(arg, touch_file):
-                self.posttask_functions.append(_touch_file_factory (arg.args, register_cleanup))
+                self.posttask_functions.append(touch_file_factory (arg.args, register_cleanup))
             elif type(arg) == types.FunctionType:
                 self.posttask_functions.append(arg)
             else:
@@ -1555,7 +1566,10 @@ def pipeline_printout_graph (stream,
     target_tasks        = task_names_to_tasks ("Target", target_tasks)
     forcedtorun_tasks   = task_names_to_tasks ("Forced to run", forcedtorun_tasks)
     
-
+    # open file if string    
+    if isinstance(stream, str):
+        stream = open(stream, "w")
+    
     graph_printout (  stream, 
                       output_format,
                       target_tasks, 
@@ -2016,13 +2030,6 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
         if last_job_in_task:
 
             t.completed (logger)
-
-            #
-            #   indeterminate output. Check actual output again if someother tasks job function depend on it
-            #       used for @split
-            #
-            if t.indeterminate_output:
-                t.output_filenames = None
 
             
         # make sure queue is still full after each job is retired

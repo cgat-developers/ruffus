@@ -356,34 +356,6 @@ def gwas_simulation(input_files, result_file_path, gene_file_root, sim_file_root
 #_________________________________________________________________________________________
 
 
-
-# 
-# All this commented code is replaced by the single line beginning with @collate
-# 
-# 
-# 
-# 
-# def generate_statistical_summary_params():
-#     """
-#     Custom function to summarising simulation results files per gene / gwas file pair
-#     """
-#     gene_gwas_file_pairs, gene_gwas_file_roots =  get_gene_gwas_file_pairs()
-# 
-#     for (gene, gwas), gene_file_root in izip(gene_gwas_file_pairs, gene_gwas_file_roots):
-#             result_glob_spec = "%s.*.simulation_res" % (gene_file_root)
-#             result_files     = glob.glob(os.path.join(working_dir, "simulation_results", result_glob_spec))
-#             summary_file     = os.path.join(working_dir, gene_file_root + ".mean")
-#                 
-#             yield result_files, summary_file
-#                 
-# 
-#
-# @follows(gwas_simulation)
-# @files(generate_statistical_summary_params)
-
-
-
-
 @collate(gwas_simulation, regex(r"simulation_results/(\d+).\d+.simulation_res"), r"\1.mean")
 @posttask(lambda : sys.stdout.write("\nOK\n"))
 def statistical_summary (result_files, summary_file):
