@@ -1,0 +1,19 @@
+digraph tree
+{
+size="8,11!";
+splines=true;
+fontsize=40;
+ranksep = 0.3;
+#rankdir="LR";
+subgraph clusterkey
+{
+fontsize=30;
+label = "Task-based\nPipeline\nManagement:";
+node[fontsize=40];
+k1[color=red, fontcolor=red, shape=tripleoctagon, fontsize=15, label="Summarise results"];
+k2[color=blue, fontcolor=blue, shape=tripleoctagon, fontsize=15, label="Analysis 3"];
+k3[color=blue, fontcolor=blue, shape=tripleoctagon, fontsize=15, label="Analysis 2"];
+k4[color=blue, fontcolor=blue, shape=tripleoctagon, fontsize=15, label="Analysis 1"];
+k2->k1[color=red];k4->k3->k2[color=blue];
+}
+}

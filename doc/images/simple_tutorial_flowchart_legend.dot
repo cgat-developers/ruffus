@@ -1,0 +1,24 @@
+digraph tree
+{
+size="8,11!";
+splines=true;
+fontsize=50;
+ranksep = 0.3;
+#rankdir="LR";
+subgraph clusterkey
+{
+style=filled;
+fontsize=50;
+color=gray90;
+label = "Key:";
+node[fontsize=40];
+k1[color=orange, fontcolor=orange, shape=tripleoctagon, fontsize=15, label="Final target"];
+k2[shape=box, style=filled, fontsize=15, fillcolor=red, label="Vicious cycle"];
+k3[fontcolor=blue, shape=plaintext, fontsize=15, label="Task to run"];
+k4[color=blue, fontcolor=blue, shape=tripleoctagon, fontsize=15, label="Force pipeline run from this task"];
+k5[color=gray, fontcolor=gray, shape=tripleoctagon, fontsize=15, label="Up-to-date Final target"];
+k6[color=olivedrab, fontcolor=blue, shape=tripleoctagon, fontsize=15, label="Up-to-date task forced to rerun"];
+k7[style=filled, color=olivedrab, label="Up-to-date task", shape=octagon, fontsize=15, fillcolor=olivedrab, fontcolor=black];
+k8[style=filled, color=gray, label="Up-to-date dependence", shape=octagon, fontsize=15, fillcolor=white, fontcolor=gray];
+k1->k2[color=red];k2->k1 [color=red];k2->k3->k4->k5[color=blue];k5->k6->k7->k8[color=gray];}
+}

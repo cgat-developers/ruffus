@@ -1,0 +1,26 @@
+digraph tree
+{
+size="8,11!";
+splines=true;
+fontsize=50;
+#rankdir="LR";
+ranksep = 0.1;
+sep = 0.001;
+esep = 0.001;
+width = 0.001;
+#rankdir="LR";
+subgraph clusterkey
+{
+fontsize=30;
+label = "Pipeline:";
+edge[minlen=2];
+node[fontsize=20];
+t0[fontcolor=blue, shape=plaintext, label="task1"];
+t1[fontcolor=blue, shape=plaintext, label="task2"];
+t0 -> t1[color=blue];
+t2[fontcolor=blue, shape=plaintext, label="task3"];
+t1 -> t2[color=blue];
+t3[color=orange, fontcolor=orange, shape=tripleoctagon, label="task4"];
+t2 -> t3[color=blue];
+}
+}
