@@ -1,0 +1,20 @@
+digraph tree
+{
+size="8,11!";
+splines=true;
+fontsize=30;
+ranksep = 0.1;
+subgraph clustertasks
+{
+label = "Pipeline:";
+edge[minlen=2];
+node[fontsize=20];
+t0[style=filled, color=olivedrab, label="task1", shape=octagon, fillcolor=olivedrab, fontcolor=black];
+t1[fontcolor=blue, shape=plaintext, label="task2"];
+t0 -> t1[color=gray, arrowtype=normal];
+t2[color=olivedrab, fontcolor=blue, shape=tripleoctagon, label="task3"];
+t1 -> t2[color=blue];
+t3[color=orange, fontcolor=orange, shape=tripleoctagon, label="task4"];
+t2 -> t3[color=blue];
+}
+}

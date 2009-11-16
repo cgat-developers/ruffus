@@ -1,0 +1,70 @@
+digraph tree
+{
+size="8,11!";
+splines=true;
+fontsize=50;
+ranksep = 0.3;
+subgraph clustertasks
+{
+label = "Pipeline:";
+edge[minlen=2];
+node[fontsize=40];
+t2[fontcolor=blue, shape=plaintext, label="task7"];
+t0 -> t2[color=blue];
+t3[fontcolor=blue, shape=plaintext, label="task8"];
+t2 -> t3[color=blue];
+t4[fontcolor=blue, shape=plaintext, label="task9"];
+t3 -> t4[color=blue];
+t4 -> t5[color=blue];
+t8[fontcolor=blue, shape=plaintext, label="task3"];
+t1 -> t8[color=blue];
+t9[fontcolor=blue, shape=plaintext, label="task4"];
+t8 -> t9[color=blue];
+t9 -> t10[color=blue];
+t13[fontcolor=blue, shape=plaintext, label="task18"];
+t7 -> t13[color=blue];
+t19[fontcolor=blue, shape=plaintext, label="task19"];
+t13 -> t19[color=blue];
+t20[fontcolor=blue, shape=plaintext, label="task20"];
+t19 -> t20[color=blue];
+t21[fontcolor=blue, shape=plaintext, label="task21"];
+t20 -> t21[color=blue];
+t8 -> t21[color=blue];
+t22[fontcolor=blue, shape=plaintext, label="task22"];
+t21 -> t22[color=blue];
+t23[fontcolor=blue, shape=plaintext, label="task23"];
+t22 -> t23[color=blue];
+t12[fontcolor=blue, shape=plaintext, label="task13"];
+t7 -> t12[color=blue];
+t14[fontcolor=blue, shape=plaintext, label="task14"];
+t12 -> t14[color=blue];
+t15[fontcolor=blue, shape=plaintext, label="task15"];
+t14 -> t15[color=blue];
+t4 -> t15[color=blue];
+t16[fontcolor=blue, shape=plaintext, label="task16"];
+t15 -> t16[color=blue];
+t6 -> t16[color=blue];
+t17[fontcolor=blue, shape=plaintext, label="task17"];
+t16 -> t17[color=blue];
+t18[fontcolor=blue, shape=plaintext, label="task24"];
+t17 -> t18[color=blue];
+t24[color=orange, fontcolor=orange, shape=tripleoctagon, label="task25"];
+t23 -> t24[color=blue];
+t18 -> t24[color=blue];
+t1[shape=box, style=filled, fillcolor=red, label="task2"];
+t0 -> t1[color=red ];
+t0[shape=box, style=filled, fillcolor=red, label="task1"];
+t1 -> t0[color=red , constraint=false];
+t5[shape=box, style=filled, fillcolor=red, label="task10"];
+t7 -> t5[color=red , constraint=false];
+t6[shape=box, style=filled, fillcolor=red, label="task11"];
+t5 -> t6[color=red ];
+t10[shape=box, style=filled, fillcolor=red, label="task5"];
+t5 -> t10[color=red ];
+t11[shape=box, style=filled, fillcolor=red, label="task6"];
+t10 -> t11[color=red ];
+t7[shape=box, style=filled, fillcolor=red, label="task12"];
+t11 -> t7[color=red , constraint=false];
+t6 -> t7[color=red ];
+}
+}
