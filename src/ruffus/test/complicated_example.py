@@ -521,7 +521,7 @@ def summarise_all( summary_files, total_summary_file_name):
 if __name__ == '__main__':
     try:
         if options.just_print:
-            pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks, long_winded=True)
+            pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks, verbose=1)
         
         elif options.dependency_file:
             graph_printout (     open(options.dependency_file, "w"),
