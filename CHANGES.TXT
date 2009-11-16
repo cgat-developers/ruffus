@@ -1,3 +1,8 @@
+= v. 2.0.1 beta3=
+    _16/November/2009_
+	==Bug Fix:==
+        * Fixed problems with tasks dependending on @split
+
 = v. 2.0 beta=
     _30/October/2009_
     With the experience and feedback over the past few months, I have reworked **Ruffus** 
