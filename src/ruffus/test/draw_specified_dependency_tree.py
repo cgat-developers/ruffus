@@ -52,9 +52,9 @@ parser.add_option("-f", "--forced_job_names", dest="forced_job_names",
                   metavar="JOBNAME", 
                   type="string",
                   help="nodes to start on.")
-parser.add_option(  "-v", "--verbose", dest = "verbose",
-                    action="store_true", default=False,
-                    help="Do not echo to shell but only print to log.")
+parser.add_option("-v", "--verbose", dest = "verbose",
+                  action="count", default=0,
+                  help="Print more verbose messages for each additional verbose level.")
 parser.add_option("-z", "--horizontal_graph", dest="horizontal_graph",
                     action="store_true", default=False,
                     help="Draw dependency graph horizontally")

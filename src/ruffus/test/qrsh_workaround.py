@@ -1,4 +1,13 @@
 #!/usr/bin/env python
+import os, sys
+# add self to search path for testing
+exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
+sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
+if __name__ == '__main__':
+    module_name = os.path.split(sys.argv[0])[1]
+    module_name = os.path.splitext(module_name)[0];
+else:
+    module_name = __name__
 from ruffus import *
 from subprocess import Popen, PIPE
 parameters = [
@@ -16,6 +25,8 @@ parameters = [
 import time,os
 
 @parallel(parameters)
+@follows(mkdir("qrsh_workaround"))
+@posttask(lambda: os.system("rm -rf qrsh_workaround"))
 def parallel_task(name, param1, param2):
     sys.stderr.write("    Parallel task %s: " % name)
     sys.stderr.write("%d + %d = %d\n" % (param1, param2, param1 + param2))
@@ -35,7 +46,4 @@ def parallel_task(name, param1, param2):
 #       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 #
 if __name__ == '__main__':
-    try:
-        pipeline_run([parallel_task], multiprocess = 5)
-    except Exception, e:
-        print e.args
+    pipeline_run([parallel_task], multiprocess = 5)
