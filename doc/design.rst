@@ -78,11 +78,12 @@ Problems with file-based pipeline management
            rather than the computational stages involved. This conceptual mismatch adds
            much unnecessary complexity, as well as development and maintenance cost.
                
-    .. csv-table ::
-        :widths: 1,1
-        :class: borderless
-    
-        ".. image:: images/design.file_based_workflow.png", ".. image:: images/design.task_based_workflow.png"
+                   
+        .. csv-table ::
+            :widths: 1,1
+            :class: borderless
+        
+            ".. image:: images/design.file_based_workflow.png", ".. image:: images/design.task_based_workflow.png"
 
 
 .. index:: 

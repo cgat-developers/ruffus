@@ -57,6 +57,10 @@ Transforming input and output filenames
             def step_5_calculate_sum_of_squares (input_file_name, output_file_name):
             ""
             
+.. _manual.files_re.combine:
+.. index:: 
+    pair: combine; Manual
+            
 =====================================================
 Collating many *inputs* into a single *output*
 =====================================================

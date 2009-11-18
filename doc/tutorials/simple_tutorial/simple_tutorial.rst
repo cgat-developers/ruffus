@@ -58,7 +58,6 @@ A worked example (steps 4-7)
         6. Re-combine the partial solutions into the final result <step6_merge>
         7. Automatically signal the completion of each step of our pipeline <step7_posttask>
 
-        Code for the simple tutorial <simple_tutorial_code>
 
     This covers the core functionality of *Ruffus*.
 

@@ -89,21 +89,6 @@ Decorators
    
    
 ######################
-Example code:
-######################
-
-.. toctree::
-   :maxdepth: 1
-   
-   examples/simpler.rst
-   examples/intermediate_example.rst
-   examples/intermediate_example_code.rst
-   examples/complicated_example.rst
-   examples/complicated_example_code.rst
-   examples/sharing_data_across_jobs_example.rst
-   examples/sharing_data_across_jobs_example_code.rst
-    
-######################
 Modules:
 ######################
    

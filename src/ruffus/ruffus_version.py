@@ -24,4 +24,4 @@
 #   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #   THE SOFTWARE.
 #################################################################################
-__version='2.0.1'
+__version='2.0.2'

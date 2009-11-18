@@ -1,15 +1,15 @@
 .. seealso::
     :ref:`Decorators <decorators>`
 
+.. index:: 
+    single: Indicator Object (Disambiguating parameters)
+.. _indicator_objects:
 
 
 ########################
 Indicator Objects
 ########################
 
-.. index:: 
-    single: Indicator Object (Disambiguating parameters)
-.. _indicator_objects:
 
 
     How *ruffus* disambiguates certain parameters to decorators.
@@ -106,8 +106,12 @@ Indicator Objects
             job2:   "y.c", "y.h"
             
 .. _decorators.mkdir:
+
+
 .. index:: 
-    pair: mkdir; Indicator Object (Disambiguating parameters)
+    single: @follows; mkdir (Syntax)
+    single: mkdir; @follows (Syntax)
+    single: Indicator Object (Disambiguating parameters); mkdir
 
 ******************************************************************************************
 *mkdir(*\ `directory_name1`, [`directory_name2`, ...]\ *)*
@@ -127,8 +131,11 @@ Indicator Objects
 
 
 .. _decorators.touch_file:
+
 .. index:: 
-    pair: touch_file; Indicator Object (Disambiguating parameters)
+    single: @posttask; touch_file (Syntax)
+    single: touch_file; @posttask (Syntax)
+    single: Indicator Object (Disambiguating parameters); touch_file
 
 
 ******************************************************************************************
@@ -155,10 +162,65 @@ Indicator Objects
 
 .. _decorators.combine:
 .. index:: 
-    pair: combine; Indicator Object (Disambiguating parameters)
+    single: @files_re; combine (Syntax)
+    single: combine; @follows (Syntax)
+    single: Indicator Object (Disambiguating parameters); combine
 
+******************************************************************************************
+*combine(*\ `arguments`\ *)*
+******************************************************************************************
+    Indicates that the *inputs* of :ref:`@files_re <decorators.files_re>` will be collated
+    or summarised into *outputs* by category. See the :ref:`Manual <manual.files_re.combine>`  or
+    :ref:` @collate <manual.collate>` for examples.
+    
+    This is deprecated syntax.    
+    
+    **Used by:**
+        * :ref:`@files_re <manual.files_re.combine>`
+        
+    **Example:**
+        ::
+        
+            @files_re('*.animals',                           # inputs = all *.animal files
+                        r'mammals.([^.]+)',                  # regular expression
+                        combine(r'\1/animals.in_my_zoo'),    # single output file per species
+                        r'\1' )                              # species name
+            def capture_mammals(infiles, outfile, species):
+                # summarise all animals of this species
+                ""
 
 .. _decorators.output_from:
 .. index:: 
     pair: output_from; Indicator Object (Disambiguating parameters)
+
+******************************************************************************************
+*output_from(*\ `file_name_string1`\ *[,*\ `file_name_string1` , ... *]* *)*
+******************************************************************************************
+    Indicates that any enclosed strings are not file names but refer to task functions.    
+    
+    **Used by:**
+        * :ref:`@files <decorators.files>`
+        * :ref:`@split <decorators.split>`
+        * :ref:`@transform <decorators.transform>`
+        * :ref:`@merge <decorators.merge>`
+        * :ref:`@collate <decorators.collate>`
+        
+    **Example:**
+        ::
+        
+            @split(["a.file", ("b.file", output_from("task1", 76, "task2"))], "*.split")
+            def task2(input, output):
+                pass
+
+
+        is equivalent to:
+    
+        ::
+        
+            @split(["a.file", ("b.file", (task1, 76, task2))], "*.split")
+            def task2(input, output):
+                pass
+                
+
+        
 

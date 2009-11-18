@@ -64,7 +64,9 @@
     
         
 .. index:: 
-    pair: @posttask; touch_file
+    single: @posttask; touchfile (Manual)
+    single: touchfile ; @posttask (Manual)
+
 
 .. _manual.posttask.touch_file:
 

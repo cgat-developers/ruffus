@@ -1,7 +1,24 @@
-= v. 2.0.1 beta3=
+= v. 2.0.2=
+    _18/November/2009_
+    ==Better Logging:==
+        * pipeline_printout output much prettier
+        * pipeline_run at high verbose levels show which tasks are being checked
+          to see if they are up-to-date or not
+    ==Documentation:==
+        * New tutorial
+        * New manual
+        * pretty code figures
+
+= v. 2.0.1=
+    _18/November/2009_
+    All unit tests passed
+    ==Bug Fix:==
+        * Numerous bugs to do with ordering of glob / job output consistency
+
+= v. 2.0.1 beta4=
     _16/November/2009_
-	==Bug Fix:==
-        * Fixed problems with tasks dependending on @split
+    ==Bug Fix:==
+        * Fixed problems with tasks depending on @split
 
 = v. 2.0 beta=
     _30/October/2009_
