@@ -143,11 +143,24 @@ class t_stderr_logger:
     def debug (self, message):
         sys.stderr.write(message + "\n")
 
+class t_stream_logger:
+    """
+    Everything to stderr
+    """
+    def __init__ (self, stream):
+        self.stream = stream
+    def info (self, message):
+        self.stream.write(message + "\n")
+    def debug (self, message):
+        self.stream.write(message + "\n")
 
 black_hole_logger = t_black_hole_logger()
 stderr_logger     = t_stderr_logger()
 
-
+class t_verbose_logger:
+    def __init__ (self, verbose, logger):
+        self.verbose = verbose
+        self.logger = logger
 
 #_________________________________________________________________________________________
 #
@@ -682,6 +695,11 @@ class _task (node):
     def printout (self, stream, force_rerun, verbose=1, indent = 4):
         """
         Print out all jobs for this task
+        
+                verbose = 1 : print task name
+                          2 : print task description if exists
+                          3 : print job names for jobs to be run
+                          4 : print job names for up-to- date jobs
         """
         if not verbose:
             return
@@ -694,26 +712,57 @@ class _task (node):
         if verbose ==1:
             return
             
-        if verbose > 2:
+        if verbose >= 2 and len(self._description):
             stream.write(indent_str + '"' + self._description + '"\n')
+
+        indent_str += " " * 3
+
+        if verbose <= 2 :
+            return
 
         #
         #   No parameters: just call task function 
         #
-        if self.param_generator_func != None:
+        if self.param_generator_func == None:
+            if verbose <= 3:
+                return
+                
+            #   
+            #   needs update func = None: always needs update
+            #
+            if not self.needs_update_func:
+                stream.write(indent_str + "Task needs update: No function to check if up-to-date or not\n")
+                return
+                
+            needs_update, msg = self.needs_update_func ()
+            if needs_update:
+                stream.write(indent_str + "Task needs update: %s\n" % msg)
+            else:
+                stream.write(indent_str + "Task up-to-date\n")
+                
+        else:
+            #
+            #   return description per job
+            # 
             for param in self.param_generator_func():
                 job_name = self.job_descriptor(param)
-                uptodate = '   '
-                msg = ''
-                if self.needs_update_func:
-                    needs_update, msg = self.needs_update_func (*param)
-                    if not needs_update:
-                        uptodate = "U: "
-                    if verbose:
-                        stream.write(indent_str + uptodate + job_name + " " + msg + "\n")
-                elif verbose > 2:
-                    stream.write(indent_str + "%s no function to check if up-to-date " % job_name)
+                    
+                #   
+                #   needs update func = None: always needs update
+                #
+                if not self.needs_update_func:
+                    stream.write(indent_str + job_name + "\n")
+                    stream.write(indent_str + "Jobs needs update: No function to check if up-to-date or not\n")
+                    continue
 
+                needs_update, msg = self.needs_update_func (*param)
+                if needs_update:
+                    stream.write(indent_str + job_name + "\n")
+                    stream.write(indent_str + "Job needs update: %s\n" % msg)
+                else:
+                    if verbose > 4:
+                        stream.write(indent_str + job_name + "\n")
+                        stream.write(indent_str + "Job up-to-date")
         stream.write("\n")
 
     
@@ -726,24 +775,37 @@ class _task (node):
     #       returns whether up to date
     # 
     #_____________________________________________________________________________________
-    def signal (self):
+    def signal (self, verbose_logger):
         """
         If up to date: signal = true
         If true, depth first search will not pass through this node
         """
         try:
+            logger  = verbose_logger.logger  if verbose_logger else None
+            verbose = verbose_logger.verbose if verbose_logger else 0
+            short_task_name = self._name.replace('__main__.', '')
+            log_at_level (logger, 4, verbose, 
+                            "  Task = " + short_task_name)
+
             #
             #   Always needs update if no way to check if up to date
             #
             if self.needs_update_func == None:
+                log_at_level (logger, 4, verbose, 
+                                "    No update function: treat as out of date")
                 return False
                 
             #
             #   if no parameters, just return the results of needs update
             # 
             if self.param_generator_func == None:
-                needs_update, msg = self.needs_update_func ()
-                return not needs_update
+                if self.needs_update_func:
+                    needs_update, msg = self.needs_update_func ()
+                    log_at_level (logger, 4, verbose, 
+                                    "    Needs update = %s" % needs_update)
+                    return not needs_update
+                else:
+                    return True
             else:
                 #
                 #   return not up to date if ANY jobs needs update
@@ -751,7 +813,13 @@ class _task (node):
                 for param in self.param_generator_func():
                     needs_update, msg = self.needs_update_func (*param)
                     if needs_update:
+                        if verbose >= 4:
+                            job_name = self.job_descriptor(param)
+                            log_at_level (logger, 4, verbose, 
+                                            "    Job needing update = %s" % job_name)
                         return False
+                log_at_level (logger, 4, verbose, 
+                                "    All jobs up to date")
                 return True
                 
         # rethrow exception after adding task name
@@ -1603,8 +1671,7 @@ def pipeline_printout_graph (stream,
 
 #_________________________________________________________________________________________
 def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbose=0, indent = 4,
-                                    gnu_make_maximal_rebuild_mode  = True,
-                                    test_all_task_for_update        = True):
+                                    gnu_make_maximal_rebuild_mode  = True):
     """
     Printouts the parts of the pipeline which will be run
 
@@ -1612,6 +1679,13 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
     produces only the current snap-shot of task jobs. In particular, tasks which generate 
     variable number of inputs into following tasks will not produce the full range of jobs. 
     
+    ::
+    
+        verbose = 1 : print task name
+        verbose = 2 : print task description if exists
+        verbose = 3 : print job names for jobs to be run
+        verbose = 4 : print job names for up-to- date jobs
+
     :param output_stream: where to print to
     :type output_stream: file-like object with ``write()`` function
     :param target_tasks: targets task functions which will be run if they are out-of-date
@@ -1630,14 +1704,20 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
     #     
     target_tasks = task_names_to_tasks ("Target", target_tasks)
     forcedtorun_tasks = task_names_to_tasks ("Forced to run", forcedtorun_tasks)
+    
+    logging_strm = t_verbose_logger(verbose, t_stream_logger(output_stream))
+    
+
     (topological_sorted,
     self_terminated_nodes,
     dag_violating_edges,
     dag_violating_nodes) = topologically_sorted_nodes(target_tasks, forcedtorun_tasks, 
-                                                        gnu_make_maximal_rebuild_mode,
-                                                        test_all_task_for_update)
+                                                        gnu_make_maximal_rebuild_mode)
+        
 
-
+    #
+    #   raise error if DAG violating nodes 
+    #
     if len(dag_violating_nodes):
         dag_violating_tasks = ", ".join(t._name for t in dag_violating_nodes)
 
@@ -1646,10 +1726,26 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
                                             (dag_violating_tasks))
         raise e
 
+    # get all nodes    
+    if verbose >= 4:
+        (all_tasks, ignore_param1, ignore_param2, 
+         ignore_param3) = topologically_sorted_nodes(target_tasks, True, 
+                                                            gnu_make_maximal_rebuild_mode)
+        if len(all_tasks) > len(topological_sorted):
+            output_stream.write("\n" + "_" * 40 + "\nTasks which are up-to-date:\n\n")
+            pipelined_tasks_to_run = set(topological_sorted)
+
+            for t in all_tasks:
+                if t in pipelined_tasks_to_run:
+                    continue
+                t.printout(output_stream, t in forcedtorun_tasks, verbose, indent)
+
+    output_stream.write("\n" + "_" * 40 + "\nTasks which will be run:\n\n")
     for t in topological_sorted:
         t.printout(output_stream, t in forcedtorun_tasks, verbose, indent)
 
-
+    if verbose:
+        output_stream.write("_" * 40 + "\n")
         
 #_________________________________________________________________________________________
 #
@@ -1662,7 +1758,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
     inprogress_tasks = set()
 
     def parameter_generator():
-        log_at_level (logger, 4, verbose, "   job_parameter_generator BEGIN")
+        log_at_level (logger, 10, verbose, "   job_parameter_generator BEGIN")
         while len(incomplete_tasks):
             cnt_jobs_created_for_all_tasks = 0
             cnt_tasks_processed = 0
@@ -1672,12 +1768,12 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                 #       came from 
                 #
                 try:
-                    log_at_level (logger, 4, verbose, "   job_parameter_generator consider task = %s" % t._name)
+                    log_at_level (logger, 10, verbose, "   job_parameter_generator consider task = %s" % t._name)
     
                     # ignore tasks in progress
                     if t in inprogress_tasks:
                         continue
-                    log_at_level (logger, 4, verbose, "   job_parameter_generator task %s not in progress" % t._name)
+                    log_at_level (logger, 10, verbose, "   job_parameter_generator task %s not in progress" % t._name)
                     
                     # ignore tasks with incomplete dependencies
                     incomplete_parent = False
@@ -1688,7 +1784,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     if incomplete_parent:
                         continue
                         
-                    log_at_level (logger, 4, verbose, "   job_parameter_generator start task %s (parents completed)" % t._name)
+                    log_at_level (logger, 10, verbose, "   job_parameter_generator start task %s (parents completed)" % t._name)
                     force_rerun = t in forcedtorun_tasks
                     # 
                     # log task
@@ -1802,13 +1898,13 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
 
             # extra tests incase final tasks do not result in jobs
             if len(incomplete_tasks) and (not cnt_tasks_processed or cnt_jobs_created_for_all_tasks):
-                log_at_level (logger, 4, verbose, "    incomplete tasks = " + 
+                log_at_level (logger, 10, verbose, "    incomplete tasks = " + 
                                        ",".join([t._name for t in incomplete_tasks] ))
                 yield waiting_for_more_tasks_to_complete()
 
         yield all_tasks_complete()
         # This function is done
-        log_at_level (logger, 4, verbose, "   job_parameter_generator END")
+        log_at_level (logger, 10, verbose, "   job_parameter_generator END")
 
     return parameter_generator
 
@@ -1918,7 +2014,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                     level 1: logs completed jobs/tasks; 
                     level 2: logs up to date jobs in incomplete tasks
                     level 3: logs reason for running job;
-                    level 4: logs messages useful only for debug ruffus pipeline code
+                    level 10: logs messages useful only for debug ruffus pipeline code
 
 
     """
@@ -1931,11 +2027,13 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     #     
     target_tasks = task_names_to_tasks ("Target", target_tasks)
     forcedtorun_tasks = task_names_to_tasks ("Forced to run", forcedtorun_tasks)
+    
     (topological_sorted,
     self_terminated_nodes,
     dag_violating_edges,
     dag_violating_nodes) = topologically_sorted_nodes(  target_tasks, forcedtorun_tasks, 
-                                                        gnu_make_maximal_rebuild_mode)
+                                                        gnu_make_maximal_rebuild_mode,
+                                                        extra_data_for_signal = t_verbose_logger(verbose, logger))
 
     if len(dag_violating_nodes):
         dag_violating_tasks = ", ".join(t._name for t in dag_violating_nodes)
