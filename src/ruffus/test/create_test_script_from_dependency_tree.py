@@ -45,9 +45,9 @@ parser.add_option("-o", "--output_file", dest="output_file",
                   default = os.path.join(exe_path, "pipelines", "simple.py"),
                   type="string",
                   help="name and path of output python test script.")
-parser.add_option(  "-v", "--verbose", dest = "verbose",
-                    action="store_true", default=False,
-                    help="Do not echo to shell but only print to log.")
+parser.add_option("-v", "--verbose", dest = "verbose",
+                  action="count", default=0,
+                  help="Print more verbose messages for each additional verbose level.")
 parser.add_option(  "-J", "--jumble_task_order", dest = "jumble_task_order",
                     action="store_true", default=False,
                     help="Do not define task functions in order of dependency.")

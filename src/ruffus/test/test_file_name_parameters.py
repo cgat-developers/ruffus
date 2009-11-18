@@ -83,6 +83,12 @@ test_path = os.path.join(exe_path, "test", "file_name_parameters")
 
 #=========================================================================================
 import unittest, time
+import inspect
+def lineno():
+    """Returns the current line number in our program."""
+    return inspect.currentframe().f_back.f_lineno
+
+
 from random import randint
 class Test_args_param_factory(unittest.TestCase):
 
@@ -161,9 +167,10 @@ def recursive_replace(p, from_s, to_s):
     if isinstance(p, str):
         return p.replace(from_s, to_s)
     elif non_str_sequence (p):
-        return [recursive_replace(pp, from_s, to_s) for pp in p]
+        return type(p)(recursive_replace(pp, from_s, to_s) for pp in p)
     else:
         return p
+        
 
 def list_generator_factory (list):
     def list_generator ():
@@ -264,16 +271,16 @@ class Test_files_re_param_factory(unittest.TestCase):
         paths = self.files_re(test_path + "/*", r"(.*).test$", combine(r"\1.input"), r"\1.output")
         self.assertEqual(recursive_replace(paths, test_path, "DIR"),
                             [
-                             [['DIR/f0.input'], 'DIR/f0.output'], 
-                             [['DIR/f1.input'], 'DIR/f1.output'],
-                             [['DIR/f2.input'], 'DIR/f2.output'], 
+                             (('DIR/f0.input',), 'DIR/f0.output'), 
+                             (('DIR/f1.input',), 'DIR/f1.output'),
+                             (('DIR/f2.input',), 'DIR/f2.output'), 
                              ]
             )
         paths = self.files_re(test_path + "/*", "(.*).test$", combine(r"\1.input"), r"combined.output")
         self.assertEqual(recursive_replace(paths, test_path, "DIR"),
-                            [[['DIR/f0.input', 
+                            [(('DIR/f0.input', 
                                'DIR/f1.input', 
-                               'DIR/f2.input'], 'combined.output']])
+                               'DIR/f2.input'), 'combined.output')])
         
         
     def test_glob(self):
@@ -285,9 +292,9 @@ class Test_files_re_param_factory(unittest.TestCase):
         # 
         paths = self.files_re(test_path + "/*", "(.*).test$", r"\1.input", r"\1.output")
         self.assertEqual(recursive_replace(paths, test_path, "DIR"),
-                        [['DIR/f0.input', 'DIR/f0.output'], 
-                         ['DIR/f1.input', 'DIR/f1.output'], 
-                         ['DIR/f2.input', 'DIR/f2.output']])
+                        [('DIR/f0.input', 'DIR/f0.output'), 
+                         ('DIR/f1.input', 'DIR/f1.output'), 
+                         ('DIR/f2.input', 'DIR/f2.output')])
         self.assert_(self.check_input_files_exist(test_path + "/*", "(.*).test$", 
                                                         r"\1.test", r"\1.output"))
                         
@@ -297,18 +304,18 @@ class Test_files_re_param_factory(unittest.TestCase):
         # 
         paths = self.files_re(test_path + "/*", "(.*).test$", [r"\1.input",2,["something", r"\1"]], r"\1.output", r"\1.extra", 5)
         self.assertEqual(recursive_replace(paths, test_path, "DIR"),
-                        [[['DIR/f0.input', 2, ['something', 'DIR/f0']], 'DIR/f0.output', 'DIR/f0.extra', 5], 
-                         [['DIR/f1.input', 2, ['something', 'DIR/f1']], 'DIR/f1.output', 'DIR/f1.extra', 5], 
-                         [['DIR/f2.input', 2, ['something', 'DIR/f2']], 'DIR/f2.output', 'DIR/f2.extra', 5]])
+                        [(['DIR/f0.input', 2, ['something', 'DIR/f0']], 'DIR/f0.output', 'DIR/f0.extra', 5), 
+                         (['DIR/f1.input', 2, ['something', 'DIR/f1']], 'DIR/f1.output', 'DIR/f1.extra', 5), 
+                         (['DIR/f2.input', 2, ['something', 'DIR/f2']], 'DIR/f2.output', 'DIR/f2.extra', 5)])
 
         #
         # only output
         # 
         paths = self.files_re(test_path + "/*", ".*/(.*).test$", r"\1.output")
         self.assertEqual(recursive_replace(paths, test_path, "DIR"),
-                            [['DIR/f0.test', 'f0.output'], 
-                             ['DIR/f1.test', 'f1.output'], 
-                             ['DIR/f2.test', 'f2.output']])
+                            [('DIR/f0.test', 'f0.output'), 
+                             ('DIR/f1.test', 'f1.output'), 
+                             ('DIR/f2.test', 'f2.output')])
 
     def test_globbed_up_to_date(self):
         """
@@ -336,27 +343,27 @@ class Test_files_re_param_factory(unittest.TestCase):
         # 
         paths = self.files_re(file_list, r"(.*).test$", r"\1.input", r"\1.output")
         self.assertEqual(recursive_replace(paths, test_path, "DIR"),
-                        [['DIR/f0.input', 'DIR/f0.output'], 
-                         ['DIR/f1.input', 'DIR/f1.output'], 
-                         ['DIR/f2.input', 'DIR/f2.output']])
+                        [('DIR/f0.input', 'DIR/f0.output'), 
+                         ('DIR/f1.input', 'DIR/f1.output'), 
+                         ('DIR/f2.input', 'DIR/f2.output')])
 
         # 
         # nested forms
         # 
         paths = self.files_re(file_list, "(.*).test$", [r"\1.input",2,["something", r"\1"]], r"\1.output", r"\1.extra", 5)
         self.assertEqual(recursive_replace(paths, test_path, "DIR"),
-                        [[['DIR/f0.input', 2, ['something', 'DIR/f0']], 'DIR/f0.output', 'DIR/f0.extra', 5], 
-                         [['DIR/f1.input', 2, ['something', 'DIR/f1']], 'DIR/f1.output', 'DIR/f1.extra', 5], 
-                         [['DIR/f2.input', 2, ['something', 'DIR/f2']], 'DIR/f2.output', 'DIR/f2.extra', 5]])
+                        [(['DIR/f0.input', 2, ['something', 'DIR/f0']], 'DIR/f0.output', 'DIR/f0.extra', 5), 
+                         (['DIR/f1.input', 2, ['something', 'DIR/f1']], 'DIR/f1.output', 'DIR/f1.extra', 5), 
+                         (['DIR/f2.input', 2, ['something', 'DIR/f2']], 'DIR/f2.output', 'DIR/f2.extra', 5)])
 
         #
         # only output
         # 
         paths = self.files_re(file_list, ".*/(.*).test$", r"\1.output")
         self.assertEqual(recursive_replace(paths, test_path, "DIR"),
-                            [['DIR/f0.test', 'f0.output'], 
-                             ['DIR/f1.test', 'f1.output'], 
-                             ['DIR/f2.test', 'f2.output']])
+                            [('DIR/f0.test', 'f0.output'), 
+                             ('DIR/f1.test', 'f1.output'), 
+                             ('DIR/f2.test', 'f2.output')])
 
 
     def test_tasks(self):
@@ -461,7 +468,7 @@ class Test_split_param_factory(unittest.TestCase):
         # 
         paths = self.do_task_split(test_path + "/*", [exe_path + "/a*.py", exe_path + "/r*.py"])
         self.assertEqual(recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR"),
-                        [   ['DIR/f0.output', 
+                        (   ['DIR/f0.output', 
                              'DIR/f0.test', 
                              'DIR/f1.output', 
                              'DIR/f1.test', 
@@ -469,10 +476,11 @@ class Test_split_param_factory(unittest.TestCase):
                              'DIR/f2.test',
                              ],
                             ['DIR/adjacent_pairs_iterate.py',
+                             'DIR/re_glob.py',
                              'DIR/ruffus_exceptions.py',
                              'DIR/ruffus_utility.py',
                              'DIR/ruffus_version.py'
-                             ]              ])
+                             ]              ))
     def test_tasks(self):
         """
         test if can use tasks to specify dependencies
@@ -490,14 +498,14 @@ class Test_split_param_factory(unittest.TestCase):
                                 6)                                      # extra params
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR")
         self.assertEqual(paths,
-                        [[  
+                        ([  
+                         5,  
+                         ['output4.test', 'output.ignored'], 
                          'output1.test', 
                          'output2.test', 
                          'output3.test', 
-                         ['output4.test', 'output.ignored'], 
-                         5,  
                          'output.ignored',
-                         [2, 'output5.test'], 
+                         (2, 'output5.test'), 
                          'DIR/f0.output', 
                          'DIR/f0.test', 
                          'DIR/f1.output', 
@@ -505,29 +513,31 @@ class Test_split_param_factory(unittest.TestCase):
                          'DIR/f2.output', 
                          'DIR/f2.test'], 
                         ['DIR/adjacent_pairs_iterate.py', 
+                         'DIR/re_glob.py',
                          'DIR/ruffus_exceptions.py', 
                          'DIR/ruffus_utility.py', 
                          'DIR/ruffus_version.py', 
                          'extra.file'], 
-                        6])
+                        6))
+        
 
         # single job output consisting of a single file
         paths = self.do_task_split(task.output_from("module.func2"), exe_path + "/a*.py")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, ['output.ignored', ['DIR_E/adjacent_pairs_iterate.py']])
+        self.assertEqual(paths, ('output.ignored', ['DIR_E/adjacent_pairs_iterate.py']))
 
         paths = self.do_task_split([task.output_from("module.func2")], exe_path + "/a*.py")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, [['output.ignored'], ['DIR_E/adjacent_pairs_iterate.py']])
+        self.assertEqual(paths, (['output.ignored'], ['DIR_E/adjacent_pairs_iterate.py']))
 
         # single job output consisting of a list
         paths = self.do_task_split(task.output_from("module.func4"), exe_path + "/a*.py")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, [[2, 'output5.test'], ['DIR_E/adjacent_pairs_iterate.py']] )
+        self.assertEqual(paths, ((2, 'output5.test'), ['DIR_E/adjacent_pairs_iterate.py']) )
 
         paths = self.do_task_split([task.output_from("module.func4")], exe_path + "/a*.py")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, [[[2, 'output5.test']], ['DIR_E/adjacent_pairs_iterate.py']])
+        self.assertEqual(paths, ([(2, 'output5.test')], ['DIR_E/adjacent_pairs_iterate.py']))
 
 #=========================================================================================
 
@@ -596,7 +606,7 @@ class Test_merge_param_factory(unittest.TestCase):
                                  "extra.file"])
         paths = recursive_replace(paths, test_path, "DIR")
         self.assertEqual(paths,
-                        [   ['DIR/f0.output', 
+                        (   ['DIR/f0.output', 
                              'DIR/f0.test', 
                              'DIR/f1.output', 
                              'DIR/f1.test', 
@@ -606,7 +616,7 @@ class Test_merge_param_factory(unittest.TestCase):
                             ["test1",
                              "test2",
                              "extra.file"]
-                                           ])
+                                           ))
     def test_tasks(self):
         """
         test if can use tasks to specify dependencies
@@ -624,44 +634,44 @@ class Test_merge_param_factory(unittest.TestCase):
                                 6)                                      # extra params
         paths = recursive_replace(paths, test_path, "DIR")
         self.assertEqual(paths,
-                        [[  
-                         'output1.test', 
-                         'output2.test', 
-                         'output3.test', 
-                         ['output4.test', 'output.ignored'], 
-                         5,  
-                         'output.ignored',
-                         [2, 'output5.test'], 
-                         'DIR/f0.output', 
-                         'DIR/f0.test', 
-                         'DIR/f1.output', 
-                         'DIR/f1.test', 
-                         'DIR/f2.output', 
-                         'DIR/f2.test'], 
-                         ["test1",                               # output params
-                          "test2",
-                          "extra.file"],
-                        6])
+                        ([
+                            5, 
+                            ['output4.test', 'output.ignored'], 
+                            'output1.test', 
+                            'output2.test', 
+                            'output3.test', 
+                            'output.ignored', 
+                            (2, 'output5.test'), 
+                            'DIR/f0.output', 
+                            'DIR/f0.test', 
+                            'DIR/f1.output', 
+                            'DIR/f1.test', 
+                            'DIR/f2.output', 
+                            'DIR/f2.test'], 
+                            ['test1',                          # output params
+                             'test2', 
+                             'extra.file'], 
+                            6))
         paths = self.do_task_merge(task.output_from("module.func2"), "output", "extra")
         paths = self.do_task_merge(task.output_from("module.func1", "module.func2"), "output", "extra")
 
         # single job output consisting of a single file
         paths = self.do_task_merge(task.output_from("module.func2"), "output")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, ['output.ignored', "output"])
+        self.assertEqual(paths, ('output.ignored', 'output'))
 
         paths = self.do_task_merge([task.output_from("module.func2")], "output")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, [['output.ignored'], "output"])
+        self.assertEqual(paths, (['output.ignored'], 'output'))
 
         # single job output consisting of a list
         paths = self.do_task_merge(task.output_from("module.func4"), "output")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, [[2, 'output5.test'], "output"] )
+        self.assertEqual(paths, ((2, 'output5.test'), 'output'))
 
         paths = self.do_task_merge([task.output_from("module.func4")], "output")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, [[[2, 'output5.test']], "output"])
+        self.assertEqual(paths, ([(2, 'output5.test')], 'output'))
         
 #=========================================================================================
 
@@ -731,9 +741,9 @@ class Test_transform_param_factory(unittest.TestCase):
         paths = recursive_replace(paths, test_path, "DIR")
         self.assertEqual(paths,
                         [
-                            ['DIR/f0.test', ['DIR/f0.output1', 'DIR/f0.output2'], ".output3"], 
-                            ['DIR/f1.test', ['DIR/f1.output1', 'DIR/f1.output2'], ".output3"],
-                            ['DIR/f2.test', ['DIR/f2.output1', 'DIR/f2.output2'], ".output3"],
+                            ('DIR/f0.test', ['DIR/f0.output1', 'DIR/f0.output2'], ".output3"), 
+                            ('DIR/f1.test', ['DIR/f1.output1', 'DIR/f1.output2'], ".output3"),
+                            ('DIR/f2.test', ['DIR/f2.output1', 'DIR/f2.output2'], ".output3"),
                                            ])
     def test_regex(self):
         """
@@ -748,9 +758,9 @@ class Test_transform_param_factory(unittest.TestCase):
         paths = recursive_replace(paths, test_path, "DIR")
         self.assertEqual(paths,
                         [
-                            ['DIR/f0.test', ['DIR/f0.output1', 'DIR/f0.output2'], 'DIR/f0.output3'], 
-                            ['DIR/f1.test', ['DIR/f1.output1', 'DIR/f1.output2'], 'DIR/f1.output3'],
-                            ['DIR/f2.test', ['DIR/f2.output1', 'DIR/f2.output2'], 'DIR/f2.output3'],
+                            ('DIR/f0.test', ['DIR/f0.output1', 'DIR/f0.output2'], "DIR/f0.output3"), 
+                            ('DIR/f1.test', ['DIR/f1.output1', 'DIR/f1.output2'], "DIR/f1.output3"),
+                            ('DIR/f2.test', ['DIR/f2.output1', 'DIR/f2.output2'], "DIR/f2.output3"),
                                            ])
     def test_inputs(self):
         """
@@ -766,9 +776,9 @@ class Test_transform_param_factory(unittest.TestCase):
         paths = recursive_replace(paths, test_path, "DIR")
         self.assertEqual(paths,
                         [
-                            ['DIR/f0.testwhat', ['DIR/f0.output1', 'DIR/f0.output2']], 
-                            ['DIR/f1.testwhat', ['DIR/f1.output1', 'DIR/f1.output2']],
-                            ['DIR/f2.testwhat', ['DIR/f2.output1', 'DIR/f2.output2']],
+                            ('DIR/f0.testwhat', ['DIR/f0.output1', 'DIR/f0.output2']), 
+                            ('DIR/f1.testwhat', ['DIR/f1.output1', 'DIR/f1.output2']),
+                            ('DIR/f2.testwhat', ['DIR/f2.output1', 'DIR/f2.output2']),
                                            ])
         paths = self.do_task_transform(test_path + "/*.test", task.suffix(".test"),  
                                             task.inputs(r".testwhat"),
@@ -777,9 +787,9 @@ class Test_transform_param_factory(unittest.TestCase):
         paths = recursive_replace(paths, test_path, "DIR")
         self.assertEqual(paths,
                         [
-                            ['DIR/f0.testwhat', ['DIR/f0.output1', 'DIR/f0.output2'], '.output3'], 
-                            ['DIR/f1.testwhat', ['DIR/f1.output1', 'DIR/f1.output2'], '.output3'], 
-                            ['DIR/f2.testwhat', ['DIR/f2.output1', 'DIR/f2.output2'], '.output3']])
+                            ('DIR/f0.testwhat', ['DIR/f0.output1', 'DIR/f0.output2'], '.output3'), 
+                            ('DIR/f1.testwhat', ['DIR/f1.output1', 'DIR/f1.output2'], '.output3'), 
+                            ('DIR/f2.testwhat', ['DIR/f2.output1', 'DIR/f2.output2'], '.output3')])
 
     def test_tasks(self):
         """
@@ -797,36 +807,37 @@ class Test_transform_param_factory(unittest.TestCase):
         paths = recursive_replace(paths, test_path, "DIR")
         self.assertEqual(paths,
                                 [
-                                        [['output4.test', 'output.ignored'], ['output4.output1', 'output4.output2'], 'output4.output3'], 
-                                        ['DIR/f0.test', ['DIR/f0.output1', 'DIR/f0.output2'], 'DIR/f0.output3'], 
-                                        ['DIR/f1.test', ['DIR/f1.output1', 'DIR/f1.output2'], 'DIR/f1.output3'], 
-                                        ['DIR/f2.test', ['DIR/f2.output1', 'DIR/f2.output2'], 'DIR/f2.output3'],
-                                        ['output1.test', ['output1.output1', 'output1.output2'], 'output1.output3'], 
-                                        ['output2.test', ['output2.output1', 'output2.output2'], 'output2.output3'], 
-                                        ['output3.test', ['output3.output1', 'output3.output2'], 'output3.output3'], 
-                                        [[2, 'output5.test'], ['output5.output1', 'output5.output2'], 'output5.output3'], 
+                                        (['output4.test', 'output.ignored'], ['output4.output1', 'output4.output2'], 'output4.output3'), 
+                                        ('DIR/f0.test', ['DIR/f0.output1', 'DIR/f0.output2'], 'DIR/f0.output3'), 
+                                        ('DIR/f1.test', ['DIR/f1.output1', 'DIR/f1.output2'], 'DIR/f1.output3'), 
+                                        ('DIR/f2.test', ['DIR/f2.output1', 'DIR/f2.output2'], 'DIR/f2.output3'), 
+                                        ('output1.test', ['output1.output1', 'output1.output2'], 'output1.output3'), 
+                                        ('output2.test', ['output2.output1', 'output2.output2'], 'output2.output3'), 
+                                        ('output3.test', ['output3.output1', 'output3.output2'], 'output3.output3'), 
+                                        ((2, 'output5.test'), ['output5.output1', 'output5.output2'], 'output5.output3')
                                 ])
     
         # single job output consisting of a single file
         paths = self.do_task_transform(task.output_from("module.func2"), task.regex(r"(.*)\..*"),  r"\1.output")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, [['output.ignored', 'output.output']])
+        self.assertEqual(paths, [('output.ignored', 'output.output')])
+        
         
 
         # Same output if task specified as part of a list of tasks
         paths = self.do_task_transform([task.output_from("module.func2")], task.regex(r"(.*)\..*"),  "output")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, [['output.ignored', 'output']])
+        self.assertEqual(paths, [('output.ignored', 'output')])
 
         # single job output consisting of a list
         paths = self.do_task_transform(task.output_from("module.func4"), task.regex(r"(.*)\..*"),  "output")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, [[[2, 'output5.test'], 'output']]  )
+        self.assertEqual(paths, [((2, 'output5.test'), 'output')]  )
 
         # Same output if task specified as part of a list of tasks
         paths = self.do_task_transform([task.output_from("module.func4")], task.regex(r"(.*)\..*"),  "output")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, [[[2, 'output5.test'], 'output']]  )
+        self.assertEqual(paths, [((2, 'output5.test'), 'output')]  )
     
     
 #=========================================================================================
@@ -898,24 +909,24 @@ class Test_collate_param_factory(unittest.TestCase):
         paths = self.do_task_collate(test_path + "/*", task.regex(r"(.*).test$"), r"\1.output")
         self.assertEqual(recursive_replace(paths, test_path, "DIR"),
                             [
-                                [['DIR/e0.test'], 'DIR/e0.output'], 
-                                [['DIR/e1.test'], 'DIR/e1.output'],
-                                [['DIR/e2.test'], 'DIR/e2.output'], 
-                                [['DIR/f0.test'], 'DIR/f0.output'], 
-                                [['DIR/f1.test'], 'DIR/f1.output'],
-                                [['DIR/f2.test'], 'DIR/f2.output'], 
+                                (('DIR/e0.test',), 'DIR/e0.output'), 
+                                (('DIR/e1.test',), 'DIR/e1.output'),
+                                (('DIR/e2.test',), 'DIR/e2.output'), 
+                                (('DIR/f0.test',), 'DIR/f0.output'), 
+                                (('DIR/f1.test',), 'DIR/f1.output'),
+                                (('DIR/f2.test',), 'DIR/f2.output'), 
                              ]
             )
         paths = self.do_task_collate(test_path + "/*", task.regex("(.*).test$"), task.inputs(r"\1.input2"), r"combined.output")
         self.assertEqual(recursive_replace(paths, test_path, "DIR"),
-                            [[[
+                            [((
                                'DIR/e0.input2', 
                                'DIR/e1.input2', 
                                'DIR/e2.input2',
                                'DIR/f0.input2', 
                                'DIR/f1.input2', 
                                'DIR/f2.input2',
-                               ], 'combined.output']])
+                               ), 'combined.output')])
 
         # 
         # simple 1 input, 1 output
@@ -926,16 +937,16 @@ class Test_collate_param_factory(unittest.TestCase):
         paths = recursive_replace(paths, test_path, "DIR")
         self.assertEqual(paths,
                         [
-                            [
-                                ['DIR/e0.test', 'DIR/e1.test', 'DIR/e2.test'],      # input
+                            (
+                                ('DIR/e0.test', 'DIR/e1.test', 'DIR/e2.test'),      # input
                                 ['DIR/e.output1', 'DIR/e.output2'],                 # output
                                 'DIR/e.extra'                                       # extra
-                            ],
-                            [
-                                ['DIR/f0.test', 'DIR/f1.test', 'DIR/f2.test'],      # input 
+                            ),
+                            (
+                                ('DIR/f0.test', 'DIR/f1.test', 'DIR/f2.test'),      # input 
                                 ['DIR/f.output1', 'DIR/f.output2'],                 # output
                                 'DIR/f.extra'                                       # extra 
-                            ]
+                            )
                         ] )
     def test_inputs(self):
         """
@@ -950,17 +961,17 @@ class Test_collate_param_factory(unittest.TestCase):
         paths = recursive_replace(paths, test_path, "DIR")
         self.assertEqual(paths,
                         [
-                            [
-                                ['DIR/e0.whoopee', 'DIR/e1.whoopee', 'DIR/e2.whoopee'],      # input
-                                ['DIR/e.output1', 'DIR/e.output2'],                          # output
-                                'DIR/e.extra'                                                # extra
-                            ],
-                            [
-                                ['DIR/f0.whoopee', 'DIR/f1.whoopee', 'DIR/f2.whoopee'],      # input 
-                                ['DIR/f.output1', 'DIR/f.output2'],                          # output
-                                'DIR/f.extra'                                                # extra 
-                            ]
-                        ] )
+                            (
+                                ('DIR/e0.whoopee', 'DIR/e1.whoopee', 'DIR/e2.whoopee'),      # input  
+                                ['DIR/e.output1', 'DIR/e.output2'],                          # output 
+                                'DIR/e.extra'                                                # extra  
+                            ),                                                                        
+                            (                                                                         
+                                ('DIR/f0.whoopee', 'DIR/f1.whoopee', 'DIR/f2.whoopee'),      # input  
+                                ['DIR/f.output1', 'DIR/f.output2'],                          # output 
+                                'DIR/f.extra'                                                # extra  
+                            )
+                        ])
         # 
         # collating using inputs where some files do not match regex
         # 
@@ -969,13 +980,7 @@ class Test_collate_param_factory(unittest.TestCase):
 
         paths = recursive_replace(paths, test_path, "DIR")
         self.assertEqual(paths,
-                        [
-                            [
-                                ['DIR/f.whoopee'],                                  # input 
-                                ['DIR/f.output1', 'DIR/f.output2'],                 # output
-                                'DIR/f.extra'                                       # extra 
-                            ]
-                        ] )
+                        [(('DIR/f.whoopee',), ['DIR/f.output1', 'DIR/f.output2'], 'DIR/f.extra')])
 
 
         # 
@@ -987,45 +992,45 @@ class Test_collate_param_factory(unittest.TestCase):
         paths = recursive_replace(paths, test_path, "DIR")
         self.assertEqual(paths,
                         [
-                            [
-                                ['DIR/e.whoopee'],                                 # input
+                            (
+                                ('DIR/e.whoopee',),                                # input
                                 ['DIR/e.output1', 'DIR/e.output2'],                # output
                                 'DIR/e.extra'                                      # extra
-                            ],                                                     
-                            [                                                      
-                                ['DIR/f.whoopee'],                                 # input 
+                            ),                                                     
+                            (                                                      
+                                ('DIR/f.whoopee',),                                # input 
                                 ['DIR/f.output1', 'DIR/f.output2'],                # output
                                 'DIR/f.extra'                                      # extra 
-                            ]
+                            )
                         ] )
         
         #
         #   test python set object. Note that set is constructed with the results of the substitution
         #
         paths = self.do_task_collate(test_path + "/*.test", task.regex(r"(.*/[ef])[a-z0-9]+\.test"),  
-                                            task.inputs(r"\1.whoopee"),  set([r"\1.output1", r"\1.output2", test_path + "e.output2"]), r"\1.extra")
+                                            task.inputs(r"\1.whoopee"),  set([r"\1.output1", r"\1.output2", test_path + "/e.output2"]), r"\1.extra")
 
         paths = recursive_replace(paths, test_path, "DIR")
         self.assertEqual(paths,
                         [
-                            [
-                                ['DIR/e.whoopee'],                                 # input
+                            (
+                                ('DIR/e.whoopee',),                                 # input
                                 set(['DIR/e.output1', 'DIR/e.output2']),           # output
                                 'DIR/e.extra'                                      # extra
-                            ],                                                     
-                            [                                                      
-                                ['DIR/f.whoopee'],                                 # input 
+                            ),                                                     
+                            (                                                      
+                                ('DIR/f.whoopee',),                                 # input 
                                 set(['DIR/f.output1', 'DIR/f.output2', 'DIR/e.output2']),                # output
                                 'DIR/f.extra'                                      # extra 
-                            ]
-                        ] )
+                            )
+                        ])
 
     def test_tasks(self):
         """
         test if can use tasks to specify dependencies
         """
 
-        paths = self.do_task_collate([task.output_from( "module.func1",       # input params
+        paths = self.do_task_collate([task.output_from(   "module.func1",       # input params
                                                           "module.func2", 
                                                           "module.func3", 
                                                           "module.func4", 
@@ -1035,32 +1040,10 @@ class Test_collate_param_factory(unittest.TestCase):
                                         [r"\1.output1", r"\1.output2"], r"\1.extra")
         paths = recursive_replace(paths, test_path, "DIR")
         self.assertEqual(paths,
-                        [
-                            [
-                                ["DIR/e0.test", "DIR/e1.test", "DIR/e2.test"],  # input  
-                                ["DIR/e.output1", "DIR/e.output2"],             # output 
-                                "DIR/e.extra"                                   # extra  
-                            ], 
-                            [
-                                ["DIR/f0.test", "DIR/f1.test", "DIR/f2.test"],  # input  
-                                ["DIR/f.output1", "DIR/f.output2"],             # output 
-                                "DIR/f.extra"                                   # extra  
-                            ],
-                            [
-                                [                                               # input    
-                                    [                                           # input    
-                                        "output4.test", "output.ignored"        # input    
-                                    ],                                          # input    
-                                    "output1.test",                             # input    
-                                    "output2.test",                             # input    
-                                    "output3.test",                             # input    
-                                    [2, "output5.test"]                         # input    
-                                ],                                              # input   
-                                [ "o.output1", "o.output2" ],                   # output  
-                                "o.extra"                                       # extra   
-                            ]
-
-                        ])
+                        [(('DIR/e0.test', 'DIR/e1.test', 'DIR/e2.test'), ['DIR/e.output1', 'DIR/e.output2'], 'DIR/e.extra'), 
+                         (('DIR/f0.test', 'DIR/f1.test', 'DIR/f2.test'), ['DIR/f.output1', 'DIR/f.output2'], 'DIR/f.extra'), 
+                         ((['output4.test', 'output.ignored'], 'output1.test', 'output2.test', 'output3.test', 
+                             (2, 'output5.test')), ['o.output1', 'o.output2'], 'o.extra')])
         
         paths = self.do_task_collate([task.output_from( "module.func1",       # input params
                                                           "module.func2", 
@@ -1074,49 +1057,48 @@ class Test_collate_param_factory(unittest.TestCase):
         paths = recursive_replace(paths, test_path, "DIR")
         self.assertEqual(paths,
                         [
-                            [
-                                ["DIR/e.whoopee"],                              # input  
+                            (
+                                ("DIR/e.whoopee",),                              # input  
                                 ["DIR/e.output1", "DIR/e.output2"],             # output 
                                 "DIR/e.extra"                                   # extra  
-                            ], 
-                            [
-                                ["DIR/f.whoopee"],                              # input  
+                            ), 
+                            (
+                                ("DIR/f.whoopee",),                              # input  
                                 ["DIR/f.output1", "DIR/f.output2"],             # output 
                                 "DIR/f.extra"                                   # extra  
-                            ],
-                            [
-                                ["o.whoopee"],                                  # input  
+                            ),
+                            (
+                                ("o.whoopee",),                                  # input  
                                 ["o.output1", "o.output2"],                     # output 
                                 "o.extra"                                       # extra  
-                            ]
+                            )
                         ] )
-            
         
         
         # single job output consisting of a single file
         paths = self.do_task_collate(task.output_from("module.func2"), task.regex(r"(.*)\..*"),  r"\1.output")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
         #print dumps(paths, indent = 4)
-        self.assertEqual(paths, [[["output.ignored"], "output.output"]])
+        self.assertEqual(paths, [(('output.ignored',), 'output.output')])
 
 
         # Same output if task specified as part of a list of tasks
         paths = self.do_task_collate([task.output_from("module.func2")], task.regex(r"(.*)\..*"),  "output")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, [[["output.ignored"], "output"]])
+        self.assertEqual(paths, [(('output.ignored',), 'output')])
 
         # 
         # single job output consisting of a list
         #
         paths = self.do_task_collate(task.output_from("module.func4"), task.regex(r"(.*)\..*"),  "output")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, [[[[ 2, "output5.test" ] ], "output"]])
+        self.assertEqual(paths, [(((2, 'output5.test'),), 'output')])
 
         
         # Same output if task specified as part of a list of tasks
         paths = self.do_task_collate([task.output_from("module.func4")], task.regex(r"(.*)\..*"),  "output")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, [[[[ 2, "output5.test" ] ], "output"]] )
+        self.assertEqual(paths, [(((2, 'output5.test'),), 'output')] )
 
 
 class Test_files_param_factory(unittest.TestCase):
@@ -1167,8 +1149,9 @@ class Test_files_param_factory(unittest.TestCase):
         # 
         paths = self.files(test_path + "/*", "a.test", "b.test")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, [
-                                    [
+        self.assertEqual(paths, 
+                                [
+                                    (
                                         [
                                             "DIR/f0.output",
                                             "DIR/f0.test",
@@ -1179,15 +1162,16 @@ class Test_files_param_factory(unittest.TestCase):
                                         ],
                                         "a.test",
                                         "b.test"
-                                    ]
+                                    )
                                 ])
         # 
         # Replacement of globs in first parameter in-place
         # 
         paths = self.files([test_path + "/*", "robbie.test"], "a.test", "b.test")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, [
-                                    [
+        self.assertEqual(paths, 
+                            [
+                                    (
                                         [
                                             "DIR/f0.output",
                                             "DIR/f0.test",
@@ -1199,15 +1183,16 @@ class Test_files_param_factory(unittest.TestCase):
                                         ],
                                         "a.test",
                                         "b.test"
-                                    ]
+                                    )
                                 ])
         # 
         # No Replacement of globs in other parameter of multi-job task
         # 
         paths = self.files([[[test_path + "/*", "robbie.test"], "a.test", "b.test"], ["a.test", ["b.test", 2], "a.*"]])
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, [
-                                    [
+        self.assertEqual(paths, 
+                                [
+                                    (
                                         [
                                             "DIR/f0.output",
                                             "DIR/f0.test",
@@ -1219,9 +1204,10 @@ class Test_files_param_factory(unittest.TestCase):
                                         ],
                                         "a.test",
                                         "b.test"
-                                    ],
-                                    ["a.test", ["b.test", 2], "a.*"]
+                                    ),
+                                    ("a.test", ["b.test", 2], "a.*")
                                 ])
+        
 
     def test_filelist(self):
         """
@@ -1262,10 +1248,10 @@ class Test_files_param_factory(unittest.TestCase):
                                                "module.func3", 
                                                "module.func4", 
                                                "module.func5"), "rob.test", "b.test")
-        self.assertEqual(paths, [(['output1.test', 'output2.test', 'output3.test', ['output4.test', 'output.ignored'], 5, 
+        self.assertEqual(paths, [([5, ['output4.test', 'output.ignored'], 'output1.test', 'output2.test', 'output3.test', 
                                    'output.ignored', (2, 'output5.test')], 
-                                  'rob.test', 
-                                  'b.test')])
+                                    'rob.test', 
+                                    'b.test')])
 
         #
         #   nested in place substitution of tasks
@@ -1276,11 +1262,8 @@ class Test_files_param_factory(unittest.TestCase):
                                                "module.func4", 
                                                "module.func5"), 
                             "robbie.test"], "a.test", "b.test")
-        self.assertEqual(paths, [(
-                                    ['output1.test', 'output2.test', 'output3.test', ['output4.test', 'output.ignored'], 5,     # input
-                                     'output.ignored', (2, 'output5.test'), 'robbie.test'],                                     # input
-                                    'a.test',                                                                                   # output
-                                    'b.test')])                                                                                  # extra)
+        self.assertEqual(paths, 
+                                    [([5, ['output4.test', 'output.ignored'], 'output1.test', 'output2.test', 'output3.test', 'output.ignored', (2, 'output5.test'), 'robbie.test'], 'a.test', 'b.test')] )
 
         # single job output consisting of a single file
         paths = self.files(task.output_from("module.func2"), "output", "extra")

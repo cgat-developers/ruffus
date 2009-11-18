@@ -52,8 +52,8 @@ parser.add_option("-w", "--working_dir", dest="working_dir",
 
 
 parser.add_option("-v", "--verbose", dest = "verbose",
-                  action="store_true", default=False,
-                  help="Do not echo to shell but only print to log.")
+                  action="count", default=0,
+                  help="Print more verbose messages for each additional verbose level.")
 parser.add_option("-D", "--dependency", dest="dependency_file",
                   metavar="FILE", 
                   type="string",

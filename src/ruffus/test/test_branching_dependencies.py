@@ -203,9 +203,9 @@ def task1(infiles, outfiles, *extra_params):
 #
 #    task2
 #
-@files_re(tempdir + '*.1', '(.*).1', r'\1.1', r'\1.2')
-@follows(task1)
 @posttask(lambda: open(tempdir + "task.done", "a").write("Task 2 Done\n"))
+@follows(task1)
+@transform(tempdir + "*.1", suffix(".1"), ".2")
 def task2(infiles, outfiles, *extra_params):
     """
     Second task
@@ -219,8 +219,7 @@ def task2(infiles, outfiles, *extra_params):
 #
 #    task3
 #
-@files_re(tempdir + '*.1', '(.*).1', [r'\1.2', tempdir + "a.1"], r'\1.3')
-@follows(task2)
+@transform(task2, regex('(.*).2'), inputs([r"\1.2", tempdir + "a.1"]), r'\1.3')
 @posttask(lambda: open(tempdir + "task.done", "a").write("Task 3 Done\n"))
 def task3(infiles, outfiles, *extra_params):
     """
@@ -235,7 +234,7 @@ def task3(infiles, outfiles, *extra_params):
 #
 #    task4
 #
-@files_re(tempdir + '*.1', '(.*).1', r'\1.1', r'\1.4')
+@transform(tempdir + "*.1", suffix(".1"), ".4")
 @follows(task1)
 @posttask(lambda: open(tempdir + "task.done", "a").write("Task 4 Done\n"))
 def task4(infiles, outfiles, *extra_params):
@@ -265,7 +264,7 @@ def task5(infiles, outfiles, *extra_params):
 #    task6
 #
 #@files([[[tempdir + d for d in 'a.3', 'b.3', 'c.3', 'a.4', 'b.4', 'c.4', 'a.5'], tempdir + 'final.6']])
-@files_re(tempdir + '*.*', '(.*)/(.*\.[345]$)', combine(r'\1/\2'), r'\1/final.6')
+@merge([task3, task4, task5], tempdir + "final.6")
 @follows(task3, task4, task5, )
 @posttask(lambda: open(tempdir + "task.done", "a").write("Task 6 Done\n"))
 def task6(infiles, outfiles, *extra_params):
@@ -322,7 +321,7 @@ def check_final_output_correct():
 """        ["DIR/a.1"] -> ["DIR/a.2"]
         ["DIR/a.1"] -> ["DIR/a.4"]
         ["DIR/a.2", "DIR/a.1"] -> ["DIR/a.3"]
-        ["DIR/a.3", "DIR/a.4", "DIR/a.5", "DIR/b.3", "DIR/b.4", "DIR/c.3", "DIR/c.4"] -> ["DIR/final.6"]
+        ["DIR/a.3", "DIR/b.3", "DIR/c.3", "DIR/a.4", "DIR/b.4", "DIR/c.4", "DIR/a.5"] -> ["DIR/final.6"]
         ["DIR/b.1"] -> ["DIR/b.2"]
         ["DIR/b.1"] -> ["DIR/b.4"]
         ["DIR/b.2", "DIR/a.1"] -> ["DIR/b.3"]

@@ -51,8 +51,8 @@ parser.add_option("-j", "--jobs", dest="jobs",
                   type="int",
                   help="Specifies  the number of jobs (commands) to run simultaneously.")
 parser.add_option("-v", "--verbose", dest = "verbose",
-                  action="store_true", default=False,
-                  help="Do not echo to shell but only print to log.")
+                  action="count", default=0,
+                  help="Print more verbose messages for each additional verbose level.")
 parser.add_option("-d", "--dependency", dest="dependency_file",
                   default="simple.svg",
                   metavar="FILE", 
