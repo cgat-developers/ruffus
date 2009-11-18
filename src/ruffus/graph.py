@@ -223,7 +223,7 @@ class node (object):
     #   signal
     # 
     #_____________________________________________________________________________________
-    def signal (self):
+    def signal (self, extra_data_for_signal = None):
         """
         Signals whether depth first search ends without this node
         """
@@ -287,7 +287,8 @@ class topological_sort_visitor (object):
 
     #_____________________________________________________________________________________
     def __init__ (self, forced_dfs_nodes, 
-                    node_termination = END_ON_SIGNAL):
+                    node_termination = END_ON_SIGNAL,
+                    extra_data_for_signal = None):
         """
         list of saved results
         """
@@ -303,6 +304,8 @@ class topological_sort_visitor (object):
         self._examined_edges           = list()
         # keep order for topological sorted results
         self._finished_nodes           = list()
+        
+        self._extra_data_for_signal    = extra_data_for_signal
         
 
     def combine_with (self, other):
@@ -507,7 +510,7 @@ class topological_sort_visitor (object):
         #   Note that _forced_dfs_nodes is ignored 
         #
         if self._node_termination == self.NOTE_NODE_SIGNAL:
-            if node.signal():
+            if node.signal(self._extra_data_for_signal):
                 self._signalling_nodes.add(node)
             return False
             
@@ -525,7 +528,7 @@ class topological_sort_visitor (object):
         #   
         #   OK. Go by what the node wants then
         # 
-        if node.signal():
+        if node.signal(self._extra_data_for_signal):
             self._signalling_nodes.add(node)
             return True
         return False
@@ -739,7 +742,8 @@ def depth_first_search(starting_nodes, visitor, outedges_func = node.outward):
 def topologically_sorted_nodes( to_leaves, 
                                 force_start_from = [], 
                                 gather_all_non_signalled = True,
-                                test_all_signals = False):
+                                test_all_signals = False,
+                                extra_data_for_signal = None):
     """
     Get all nodes which are children of to_leaves
         in topological sorted order
@@ -770,7 +774,8 @@ def topologically_sorted_nodes( to_leaves,
     # 
     if test_all_signals:
         v = topological_sort_visitor([], 
-                                    topological_sort_visitor.NOTE_NODE_SIGNAL)
+                                    topological_sort_visitor.NOTE_NODE_SIGNAL,
+                                    extra_data_for_signal)
         depth_first_search(to_leaves, v, node.outward)
         signalling_nodes = v._signalling_nodes
     else:
@@ -781,7 +786,8 @@ def topologically_sorted_nodes( to_leaves,
         #   get whole tree, ignoring signalling
         #
         v = topological_sort_visitor([], 
-                                     topological_sort_visitor.IGNORE_NODE_SIGNAL) 
+                                     topological_sort_visitor.IGNORE_NODE_SIGNAL,
+                                    None) 
         depth_first_search(to_leaves, v, node.outward)
 
         #
@@ -820,7 +826,7 @@ def topologically_sorted_nodes( to_leaves,
             if n in nodes_to_include:
                 continue
                 
-            if not n.signal():
+            if not n.signal(extra_data_for_signal):
                 nodes_to_include.add(n)
                 nodes_to_include.update(get_parent_nodes([n]))
             else:
@@ -839,7 +845,8 @@ def topologically_sorted_nodes( to_leaves,
             #   get whole tree, ignoring signalling
             # 
             v = topological_sort_visitor([], 
-                                            topological_sort_visitor.IGNORE_NODE_SIGNAL) 
+                                         topological_sort_visitor.IGNORE_NODE_SIGNAL,
+                                         extra_data_for_signal) 
         else:
             #   
             #   End at each branch without including signalling node
@@ -851,8 +858,9 @@ def topologically_sorted_nodes( to_leaves,
             if len(force_start_from):
                 forced_nodes_and_dependencies = get_parent_nodes(force_start_from)
 
-            v = topological_sort_visitor(forced_nodes_and_dependencies, 
-                                            topological_sort_visitor.END_ON_SIGNAL)
+            v = topological_sort_visitor(   forced_nodes_and_dependencies, 
+                                            topological_sort_visitor.END_ON_SIGNAL,
+                                            extra_data_for_signal)
 
 
         #
