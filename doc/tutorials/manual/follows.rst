@@ -163,8 +163,9 @@ Multiple dependencies
 .. _manual.follows.mkdir:
 
 .. index:: 
-    pair: @follows; mkdir
-    single: mkdir
+    single: @follows; mkdir (Manual)
+    single: mkdir; @follows (Manual)
+
 
 ******************************************************************************
 Making directories automatically with :ref:`mkdir <decorators.mkdir>`

@@ -2014,6 +2014,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                     level 1: logs completed jobs/tasks; 
                     level 2: logs up to date jobs in incomplete tasks
                     level 3: logs reason for running job;
+                    level 4: Shows the tasks Ruffus check for up-to-date/completion to decide which part of the pipeline to execute
                     level 10: logs messages useful only for debug ruffus pipeline code
 
 

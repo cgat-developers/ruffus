@@ -59,8 +59,8 @@ Running some code to show that a stage of the pipeline has finished
                 ""
     
 .. index:: 
-    pair: @posttask (touchfile); Tutorial
-    pair: touchfile (@posttask); Tutorial
+    single: @posttask; touchfile (Tutorial)
+    single: touchfile ; @posttask (Tutorial)
 
 **************************************************************************************
 *Touching* a sentinel file after finishing a pipeline stage
@@ -101,6 +101,13 @@ Finding out more about **Ruffus**
 **************************************************************************************
 
     This wraps up our short tutorial on the **Ruffus**. 
+    
+    Here are a few useful topics you may be interested in:
+    
+        * :ref:`How to summarise disparate input by category <manual.collate>`
+        * :ref:`How to log pipeline progress <manual.logging>`
+        * :ref:`How exceptions are handled <manual.exceptions>`
+
     To find out more about **Ruffus**, you can read the :ref:`manual<manual.introduction>`
     or just start using **Ruffus**.
     

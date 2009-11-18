@@ -50,22 +50,6 @@ div.related a {
     color: #c0c0FF;
 }
 
-div.sphinxsidebar {
-}
-
-div.sphinxsidebar h3 {
-    font-family: 'Trebuchet MS', sans-serif;
-    color: #ffffff;
-    font-size: 1.4em;
-    font-weight: normal;
-    margin: 0;
-    padding: 0;
-}
-
-div.sphinxsidebar h3 a {
-    color: #ffffff;
-}
-
 div.sphinxsidebar h4 {
     font-family: 'Trebuchet MS', sans-serif;
     color: #ffffff;
@@ -266,3 +250,25 @@ tt {
     padding: 0 1px 0 1px;
     font-size: 0.95em;
 }
+
+
+div.sphinxsidebar h3 {
+    font-family: 'Trebuchet MS', sans-serif;
+    color: #ffffff;
+    font-size: 1.4em;
+    font-weight: normal;
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
+}
+
+/*div.sphinxsidebar h3 a {
+    color: #ffffff;
+}
+  */
+div.sphinxsidebar h3 a{
+    color: #98dbcc;
+    margin: 0px 0px 0px 0px;
+    padding: 0px 0px 0px 0px;
+}
+
+

@@ -173,6 +173,38 @@ Tasks in the *inputs* parameters: Implicit dependencies
             
     This is both a great convenience and makes the flow of data through a pipeline much clearer.
     
+.. _manual.output_from:
+.. index:: 
+    pair: output_from; Manual
+
+==========================================================
+Refering to tasks by name in the *inputs* parameters
+==========================================================
+
+    :ref:`Chapter 1 <manual.follows.out_of_order>` explains that task functions can be 
+    defined in any order so long as undefined tasks are referred to by their (fully qualified if
+    necessary) function name string.
+    
+    You can similarly refer to tasks in the *inputs* parameter by name. To tell **ruffus** that
+    strings refer to task function names rather than file names, you need to
+    wrap the relevant parameter or (nested) parts of the parameter with the indicator object
+    :ref:`output_from("task_name") <decorators.output_from>`:
+    
+        ::
+        
+            @split(["a.file", ("b.file", output_from("task1", 76, "task2"))], "*.split")
+            def task2(input, output):
+                pass
+                        
+
+    is equivalent to:
+
+        ::
+        
+            @split(["a.file", ("b.file", (task1, 76, task2))], "*.split")
+            def task2(input, output):
+                pass
+    
 
 
 
@@ -200,7 +232,7 @@ Checking if files are up to date
     #. Finally, if no *outputs* file names are supplied, the job will always run.
     
     
-    The `example <manual.files.example>`_ in the next chapter shows how this works in practice.
+    The :ref:`example <manual.files.example>` in the next chapter shows how this works in practice.
 
 
 .. index:: 

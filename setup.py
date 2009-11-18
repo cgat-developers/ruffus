@@ -47,10 +47,10 @@ Overview
 Documentation
 ***************************************
     
-    Ruffus documentation can be found `here <http://ruffus.googlecode.com/svn/trunk/doc/html/index.html>`_ ,
-    with an `introduction and installation notes <http://ruffus.googlecode.com/svn/trunk/doc/html/Introduction.html>`_ ,
-    a `short 5 minute tutorial <http://ruffus.googlecode.com/svn/trunk/doc/html/simple_tutorial.html>`_ and
-    an `in-depth tutorial <http://ruffus.googlecode.com/svn/trunk/doc/html/Tutorial.html>`_ .
+    Ruffus documentation can be found `here <http://wwwfgu.anat.ox.ac.uk/~lg/oss/ruffus/index.html>`_ ,
+    with an `download notes <http://wwwfgu.anat.ox.ac.uk/~lg/oss/ruffus/installation.html>`_ ,
+    a `short tutorial <http://wwwfgu.anat.ox.ac.uk/~lg/oss/ruffus/tutorials/simple_tutorial/simple_tutorial.html>`_ and
+    an `in-depth tutorial <http://wwwfgu.anat.ox.ac.uk/~lg/oss/ruffus/tutorials/manual/manual_introduction.html>`_ .
 
 
 ***************************************

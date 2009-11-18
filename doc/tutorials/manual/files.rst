@@ -140,6 +140,7 @@ Running the same code on different parameters in parallel
     pair: @files; check if up to date
     
 .. _manual.files.is_uptodate:
+.. _manual.files.example:
 
 =======================================
 Checking if jobs are up to date

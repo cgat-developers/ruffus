@@ -1,5 +1,6 @@
 .. _cheat_sheet:
 
+
 #####################
 Cheat Sheet
 #####################
@@ -14,29 +15,20 @@ for running computational pipelines.
 1. Annotate functions with **Ruffus** decorators
 ================================================
 
-
 ******
 Basic 
 ******
 .. csv-table::
-   :header: "Decorator", "Examples"
-   :widths: 400, 600,1
+   :header: "Decorator", "Syntax"
+   :widths: 100, 600,1
    
-   "**@follows**
-
-   - Indicates task dependency (:ref:`see Manual <manual.follows>`)
-   - optional :ref:`mkdir <decorators.follows.directory_name>` prerequisite (:ref:`see Manual <manual.follows.mkdir>`)
-   
+   "**@follows**  (:ref:`Manual <manual.follows>`)   
    ", "
    | :ref:`@follows <decorators.follows>` ( ``task1``, ``'task2'`` ))
    | :ref:`@follows <decorators.follows>` ( ``task1``,  :ref:`mkdir <decorators.follows.directory_name>`\ ( ``'my/directory/for/results'`` ))
    
    ", ""
    "**@files** (:ref:`Manual <manual.files>`)
-   
-   - I/O parameters
-   - skips up-to-date jobs
-   
    ", "
    | :ref:`@files <decorators.files>`\ ( ``parameter_list`` )
    | :ref:`@files <decorators.files>`\ ( ``parameter_generating_function`` )
@@ -48,38 +40,24 @@ Basic
 Core
 ******
 .. csv-table::
-   :header: "Decorator", "Examples"
-   :widths: 400, 600,1
+   :header: "Decorator", "Syntax"
+   :widths: 100, 600,1
 
    "**@split** (:ref:`Manual <manual.split>`)   
-   
-   - Splits a single input into multiple output
-   - Globs in ``output`` can specify an indeterminate number of files.
-   
    ", "
    :ref:`@split <decorators.split>` ( ``tasks_or_file_names``, ``output_files``, [``extra_parameters``,...] )
    ", ""
    "**@transform** (:ref:`Manual <manual.transform>`)   
-    
-   - Applies the task function to transform input data to output.
-    
    ", "
    | :ref:`@transform <decorators.transform>` ( ``tasks_or_file_names``, :ref:`suffix <decorators.transform.suffix_string>`\ *(*\ ``suffix_string``\ *)*\ , ``output_pattern``, [``extra_parameters``,...] )
    | :ref:`@transform <decorators.transform>` ( ``tasks_or_file_names``, :ref:`regex <decorators.transform.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , ``output_pattern``, [``extra_parameters``,...] )
    
    ", ""
    "**@merge** (:ref:`Manual <manual.merge>`)   
-
-   - Merges multiple input files into a single output.
-   
    ", "
    :ref:`@merge <decorators.merge>` (``tasks_or_file_names``, ``output``, [``extra_parameters``,...] )
    ", ""
-   "**@posttask**
-
-   - Calls function after task completes (:ref:`see Manual <posttask>`)
-   - Optional :ref:`touch_file <decorators.posttask.file_name>` indicator (:ref:`see Manual <manual.posttask.touch_file>`)
-
+   "**@posttask** (:ref:`Manual <manual.posttask>`)   
    ", "
    | :ref:`@posttask <decorators.posttask>` ( ``signal_task_completion_function`` )
    | :ref:`@posttask <decorators.posttask>` (:ref:`touch_file <decorators.touch_file>`\ ( ``'task1.completed'`` ))
@@ -91,8 +69,9 @@ See :ref:`Decorators <decorators>` for a complete list of decorators
 ************************************************************************************************
 
 
+
 ================================================
-2. Print dependency graph if you necessary
+2. Print dependency graph if necessary
 ================================================
 
 - For a graphical flowchart in ``jpg``, ``svg``, ``dot``, ``png``, ``ps``, ``gif`` formats::
@@ -103,7 +82,7 @@ See :ref:`Decorators <decorators>` for a complete list of decorators
 
 .. comment
     
-        This requires `dot <http://www.graphviz.org/>`_ to be installed
+        This requires the `dot programme <http://www.graphviz.org/>`_ to be installed
 
 - For a text printout of all jobs ::
 
