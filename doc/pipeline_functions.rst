@@ -34,6 +34,8 @@ See :ref:`Decorators <decorators>` for more decorators
 .. _pp_verbose: `pipeline_functions.pipeline_printout.verbose`_
 .. |pp_indent| replace:: `indent`
 .. _pp_indent: `pipeline_functions.pipeline_printout.indent`_
+.. |pp_wrap_width| replace:: `wrap_width`
+.. _pp_wrap_width: `pipeline_functions.pipeline_printout.wrap_width`_
 .. |pp_gnu_make| replace:: `gnu_make_maximal_rebuild_mode`
 .. _pp_gnu_make: `pipeline_functions.pipeline_printout.gnu_make`_
 
@@ -188,7 +190,7 @@ Pipeline functions
 **********************************************************************************************************************************************************************************************************
 *pipeline_printout*
 **********************************************************************************************************************************************************************************************************
-**pipeline_printout** (|pp_output_stream|_, |pp_target_tasks|_, |pp_forcedtorun_tasks|_ = [], |pp_verbose|_ = 1, |pp_indent|_ = 4, |pp_gnu_make|_ = True)
+**pipeline_printout** (|pp_output_stream|_, |pp_target_tasks|_, |pp_forcedtorun_tasks|_ = [], |pp_verbose|_ = 1, |pp_indent|_ = 4, |pp_gnu_make|_ = True, |pp_wrap_width|_ = 100)
 
     **Purpose:**
 
@@ -197,7 +199,7 @@ Pipeline functions
         parameters may be incorrect. For example, the results of a :ref:`@split<manual.split>`
         operation is not predetermined and will only be known after the pipelined function
         splits up the original data. Parameters of all downstream pipelined functions will
-        be changed dependending on this initial operation.
+        be changed depending on this initial operation.
 
     **Example**:
         ::
@@ -238,11 +240,12 @@ Pipeline functions
     
             ::
 
-                    verbose = 0 : nothing
-                    verbose = 1 : print task name
-                    verbose = 2 : print task description if exists
-                    verbose = 3 : print job names and parameters for jobs to be run
-                    verbose = 4 : print job names and parameters for up-to- date jobs
+                verbose = 0 : nothing
+                verbose = 1 : print task name
+                verbose = 2 : print task description if exists
+                verbose = 3 : print job names for jobs to be run
+                verbose = 4 : print list of up-to-date tasks and job names for jobs to be run
+                verbose = 5 : print job names for all jobs whether up-to-date or not
 
 
 .. _pipeline_functions.pipeline_printout.indent:
@@ -260,6 +263,13 @@ Pipeline functions
 
         See explanation in :ref:`pipeline_run <pipeline_functions.pipeline_run.gnu_make>`.
         
+.. _pipeline_functions.pipeline_printout.wrap_width:
+
+    * *wrap_width*
+        Optional parameter governing the length of each line before it starts wrapping
+        around.
+
+
 
         
 .. _pipeline_functions.pipeline_printout_graph:

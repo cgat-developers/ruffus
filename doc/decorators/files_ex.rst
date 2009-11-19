@@ -5,18 +5,6 @@
 See :ref:`Decorators <decorators>` for more decorators
 
 
-.. |input| replace:: `input`
-.. _input: `decorators.files.input`_
-.. |input1| replace:: `input1`
-.. _input1: `decorators.files.input1`_
-.. |output| replace:: `output`
-.. _output: `decorators.files.output`_
-.. |output1| replace:: `output1`
-.. _output1: `decorators.files.output1`_
-.. |extra_parameters| replace:: `extra_parameters`
-.. _extra_parameters: `decorators.files.extra_parameters`_
-.. |extra_parameters1| replace:: `extra_parameters1`
-.. _extra_parameters1: `decorators.files.extra_parameters1`_
 .. |custom_function| replace:: `custom_function`
 .. _custom_function: `decorators.files.custom_function`_
 
