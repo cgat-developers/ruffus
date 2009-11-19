@@ -17,8 +17,6 @@ See :ref:`Decorators <decorators>` for more decorators
 .. _extra_parameters: `decorators.files.extra_parameters`_
 .. |extra_parameters1| replace:: `extra_parameters1`
 .. _extra_parameters1: `decorators.files.extra_parameters1`_
-.. |custom_function| replace:: `custom_function`
-.. _custom_function: `decorators.files.custom_function`_
 
 
 ########################

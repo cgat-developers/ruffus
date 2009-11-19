@@ -7,20 +7,12 @@ What is completed on this list?
 ###################################
 
 .. _todo-dependencies:
-
-***************************************************************************
-*Linking the output from one task as the input to the next automatically*
-***************************************************************************
-
-    See :ref:`split <decorators.split>`, :ref:`transform <decorators.transform>` or :ref:`merge <decorators.merge>`
-
-
 .. _todo-combining:
 
-***************************
-*Combining files*
-***************************
-    See :ref:`merge <decorators.merge>`
+    * Linking the output from one task as the input to the next automatically*
+        See :ref:`split <decorators.split>`, :ref:`transform <decorators.transform>` or :ref:`merge <decorators.merge>`
+    * Combining files*
+        See :ref:`merge <decorators.merge>`
 
     
 
