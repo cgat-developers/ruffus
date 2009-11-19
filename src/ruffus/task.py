@@ -90,6 +90,7 @@ from multiprocessing import Pool
 import traceback
 import types
 from itertools import imap 
+import textwrap
 
 
 if __name__ == '__main__':
@@ -692,7 +693,7 @@ class _task (node):
     #   printout
 
     #_________________________________________________________________________________________
-    def printout (self, stream, force_rerun, verbose=1, indent = 4):
+    def printout (self, force_rerun, verbose=1, indent = 4):
         """
         Print out all jobs for this task
         
@@ -701,69 +702,87 @@ class _task (node):
                           3 : print job names for jobs to be run
                           4 : print job names for up-to- date jobs
         """
+        
+        def get_job_names (param, indent_str):
+            job_names = (indent_str + self.job_descriptor(param)).split("-> ")
+            if job_names[1]:
+                job_names[1] = indent_str + "      ->" + job_names[1]
+            return job_names
+
+            #   
+            #   needs update func = None: always needs update
+            #
+            if not self.needs_update_func:
+                messages.append(indent_str + job_name + "")
+            
+            
         if not verbose:
-            return
+            return []
             
         indent_str = ' ' * indent
         
+        messages = []
+        
         task_name = self._name.replace("__main__.", "")
-        stream.write("Task = " + task_name + ("    >>Forced to rerun<<\n" if force_rerun else "\n"))
+        messages.append("Task = " + task_name + ("    >>Forced to rerun<<" if force_rerun else ""))
 
         if verbose ==1:
-            return
+            return messages
             
         if verbose >= 2 and len(self._description):
-            stream.write(indent_str + '"' + self._description + '"\n')
+            messages.append(indent_str + '"' + self._description + '"')
 
         indent_str += " " * 3
 
         if verbose <= 2 :
-            return
+            return messages
 
         #
         #   No parameters: just call task function 
         #
         if self.param_generator_func == None:
             if verbose <= 3:
-                return
+                return messages
                 
             #   
             #   needs update func = None: always needs update
             #
             if not self.needs_update_func:
-                stream.write(indent_str + "Task needs update: No function to check if up-to-date or not\n")
-                return
+                messages.append(indent_str + "Task needs update: No function to check if up-to-date or not")
+                return messages
                 
             needs_update, msg = self.needs_update_func ()
             if needs_update:
-                stream.write(indent_str + "Task needs update: %s\n" % msg)
+                messages.append(indent_str + "Task needs update: %s" % msg)
             else:
-                stream.write(indent_str + "Task up-to-date\n")
+                messages.append(indent_str + "Task up-to-date")
                 
         else:
             #
-            #   return description per job
+            #   return messages description per job
             # 
             for param in self.param_generator_func():
                 job_name = self.job_descriptor(param)
+                job_name = job_name.replace("->", indent_str + " " * 7 +  "\n->")
                     
                 #   
                 #   needs update func = None: always needs update
                 #
                 if not self.needs_update_func:
-                    stream.write(indent_str + job_name + "\n")
-                    stream.write(indent_str + "Jobs needs update: No function to check if up-to-date or not\n")
+                    messages.extend(get_job_names (param, indent_str))
+                    messages.append(indent_str + "  Jobs needs update: No function to check if up-to-date or not")
                     continue
 
                 needs_update, msg = self.needs_update_func (*param)
                 if needs_update:
-                    stream.write(indent_str + job_name + "\n")
-                    stream.write(indent_str + "Job needs update: %s\n" % msg)
+                    messages.extend(get_job_names (param, indent_str))
+                    messages.append(indent_str + "  Job needs update: %s" % msg)
                 else:
                     if verbose > 4:
-                        stream.write(indent_str + job_name + "\n")
-                        stream.write(indent_str + "Job up-to-date")
-        stream.write("\n")
+                        messages.extend(get_job_names (param, indent_str))
+                        messages.append(indent_str + "  Job up-to-date")
+        messages.append("")
+        return messages
 
     
 
@@ -846,6 +865,9 @@ class _task (node):
             For "single_job_single_output" i.e. @merge and @files with single jobs,
                 returns the output of a single job (i.e. can be a string)
         """
+        #
+        #   This looks like the wrong place to flatten 
+        #
         flattened = False
         if self.output_filenames == None:
             
@@ -1671,7 +1693,7 @@ def pipeline_printout_graph (stream,
 
 #_________________________________________________________________________________________
 def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbose=0, indent = 4,
-                                    gnu_make_maximal_rebuild_mode  = True):
+                                    gnu_make_maximal_rebuild_mode  = True, wrap_width = 100):
     """
     Printouts the parts of the pipeline which will be run
 
@@ -1681,10 +1703,12 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
     
     ::
     
+        verbose = 0 : nothing
         verbose = 1 : print task name
         verbose = 2 : print task description if exists
         verbose = 3 : print job names for jobs to be run
-        verbose = 4 : print job names for up-to- date jobs
+        verbose = 4 : print list of up-to-date tasks and job names for jobs to be run
+        verbose = 5 : print job names for all jobs whether up-to-date or not
 
     :param output_stream: where to print to
     :type output_stream: file-like object with ``write()`` function
@@ -1726,6 +1750,8 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
                                             (dag_violating_tasks))
         raise e
 
+    wrap_indent = " " * (indent + 11)
+        
     # get all nodes    
     if verbose >= 4:
         (all_tasks, ignore_param1, ignore_param2, 
@@ -1738,11 +1764,15 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
             for t in all_tasks:
                 if t in pipelined_tasks_to_run:
                     continue
-                t.printout(output_stream, t in forcedtorun_tasks, verbose, indent)
+                messages = t.printout(t in forcedtorun_tasks, verbose, indent)
+                for m in messages:
+                    output_stream.write(textwrap.fill(m, subsequent_indent = wrap_indent, width = wrap_width) + "\n")
 
     output_stream.write("\n" + "_" * 40 + "\nTasks which will be run:\n\n")
     for t in topological_sorted:
-        t.printout(output_stream, t in forcedtorun_tasks, verbose, indent)
+        messages = t.printout(t in forcedtorun_tasks, verbose, indent)
+        for m in messages:
+            output_stream.write(textwrap.fill(m, subsequent_indent = wrap_indent, width = wrap_width) + "\n")
 
     if verbose:
         output_stream.write("_" * 40 + "\n")
