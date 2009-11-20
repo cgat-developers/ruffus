@@ -184,10 +184,10 @@ l3 = []
 l4 = [[1, (2,"output5.test")]]
 t1 = task._task("module", "func1"); t1.param_generator_func = list_generator_factory(l1)
 t2 = task._task("module", "func2"); t2.param_generator_func = list_generator_factory(l2)
-t2.single_job_single_output = True
+t2._single_job_single_output = t2.single_job_single_output
 t3 = task._task("module", "func3"); t3.param_generator_func = list_generator_factory(l3)
 t4 = task._task("module", "func4"); t4.param_generator_func = list_generator_factory(l4)
-t4.single_job_single_output = True
+t4._single_job_single_output = t4.single_job_single_output
 t5 = task._task("module", "func5"); t5.param_generator_func = None
 
 class Test_files_re_param_factory(unittest.TestCase):
@@ -719,6 +719,17 @@ class Test_transform_param_factory(unittest.TestCase):
         return fake_task.param_generator_func
 
 
+    def test_simple(self):
+        """
+        test simple_form
+        """
+        # 
+        # simple 1 input, 1 output
+        # 
+        paths = self.do_task_transform("a.test", task.regex("a(.+)"),  r"b\1")
+            
+        self.assertEqual(paths, 
+                        [('a.test', 'b.test')] )
     def do_task_transform (self, *old_args):
         """
         This extra function is to simulate the forwarding from the decorator to
@@ -1100,6 +1111,11 @@ class Test_collate_param_factory(unittest.TestCase):
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
         self.assertEqual(paths, [(((2, 'output5.test'),), 'output')] )
 
+#=========================================================================================
+
+#   files_param_factory
+
+#=========================================================================================
 
 class Test_files_param_factory(unittest.TestCase):
     def setUp(self):
@@ -1140,6 +1156,16 @@ class Test_files_param_factory(unittest.TestCase):
         """
         return list(self.get_param_iterator (*old_args)())
 
+    def test_simple(self):
+        """
+        test simple_form
+        """
+        # 
+        # simple 1 input, 1 output
+        # 
+        paths = self.files("a.test", "b.test")
+        self.assertEqual(paths, 
+                        [('a.test', 'b.test')] )
     def test_glob(self):
         """
         test globbed form

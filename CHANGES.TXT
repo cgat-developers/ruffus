@@ -1,3 +1,8 @@
+= v. 2.0.3=
+    _18/November/2009_
+    ==Bug Fix:==
+        * @transform accepts single file names. Thanks Chris N.
+
 = v. 2.0.2=
     _18/November/2009_
     ==Better Logging:==
