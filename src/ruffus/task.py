@@ -546,6 +546,10 @@ class _task (node):
     action_task_files       = 8
     action_mkdir            = 9
     action_parallel         = 10
+    
+    multiple_jobs_outputs    = 0
+    single_job_single_output = 1
+    job_single_matches_parent= 2
 
     #_________________________________________________________________________________________
 
@@ -618,7 +622,7 @@ class _task (node):
         
         # jobs which produce a single output. 
         # special handling for task.get_output_files for dependency chaining
-        self.single_job_single_output = False
+        self._single_job_single_output = self.multiple_jobs_outputs
 
         # function which is decorated and does the actual work
         self.user_defined_work_func = None
@@ -716,6 +720,7 @@ class _task (node):
                 messages.append(indent_str + job_name + "")
             
             
+        
         if not verbose:
             return []
             
@@ -725,18 +730,30 @@ class _task (node):
         
         task_name = self._name.replace("__main__.", "")
         messages.append("Task = " + task_name + ("    >>Forced to rerun<<" if force_rerun else ""))
-
         if verbose ==1:
             return messages
             
         if verbose >= 2 and len(self._description):
             messages.append(indent_str + '"' + self._description + '"')
 
-        indent_str += " " * 3
+        #
+        #   single job state
+        # 
+        if verbose > 5:
+            if self._single_job_single_output == self.single_job_single_output:
+                messages.append("    Single job single output")
+            elif self._single_job_single_output == self.multiple_jobs_outputs:
+                messages.append("    Multiple jobs Multiple outputs")
+            else:
+                messages.append("    Single jobs status depends on %s" % self._single_job_single_output._name)
+
 
         if verbose <= 2 :
             return messages
 
+        # increase indent for jobs up to date status
+        indent_str += " " * 3
+        
         #
         #   No parameters: just call task function 
         #
@@ -756,7 +773,7 @@ class _task (node):
                 messages.append(indent_str + "Task needs update: %s" % msg)
             else:
                 messages.append(indent_str + "Task up-to-date")
-                
+
         else:
             #
             #   return messages description per job
@@ -876,18 +893,19 @@ class _task (node):
             # skip tasks which don't have parameters
             if self.param_generator_func != None:
 
+                cnt_jobs = 0
                 for param in self.param_generator_func():
     
+                    cnt_jobs += 1
                     # skip tasks which don't have output parameters
                     if len(param) >= 2:
                         self.output_filenames.append(param[1])
 
-                # for merging into a single file, return that as the output
-                if self.single_job_single_output:
-                    if len(self.output_filenames) != 1:
-                         raise error_task_get_output(this, 
-                                "Task which is supposed to produce a single output "
-                                "somehow has more than one job.")
+                if self._single_job_single_output == self.single_job_single_output:
+                    if cnt_jobs > 1:
+                        raise error_task_get_output(this, 
+                               "Task which is supposed to produce a single output "
+                               "somehow has more than one job.")
 
                 # the output of split should be treated as multiple jobs
                 if self.indeterminate_output:
@@ -905,7 +923,7 @@ class _task (node):
         else:
             # special handling for jobs which have a single task, 
             if (do_not_expand_single_job_tasks and 
-                self.single_job_single_output and
+                self._single_job_single_output and
                 len(self.output_filenames) ):
                 return self.output_filenames[0]
 
@@ -1076,6 +1094,19 @@ class _task (node):
             input_pattern = None
             output_pattern_extras = orig_args[2:]
             
+        #
+        #   allows transform to take a single file or task
+        #             
+        if isinstance(input_param, str):
+            self._single_job_single_output = self.single_job_single_output
+            input_param = [input_param]
+            
+        #
+        #   whether transform generates a list of jobs or not will depend on the parent task
+        # 
+        elif isinstance(input_param, _task):
+            self._single_job_single_output = input_param
+
         self.param_generator_func = transform_param_factory (   tasks, globs, input_param,
                                                                 False, # flatten input
                                                                 matching_regex, 
@@ -1165,7 +1196,7 @@ class _task (node):
                                                            *extra_params)
 
 
-        self.single_job_single_output = True
+        self._single_job_single_output = self.multiple_jobs_outputs
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
         self.job_descriptor       = io_files_job_descriptor
@@ -1201,7 +1232,7 @@ class _task (node):
             if len(orig_args) > 1:
                 # single jobs
                 params = copy.copy([orig_args])
-                self.single_job_single_output = True
+                self._single_job_single_output = self.single_job_single_output
             else:
                 # multiple jobs with input/output parameters etc.
                 params = copy.copy(orig_args[0])
@@ -1247,12 +1278,12 @@ class _task (node):
 
                 # single jobs
                 params = copy.copy([orig_args])
-                self.single_job_single_output = True
+                self._single_job_single_output = self.single_job_single_output
             else:
 
                 # multiple jobs with input/output parameters etc.
                 params = copy.copy(orig_args[0])
-                self.single_job_single_output = False
+                self._single_job_single_output = self.multiple_jobs_outputs
 
             check_files_io_parameters (self, params, error_task_files)
             
@@ -1581,6 +1612,13 @@ def link_task_names_to_functions ():
                                         "\n@task_follows('%s')\ndef %s..." %
                                 (n._module_name, display_task_name, dependent_display_task_name))
     
+        
+        # 
+        # some jobs single state status mirrors parent's state
+        #   and parent task not known until know
+        # 
+        if isinstance(n._single_job_single_output, _task):
+            n._single_job_single_output = n._single_job_single_output._single_job_single_output
 
 #_________________________________________________________________________________________
 
@@ -1752,7 +1790,9 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
 
     wrap_indent = " " * (indent + 11)
         
-    # get all nodes    
+    # 
+    #   Get updated nodes as all_nodes - nodes_to_run
+    # 
     if verbose >= 4:
         (all_tasks, ignore_param1, ignore_param2, 
          ignore_param3) = topologically_sorted_nodes(target_tasks, True, 
