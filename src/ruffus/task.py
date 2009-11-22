@@ -709,7 +709,7 @@ class _task (node):
         
         def get_job_names (param, indent_str):
             job_names = (indent_str + self.job_descriptor(param)).split("-> ")
-            if job_names[1]:
+            if len(job_names) > 1:
                 job_names[1] = indent_str + "      ->" + job_names[1]
             return job_names
 
