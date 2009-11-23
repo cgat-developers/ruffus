@@ -778,7 +778,9 @@ class _task (node):
             #
             #   return messages description per job
             # 
+            cnt_jobs = 0
             for param in self.param_generator_func():
+                cnt_jobs += 1
                 job_name = self.job_descriptor(param)
                 job_name = job_name.replace("->", indent_str + " " * 7 +  "\n->")
                     
@@ -798,6 +800,10 @@ class _task (node):
                     if verbose > 4:
                         messages.extend(get_job_names (param, indent_str))
                         messages.append(indent_str + "  Job up-to-date")
+            if cnt_jobs == 0:
+                messages.append(indent_str + "!!! No jobs for this task. "
+                                             "Are you sure there is not a error in your "
+                                             "code / regular expression?")
         messages.append("")
         return messages
 
