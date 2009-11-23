@@ -852,7 +852,7 @@ class _task (node):
                         if verbose >= 4:
                             job_name = self.job_descriptor(param)
                             log_at_level (logger, 4, verbose, 
-                                            "    Job needing update = %s" % job_name)
+                                            "    Needing update:\n      %s" % job_name)
                         return False
                 log_at_level (logger, 4, verbose, 
                                 "    All jobs up to date")

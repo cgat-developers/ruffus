@@ -1,3 +1,9 @@
+= v. 2.0.4=
+    _22/November/2009_
+    ==Bug Fix:==
+        * task.get_job_names() dies for jobs with no parameters
+		* JobSignalledBreak was not exported
+
 = v. 2.0.3=
     _18/November/2009_
     ==Bug Fix:==
