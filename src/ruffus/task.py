@@ -159,9 +159,10 @@ black_hole_logger = t_black_hole_logger()
 stderr_logger     = t_stderr_logger()
 
 class t_verbose_logger:
-    def __init__ (self, verbose, logger):
+    def __init__ (self, verbose, logger, runtime_data):
         self.verbose = verbose
         self.logger = logger
+        self.runtime_data = runtime_data
 
 #_________________________________________________________________________________________
 #
@@ -346,13 +347,13 @@ class inputs(object):
 #           main use in error logging
 
 #8888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-def generic_job_descriptor (param):
+def generic_job_descriptor (param, runtime_data):
     if param in ([], None):
         return "Job"
     else:
         return "Job = %s" % ignore_unknown_encoder(param)
 
-def io_files_job_descriptor (param):
+def io_files_job_descriptor (param, runtime_data):
     # input, output
     if len(param) >= 2:
         extra_param = "" if len(param) == 2 else ", " + shorten_filenames_encoder(param[2:])[1:-1]
@@ -365,16 +366,30 @@ def io_files_job_descriptor (param):
         return ("Job = [%s -> ??]" % (shorten_filenames_encoder(param[0])))    
     
     
-def split_job_descriptor_factory (output_files):
-    def io_files_job_descriptor (param):
+def split_job_descriptor_factory (output_files, runtime_data_names):
+    def io_files_job_descriptor (param, runtime_data):
+        
+        # lookup run time data
+        runtime_data_to_files = dict()
+        for n in runtime_data_names:
+            data_name = n.args[0]
+            if data_name in runtime_data:
+                runtime_data_to_files[n] = runtime_data[data_name]
+            else:
+                raise error_missing_runtime_parameter("The inputs of this task depends on " +
+                                                      "the runtime parameter " +
+                                                      "'%s' which is missing " %  data_name)
+        actual_output_files = expand_nested_tasks_or_globs(output_files, runtime_data_to_files)
+        
+        
         # input, output
         extra_param = "" if len(param) == 2 else ", " + shorten_filenames_encoder(param[2:])[1:-1]
         return ("Job = [%s -> %s%s]" % (shorten_filenames_encoder(param[0]),
-                                        shorten_filenames_encoder(output_files),
+                                        shorten_filenames_encoder(actual_output_files),
                                         extra_param))
     return io_files_job_descriptor
 
-def mkdir_job_descriptor (param):
+def mkdir_job_descriptor (param, runtime_data):
     # input, output and parameters
     return "Make directories %s" % (shorten_filenames_encoder(param[0]))
 
@@ -532,21 +547,23 @@ class _task (node):
                     "task_collate",
                     "task_files_func",
                     "task_files",
+                    "task_files_runtime",
                     "task_mkdir",
                     "task_parallel",
                     ]
-    action_unspecified      = 0
-    action_task             = 1
-    action_task_files_re    = 2
-    action_task_split       = 3
-    action_task_merge       = 4
-    action_task_transform   = 5
-    action_task_collate     = 6
-    action_task_files_func  = 7
-    action_task_files       = 8
-    action_mkdir            = 9
-    action_parallel         = 10
-    
+    action_unspecified        =  0
+    action_task               =  1
+    action_task_files_re      =  2
+    action_task_split         =  3
+    action_task_merge         =  4
+    action_task_transform     =  5
+    action_task_collate       =  6
+    action_task_files_func    =  7
+    action_task_files         =  8
+    action_task_files_runtime =  9
+    action_mkdir              = 10
+    action_parallel           = 11
+       
     multiple_jobs_outputs    = 0
     single_job_single_output = 1
     job_single_matches_parent= 2
@@ -697,7 +714,7 @@ class _task (node):
     #   printout
 
     #_________________________________________________________________________________________
-    def printout (self, force_rerun, verbose=1, indent = 4):
+    def printout (self, runtime_data, force_rerun, verbose=1, indent = 4):
         """
         Print out all jobs for this task
         
@@ -708,7 +725,7 @@ class _task (node):
         """
         
         def get_job_names (param, indent_str):
-            job_names = (indent_str + self.job_descriptor(param)).split("-> ")
+            job_names = (indent_str + self.job_descriptor(param, runtime_data)).split("-> ")
             if len(job_names) > 1:
                 job_names[1] = indent_str + "      ->" + job_names[1]
             return job_names
@@ -779,9 +796,9 @@ class _task (node):
             #   return messages description per job
             # 
             cnt_jobs = 0
-            for param in self.param_generator_func():
+            for param in self.param_generator_func(runtime_data):
                 cnt_jobs += 1
-                job_name = self.job_descriptor(param)
+                job_name = self.job_descriptor(param, runtime_data)
                 job_name = job_name.replace("->", indent_str + " " * 7 +  "\n->")
                     
                 #   
@@ -852,11 +869,11 @@ class _task (node):
                 #
                 #   return not up to date if ANY jobs needs update
                 # 
-                for param in self.param_generator_func():
+                for param in self.param_generator_func(verbose_logger.runtime_data):
                     needs_update, msg = self.needs_update_func (*param)
                     if needs_update:
                         if verbose >= 4:
-                            job_name = self.job_descriptor(param)
+                            job_name = self.job_descriptor(param, verbose_logger.runtime_data)
                             log_at_level (logger, 4, verbose, 
                                             "    Needing update:\n      %s" % job_name)
                         return False
@@ -878,7 +895,7 @@ class _task (node):
     # 
     # 
     #_____________________________________________________________________________________
-    def get_output_files (self, do_not_expand_single_job_tasks = False):
+    def get_output_files (self, do_not_expand_single_job_tasks, runtime_data):
         """
         Cache output files
         
@@ -900,7 +917,7 @@ class _task (node):
             if self.param_generator_func != None:
 
                 cnt_jobs = 0
-                for param in self.param_generator_func():
+                for param in self.param_generator_func(runtime_data):
     
                     cnt_jobs += 1
                     # skip tasks which don't have output parameters
@@ -909,7 +926,7 @@ class _task (node):
 
                 if self._single_job_single_output == self.single_job_single_output:
                     if cnt_jobs > 1:
-                        raise error_task_get_output(this, 
+                        raise error_task_get_output(self, 
                                "Task which is supposed to produce a single output "
                                "somehow has more than one job.")
 
@@ -985,7 +1002,7 @@ class _task (node):
         # 
         # get list of function/function names and globs
         # 
-        function_or_func_names, globs = get_nested_tasks_or_globs(input_params)
+        function_or_func_names, globs, runtime_data_names = get_nested_tasks_or_globs(input_params)
 
         # 
         # replace function / function names with tasks
@@ -994,7 +1011,7 @@ class _task (node):
         functions_to_tasks = dict(zip(function_or_func_names, tasks))
         input_params = replace_func_names_with_tasks(input_params, functions_to_tasks)
         
-        return tasks, globs, input_params
+        return tasks, globs, input_params, runtime_data_names
             
             
             
@@ -1032,19 +1049,19 @@ class _task (node):
         # 
         # replace function / function names with tasks
         # 
-        tasks, globs, input_params = self.handle_tasks_globs_in_inputs(orig_args[0])
-        output_tasks, output_globs, output_params = self.handle_tasks_globs_in_inputs(orig_args[1])
+        tasks, globs, input_params, runtime_data_names = self.handle_tasks_globs_in_inputs(orig_args[0])
+        output_tasks, output_globs, output_params, output_runtime_data_names = self.handle_tasks_globs_in_inputs(orig_args[1])
         if len(output_tasks):
             raise error_task_split(self, "@split cannot output to another task. "
                                             "Do not include tasks in output parameters.")
         
         extra_params = orig_args[1:]
-        self.param_generator_func = split_param_factory (tasks, globs, input_params, output_globs, *extra_params)
+        self.param_generator_func = split_param_factory (tasks, globs, input_params, runtime_data_names, output_globs, output_runtime_data_names, *extra_params)
 
 
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
-        self.job_descriptor       = split_job_descriptor_factory (orig_args[1])
+        self.job_descriptor       = split_job_descriptor_factory (orig_args[1], output_runtime_data_names)
 
         # output is a glob
         self.indeterminate_output = True
@@ -1072,7 +1089,7 @@ class _task (node):
         # 
         # replace function / function names with tasks
         # 
-        tasks, globs, input_param = self.handle_tasks_globs_in_inputs(orig_args[0])
+        tasks, globs, input_param, runtime_data_names = self.handle_tasks_globs_in_inputs(orig_args[0])
 
         
         # regular expression match
@@ -1103,7 +1120,7 @@ class _task (node):
         #
         #   allows transform to take a single file or task
         #             
-        if isinstance(input_param, str):
+        if isinstance(input_param, str) and not is_glob(input_param):
             self._single_job_single_output = self.single_job_single_output
             input_param = [input_param]
             
@@ -1113,7 +1130,7 @@ class _task (node):
         elif isinstance(input_param, _task):
             self._single_job_single_output = input_param
 
-        self.param_generator_func = transform_param_factory (   tasks, globs, input_param,
+        self.param_generator_func = transform_param_factory (   tasks, globs, input_param, runtime_data_names,
                                                                 False, # flatten input
                                                                 matching_regex, 
                                                                 regex_substitute_extra_parameters,
@@ -1143,7 +1160,7 @@ class _task (node):
         # 
         # replace function / function names with tasks
         # 
-        tasks, globs, input_param = self.handle_tasks_globs_in_inputs(orig_args[0])
+        tasks, globs, input_param, runtime_data_names = self.handle_tasks_globs_in_inputs(orig_args[0])
 
         
         # regular expression match
@@ -1164,7 +1181,7 @@ class _task (node):
 
         extra_params = orig_args[2:]
 
-        self.param_generator_func = collate_param_factory (tasks, globs, input_param, 
+        self.param_generator_func = collate_param_factory (tasks, globs, input_param, runtime_data_names, 
                                                             False, # flatten input
                                                             matching_regex, 
                                                             input_pattern,
@@ -1195,10 +1212,10 @@ class _task (node):
         # 
         # replace function / function names with tasks
         # 
-        tasks, globs, input_param = self.handle_tasks_globs_in_inputs(orig_args[0])
+        tasks, globs, input_param, runtime_data_names = self.handle_tasks_globs_in_inputs(orig_args[0])
 
         extra_params = orig_args[1:]
-        self.param_generator_func = merge_param_factory (tasks, globs, input_param,
+        self.param_generator_func = merge_param_factory (tasks, globs, input_param, runtime_data_names,
                                                            *extra_params)
 
 
@@ -1274,8 +1291,13 @@ class _task (node):
         #   Use parameters generated by a custom function
         if len(orig_args) == 1 and type(orig_args[0]) == types.FunctionType:
             self.set_action_type (_task.action_task_files_func)
-            self.param_generator_func = orig_args[0]
-
+            self.param_generator_func = files_custom_generator_param_factory(orig_args[0])
+        elif len(orig_args) == 1 and isinstance(orig_args[0], runtime_parameter):
+            self.set_action_type (_task.action_task_files_runtime)
+            tasks, globs, input_param, runtime_data_names = self.handle_tasks_globs_in_inputs(orig_args[0])
+            self.param_generator_func = files_runtime_param_factory (orig_args[0],
+                                                                     runtime_data_names,
+                                                                     False) # flatten_input
         #   Use parameters in supplied list
         else:
             self.set_action_type (_task.action_task_files)
@@ -1296,12 +1318,13 @@ class _task (node):
             # 
             # get list of function/function names and globs for all job params
             # 
-            function_or_func_names, globs = set(), set()
+            function_or_func_names, globs, runtime_data_names = set(), set(), set()
             input_params = []
             for j in params:
-                func1job, glob1job = get_nested_tasks_or_globs(j[0])
+                func1job, glob1job, runtime_data_names1job = get_nested_tasks_or_globs(j[0])
                 function_or_func_names |= func1job
                 globs                  |= glob1job
+                runtime_data_names     |= runtime_data_names1job
                 input_params.append(j[0])
 
             # 
@@ -1317,7 +1340,7 @@ class _task (node):
             #
             output_extra_params = [tuple(j[1:]) for j in params]
                 
-            self.param_generator_func = files_param_factory (tasks, globs, input_params,
+            self.param_generator_func = files_param_factory (tasks, globs, input_params, runtime_data_names,
                                                              False, # flatten input
                                                              True,  # do_not_expand_single_job_tasks
                                                              output_extra_params)
@@ -1359,7 +1382,7 @@ class _task (node):
         # 
         # replace function / function names with tasks
         # 
-        tasks, globs, input_param = self.handle_tasks_globs_in_inputs(orig_args[0])
+        tasks, globs, input_param, runtime_data_names = self.handle_tasks_globs_in_inputs(orig_args[0])
 
         matching_regex = compile_regex(self, regex(orig_args[1]), error_task_files_re, "@files_re")
 
@@ -1373,14 +1396,14 @@ class _task (node):
 
 
         if combining_all_jobs:
-            self.param_generator_func = collate_param_factory (tasks, globs, input_param, 
+            self.param_generator_func = collate_param_factory (tasks, globs, input_param, runtime_data_names, 
                                                                 False,                  # flatten
                                                                 matching_regex,
                                                                 input_pattern, 
                                                                 *output_and_extras)
         else:
 
-            self.param_generator_func = transform_param_factory (tasks, globs, input_param, 
+            self.param_generator_func = transform_param_factory (tasks, globs, input_param, runtime_data_names, 
                                                                     False,              # flatten
                                                                     matching_regex, 
                                                                     True,               # substitute all parameters
@@ -1737,7 +1760,8 @@ def pipeline_printout_graph (stream,
 
 #_________________________________________________________________________________________
 def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbose=0, indent = 4,
-                                    gnu_make_maximal_rebuild_mode  = True, wrap_width = 100):
+                                    gnu_make_maximal_rebuild_mode  = True, wrap_width = 100,
+                                    runtime_data= None):
     """
     Printouts the parts of the pipeline which will be run
 
@@ -1765,6 +1789,12 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
     :param test_all_task_for_update: Ask all task functions if they are up-to-date 
     """
 
+    if runtime_data == None:
+        runtime_data = {}
+    if not isinstance(runtime_data, dict):
+        raise Exception("pipeline_run parameter runtime_data should be a dictionary of "
+                        "values passes to jobs at run time.")
+
     link_task_names_to_functions ()
 
     #
@@ -1773,14 +1803,15 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
     target_tasks = task_names_to_tasks ("Target", target_tasks)
     forcedtorun_tasks = task_names_to_tasks ("Forced to run", forcedtorun_tasks)
     
-    logging_strm = t_verbose_logger(verbose, t_stream_logger(output_stream))
+    logging_strm = t_verbose_logger(verbose, t_stream_logger(output_stream), runtime_data)
     
 
     (topological_sorted,
     self_terminated_nodes,
     dag_violating_edges,
     dag_violating_nodes) = topologically_sorted_nodes(target_tasks, forcedtorun_tasks, 
-                                                        gnu_make_maximal_rebuild_mode)
+                                                        gnu_make_maximal_rebuild_mode,
+                                                        extra_data_for_signal = t_verbose_logger(0, None, runtime_data))
         
 
     #
@@ -1802,7 +1833,8 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
     if verbose >= 4:
         (all_tasks, ignore_param1, ignore_param2, 
          ignore_param3) = topologically_sorted_nodes(target_tasks, True, 
-                                                            gnu_make_maximal_rebuild_mode)
+                                                            gnu_make_maximal_rebuild_mode,
+                                                        extra_data_for_signal = t_verbose_logger(0, None, runtime_data))
         if len(all_tasks) > len(topological_sorted):
             output_stream.write("\n" + "_" * 40 + "\nTasks which are up-to-date:\n\n")
             pipelined_tasks_to_run = set(topological_sorted)
@@ -1810,13 +1842,13 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
             for t in all_tasks:
                 if t in pipelined_tasks_to_run:
                     continue
-                messages = t.printout(t in forcedtorun_tasks, verbose, indent)
+                messages = t.printout(runtime_data, t in forcedtorun_tasks, verbose, indent)
                 for m in messages:
                     output_stream.write(textwrap.fill(m, subsequent_indent = wrap_indent, width = wrap_width) + "\n")
 
     output_stream.write("\n" + "_" * 40 + "\nTasks which will be run:\n\n")
     for t in topological_sorted:
-        messages = t.printout(t in forcedtorun_tasks, verbose, indent)
+        messages = t.printout(runtime_data, t in forcedtorun_tasks, verbose, indent)
         for m in messages:
             output_stream.write(textwrap.fill(m, subsequent_indent = wrap_indent, width = wrap_width) + "\n")
 
@@ -1829,7 +1861,7 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
 #
 #________________________________________________________________________________________ 
 def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forcedtorun_tasks, 
-                                                        count_remaining_jobs, verbose):
+                                    count_remaining_jobs, runtime_data, verbose):
 
     inprogress_tasks = set()
 
@@ -1884,7 +1916,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     if t.param_generator_func == None:
                         parameters = ([],)
                     else:
-                        parameters = t.param_generator_func()
+                        parameters = t.param_generator_func(runtime_data)
                         
                     # 
                     #   iterate through parameters
@@ -1898,7 +1930,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                         if len(param) >= 2:
                             t.output_filenames.append(param[1])
 
-                        job_name = t.job_descriptor(param)
+                        job_name = t.job_descriptor(param, runtime_data)
 
                         # 
                         #    don't run if up to date
@@ -2075,7 +2107,8 @@ def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE):
 
 #_________________________________________________________________________________________
 def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, logger = stderr_logger, 
-                                    gnu_make_maximal_rebuild_mode  = True, verbose = 1):
+                                    gnu_make_maximal_rebuild_mode  = True, verbose = 1, 
+                                    runtime_data = None):
     """
     Run pipelines.
 
@@ -2095,6 +2128,12 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
 
 
     """
+    if runtime_data == None:
+        runtime_data = {}
+    if not isinstance(runtime_data, dict):
+        raise Exception("pipeline_run parameter runtime_data should be a dictionary of "
+                        "values passes to jobs at run time.")
+        
     if verbose == 0:
         logger = black_hole_logger
 
@@ -2110,7 +2149,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     dag_violating_edges,
     dag_violating_nodes) = topologically_sorted_nodes(  target_tasks, forcedtorun_tasks, 
                                                         gnu_make_maximal_rebuild_mode,
-                                                        extra_data_for_signal = t_verbose_logger(verbose, logger))
+                                                        extra_data_for_signal = t_verbose_logger(verbose, logger, runtime_data))
 
     if len(dag_violating_nodes):
         dag_violating_tasks = ", ".join(t._name for t in dag_violating_nodes)
@@ -2157,7 +2196,8 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     count_remaining_jobs = defaultdict(int)
     parameter_generator = make_job_parameter_generator (incomplete_tasks, task_parents, 
                                                         logger, forcedtorun_tasks, 
-                                                        count_remaining_jobs, verbose)
+                                                        count_remaining_jobs, 
+                                                        runtime_data, verbose)
     job_parameters = parameter_generator()
     fill_queue_with_job_parameters(job_parameters, parameter_q, multiprocess)
 

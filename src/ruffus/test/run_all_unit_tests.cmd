@@ -13,3 +13,4 @@ python ./test_follows_mkdir.py
 python ./test_N_x_M_and_collate.py --debug
 python ./test_collate.py --debug
 python ./test_split_and_combine.py -D -j 10
+python ./simpler_at_runtime.py

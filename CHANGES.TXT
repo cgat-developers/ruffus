@@ -1,3 +1,9 @@
+= v. 2.0.5=
+    _04/December/2009_
+    ==Bug Fix:==
+		* several minor bugs
+
+
 = v. 2.0.4=
     _22/November/2009_
     ==Bug Fix:==

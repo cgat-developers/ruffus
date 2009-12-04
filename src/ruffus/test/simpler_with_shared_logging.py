@@ -299,7 +299,7 @@ if __name__ == '__main__':
     try:
         if options.just_print:
             pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks, 
-                                long_winded=True, 
+                                verbose = options.verbose, 
                                 gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode)
         
         elif options.dependency_file:
@@ -313,6 +313,7 @@ if __name__ == '__main__':
         else:    
             pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, 
                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
+                            verbose = options.verbose, 
                             logger = logger_proxy)
     except Exception, e:
         print e.args

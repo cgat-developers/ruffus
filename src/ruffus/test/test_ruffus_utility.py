@@ -72,35 +72,35 @@ class Test_get_nested_tasks_or_globs(unittest.TestCase):
         # 
         # test strings
         # 
-        self.check_equal("test", (set(), set()))
-        self.check_equal([("test1",), "test2", 3], (set(), set()))
+        self.check_equal("test", (set(), set(), set()))
+        self.check_equal([("test1",), "test2", 3], (set(), set(), set()))
         
         #
         # test missing
         # 
-        self.check_equal((1,3, [5]), (set(), set()))
-        self.check_equal(None, (set(), set()))
+        self.check_equal((1,3, [5]), (set(), set(), set()))
+        self.check_equal(None, (set(), set(), set()))
 
         #
         # test glob
         # 
-        self.check_equal([("test1.*",), "test?2", 3], (set(), set(['test1.*', 'test?2'])))
+        self.check_equal([("test1.*",), "test?2", 3], (set(), set(['test1.*', 'test?2']), set()))
 
         #
         # test glob and string
         # 
-        self.check_equal([("test*1",), (("test3",),),"test2", 3], (set(), set(['test*1'])))
+        self.check_equal([("test*1",), (("test3",),),"test2", 3], (set(), set(['test*1']), set()))
         
         #
         # test task function
         # 
-        self.check_equal(is_glob, (set([is_glob]), set([])))
+        self.check_equal(is_glob, (set([is_glob]), set([]), set()))
         self.check_equal([is_glob, [1, "this", ["that*", 5]], [(get_strings_in_nested_sequence,)]], (
-                        set([is_glob, get_strings_in_nested_sequence]), set(["that*"])))
+                        set([is_glob, get_strings_in_nested_sequence]), set(["that*"]), set()))
         #
         # test wrapper
         # 
-        self.check_equal(output_from(is_glob, ["what", 7], 5), (set([is_glob, "what"]), set([])))
+        self.check_equal(output_from(is_glob, ["what", 7], 5), (set([is_glob, "what"]), set([]), set()))
         
 #_________________________________________________________________________________________
 
@@ -412,7 +412,7 @@ class Test_expand_nested_tasks_or_globs(unittest.TestCase):
 
     def check_equal (self, a,b):
 
-        tasks, globs = get_nested_tasks_or_globs(a)
+        tasks, globs, runtime_data_names = get_nested_tasks_or_globs(a)
         func_or_name_to_task = dict(zip((non_str_sequence, get_strings_in_nested_sequence, "what"), self.tasks))
 
         task_or_glob_to_files = dict()
