@@ -267,7 +267,7 @@ def is_glob(s):
 #   get_nested_tasks_or_globs
 #
 #________________________________________________________________________________________ 
-def get_nested_tasks_or_globs(p, treat_strings_as_tasks = False, tasks=None, globs = None):
+def get_nested_tasks_or_globs(p, treat_strings_as_tasks = False, runtime_data_names=None, tasks=None, globs = None):
     """
     Get any tasks or globs which are within parameter
         tasks are returned as functions or function names
@@ -276,20 +276,22 @@ def get_nested_tasks_or_globs(p, treat_strings_as_tasks = False, tasks=None, glo
     # create storage if this is not a recursive call
     # 
     if globs == None:
-        tasks, globs = set(), set()
+        runtime_data_names, tasks, globs = set(), set(), set()
 
     #
     #   task function
     # 
     if (type(p) == types.FunctionType):
         tasks.add(p)
+    elif isinstance(p, runtime_parameter):
+        runtime_data_names.add(p)
 
     #
     #   output_from treats all arguments as tasks or task names
     # 
     elif isinstance(p, output_from):
         for pp in p.args:
-            get_nested_tasks_or_globs(pp, True, tasks, globs)
+            get_nested_tasks_or_globs(pp, True, runtime_data_names, tasks, globs)
 
     elif isinstance(p, str):
         if treat_strings_as_tasks:
@@ -299,8 +301,8 @@ def get_nested_tasks_or_globs(p, treat_strings_as_tasks = False, tasks=None, glo
 
     elif non_str_sequence (p):
         for pp in p:
-            get_nested_tasks_or_globs(pp, treat_strings_as_tasks, tasks, globs)
-    return tasks, globs
+            get_nested_tasks_or_globs(pp, treat_strings_as_tasks, runtime_data_names, tasks, globs)
+    return tasks, globs, runtime_data_names
 
 #_________________________________________________________________________________________
 #
@@ -546,7 +548,9 @@ def expand_nested_tasks_or_globs(p, tasksglobs_to_filenames):
     # 
     # Expand globs or tasks as a list only if they are top level
     # 
-    if (isinstance(p, str) and is_glob(p)) or p.__class__.__name__ == '_task':
+    if (    (isinstance(p, str) and is_glob(p)) or 
+            p.__class__.__name__ == '_task'     or 
+            isinstance(p, runtime_parameter)    ):
         return tasksglobs_to_filenames[p]
 
     # 
@@ -563,7 +567,7 @@ def expand_nested_tasks_or_globs(p, tasksglobs_to_filenames):
         for pp in p:
             if (isinstance(pp, str) and pp in tasksglobs_to_filenames):
                 l.extend(tasksglobs_to_filenames[pp])
-            elif pp.__class__.__name__ == '_task':
+            elif pp.__class__.__name__ == '_task' or isinstance(pp, runtime_parameter):
                 files = tasksglobs_to_filenames[pp]
                 # task may have produced a single output: in which case append
                 if isinstance(files, str):
@@ -596,6 +600,12 @@ class output_from(object):
     def __init__ (self, *args):
         self.args = args
     
+class runtime_parameter(object):
+    def __init__ (self, *args):
+        if len(args) != 1 or not isinstance(args[0], str):
+            raise Exception("runtime_parameter takes the name of the run time parameter as a single string")
+        self.args = args
+
     
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
