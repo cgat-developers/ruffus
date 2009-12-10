@@ -886,6 +886,20 @@ class _task (node):
             inst.specify_task(self, "Exceptions in dependency checking")
             raise
 
+        except:
+            exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+            exception_stack  = traceback.format_exc(exceptionTraceback)
+            exception_name   = exceptionType.__module__ + '.' + exceptionType.__name__
+            exception_value  = str(exceptionValue)
+            if len(exception_value):
+                exception_value = "(%s)" % exception_value
+            errt = RethrownJobError([(self._name,
+                                     "", 
+                                     exception_name, 
+                                     exception_value, 
+                                     exception_stack)])
+            errt.specify_task(self, "Exceptions generating parameters")
+            raise errt
 
         
         
