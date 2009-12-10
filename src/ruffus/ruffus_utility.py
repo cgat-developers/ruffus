@@ -543,12 +543,16 @@ def expand_nested_tasks_or_globs(p, tasksglobs_to_filenames):
     """
     Expand globs and tasks "in-line", unless they are the top level, in which case turn
     it into a list
+    
+    N.B. Globs are only expanded if they are in tasksglobs_to_filenames
+         This function is called for @split descriptors which leave output globs untouched
+         for clarity. Thanks to Noah Spies for spotting this!
     """
 
     # 
     # Expand globs or tasks as a list only if they are top level
     # 
-    if (    (isinstance(p, str) and is_glob(p)) or 
+    if (    (isinstance(p, str) and is_glob(p) and p in tasksglobs_to_filenames) or 
             p.__class__.__name__ == '_task'     or 
             isinstance(p, runtime_parameter)    ):
         return tasksglobs_to_filenames[p]
