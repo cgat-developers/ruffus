@@ -1728,7 +1728,8 @@ def pipeline_printout_graph (stream,
                              skip_uptodate_tasks            = False,
                              gnu_make_maximal_rebuild_mode  = True,
                              test_all_task_for_update       = True,
-                             no_key_legend                  = False):
+                             no_key_legend                  = False,
+                             runtime_data= None):
     """
     print out pipeline dependencies in various formats
 

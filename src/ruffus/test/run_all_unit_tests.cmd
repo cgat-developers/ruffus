@@ -1,3 +1,4 @@
+python ./test_filesre_combine.py -F flowchart.svg
 python ./test_ruffus_utility.py
 python ./test_file_name_parameters.py
 python ./test_filesre_combine.py -D
