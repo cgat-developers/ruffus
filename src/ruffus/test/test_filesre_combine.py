@@ -57,17 +57,17 @@ parser.add_option("-j", "--jobs", dest="jobs",
 parser.add_option("-v", "--verbose", dest = "verbose",
                   action="count", default=0,
                   help="Do not echo to shell but only print to log.")
-parser.add_option("-d", "--dependency", dest="dependency_file",
+parser.add_option("-F", "--flowchart", dest="flowchart",
                   #default="simple.svg",
                   metavar="FILE", 
                   type="string",
-                  help="Print a dependency graph of the pipeline that would be executed "
+                  help="Print a flowchart of the pipeline that would be executed "
                         "to FILE, but do not execute it.")
-parser.add_option("-F", "--dependency_graph_format", dest="dependency_graph_format",
+parser.add_option("--flowchart_format", dest="flowchart_format",
                   metavar="FORMAT", 
                   type="string",
                   default = 'svg',
-                  help="format of dependency graph file. Can be 'ps' (PostScript), "+
+                  help="format of flowchart file. Can be 'ps' (PostScript), "+
                   "'svg' 'svgz' (Structured Vector Graphics), " +
                   "'png' 'gif' (bitmap  graphics) etc ")
 parser.add_option("-n", "--just_print", dest="just_print",
@@ -221,9 +221,9 @@ if __name__ == '__main__':
                             long_winded=True,
                             gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode)
 
-    elif options.dependency_file:
-        pipeline_printout_graph (     open(options.dependency_file, "w"),
-                             options.dependency_graph_format,
+    elif options.flowchart:
+        pipeline_printout_graph (     open(options.flowchart, "w"),
+                             options.flowchart_format,
                              options.target_tasks,
                              options.forced_tasks,
                              draw_vertically = not options.draw_horizontally,
