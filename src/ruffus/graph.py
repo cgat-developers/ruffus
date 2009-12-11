@@ -894,7 +894,8 @@ def graph_printout_in_dot_format (  stream,
                                     skip_signalling_nodes     = False,
                                     gather_all_non_signalled  = True,
                                     test_all_signals          = True,
-                                    no_key_legend             = False):
+                                    no_key_legend             = False,
+                                    extra_data_for_signal     = None):
     """
     print out pipeline dependencies in dot formatting
     """
@@ -904,7 +905,8 @@ def graph_printout_in_dot_format (  stream,
     dag_violating_edges,
     dag_violating_nodes) = topologically_sorted_nodes(to_leaves, force_start_from, 
                                                         gather_all_non_signalled,
-                                                        test_all_signals)
+                                                        test_all_signals,
+                                                        extra_data_for_signal)
 
     #
     #   N.B. For graph:
@@ -936,16 +938,17 @@ def graph_printout_in_dot_format (  stream,
 #   graph_printout
 
 #_________________________________________________________________________________________
-def graph_printout (  stream, 
-                      output_format,
-                      to_leaves, 
-                      force_start_from          = [], 
-                      draw_vertically           = True, 
-                      ignore_upstream_of_target = False,
-                      skip_signalling_nodes     = False,
-                      gather_all_non_signalled  = True,
-                      test_all_signals          = True,
-                      no_key_legend             = False):
+def graph_printout (stream, 
+                    output_format,
+                    to_leaves, 
+                    force_start_from          = [], 
+                    draw_vertically           = True, 
+                    ignore_upstream_of_target = False,
+                    skip_signalling_nodes     = False,
+                    gather_all_non_signalled  = True,
+                    test_all_signals          = True,
+                    no_key_legend             = False,
+                    extra_data_for_signal     = None):
     """
     print out pipeline dependencies in a variety of formats, using the programme "dot"
         an intermediary
@@ -960,7 +963,8 @@ def graph_printout (  stream,
                                         skip_signalling_nodes,
                                         gather_all_non_signalled,
                                         test_all_signals,
-                                        no_key_legend)
+                                        no_key_legend,
+                                        extra_data_for_signal)
         return
         
     # print to dot file
@@ -976,7 +980,8 @@ def graph_printout (  stream,
                                     skip_signalling_nodes,
                                     gather_all_non_signalled,
                                     test_all_signals,
-                                    no_key_legend)
+                                    no_key_legend,
+                                    extra_data_for_signal)
     temp_dot_file.close()
     
     run_dot = os.popen("dot -Gsize='6,8' -T%s < %s" % (output_format, temp_dot_file_name))
