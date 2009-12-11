@@ -840,8 +840,14 @@ class _task (node):
         If true, depth first search will not pass through this node
         """
         try:
-            logger  = verbose_logger.logger  if verbose_logger else None
-            verbose = verbose_logger.verbose if verbose_logger else 0
+            if verbose_logger:
+                logger       = verbose_logger.logger
+                verbose      = verbose_logger.verbose
+                runtime_data = verbose_logger.runtime_data
+            else:
+                logger       = None
+                verbose      = 0
+                runtime_data = {}
             short_task_name = self._name.replace('__main__.', '')
             log_at_level (logger, 4, verbose, 
                             "  Task = " + short_task_name)
@@ -869,11 +875,11 @@ class _task (node):
                 #
                 #   return not up to date if ANY jobs needs update
                 # 
-                for param in self.param_generator_func(verbose_logger.runtime_data):
+                for param in self.param_generator_func(runtime_data):
                     needs_update, msg = self.needs_update_func (*param)
                     if needs_update:
                         if verbose >= 4:
-                            job_name = self.job_descriptor(param, verbose_logger.runtime_data)
+                            job_name = self.job_descriptor(param, runtime_data)
                             log_at_level (logger, 4, verbose, 
                                             "    Needing update:\n      %s" % job_name)
                         return False
@@ -1745,6 +1751,15 @@ def pipeline_printout_graph (stream,
     link_task_names_to_functions ()
     
     #
+    #   run time data
+    # 
+    if runtime_data == None:
+        runtime_data = {}
+    if not isinstance(runtime_data, dict):
+        raise Exception("pipeline_run parameter runtime_data should be a dictionary of "
+                        "values passes to jobs at run time.")
+
+    #
     #   target jobs
     #     
     target_tasks        = task_names_to_tasks ("Target", target_tasks)
@@ -1763,7 +1778,8 @@ def pipeline_printout_graph (stream,
                       skip_uptodate_tasks,
                       gnu_make_maximal_rebuild_mode,
                       test_all_task_for_update,
-                      no_key_legend)
+                      no_key_legend,
+                      extra_data_for_signal = t_verbose_logger(0, None, runtime_data))
 
     
 
@@ -1847,8 +1863,8 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
     if verbose >= 4:
         (all_tasks, ignore_param1, ignore_param2, 
          ignore_param3) = topologically_sorted_nodes(target_tasks, True, 
-                                                            gnu_make_maximal_rebuild_mode,
-                                                        extra_data_for_signal = t_verbose_logger(0, None, runtime_data))
+                                                     gnu_make_maximal_rebuild_mode,
+                                                     extra_data_for_signal = t_verbose_logger(0, None, runtime_data))
         if len(all_tasks) > len(topological_sorted):
             output_stream.write("\n" + "_" * 40 + "\nTasks which are up-to-date:\n\n")
             pipelined_tasks_to_run = set(topological_sorted)
