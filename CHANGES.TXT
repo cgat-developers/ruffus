@@ -1,3 +1,12 @@
+= v. 2.0.8=
+    _22/January/2010_
+    ==Bug Fix:==
+        * Now accepts unicode file names: 
+          Change `isinstance(x,str)` to `isinstance(x, basestring)`
+        * inputs(...) raises exception when passed multiple arguments.
+          If the input parameter is being passed a tuple, add an extra 
+          Change `isinstance(x,str)` to `isinstance(x, basestring)`
+
 = v. 2.0.7=
     _11/December/2009_
     ==Bug Fix:==

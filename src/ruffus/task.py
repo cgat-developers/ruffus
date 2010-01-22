@@ -1134,6 +1134,14 @@ class _task (node):
         #   inputs also defined by pattern match
         #         
         if isinstance(orig_args[2], inputs):
+            if len(orig_args[2].args) != 1:
+                raise error_task_transform(self, "inputs(...) expects only a single argument. "
+                                                "This can be, for example, a file name, "
+                                                "a regular expression pattern, or any "
+                                                "nested structure. If the intention was to "
+                                                "specify a tuple as the input parameter, "
+                                                "please wrap the elements of the tuple "
+                                                "in brackets")
             input_pattern = orig_args[2].args[0]
             output_pattern_extras = orig_args[3:]
         else:
@@ -1197,6 +1205,14 @@ class _task (node):
         #   inputs also defined by pattern match
         #         
         if isinstance(orig_args[2], inputs):
+            if len(orig_args[2].args) != 1:
+                raise error_task_collate(self, "inputs(...) expects only a single argument. "
+                                                "This can be, for example, a file name, "
+                                                "a regular expression pattern, or any "
+                                                "nested structure. If the intention was to "
+                                                "specify a tuple as the input parameter, "
+                                                "please wrap the elements of the tuple "
+                                                "in brackets")
             input_pattern = orig_args[2].args[0]
             output_pattern_extras = orig_args[3:]
         else:
