@@ -80,7 +80,7 @@ def construct_filename_parameters_with_regex(filename, regex, p):
     recursively replaces file name specifications using regular expressions
     Non-strings are left alone
     """
-    if isinstance(p, str):
+    if isinstance(p, basestring):
         return regex.sub(p, filename) 
     elif non_str_sequence (p):
         return type(p)(construct_filename_parameters_with_regex(filename, regex, pp) for pp in p)
@@ -126,9 +126,7 @@ def non_str_sequence (arg):
     We treat strings / dicts however as a singleton not as a sequence
     
     """
-    if (isinstance(arg, str)        or 
-        isinstance(arg, unicode)    or 
-        isinstance(arg, dict))       :
+    if (isinstance(arg, (basestring, dict))
         return False
     try:
         test = iter(arg)
@@ -149,7 +147,7 @@ def get_strings_in_nested_sequence_aux(p, l = None):
     """
     if l == None:
         l = []
-    if isinstance(p, str):
+    if isinstance(p, basestring):
         l.append(p)
     elif non_str_sequence (p):
         for pp in p:
@@ -172,7 +170,7 @@ def get_strings_in_nested_sequence (p, first_only = False):
     #
     #  string is returned as list of single string
     # 
-    if isinstance(p, str):
+    if isinstance(p, basestring):
         return [p]
         
     #
@@ -207,7 +205,7 @@ def get_first_string_in_nested_sequence (p):
     #
     #  string is returned as list of single string
     # 
-    if isinstance(p, str):
+    if isinstance(p, basestring):
         return p
 
     #
@@ -242,7 +240,7 @@ def ignore_unknown_encoder(obj):
 def shorten_filenames_encoder (obj):
     if non_str_sequence (obj):
         return "[%s]" % ", ".join(map(shorten_filenames_encoder, obj))
-    if isinstance(obj, str):
+    if isinstance(obj, basestring):
         if os.path.isabs(obj) and obj[1:].count('/') > 1:
             return os.path.split(obj)[1]
     return ignore_unknown_encoder(obj)
@@ -293,7 +291,7 @@ def get_nested_tasks_or_globs(p, treat_strings_as_tasks = False, runtime_data_na
         for pp in p.args:
             get_nested_tasks_or_globs(pp, True, runtime_data_names, tasks, globs)
 
-    elif isinstance(p, str):
+    elif isinstance(p, basestring):
         if treat_strings_as_tasks:
             tasks.add(p)
         elif is_glob(p):
@@ -333,7 +331,7 @@ def replace_func_names_with_tasks(p, func_or_name_to_task, treat_strings_as_task
     # 
     # strings become tasks if treat_strings_as_tasks
     # 
-    if isinstance(p, str):
+    if isinstance(p, basestring):
         if treat_strings_as_tasks:
             return func_or_name_to_task[p]
         return p
@@ -427,7 +425,7 @@ def compile_regex(enclosing_task, regex, error_object, descriptor_string):
         raise error_object(enclosing_task, "%s: " % descriptor_string +
                                    "regex() is malformed\n" +
                                     "regex(...) should be used to wrap a regular expression string")
-    if len(regex.args) > 1 or not isinstance(regex.args[0], str):
+    if len(regex.args) > 1 or not isinstance(regex.args[0], basestring):
         raise error_object(enclosing_task, "%s: " % descriptor_string +
                                    "regex('%s') is malformed\n" % (regex.args,) +
                                     "regex(...) should only be used to wrap a single regular expression string")
@@ -452,7 +450,7 @@ def compile_suffix(enclosing_task, regex, error_object, descriptor_string):
         raise error_object(enclosing_task, "%s: " % descriptor_string +
                                     "suffix() is malformed.\n" +
                                      "suffix(...) should be used to wrap a string matching the suffices of file names")
-    if len(regex.args) > 1 or not isinstance(regex.args[0], str):
+    if len(regex.args) > 1 or not isinstance(regex.args[0], basestring):
         raise error_object(enclosing_task, "%s: " % descriptor_string +
                                    "suffix('%s') is malformed.\n" % (regex.args,) +
                                     "suffix(...) should only be used to wrap a single string matching the suffices of file names")
@@ -479,7 +477,7 @@ def check_parallel_parameters (enclosing_task, params, error_object):
         raise Exception("@parallel parameters is empty.")
 
     for job_param in params:
-        if isinstance(job_param, str):
+        if isinstance(job_param, basestring):
             message = ("Wrong syntax for @parallel.\n"
                         "@parallel(%s)\n" % ignore_unknown_encoder(params) +
                         "If you are supplying parameters for a task " 
@@ -508,7 +506,7 @@ def check_files_io_parameters (enclosing_task, params, error_object):
 
     try:
         for job_param in params:
-            if isinstance(job_param, str):
+            if isinstance(job_param, basestring):
                 raise TypeError
             
             if len(job_param) < 1:
@@ -552,7 +550,7 @@ def expand_nested_tasks_or_globs(p, tasksglobs_to_filenames):
     # 
     # Expand globs or tasks as a list only if they are top level
     # 
-    if (    (isinstance(p, str) and is_glob(p) and p in tasksglobs_to_filenames) or 
+    if (    (isinstance(p, basestring) and is_glob(p) and p in tasksglobs_to_filenames) or 
             p.__class__.__name__ == '_task'     or 
             isinstance(p, runtime_parameter)    ):
         return tasksglobs_to_filenames[p]
@@ -560,7 +558,7 @@ def expand_nested_tasks_or_globs(p, tasksglobs_to_filenames):
     # 
     # No expansions of strings and dictionaries
     # 
-    if isinstance(p, str) or isinstance(p, dict):
+    if isinstance(p, (basestring, dict)):
         return p
 
     # 
@@ -569,12 +567,12 @@ def expand_nested_tasks_or_globs(p, tasksglobs_to_filenames):
     elif non_str_sequence(p):
         l = list()
         for pp in p:
-            if (isinstance(pp, str) and pp in tasksglobs_to_filenames):
+            if (isinstance(pp, basestring) and pp in tasksglobs_to_filenames):
                 l.extend(tasksglobs_to_filenames[pp])
             elif pp.__class__.__name__ == '_task' or isinstance(pp, runtime_parameter):
                 files = tasksglobs_to_filenames[pp]
                 # task may have produced a single output: in which case append
-                if isinstance(files, str):
+                if isinstance(files, basestring):
                     l.append(files)
                 else:
                     l.extend(files)
@@ -606,7 +604,7 @@ class output_from(object):
     
 class runtime_parameter(object):
     def __init__ (self, *args):
-        if len(args) != 1 or not isinstance(args[0], str):
+        if len(args) != 1 or not isinstance(args[0], basestring):
             raise Exception("runtime_parameter takes the name of the run time parameter as a single string")
         self.args = args
 

@@ -430,15 +430,17 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup):
     i,o = param[0:2]
 
     #
-    # register output file for cleanup
+    # register strings in output file for cleanup
     #
     if o == None:
         return
-    elif isinstance(o, str):
+    # accepts unicode 
+    elif isinstance(o, basestring):
         register_cleanup(o, "file")
-    else:
+    elif non_str_sequence(o):
         for f in o:
-            register_cleanup(f, "file")
+            if isinstance(f, basestring):
+                register_cleanup(f, "file")
 
 
 #_________________________________________________________________________________________
@@ -956,9 +958,10 @@ class _task (node):
     
         if flattened:
             # if single file name, return that
+            # accepts unicode
             if (do_not_expand_single_job_tasks and 
                 len(self.output_filenames) and 
-                isinstance(self.output_filenames[0], str)):
+                isinstance(self.output_filenames[0], basestring)):
                 return self.output_filenames
             # if it is flattened, might as well sort it
             return sorted(get_strings_in_nested_sequence(self.output_filenames))
@@ -1139,8 +1142,9 @@ class _task (node):
             
         #
         #   allows transform to take a single file or task
+        #       accepts unicode
         #             
-        if isinstance(input_param, str) and not is_glob(input_param):
+        if isinstance(input_param, basestring) and not is_glob(input_param):
             self._single_job_single_output = self.single_job_single_output
             input_param = [input_param]
             
@@ -1454,7 +1458,8 @@ class _task (node):
         
         # the mkdir decorator accepts one string, multiple strings or a list of strings
         # convert everything into the multiple strings format
-        if not isinstance(orig_args[0], str):
+        # accepts unicode
+        if not isinstance(orig_args[0], basestring):
             orig_args = orig_args[0]
         #   all directories created in one job to reduce race conditions
         #    so we are converting [a,b,c] into [   [(a, b,c)]   ]
@@ -1505,9 +1510,9 @@ class _task (node):
         new_tasks = []
         for arg in args:
             #
-            #   specified by string 
+            #   specified by string: unicode or otherwise
             #
-            if isinstance(arg, str):
+            if isinstance(arg, basestring):
                 # string looks up to defined task, use that
                 if node.is_node(arg):
                     arg = node.lookup_node_from_name(arg)
@@ -1682,8 +1687,9 @@ def task_names_to_tasks (task_description, task_names):
     
     #
     #   In case we are given a single item instead of a list
+    #       accepts unicode
     #
-    if isinstance(task_names, str) or type(task_names) == types.FunctionType:
+    if isinstance(task_names, basestring) or type(task_names) == types.FunctionType:
         task_names = [task_names]
 
     task_nodes = []
@@ -1766,8 +1772,8 @@ def pipeline_printout_graph (stream,
     target_tasks        = task_names_to_tasks ("Target", target_tasks)
     forcedtorun_tasks   = task_names_to_tasks ("Forced to run", forcedtorun_tasks)
     
-    # open file if string    
-    if isinstance(stream, str):
+    # open file if (unicode?) string    
+    if isinstance(stream, basestring):
         stream = open(stream, "w")
     
     graph_printout (  stream, 

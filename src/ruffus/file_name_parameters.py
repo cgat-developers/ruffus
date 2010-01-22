@@ -320,7 +320,8 @@ def touch_file_factory (orig_args, register_cleanup):
     Creates function, which when called, will touch files
     """
     file_names = orig_args
-    if isinstance (orig_args, str):
+    # accepts unicode
+    if isinstance (orig_args, basestring):      
         file_names = [orig_args]
     else:
         # make copy so when original is modifies, we don't get confused!
