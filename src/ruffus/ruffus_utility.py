@@ -126,7 +126,7 @@ def non_str_sequence (arg):
     We treat strings / dicts however as a singleton not as a sequence
     
     """
-    if (isinstance(arg, (basestring, dict))
+    if (isinstance(arg, (basestring, dict))):
         return False
     try:
         test = iter(arg)
