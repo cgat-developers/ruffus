@@ -1129,14 +1129,14 @@ class _task (node):
             raise error_task_split(self, "@split cannot output to another task. "
                                             "Do not include tasks in output parameters.")
 
-        output_pattern_extras = orig_args[2:]
+        output_and_extra_params = orig_args[2:]
 
 
 
         self.param_generator_func = split_ex_param_factory (   tasks, globs, input_param, runtime_data_names,
                                                                 False, # flatten input
                                                                 matching_regex, 
-                                                                output_globs, output_runtime_data_names, *output_pattern_extras)
+                                                                output_globs, output_runtime_data_names, *output_and_extra_params)
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
         self.job_descriptor       = split_job_descriptor_factory (orig_args[2], output_runtime_data_names)
@@ -1177,8 +1177,8 @@ class _task (node):
             raise error_task_split(self, "@split cannot output to another task. "
                                             "Do not include tasks in output parameters.")
         
-        output_and_extra_params = orig_args[1:]
-        self.param_generator_func = split_param_factory (tasks, globs, input_params, runtime_data_names, output_globs, output_runtime_data_names, *output_and_extra_params)
+        extra_params = orig_args[2:]
+        self.param_generator_func = split_param_factory (tasks, globs, input_params, runtime_data_names, output_globs, output_runtime_data_names, output_params, *extra_params)
 
 
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
