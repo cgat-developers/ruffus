@@ -91,6 +91,7 @@ import traceback
 import types
 from itertools import imap 
 import textwrap
+import time
 
 
 if __name__ == '__main__':
@@ -133,16 +134,26 @@ class t_black_hole_logger:
         pass
     def debug (self, message):
         pass
+    def warning (self, message):
+        pass
 
 
 class t_stderr_logger:
     """
     Everything to stderr
     """
+    def __init__ (self):
+        self.unique_prefix = ""
+    def add_unique_prefix (self):
+        import random
+        random.seed()
+        self.unique_prefix= str(random.randint(0,1000)) + " "
     def info (self, message):
-        sys.stderr.write(message + "\n")
+        sys.stderr.write(self.unique_prefix + message + "\n")
+    def warning (self, message):
+        sys.stderr.write("\n\n" + self.unique_prefix + "WARNING:\n    " + message + "\n\n")
     def debug (self, message):
-        sys.stderr.write(message + "\n")
+        sys.stderr.write(self.unique_prefix + message + "\n")
 
 class t_stream_logger:
     """
@@ -152,6 +163,8 @@ class t_stream_logger:
         self.stream = stream
     def info (self, message):
         self.stream.write(message + "\n")
+    def warning (self, message):
+        sys.stream.write("\n\nWARNING:\n    " + message + "\n\n")
     def debug (self, message):
         self.stream.write(message + "\n")
 
@@ -488,10 +501,12 @@ def run_pooled_job_without_exceptions (process_parameters):
         See RethrownJobError /  run_all_jobs_in_task
     """
     
-    (param, task_name, job_name, job_wrapper, user_defined_work_func) = process_parameters
+    (param, task_name, job_name, job_wrapper, user_defined_work_func, one_second_per_job) = process_parameters
     
     try:
-
+        if one_second_per_job:
+            time.sleep(1)
+        
         # if user return false, halt job
         return_value =  job_wrapper(param, user_defined_work_func, register_cleanup)
         return t_job_result(task_name, JOB_COMPLETED, job_name, return_value, None)
@@ -885,8 +900,24 @@ class _task (node):
                             log_at_level (logger, 4, verbose, 
                                             "    Needing update:\n      %s" % job_name)
                         return False
-                log_at_level (logger, 4, verbose, 
-                                "    All jobs up to date")
+                        
+                # 
+                #   Add extra warning if no regular expressions match: 
+                #   This is a common class of frustrating errors            
+                #
+                if ("job_iterators_without_regex_matches" in runtime_data and
+                    self.param_generator_func in runtime_data["job_iterators_without_regex_matches"]):
+                    msg = "No jobs were run because no files names matched. " \
+                           "Please make sure that the regular expression is correctly specified"
+                    if verbose >= 1:
+                        logger.warning("    'def %s(...):' %s " % (short_task_name, msg))
+
+
+                log_at_level (logger, 4, verbose, "    All jobs up to date")
+
+
+
+
                 return True
                 
         # rethrow exception after adding task name
@@ -1052,7 +1083,67 @@ class _task (node):
 
 
     #8888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-        
+
+    #_________________________________________________________________________________________
+
+    #   task_split_ex
+
+    #_________________________________________________________________________________________
+    def task_split_ex (self, orig_args):
+        """
+        Splits a single set of input files into multiple output file names, 
+            where the number of output files may not be known beforehand.
+        """
+        #
+        #   check enough arguments
+        #
+        if len(orig_args) < 3:
+            raise error_task_split(self, "Too few arguments for @split")
+
+
+
+        self.set_action_type (_task.action_task_split)
+
+        # 
+        # replace function / function names with tasks
+        # 
+        tasks, globs, input_param, runtime_data_names = self.handle_tasks_globs_in_inputs(orig_args[0])
+
+
+        # regular expression match
+        matching_regex = compile_regex(self, orig_args[1], error_task_split, "@split")
+
+
+        #
+        #   allows split to take a single file or task
+        #       accepts unicode
+        #             
+        if isinstance(input_param, basestring) and not is_glob(input_param):
+            input_param = [input_param]
+
+        #
+        #   replace output globs with files
+        # 
+        output_tasks, output_globs, output_params, output_runtime_data_names = self.handle_tasks_globs_in_inputs(orig_args[2])
+        if len(output_tasks):
+            raise error_task_split(self, "@split cannot output to another task. "
+                                            "Do not include tasks in output parameters.")
+
+        output_pattern_extras = orig_args[2:]
+
+
+
+        self.param_generator_func = split_ex_param_factory (   tasks, globs, input_param, runtime_data_names,
+                                                                False, # flatten input
+                                                                matching_regex, 
+                                                                output_globs, output_runtime_data_names, *output_pattern_extras)
+        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
+        self.job_wrapper          = job_wrapper_io_files
+        self.job_descriptor       = split_job_descriptor_factory (orig_args[2], output_runtime_data_names)
+
+        # output is a glob
+        self.indeterminate_output = True
+
     #_________________________________________________________________________________________
 
     #   task_split
@@ -1063,6 +1154,10 @@ class _task (node):
         Splits a single set of input files into multiple output file names, 
             where the number of output files may not be known beforehand.
         """
+        if isinstance(orig_args[1], regex):
+            self.task_split_ex(orig_args)
+            return
+            
         #check enough arguments
         if len(orig_args) < 2:
             raise error_task_split(self, "Too few arguments for @split")
@@ -1073,13 +1168,17 @@ class _task (node):
         # replace function / function names with tasks
         # 
         tasks, globs, input_params, runtime_data_names = self.handle_tasks_globs_in_inputs(orig_args[0])
+
+        #
+        #   replace output globs with files
+        # 
         output_tasks, output_globs, output_params, output_runtime_data_names = self.handle_tasks_globs_in_inputs(orig_args[1])
         if len(output_tasks):
             raise error_task_split(self, "@split cannot output to another task. "
                                             "Do not include tasks in output parameters.")
         
-        extra_params = orig_args[1:]
-        self.param_generator_func = split_param_factory (tasks, globs, input_params, runtime_data_names, output_globs, output_runtime_data_names, *extra_params)
+        output_and_extra_params = orig_args[1:]
+        self.param_generator_func = split_param_factory (tasks, globs, input_params, runtime_data_names, output_globs, output_runtime_data_names, *output_and_extra_params)
 
 
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
@@ -1135,13 +1234,14 @@ class _task (node):
         #         
         if isinstance(orig_args[2], inputs):
             if len(orig_args[2].args) != 1:
-                raise error_task_transform(self, "inputs(...) expects only a single argument. "
-                                                "This can be, for example, a file name, "
-                                                "a regular expression pattern, or any "
-                                                "nested structure. If the intention was to "
-                                                "specify a tuple as the input parameter, "
-                                                "please wrap the elements of the tuple "
-                                                "in brackets")
+                raise error_task_transform_inputs_multiple_args(self, 
+                                    "inputs(...) expects only a single argument. "
+                                    "This can be, for example, a file name, "
+                                    "a regular expression pattern, or any "
+                                    "nested structure. If the intention was to "
+                                    "specify a tuple as the input parameter, "
+                                    "please wrap the elements of the tuple "
+                                    "in brackets in the decorator\n\n@transform(..., inputs(...), ...)\n")
             input_pattern = orig_args[2].args[0]
             output_pattern_extras = orig_args[3:]
         else:
@@ -1206,13 +1306,14 @@ class _task (node):
         #         
         if isinstance(orig_args[2], inputs):
             if len(orig_args[2].args) != 1:
-                raise error_task_collate(self, "inputs(...) expects only a single argument. "
-                                                "This can be, for example, a file name, "
-                                                "a regular expression pattern, or any "
-                                                "nested structure. If the intention was to "
-                                                "specify a tuple as the input parameter, "
-                                                "please wrap the elements of the tuple "
-                                                "in brackets")
+                raise error_task_collate_inputs_multiple_args(self,
+                                    "inputs(...) expects only a single argument. "
+                                    "This can be, for example, a file name, "
+                                    "a regular expression pattern, or any "
+                                    "nested structure. If the intention was to "
+                                    "specify a tuple as the input parameter, "
+                                    "please wrap the elements of the tuple "
+                                    "in brackets in the decorator\n\n@collate(..., inputs(...), ...)\n")
             input_pattern = orig_args[2].args[0]
             output_pattern_extras = orig_args[3:]
         else:
@@ -1914,7 +2015,7 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
 #
 #________________________________________________________________________________________ 
 def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forcedtorun_tasks, 
-                                    count_remaining_jobs, runtime_data, verbose):
+                                    count_remaining_jobs, runtime_data, verbose, one_second_per_job):
 
     inprogress_tasks = set()
 
@@ -2015,7 +2116,8 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                                 t._name,
                                 job_name,   
                                 t.job_wrapper, 
-                                t.user_defined_work_func)
+                                t.user_defined_work_func,
+                                one_second_per_job)
 
                     # if no job came from this task, this task is complete
                     #   we need to retire it here instead of normal completion at end of job tasks
@@ -2023,6 +2125,18 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     if cnt_jobs_created == 0:
                         incomplete_tasks.remove(t)
                         t.completed (logger, True)
+
+                        # 
+                        #   Add extra warning if no regular expressions match: 
+                        #   This is a common class of frustrating errors            
+                        #
+                        if ("job_iterators_without_regex_matches" in runtime_data and
+                            parameters in runtime_data["job_iterators_without_regex_matches"]):
+                            msg = "No jobs were run because no files names matched. " \
+                                  "Please make sure that the regular expression is correctly specified"
+                            if verbose >= 1:
+                                logger.warning("    'def %s(...):' %s " % (task_name, msg))
+                                
                         
                 # 
                 #   GeneratorExit is thrown when this generator does not complete.
@@ -2077,26 +2191,29 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
 #
 #
 #________________________________________________________________________________________ 
-def feed_job_params_to_process_pool_factory (parameter_q):
+def feed_job_params_to_process_pool_factory (parameter_q, logger, verbose):
     """
     Process pool gets its parameters from this generator
     Use factory function to save parameter_queue
     """
     def feed_job_params_to_process_pool ():
-        #print >>sys.stderr, "   Send param to Pooled Process START" # DEBUG PIPELINE
+        log_at_level (logger, 10, verbose, "   Send param to Pooled Process START")
         while 1:
-            #print >>sys.stderr, "   Get next parameter size = %d" % parameter_q.qsize()               # DEBUG PIPELINE
+            log_at_level (logger, 10, verbose, "   Get next parameter size = %d" % 
+                                                        parameter_q.qsize())
+            if not parameter_q.qsize():
+                time.sleep(1)
             param = parameter_q.get()
-            #print >>sys.stderr, "   Get next parameter done"           # DEBUG PIPELINE
+            log_at_level (logger, 10, verbose, "   Get next parameter done")
 
             # all tasks done
             if isinstance(param, all_tasks_complete):
                 break
 
-            #print >>sys.stderr, "   Send param to Pooled Process=>", param[0] # DEBUG PIPELINE
+            log_at_level (logger, 10, verbose, "   Send param to Pooled Process=>" + str(param[0]))
             yield param
 
-        #print >>sys.stderr, "   Send param to Pooled Process END" # DEBUG PIPELINE
+        log_at_level (logger, 10, verbose, "   Send param to Pooled Process END")
         
     # return generator
     return feed_job_params_to_process_pool
@@ -2106,20 +2223,20 @@ def feed_job_params_to_process_pool_factory (parameter_q):
 #   fill_queue_with_job_parameters
 #
 #________________________________________________________________________________________ 
-def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE):
+def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE, logger, verbose):
     """
     Ensures queue is filled with number of parameters > jobs / slots (POOL_SIZE)
     """
-    #print >>sys.stderr, "   fill_queue_with_job_parameters START" # DEBUG PIPELINE
+    log_at_level (logger, 10, verbose, "    fill_queue_with_job_parameters START")
     for param in job_parameters:
 
         # stop if no more jobs available
         if isinstance(param, waiting_for_more_tasks_to_complete):
-            #print >>sys.stderr, "   fill_queue_with_job_parameters wait for task to complete" # DEBUG PIPELINE
+            log_at_level (logger, 10, verbose, "    fill_queue_with_job_parameters WAITING for task to complete")
             break
             
-        #if not isinstance(param, all_tasks_complete):                           # DEBUG PIPELINE
-            #print >>sys.stderr, "   fill_queue_with_job_parameters=>", param[0] # DEBUG PIPELINE
+        if not isinstance(param, all_tasks_complete):
+            log_at_level (logger, 10, verbose, "    fill_queue_with_job_parameters=>" + str(param[0]))
 
         # put into queue
         parameter_q.put(param)
@@ -2129,7 +2246,7 @@ def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE):
         #   a loop and everything to hang!
         if parameter_q.qsize() > POOL_SIZE + 1:
             break
-    #print >>sys.stderr, "   fill_queue_with_job_parameters END" # DEBUG PIPELINE
+    log_at_level (logger, 10, verbose, "    fill_queue_with_job_parameters END")
 
 
 #   
@@ -2161,7 +2278,7 @@ def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE):
 #_________________________________________________________________________________________
 def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, logger = stderr_logger, 
                                     gnu_make_maximal_rebuild_mode  = True, verbose = 1, 
-                                    runtime_data = None):
+                                    runtime_data = None, one_second_per_job = True):
     """
     Run pipelines.
 
@@ -2173,7 +2290,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all* out-of-date tasks. Runs minimal
                                           set to build targets if set to ``True``. Use with caution. 
     :param verbose: level 0: nothing
-                    level 1: logs completed jobs/tasks; 
+                    level 1: logs completed jobs/tasks and warnings; 
                     level 2: logs up to date jobs in incomplete tasks
                     level 3: logs reason for running job;
                     level 4: Shows the tasks Ruffus check for up-to-date/completion to decide which part of the pipeline to execute
@@ -2189,6 +2306,9 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
         
     if verbose == 0:
         logger = black_hole_logger
+    elif verbose >= 11:
+        if hasattr(logger, "add_unique_prefix"):
+            logger.add_unique_prefix()
 
     link_task_names_to_functions ()
     #
@@ -2250,9 +2370,9 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     parameter_generator = make_job_parameter_generator (incomplete_tasks, task_parents, 
                                                         logger, forcedtorun_tasks, 
                                                         count_remaining_jobs, 
-                                                        runtime_data, verbose)
+                                                        runtime_data, verbose, one_second_per_job)
     job_parameters = parameter_generator()
-    fill_queue_with_job_parameters(job_parameters, parameter_q, multiprocess)
+    fill_queue_with_job_parameters(job_parameters, parameter_q, multiprocess, logger, verbose)
 
     # 
     #   N.B. 
@@ -2302,7 +2422,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
 
     
     
-    feed_job_params_to_process_pool = feed_job_params_to_process_pool_factory (parameter_q)
+    feed_job_params_to_process_pool = feed_job_params_to_process_pool_factory (parameter_q, logger, verbose)
 
     # 
     #   for each result from job
@@ -2315,9 +2435,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     #       Reserved for returning result from job... 
     #       How?
     # 
-    
     for job_result in pool_func(run_pooled_job_without_exceptions, feed_job_params_to_process_pool()):
-        
         t = node.lookup_node_from_name(job_result.task_name)
         count_remaining_jobs[t] = count_remaining_jobs[t] - 1
         
@@ -2364,7 +2482,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
             #if len(job_errors) == 1 and not parameter_q._closed:
             parameter_q.put(all_tasks_complete())
         else:
-            fill_queue_with_job_parameters(job_parameters, parameter_q, multiprocess)
+            fill_queue_with_job_parameters(job_parameters, parameter_q, multiprocess, logger, verbose)
 
         
         
