@@ -485,6 +485,14 @@ def transform_param_factory (tasks, globs, orig_input_params, runtime_data_names
         if flatten_input:
             input_params = get_strings_in_nested_sequence(input_params)
             
+        # 
+        #   Add extra warning if no regular expressions match: 
+        #   This is a common class of frustrating errors            
+        #
+        if not len(input_params):
+            return
+        no_regular_expression_matches = True
+            
         for input_param in sorted(input_params):
           
             #
@@ -494,6 +502,8 @@ def transform_param_factory (tasks, globs, orig_input_params, runtime_data_names
             if filename == None or not regex.search(filename):
                 continue
 
+            no_regular_expression_matches = False
+            
             #   
             #   "inputs" defined  turn input string into i/o/extras with regex
             # 
@@ -517,6 +527,14 @@ def transform_param_factory (tasks, globs, orig_input_params, runtime_data_names
                     yield (input_param, 
                             construct_filename_parameters_with_regex(filename, regex, output_pattern)) + \
                             extras
+        # 
+        #   Add extra warning if no regular expressions match: 
+        #   This is a common class of frustrating errors            
+        #
+        if no_regular_expression_matches == True:
+            if "job_iterators_without_regex_matches" not in runtime_data:
+                runtime_data["job_iterators_without_regex_matches"] = set()
+            runtime_data["job_iterators_without_regex_matches"].add(iterator)
                 
     return iterator
                 
@@ -576,6 +594,13 @@ def collate_param_factory (tasks, globs, orig_input_params, runtime_data_names,
         if flatten_input:
             input_params = get_strings_in_nested_sequence(input_params)
 
+        # 
+        #   Add extra warning if no regular expressions match: 
+        #   This is a common class of frustrating errors            
+        #
+        if not len(input_params):
+            return
+
         for input_param in sorted(input_params):
             
             #
@@ -603,6 +628,16 @@ def collate_param_factory (tasks, globs, orig_input_params, runtime_data_names,
                 
             params_per_job.append((output_extra_param, actual_input_param))
 
+        # 
+        #   Add extra warning if no regular expressions match: 
+        #   This is a common class of frustrating errors            
+        #
+        if len(params_per_job) == 0:
+            if "job_iterators_without_regex_matches" not in runtime_data:
+                runtime_data["job_iterators_without_regex_matches"] = set()
+            runtime_data["job_iterators_without_regex_matches"].add(iterator)
+
+            
         # combine inputs which lead to the same output/extras into one tuple
         for output_params, params_grouped_by_output in groupby(sorted(params_per_job), itemgetter(0)):
             yield (tuple(input_param for input_param, ignore in 
