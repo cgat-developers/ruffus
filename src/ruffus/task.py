@@ -379,29 +379,6 @@ def io_files_job_descriptor (param, runtime_data):
         return ("Job = [%s -> ??]" % (shorten_filenames_encoder(param[0])))    
     
     
-def split_job_descriptor_factory (output_files, runtime_data_names):
-    def io_files_job_descriptor (param, runtime_data):
-        
-        # lookup run time data
-        runtime_data_to_files = dict()
-        for n in runtime_data_names:
-            data_name = n.args[0]
-            if data_name in runtime_data:
-                runtime_data_to_files[n] = runtime_data[data_name]
-            else:
-                raise error_missing_runtime_parameter("The inputs of this task depends on " +
-                                                      "the runtime parameter " +
-                                                      "'%s' which is missing " %  data_name)
-        actual_output_files = expand_nested_tasks_or_globs(output_files, runtime_data_to_files)
-        
-        
-        # input, output
-        extra_param = "" if len(param) == 2 else ", " + shorten_filenames_encoder(param[2:])[1:-1]
-        return ("Job = [%s -> %s%s]" % (shorten_filenames_encoder(param[0]),
-                                        shorten_filenames_encoder(actual_output_files),
-                                        extra_param))
-    return io_files_job_descriptor
-
 def mkdir_job_descriptor (param, runtime_data):
     # input, output and parameters
     return "Make directories %s" % (shorten_filenames_encoder(param[0]))
@@ -669,7 +646,7 @@ class _task (node):
         
         # whether only task function itself knows what output it will produce
         # i.e. output is a glob or something similar
-        self.indeterminate_output   = False
+        self.indeterminate_output   = 0
         
         # cache output file names here
         self.output_filenames = None
@@ -813,26 +790,26 @@ class _task (node):
             #   return messages description per job
             # 
             cnt_jobs = 0
-            for param in self.param_generator_func(runtime_data):
+            for param, descriptive_param in self.param_generator_func(runtime_data):
                 cnt_jobs += 1
-                job_name = self.job_descriptor(param, runtime_data)
+                job_name = self.job_descriptor(descriptive_param, runtime_data)
                 job_name = job_name.replace("->", indent_str + " " * 7 +  "\n->")
                     
                 #   
                 #   needs update func = None: always needs update
                 #
                 if not self.needs_update_func:
-                    messages.extend(get_job_names (param, indent_str))
+                    messages.extend(get_job_names (descriptive_param, indent_str))
                     messages.append(indent_str + "  Jobs needs update: No function to check if up-to-date or not")
                     continue
 
                 needs_update, msg = self.needs_update_func (*param)
                 if needs_update:
-                    messages.extend(get_job_names (param, indent_str))
+                    messages.extend(get_job_names (descriptive_param, indent_str))
                     messages.append(indent_str + "  Job needs update: %s" % msg)
                 else:
                     if verbose > 4:
-                        messages.extend(get_job_names (param, indent_str))
+                        messages.extend(get_job_names (descriptive_param, indent_str))
                         messages.append(indent_str + "  Job up-to-date")
             if cnt_jobs == 0:
                 messages.append(indent_str + "!!! No jobs for this task. "
@@ -892,11 +869,11 @@ class _task (node):
                 #
                 #   return not up to date if ANY jobs needs update
                 # 
-                for param in self.param_generator_func(runtime_data):
+                for param, descriptive_param in self.param_generator_func(runtime_data):
                     needs_update, msg = self.needs_update_func (*param)
                     if needs_update:
                         if verbose >= 4:
-                            job_name = self.job_descriptor(param, runtime_data)
+                            job_name = self.job_descriptor(descriptive_param, runtime_data)
                             log_at_level (logger, 4, verbose, 
                                             "    Needing update:\n      %s" % job_name)
                         return False
@@ -970,7 +947,7 @@ class _task (node):
             if self.param_generator_func != None:
 
                 cnt_jobs = 0
-                for param in self.param_generator_func(runtime_data):
+                for param, descriptive_param in self.param_generator_func(runtime_data):
     
                     cnt_jobs += 1
                     # skip tasks which don't have output parameters
@@ -985,7 +962,10 @@ class _task (node):
 
                 # the output of split should be treated as multiple jobs
                 if self.indeterminate_output:
-                    self.output_filenames = self.output_filenames[0]
+                    if self.indeterminate_output == 2:
+                        self.output_filenames = reduce(lambda x,y: x + y, self.output_filenames)
+                    else:
+                        self.output_filenames = self.output_filenames[0]
     
         if flattened:
             # if single file name, return that
@@ -1129,20 +1109,20 @@ class _task (node):
             raise error_task_split(self, "@split cannot output to another task. "
                                             "Do not include tasks in output parameters.")
 
-        output_and_extra_params = orig_args[2:]
+        extra_params = orig_args[3:]
 
 
 
         self.param_generator_func = split_ex_param_factory (   tasks, globs, input_param, runtime_data_names,
                                                                 False, # flatten input
                                                                 matching_regex, 
-                                                                output_globs, output_runtime_data_names, *output_and_extra_params)
+                                                                output_globs, output_runtime_data_names, output_params, *extra_params)
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
-        self.job_descriptor       = split_job_descriptor_factory (orig_args[2], output_runtime_data_names)
+        self.job_descriptor       = io_files_job_descriptor # (orig_args[2], output_runtime_data_names)
 
         # output is a glob
-        self.indeterminate_output = True
+        self.indeterminate_output = 2
 
     #_________________________________________________________________________________________
 
@@ -1183,10 +1163,10 @@ class _task (node):
 
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
-        self.job_descriptor       = split_job_descriptor_factory (orig_args[1], output_runtime_data_names)
+        self.job_descriptor       = io_files_job_descriptor# (orig_args[1], output_runtime_data_names)
 
         # output is a glob
-        self.indeterminate_output = True
+        self.indeterminate_output = 1
 
     #_________________________________________________________________________________________
 
@@ -1913,7 +1893,7 @@ def pipeline_printout_graph (stream,
 #   pipeline_printout
 
 #_________________________________________________________________________________________
-def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbose=0, indent = 4,
+def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbose=1, indent = 4,
                                     gnu_make_maximal_rebuild_mode  = True, wrap_width = 100,
                                     runtime_data= None):
     """
@@ -1942,6 +1922,8 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
                                           set to build targets if set to ``True``. Use with caution.
     :param test_all_task_for_update: Ask all task functions if they are up-to-date 
     """
+    if verbose == 0:
+        return
 
     if runtime_data == None:
         runtime_data = {}
@@ -2052,7 +2034,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     # log task
                     # 
                     task_name = t._name.replace("__main__.", "")
-                    log_at_level (logger, 3, verbose, "Start Task = " + task_name + (": Forced to rerun" if force_rerun else ""))
+                    log_at_level (logger, 3, verbose, "Task enters queue = " + task_name + (": Forced to rerun" if force_rerun else ""))
                     log_at_level (logger, 3, verbose, t._description)
                     inprogress_tasks.add(t)
                     cnt_tasks_processed += 1
@@ -2076,7 +2058,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     #   iterate through parameters
                     #                         
                     cnt_jobs_created = 0
-                    for param in parameters:
+                    for param, descriptive_param in parameters:
                         
                         #
                         #   save output even if uptodate 
@@ -2084,7 +2066,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                         if len(param) >= 2:
                             t.output_filenames.append(param[1])
 
-                        job_name = t.job_descriptor(param, runtime_data)
+                        job_name = t.job_descriptor(descriptive_param, runtime_data)
 
                         # 
                         #    don't run if up to date
