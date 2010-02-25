@@ -89,6 +89,10 @@ def lineno():
     return inspect.currentframe().f_back.f_lineno
 
 
+def double_parameters(params):
+    return [(p,p) for p in params]
+    
+    
 from random import randint
 class Test_args_param_factory(unittest.TestCase):
 
@@ -109,7 +113,7 @@ class Test_args_param_factory(unittest.TestCase):
         test convenience form for single job per task
         """
         self.assertEqual(self.forwarded_function([["file.input", "file.output", "other", 1]]),
-                            [['file.input', 'file.output', 'other', 1]])
+                            double_parameters([['file.input', 'file.output', 'other', 1]]))
 
     def test_multiple_jobs_per_task(self):
         """
@@ -121,7 +125,7 @@ class Test_args_param_factory(unittest.TestCase):
                     ["file2input", "file2.output", "other", 1],
                  ]
         self.assertEqual(self.forwarded_function(params),
-                            params)
+                            double_parameters(params))
 
     def test_nested_multiple_jobs_per_task(self):
         """
@@ -133,7 +137,7 @@ class Test_args_param_factory(unittest.TestCase):
                     ["file2input", "file2.output", "other", 1],
                  ]
         self.assertEqual(self.forwarded_function(params),
-                            params)
+                            double_parameters(params))
 
         
         
@@ -175,7 +179,7 @@ def recursive_replace(p, from_s, to_s):
 def list_generator_factory (list):
     def list_generator (ignored_args):
         for i in list:
-            yield i
+            yield i, i
     return list_generator
     
 l1 = [["input1", "output1.test"], [3, "output2.test"], ["input3", "output3.test"], [3, ["output4.test", "output.ignored"]], [], [4, 5]]
@@ -243,7 +247,8 @@ class Test_files_re_param_factory(unittest.TestCase):
         This extra function is to simulate the forwarding from the decorator to
             the task creation function
         """
-        return list(self.get_param_iterator (*old_args)(None))
+        return list(p1 for (p1, ps) in self.get_param_iterator (*old_args)(None))
+        #return list(self.get_param_iterator (*old_args)(None))
         
     def check_input_files_exist(self, *old_args):
         """
@@ -251,7 +256,7 @@ class Test_files_re_param_factory(unittest.TestCase):
             the task creation function
         """
         it = self.get_param_iterator (*old_args)
-        for param in it(None):
+        for param, param2 in it(None):
             check_input_files_exist (*param)
         return True
         
@@ -261,7 +266,7 @@ class Test_files_re_param_factory(unittest.TestCase):
             the task creation function
         """
         it = self.get_param_iterator (*old_args)
-        return [needs_update_check_modify_time (*p) for p in it(None)]
+        return [needs_update_check_modify_time (*p) for (p, param2) in it(None)]
 
 
     def test_combine(self):
@@ -456,7 +461,9 @@ class Test_split_param_factory(unittest.TestCase):
             the task creation function
         """
         # extra dereference because we are only interested in the first (only) job
-        return list(self.get_param_iterator (*old_args)(None))[0]
+        #return list(self.get_param_iterator (*old_args)(None))[0]
+        return list(p1 for (p1, ps) in self.get_param_iterator (*old_args)(None))[0]
+        
 
 
     def test_glob(self):
@@ -590,7 +597,8 @@ class Test_merge_param_factory(unittest.TestCase):
             the task creation function
         """
         # extra dereference because we are only interested in the first (only) job
-        return list(self.get_param_iterator (*old_args)(None))[0]
+        return list(p1 for (p1, ps) in self.get_param_iterator (*old_args)(None))[0]
+        
 
 
     def test_glob(self):
@@ -736,7 +744,8 @@ class Test_transform_param_factory(unittest.TestCase):
             the task creation function
         """
         # extra dereference because we are only interested in the first (only) job
-        return list(self.get_param_iterator (*old_args)(None))
+        return list(p1 for (p1, ps) in self.get_param_iterator (*old_args)(None))
+        
 
 
     def test_suffix(self):
@@ -910,7 +919,7 @@ class Test_collate_param_factory(unittest.TestCase):
             the task creation function
         """
         # extra dereference because we are only interested in the first (only) job
-        return list(self.get_param_iterator (*old_args)(None))
+        return list(p1 for (p1, ps) in self.get_param_iterator (*old_args)(None))
 
 
     def test_regex(self):
@@ -1154,7 +1163,7 @@ class Test_files_param_factory(unittest.TestCase):
         This extra function is to simulate the forwarding from the decorator to
             the task creation function
         """
-        return list(self.get_param_iterator (*old_args)(None))
+        return list(p1 for (p1, ps) in self.get_param_iterator (*old_args)(None))
 
     def test_simple(self):
         """
