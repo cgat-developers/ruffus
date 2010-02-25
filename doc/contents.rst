@@ -51,7 +51,7 @@ Decorators
 
     .. toctree::
         :maxdepth: 1
-    
+
         decorators/follows.rst
         decorators/files.rst
 
@@ -60,18 +60,18 @@ Decorators
 
     .. toctree::
         :maxdepth: 1
-    
+
         decorators/split.rst
         decorators/transform.rst
         decorators/merge.rst
         decorators/posttask.rst
-    
+
 .. topic::
     For advanced users
 
     .. toctree::
         :maxdepth: 1
-    
+
         decorators/transform_ex.rst
         decorators/collate.rst
 
@@ -80,7 +80,7 @@ Decorators
 
     .. toctree::
         :maxdepth: 1
-        
+
         decorators/files_ex.rst
         decorators/parallel.rst
         decorators/check_if_uptodate.rst
@@ -97,7 +97,7 @@ Modules:
 
    task.rst
    proxy_logger.rst
-   
+
 .. comment
    graph.rst
    print_dependencies.rst

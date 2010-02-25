@@ -199,4 +199,4 @@ Usage
 # 
 # 
 # python setup.py register
-# python setup.py sdist --format=gztar,zip upload
+# python setup.py sdist --format=gztar upload

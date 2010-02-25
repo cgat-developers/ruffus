@@ -248,8 +248,10 @@ Be careful not to step on one when running down country park lanes at full speed
 in Hong Kong: this snake is a `rare breed <http://www.hkras.org/eng/info/hkspp.htm>`_!
 
 *Ruffus* is a shy creature, and pretends to be a cobra by putting up its red tail and ducking its
-head in its coils when startled. It does most of its work at night and sleeps during the day:
-typical of many python programmers!
+head in its coils when startled. It is not venomous and is Mostly Harmless.
+*Ruffus* does most of its work at night and sleeps during the day:
+typical of many (but alas not all) python programmers!
+
 
 The original image is from `wikimedia <http://upload.wikimedia.org/wikipedia/commons/a/a1/Cyl_ruffus_061212_2025_tdp.jpg>`_
 
