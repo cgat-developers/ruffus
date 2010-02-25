@@ -365,7 +365,7 @@ def args_param_factory (orig_args):
     """
     def iterator(runtime_data):
         for job_param in orig_args:
-            yield job_param
+            yield job_param, job_param
     return iterator
 
 #_________________________________________________________________________________________
@@ -399,11 +399,12 @@ def files_param_factory (tasks, globs, input_params, runtime_data_names,
     def iterator(runtime_data):
         for input_param, output_extra_param in zip(input_params, output_extras):
             if flatten_input:
-                yield (get_strings_in_nested_sequence(input_param),) + output_extra_param
+                yield_param = (get_strings_in_nested_sequence(input_param),) + output_extra_param
             else:
-                yield (file_names_from_tasks_globs(input_param, tasks, globs, runtime_data_names, 
+                yield_param = (file_names_from_tasks_globs(input_param, tasks, globs, runtime_data_names, 
                                                     runtime_data,
                                                     do_not_expand_single_job_tasks),) + output_extra_param
+            yield yield_param, yield_param
     return iterator
 
 def files_runtime_param_factory (input_params, runtime_data_names, 
@@ -418,9 +419,9 @@ def files_runtime_param_factory (input_params, runtime_data_names,
                                                     False) # do_not_expand_single_job_tasks is irrelevant
         if non_str_sequence(params):
             for p in params:
-                yield p
+                yield p, p
         else:
-            yield params
+            yield params, params
 
     return iterator
 
@@ -432,7 +433,7 @@ def files_custom_generator_param_factory (generator):
     """
     def iterator(runtime_data):
         for params in generator():
-                yield params
+                yield params, params
     return iterator
 
 #_________________________________________________________________________________________
@@ -453,14 +454,90 @@ def split_param_factory (tasks, globs, orig_input_params, runtime_data_names, ou
         output_files   = file_names_from_tasks_globs(output_files_specification, [], output_globs,
                                                     output_runtime_data_names, 
                                                     runtime_data)
-        yield (orig_filenames, output_files) + extras
+        output_files_display  = file_names_from_tasks_globs(output_files_specification, [], [],
+                                                    output_runtime_data_names, 
+                                                    runtime_data)
+        yield (orig_filenames, output_files) + extras, (orig_filenames, output_files_display) + extras
+
 
 
     return iterator
 
     
     
-#
+#_________________________________________________________________________________________
+
+#   split_ex_param_factory
+
+#_________________________________________________________________________________________
+def split_ex_param_factory (tasks, globs, orig_input_params, runtime_data_names, 
+                                flatten_input, regex, 
+                                output_globs, output_runtime_data_names, output_files_specification, *extras):
+    """
+    Factory for task_spl
+    """
+    def iterator(runtime_data):
+
+        # 
+        # get list of input_params
+        # 
+        input_params = file_names_from_tasks_globs(orig_input_params, tasks, globs,
+                                                    runtime_data_names, runtime_data)
+
+        if flatten_input:
+            input_params = get_strings_in_nested_sequence(input_params)
+
+        # 
+        #   Add extra warning if no regular expressions match: 
+        #   This is a common class of frustrating errors            
+        #
+        if not len(input_params):
+            return
+        no_regular_expression_matches = True
+
+        for input_param in sorted(input_params):
+
+            #
+            #   turn input param into a string and match with regular expression
+            #   
+            filename = get_first_string_in_nested_sequence(input_param)
+            if filename == None or not regex.search(filename):
+                continue
+
+            no_regular_expression_matches = False
+
+            # 
+            #   do regex substitution on output pattern and output glob if necessary
+            #       before glob substitution
+            # 
+            this_output_glob  = construct_filename_parameters_with_regex(filename, regex, output_globs) 
+            this_output_param = construct_filename_parameters_with_regex(filename, regex, output_files_specification) 
+            output_param      = file_names_from_tasks_globs(this_output_param, [], this_output_glob,
+                                                            output_runtime_data_names, 
+                                                            runtime_data)
+            output_param_display= file_names_from_tasks_globs(this_output_param, [], [],
+                                                            output_runtime_data_names, 
+                                                            runtime_data)
+
+            #
+            #   regex substitution on everything else
+            # 
+            extra_params =  tuple(construct_filename_parameters_with_regex(filename, regex, p) 
+                                        for p in extras)
+            yield (input_param, output_param) + extra_params, (input_param, output_param_display) + extra_params
+
+
+        # 
+        #   Add extra warning if no regular expressions match: 
+        #   This is a common class of frustrating errors            
+        #
+        if no_regular_expression_matches == True:
+            if "job_iterators_without_regex_matches" not in runtime_data:
+                runtime_data["job_iterators_without_regex_matches"] = set()
+            runtime_data["job_iterators_without_regex_matches"].add(iterator)
+
+    return iterator
+
 #_________________________________________________________________________________________
 
 #   transform_param_factory
@@ -509,10 +586,10 @@ def transform_param_factory (tasks, globs, orig_input_params, runtime_data_names
             # 
             if input_pattern != None:
                 if regex_substitute_extra_parameters:
-                    yield tuple(construct_filename_parameters_with_regex(filename, regex, p) 
+                    yield_param =  tuple(construct_filename_parameters_with_regex(filename, regex, p) 
                                         for p in (input_pattern, output_pattern) + extras)
                 else:
-                    yield tuple(construct_filename_parameters_with_regex(filename, regex, p) 
+                    yield_param =  tuple(construct_filename_parameters_with_regex(filename, regex, p) 
                                         for p in (input_pattern, output_pattern)) + extras
             #   
             #   "inputs" not defined:
@@ -520,13 +597,14 @@ def transform_param_factory (tasks, globs, orig_input_params, runtime_data_names
             # 
             else:
                 if regex_substitute_extra_parameters:
-                    yield (input_param,) + \
-                            tuple(construct_filename_parameters_with_regex(filename, regex, p) 
-                                        for p in (output_pattern,) + extras)
+                    yield_param =  (input_param,) + \
+                                    tuple(construct_filename_parameters_with_regex(filename, regex, p) 
+                                                for p in (output_pattern,) + extras)
                 else:
-                    yield (input_param, 
-                            construct_filename_parameters_with_regex(filename, regex, output_pattern)) + \
-                            extras
+                    yield_param =  (input_param, 
+                                    construct_filename_parameters_with_regex(filename, regex, output_pattern)) + \
+                                    extras
+            yield yield_param, yield_param
         # 
         #   Add extra warning if no regular expressions match: 
         #   This is a common class of frustrating errors            
@@ -557,7 +635,9 @@ def merge_param_factory (tasks, globs, orig_input_params, runtime_data_names,
         orig_filenames = file_names_from_tasks_globs(orig_input_params, tasks, globs,
                                                     runtime_data_names, runtime_data, 
                                                     True)
-        yield (orig_filenames, output_files) + extras
+        yield_param = (orig_filenames, output_files) + extras
+        yield yield_param, yield_param
+        
     return iterator
 
     
@@ -640,8 +720,9 @@ def collate_param_factory (tasks, globs, orig_input_params, runtime_data_names,
             
         # combine inputs which lead to the same output/extras into one tuple
         for output_params, params_grouped_by_output in groupby(sorted(params_per_job), itemgetter(0)):
-            yield (tuple(input_param for input_param, ignore in 
+            yield_param = (tuple(input_param for input_param, ignore in 
                             groupby(list(params_grouped_by_output), itemgetter(1))),) + output_params
+            yield yield_param, yield_param
                         
     return iterator
 
