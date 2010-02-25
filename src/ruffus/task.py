@@ -948,7 +948,6 @@ class _task (node):
 
                 cnt_jobs = 0
                 for param, descriptive_param in self.param_generator_func(runtime_data):
-    
                     cnt_jobs += 1
                     # skip tasks which don't have output parameters
                     if len(param) >= 2:
@@ -2050,7 +2049,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     #   If no parameters: just call task function (empty list)
                     #
                     if t.param_generator_func == None:
-                        parameters = ([],)
+                        parameters = ([[], []],)
                     else:
                         parameters = t.param_generator_func(runtime_data)
                         
