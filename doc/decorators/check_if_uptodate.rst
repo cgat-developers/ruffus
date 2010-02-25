@@ -1,4 +1,5 @@
 .. _decorators.check_if_uptodate:
+
 .. index:: 
     pair: @check_if_uptodate; Syntax
 
