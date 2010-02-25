@@ -8,7 +8,7 @@ if not sys.version_info[0:2] >= (2,4):
     sys.exit(1)
     
 # quickly import the latest version of ruffus
-sys.path.insert(0, os.path.abspath(os.path.join("src")))
+sys.path.insert(0, os.path.abspath("."))
 import ruffus.ruffus_version
 sys.path.pop(0)
     
@@ -182,7 +182,7 @@ Usage
         #packages = find_packages('src'),    # include all packages under src
         #package_dir = {'':'src'},           #packages are under src
         packages=['ruffus'],
-        package_dir={'ruffus': 'src/ruffus'},
+        package_dir={'ruffus': 'ruffus'},
         include_package_data = True,    # include everything in source control
         #package_data = {
         #    # If any package contains *.txt files, include them:
