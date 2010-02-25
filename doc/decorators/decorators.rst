@@ -166,7 +166,7 @@ Ruffus Decorators
          or ``glob`` results
        - skips up-to-date jobs
    ", "
-   * :ref:`@files_re <files_re>` ( ``tasks_or_file_names``, ``matching_regex``, [``input_pattern``,] ``output_pattern``, ``...`` )
+   * :ref:`@files_re <decorators.files_re>` ( ``tasks_or_file_names``, ``matching_regex``, [``input_pattern``,] ``output_pattern``, ``...`` )
        ``input_pattern``/``output_pattern`` are regex patterns
        used to create input/output file names from the starting
        list of either glob_str or file names

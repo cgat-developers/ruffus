@@ -47,7 +47,7 @@ Advanced usage of @transform:
 
         To compile ``*.c`` to ``*.o``, also depending on matching header files ``*.h``::
         
-            @transform(previous_task, suffix(".c"), inputs(".c", ".h"),  ".o")
+            @transform(previous_task, suffix(".c"), inputs([".c", ".h"]),  ".o")
             def compile(infile, outfile):
                 # do something here
                 pass
@@ -55,7 +55,7 @@ Advanced usage of @transform:
         A regular expression gives even more flexibility, allow an additional static dependency to be added,
         compiling ``*.c`` to ``*.o``, depending on header files ``*.h``, and ``universal.h``::
             
-            @transform(["1.c", "2.c"], regex(r"(.*).c$"), inputs(r"\1.c", "\1.h", "universal.h"),  "\1.o")
+            @transform(["1.c", "2.c"], regex(r"(.*).c$"), inputs([r"\1.c", "\1.h", "universal.h"]),  "\1.o")
             def compile(infile, outfile):
                 # do something here
                 pass
@@ -108,7 +108,8 @@ Advanced usage of @transform:
 .. _decorators.transform.input_pattern:
 
     * *input_pattern*
-       Specifies the resulting input file name(s).
+       Specifies the resulting input(s) to each job. Strings, or strings nested in
+       a list or tuple, will be subject to regular expression substitution. 
        
        Must be wrapped in a :ref:`inputs<decorators.inputs>` indicator object.
 

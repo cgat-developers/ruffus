@@ -41,7 +41,7 @@ Running all out-of-date tasks and dependents
     All down-stream (dependent) tasks will be re-run anyway, so we don't have to test
           whether they are up-to-date or not.
 
-    .. _checking-multiple-times:
+    .. _manual.dependencies.checking_multiple_times:
     
     .. note::
     

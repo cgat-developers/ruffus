@@ -1,4 +1,5 @@
 .. _decorators.files_re:
+
 .. index:: 
     pair: @files_re; Syntax
 

@@ -1,3 +1,4 @@
+.. _manual.check_if_uptodate:
 .. _manual_14th_chapter:
 
 ###################################################################################################
@@ -10,11 +11,10 @@
     * :ref:`@check_if_uptodate  syntax in detail<decorators.check_if_uptodate>`
 
     
+
 .. index:: 
     pair: @check_if_uptodate; Manual
     
-.. _manual.check_if_uptodate:
-
 ******************************************************************************
 **@check_if_uptodate** : Manual dependency checking
 ******************************************************************************
@@ -79,7 +79,7 @@
     
 .. note::
     
-    The function specified by :ref:`@check_if_uptodate <check_if_uptodate>` can be called
+    The function specified by :ref:`@check_if_uptodate <manual.check_if_uptodate>` can be called
     more than once for each job. 
 
     See the discussion of how **Ruffus** decides which tasks to run in :ref:`Chapter 9 <manual_9th_chapter>`

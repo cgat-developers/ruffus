@@ -80,8 +80,12 @@ Indicator Objects
 ***************************************
 *inputs(*\ `input_file_pattern`\ *)*
 ***************************************
-    The enclosed parameter is a pattern string which is used to construct input file
-    names. 
+    The enclosed single parameter is a pattern string or a nested structure which is 
+    used to construct the input for each job. 
+    
+    If more than one argument is supplied to inputs, an exception will be raised.
+    
+    Use a tuple or list (as in the following example) to send multiple input arguments to each job.
 
     **Used by:**
         * The advanced form of :ref:`@transform <decorators.transform_ex>`
@@ -89,7 +93,7 @@ Indicator Objects
     **Example**:
         ::
         
-             @transform(["x.c", "y.c"], regex(r"(.*).c"), inputs(r"\1.c", r"\1.h"), r"\1.o")
+             @transform(["x.c", "y.c"], regex(r"(.*).c"), inputs([r"\1.c", r"\1.h"]), r"\1.o")
              def compile(infiles, outfile):
                  # do something here
                  pass
@@ -98,12 +102,14 @@ Indicator Objects
         | The starting files names are ``x.c`` and ``y.c``.
         | The regular expression is ``r(.*).c`` so the first matching part 
           ``\1`` will be ``x`` and ``y``
-        | Because the input file pattern is ``\1.c`` and ``\1.h``, the resulting input files will be:
+        | Because the input file pattern is [``\1.c``, ``\1.h``], the resulting input files will be:
         
         ::
         
-            job1:   "x.c", "x.h"
-            job2:   "y.c", "y.h"
+            job1:   ["x.c", "x.h"]
+            job2:   ["y.c", "y.h"]
+            
+
             
 .. _decorators.mkdir:
 

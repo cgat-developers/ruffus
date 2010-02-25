@@ -47,7 +47,14 @@ version 2.0.2
 ********************************************************************
 
     * Much prettier /useful output from :ref:`pipeline_printout <pipeline_functions.pipeline_printout>`
+    * New tutorial / manual
 
+********************************************************************
+version 2.0.8
+********************************************************************
+
+    * File names can be in unicode
+    * File systems with 1 second timestamp granularity no longer cause problems.
 
 ########################################
 Fixed Bugs
