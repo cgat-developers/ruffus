@@ -1,11 +1,51 @@
+= v. 2.0.9=
+    _25/February/2010_
+    ==Bug Fix:==
+        * From "Issue 10".
+          Source code directory under svn is now in /ruffus rather than src/ruffus
+          (Thanks to P.J. Davis)
+        * Better display of @split parameters when logging output
+          The output parameters in @split should not be expanded 
+          if they are wildcards. This was previously handled as a special case. Now
+          all parameter factories return two sets of parameters:
+          The first to go to jobs, the second for displaying in trace logs.
+        * Pipeline_printout defaults to verbose of 1. Verbose of 0 does nothing
+          (Thanks to L.S.G)
+        * The "Start Task" log message at verbosity of 3 was misleading.
+          This is only when the task enters the queue. 
+          If there are multiple independent tasks, they may all enter the queue at the 
+          same time even with multiprocess=1. Jobs will be run one at a time.                                     
+          (Thanks to C. Nellaker.)
+    ==Advanced form of split:==
+        * Previously split only takes 1 set of input (tasks/files/globs) and split these into an indeterminate number of output.
+          The new advanced form of split takes multiple input, and splits EACH of these
+          further. I.e. it is like a combination of @split and @transform.
+          For example:
+          {{{
+           @split(get_files, regex(r"(.+).original"), r"\1.*.split")
+           def split_files(i, o): 
+                pass
+          }}}
+          This experimental feature will be in beta without documentation. Caveat utilitor!
+            
+
+
+
+
 = v. 2.0.8=
     _22/January/2010_
     ==Bug Fix:==
         * Now accepts unicode file names: 
           Change `isinstance(x,str)` to `isinstance(x, basestring)`
-        * inputs(...) raises exception when passed multiple arguments.
-          If the input parameter is being passed a tuple, add an extra 
-          Change `isinstance(x,str)` to `isinstance(x, basestring)`
+          (Thanks to P.J. Davis for contributing this.)
+        * inputs(...) now raises an exception when passed multiple arguments.
+          If the input parameter is being passed a tuple, add an extra set of enclosing
+          brackets. Documentation updated accordingly.
+          (Thanks to Z. Harris for spotting this.)
+        * tasks where regular expressions are incorrectly specified are a great source of frustration
+          and puzzlement.
+          Now if no regular expression matches occur, a warning is printed
+          (Thanks to C. Nellaker for suggesting this)
 
 = v. 2.0.7=
     _11/December/2009_
