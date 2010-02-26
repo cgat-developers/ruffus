@@ -49,7 +49,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(exe_path,"..", "..")))
     
     
 from ruffus import *
-from time import sleep
 import random
 from itertools import izip
 
@@ -366,7 +365,6 @@ def statistical_summary (result_files, summary_file):
     summary_file = open(summary_file, "w")
     for f in result_files:
         summary_file.write(open(f).read())
-    sleep(1)
 
 
 

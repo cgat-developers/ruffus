@@ -75,7 +75,7 @@ from ruffus_exceptions import *
 #   construct_filename_parameters_with_regex
 # 
 #_________________________________________________________________________________________
-def construct_filename_parameters_with_regex(filename, regex, p):
+def regex_replace(filename, regex, p):
     """
     recursively replaces file name specifications using regular expressions
     Non-strings are left alone
@@ -83,16 +83,16 @@ def construct_filename_parameters_with_regex(filename, regex, p):
     if isinstance(p, basestring):
         return regex.sub(p, filename) 
     elif non_str_sequence (p):
-        return type(p)(construct_filename_parameters_with_regex(filename, regex, pp) for pp in p)
+        return type(p)(regex_replace(filename, regex, pp) for pp in p)
     else:
         return p
         
 #_________________________________________________________________________________________
 #
-#   construct_filename_parameters_with_regex
+#   regex_replace
 # 
 #_________________________________________________________________________________________
-#def construct_filename_parameters_with_regex(filename, regex, p):
+#def regex_replace(filename, regex, p):
 #    """
 #    recursively replaces file name specifications using regular expressions
 #    Non-strings are left alone
@@ -100,7 +100,7 @@ def construct_filename_parameters_with_regex(filename, regex, p):
 #    if isinstance(p, str):
 #        return regex.sub(p, filename) 
 #    elif non_str_sequence (p):
-#        return tuple(construct_filename_parameters_with_regex(filename, regex, pp) for pp in p)
+#        return tuple(regex_replace(filename, regex, pp) for pp in p)
 #    else:
 #        return p
 
@@ -501,8 +501,8 @@ def check_files_io_parameters (enclosing_task, params, error_object):
     Checks format of parameters and
     whether there are input and output files specified for each job
     """
-    if not len(params):
-        raise Exception("@files I/O parameters is empty.")
+    #if not len(params):
+    #    raise Exception("@files I/O parameters is empty.")
 
     try:
         for job_param in params:
@@ -615,4 +615,4 @@ class runtime_parameter(object):
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-        
+
