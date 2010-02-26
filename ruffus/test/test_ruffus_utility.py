@@ -475,17 +475,17 @@ class Test_expand_nested_tasks_or_globs(unittest.TestCase):
 #
 #_________________________________________________________________________________________
 
-#   Test_construct_filename_parameters_with_regex
+#   Test_regex_replace
 
 #_________________________________________________________________________________________
-class Test_construct_filename_parameters_with_regex (unittest.TestCase):
+class Test_regex_replace (unittest.TestCase):
     def helper (self, data, result):
-        try_result = construct_filename_parameters_with_regex("aaa.bbb.ccc.aaa", 
+        try_result = regex_replace("aaa.bbb.ccc.aaa", 
                                                                   re.compile("([a-z]+)\.([a-z]+)\.([a-z]+)\.([a-z]+)"), 
                                                                   data) 
         self.assertEqual(try_result ,  result)
 
-    def test_construct_filename_parameters_with_regex(self):
+    def test_regex_replace(self):
         self.helper(r"\3.\2.\1", "ccc.bbb.aaa")
         self.helper(None, None)
         self.helper(1, 1)
@@ -502,7 +502,7 @@ class Test_construct_filename_parameters_with_regex (unittest.TestCase):
 #     
 if sys.argv.count("--debug"):
     sys.argv.remove("--debug")
-#sys.argv.append("Test_construct_filename_parameters_with_regex")
+#sys.argv.append("Test_regex_replace")
 unittest.main()
 
 

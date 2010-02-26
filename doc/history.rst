@@ -56,6 +56,62 @@ version 2.0.8
     * File names can be in unicode
     * File systems with 1 second timestamp granularity no longer cause problems.
 
+********************************************************************
+version 2.0.9
+********************************************************************
+
+    * Better display of logging output
+    * Advanced form of **@split**
+      This is an experimental feature.
+      
+      Hitherto, **@split** only takes 1 set of input (tasks/files/globs) and split these
+      into an indeterminate number of output.
+      
+      It is a one->many operation.
+      
+      Sometimes it is desirable to take multiple input files, and split each of them further.
+      
+      This is a many->many (more) operation.
+      
+      It is possible to hack something together using ``@transform`` but downstream tasks would not
+      aware that each job in ``@transform`` produces multiple outputs (rather than one input,
+      one output per job).
+      
+      The syntax looks like::
+
+           @split(get_files, regex(r"(.+).original"), r"\1.*.split")
+           def split_files(i, o): 
+                pass
+                
+      If ``get_files()`` returned ``A.original``, ``B.original`` and ``C.original``,
+      ``split_files()`` might lead to the following operations::
+            
+            A.original
+                    -> A.1.original
+                    -> A.2.original
+                    -> A.3.original
+            B.original
+                    -> B.1.original
+                    -> B.2.original
+            C.original
+                    -> C.1.original
+                    -> C.2.original
+                    -> C.3.original
+                    -> C.4.original
+                    -> C.5.original
+                    
+      Note that each input (``A/B/C.original``) can produce a number of output, the exact
+      number of which does not have to be pre-determined. 
+      This is similar to **@split**
+      
+      Tasks following ``split_files`` will have ten inputs corresponding to each of the
+      output from ``split_files``.
+      
+      If ``@transform`` was used instead of @split, then tasks following ``split_files`` 
+      would only have 3 inputs.
+
+      
+
 ########################################
 Fixed Bugs
 ########################################

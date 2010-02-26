@@ -1,3 +1,27 @@
+= v. 2.0.10=
+    _25/February/2010_
+    ==pipeline_run(..., touch_files_only = True)==
+		* This will only `touch` output files for each job without running the 
+          python function. I.e. The output files are updated if they are old, or created
+          if missing.
+          This can be useful for simulating a pipeline run so that all files look as
+	      if they are up-to-date.
+        Caveats:
+        * This may not work correctly where output files are only determined at runtime, e.g. with @split
+        * Only the output from pipelined jobs which are currently out-of-date will be touched.
+          In other words, the pipeline runs *as normal*, the only difference is that the
+          output files are touched instead of being created by the python task functions
+          which would otherwise have been invoked.
+    ==parameter substitution for inputs(...)==
+        * The inputs(...) parameter in @transform, @collate can now take tasks and globs,
+          and these will be substituted appropriately (after regular expression replacement).
+    ==Bug Fix:==
+        * From "Issue 21".
+          Empty @files specifications no longer throw exceptions.
+		  If verbose logging is on, a warning is printed.
+          (Thanks to A. Heger)
+
+
 = v. 2.0.9=
     _25/February/2010_
     ==Bug Fix:==

@@ -158,8 +158,6 @@ helpstr = f.getvalue()
 
 tempdir = "temp_filesre_split_and_combine/"
 
-def sleep_a_while ():
-    time.sleep(1)
 
     
 if options.verbose:
@@ -175,7 +173,6 @@ else:
 #
 #    split_fasta_file
 #
-@posttask(sleep_a_while)
 @posttask(lambda: verbose_output.write("Split into %d files\n" % options.jobs_per_task))
 @split(tempdir  + "original.fa", [tempdir  + "files.split.success", tempdir + "files.split.*.fa"])
 def split_fasta_file (input_file, outputs):
@@ -201,7 +198,6 @@ def split_fasta_file (input_file, outputs):
 #
 #    align_sequences
 #
-@posttask(sleep_a_while)
 @posttask(lambda: verbose_output.write("Sequences aligned\n"))
 @transform(split_fasta_file, suffix(".fa"), ".aln")                     # fa -> aln
 def align_sequences (input_file, output_filename):
@@ -213,7 +209,6 @@ def align_sequences (input_file, output_filename):
 #
 #    percentage_identity
 #
-@posttask(sleep_a_while)
 @posttask(lambda: verbose_output.write("%Identity calculated\n"))
 @transform(align_sequences,             # find all results from align_sequences
             suffix(".aln"),             # replace suffix with:
@@ -231,7 +226,6 @@ def percentage_identity (input_file, output_files):
 #    combine_results
 #
 @posttask(lambda: verbose_output.write("Results recombined\n"))
-@posttask(sleep_a_while)
 @merge(percentage_identity, [tempdir + "all.combine_results", 
                              tempdir + "all.combine_results_success"])
 def combine_results (input_files, output_files):
@@ -255,7 +249,6 @@ def start_pipeline_afresh ():
     os.system("rm -rf %s" % tempdir)
     os.makedirs(tempdir)
     open(tempdir + "original.fa", "w").close()
-    sleep_a_while ()
 
 if __name__ == '__main__':
     if options.start_again:

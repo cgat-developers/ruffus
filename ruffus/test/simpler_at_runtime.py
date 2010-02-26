@@ -57,7 +57,10 @@ parser.add_option("-j", "--jobs", dest="jobs",
 parser.add_option("-v", "--verbose", dest = "verbose",
                   action="count", default=0,
                   help="Print more verbose messages for each additional verbose level.")
-parser.add_option("-d", "--dependency", dest="dependency_file",
+parser.add_option("-d", "--debug", dest = "debug",
+                  action="count", default=0,
+                  help="Cleanup afterwards.")
+parser.add_option("--dependency", dest="dependency_file",
                   metavar="FILE", 
                   type="string",
                   help="Print a dependency graph of the pipeline that would be executed "
@@ -141,9 +144,6 @@ parser.print_help(f)
 helpstr = f.getvalue()
 (options, remaining_args) = parser.parse_args()
 
-import time
-def sleep_a_while ():
-    time.sleep(1)
 
 
 
@@ -168,7 +168,6 @@ def task1(infile, outfiles):
     output_text += json.dumps(infile) + " -> " + json.dumps(outfiles) + "\n"
     for outfile in outfiles:
         open(outfile, "w").write(output_text)
-    time.sleep(1)
 
 
 
@@ -183,7 +182,6 @@ def task2(infile, outfile):
     output_text  = open(infile).read() if infile else ""
     output_text += json.dumps(infile) + " -> " + json.dumps(outfile) + "\n"
     open(outfile, "w").write(output_text)
-    time.sleep(1)
 
 
 
@@ -198,7 +196,6 @@ def task3(infile, outfile):
     output_text  = open(infile).read() if infile else ""
     output_text += json.dumps(infile) + " -> " + json.dumps(outfile) + "\n"
     open(outfile, "w").write(output_text)
-    time.sleep(1)
 
 
 
@@ -214,7 +211,6 @@ def task4(infile, outfile):
     output_text  = open(infile).read() if infile else ""
     output_text += json.dumps(infile) + " -> " + json.dumps(outfile) + "\n"
     open(outfile, "w").write(output_text)
-    time.sleep(1)
 
 # 
 #   Necessary to protect the "entry point" of the program under windows.
@@ -234,6 +230,20 @@ if __name__ == '__main__':
                                  draw_vertically = not options.draw_horizontally,
                                  gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                                  no_key_legend  = options.no_key_legend_in_graph)
+        elif options.debug:
+            import os
+            for f in ["a.1", "a.2","a.3","a.4"]:
+                if os.path.exists(f):
+                    os.unlink(f)
+            pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, 
+                            gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
+                            verbose = options.verbose, runtime_data = {"a": options.runtime_files})
+            for f in ["a.1", "a.2","a.3","a.4"]:
+                if os.path.exists(f):
+                    os.unlink(f)
+                else:
+                    raise Exception("%s is missing" % f)
+            print "OK"
         else:    
             pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, 
                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,

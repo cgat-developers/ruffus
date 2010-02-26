@@ -1165,7 +1165,7 @@ class Test_files_param_factory(unittest.TestCase):
         """
         return list(p1 for (p1, ps) in self.get_param_iterator (*old_args)(None))
 
-    def test_simple(self):
+    def _test_simple(self):
         """
         test simple_form
         """
@@ -1244,7 +1244,7 @@ class Test_files_param_factory(unittest.TestCase):
                                 ])
         
 
-    def test_filelist(self):
+    def _test_filelist(self):
         """
         test file list form
         """
@@ -1271,7 +1271,7 @@ class Test_files_param_factory(unittest.TestCase):
         file_list = [[[1,2], ["DIR/e0.test", [5, "DIR/e1.test"], "DIR/e2.test"], ["DIR/f0.test", "DIR/f1.test", "DIR/f2.test"]]]
         self.assertRaises(error_task_files, self.files, *file_list)
         
-    def test_tasks(self):
+    def _test_tasks(self):
         """
         test if can use tasks to specify dependencies
         """
@@ -1325,7 +1325,7 @@ class Test_files_param_factory(unittest.TestCase):
 #     
 if sys.argv.count("--debug"):
     sys.argv.remove("--debug")
-#sys.argv.append("Test_split_param_factory")
+#sys.argv.append("Test_files_param_factory")
 #sys.argv.append("Test_merge_param_factory")
 #sys.argv.append("Test_transform_param_factory")
 #sys.argv.append("Test_files_param_factory")

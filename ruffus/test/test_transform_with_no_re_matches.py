@@ -168,10 +168,29 @@ class Test_task_mkdir(unittest.TestCase):
 
 
     def test_no_re_match (self):
+        class t_save_to_str_logger:
+            """
+            Everything to stderr
+            """
+            def __init__ (self):
+                self.info_str = ""
+                self.warning_str = ""
+                self.debug_str = ""
+            def info (self, message):
+                self.info_str += message
+            def warning (self, message):
+                self.warning_str += message
+            def debug (self, message):
+                self.debug_str += message
+
+        save_to_str_logger = t_save_to_str_logger()
         pipeline_run([task_2], options.forced_tasks, multiprocess = options.jobs,
-                            logger = stderr_logger if options.verbose else black_hole_logger,
+                            logger = save_to_str_logger,
                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                            verbose = options.verbose)
+                            verbose = 1)
+        
+        self.assert_("no files names matched" in save_to_str_logger.warning_str)
+        print >>sys.stderr, "\n    Warning printed out correctly"
         
 
 if __name__ == '__main__':

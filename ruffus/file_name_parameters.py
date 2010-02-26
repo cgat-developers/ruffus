@@ -54,6 +54,7 @@ import re
 import glob    
 from operator import itemgetter
 from itertools import groupby
+from collections import defaultdict
 
 if __name__ == '__main__':
     import sys
@@ -72,7 +73,57 @@ from ruffus_utility import *
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+err_msg_no_regex_match = ("No jobs were run because no files names matched. "
+                        "Please make sure that the regular expression is correctly specified.")
+err_msg_empty_files_parameter= ("@files() was empty, i.e. no files were specified. "
+                        "Please make sure this is by design.")
+#_________________________________________________________________________________________
 
+#   t_params_tasks_globs_run_time_data
+
+#_________________________________________________________________________________________
+class t_params_tasks_globs_run_time_data(object):
+    """
+    After parameters are parsed into tasks, globs, runtime data
+    """
+    def __init__ (self, params, tasks, globs, runtime_data_names):
+        self.params              = params            
+        self.tasks               = tasks             
+        self.globs               = globs             
+        self.runtime_data_names  = runtime_data_names
+        
+    def __str__ (self):
+        return str(self.params)
+
+    def param_iter (self):
+        for p in self.params:
+            yield t_params_tasks_globs_run_time_data(p, self.tasks, self.globs, 
+                                                        self.runtime_data_names)
+            
+        
+    def unexpanded_globs (self):
+        """
+        do not expand globs
+        """
+        return t_params_tasks_globs_run_time_data(self.params, self.tasks, [], 
+                                                    self.runtime_data_names)
+
+
+    def single_file_to_list (self):
+        """
+        if parameter is a simple string, wrap that in a list unless it is glob
+        Useful for simple @transform cases
+        """
+        if isinstance(self.params, basestring) and not is_glob(self.params):
+            self.params = [self.params]
+            return True
+        return False
+
+    def regex_replaced (self, filename, regex):
+        output_glob  = regex_replace(filename, regex, self.globs) 
+        output_param = regex_replace(filename, regex, self.params) 
+        return t_params_tasks_globs_run_time_data(output_param, self.tasks, output_glob, 
+                                                    self.runtime_data_names)
 
 
 
@@ -232,7 +283,7 @@ def is_file_re_combining (old_args):
 #   file_names_from_tasks_globs 
 
 #_________________________________________________________________________________________
-def file_names_from_tasks_globs(input_params, tasks, globs, runtime_data_names, 
+def file_names_from_tasks_globs(files_task_globs,
                                 runtime_data, do_not_expand_single_job_tasks = False):
     """
     Replaces glob specifications and tasks with actual files / task output
@@ -245,19 +296,19 @@ def file_names_from_tasks_globs(input_params, tasks, globs, runtime_data_names,
     
     # special handling for chaining tasks which conceptual have a single job
     #       i.e. @merge and @files/@parallel with single job parameters
-    if input_params.__class__.__name__ == '_task' and do_not_expand_single_job_tasks:
-        return input_params.get_output_files(True, runtime_data)
+    if files_task_globs.params.__class__.__name__ == '_task' and do_not_expand_single_job_tasks:
+        return files_task_globs.params.get_output_files(True, runtime_data)
 
 
     task_or_glob_to_files = dict()
     
     # look up globs and tasks    
-    for g in globs:
+    for g in files_task_globs.globs:
         task_or_glob_to_files[g] = sorted(glob.glob(g))
-    for t in tasks:
+    for t in files_task_globs.tasks:
         of = t.get_output_files(False, runtime_data)
         task_or_glob_to_files[t] = of
-    for n in runtime_data_names:
+    for n in files_task_globs.runtime_data_names:
         data_name = n.args[0]
         if data_name in runtime_data:
             task_or_glob_to_files[n] = runtime_data[data_name]
@@ -268,7 +319,7 @@ def file_names_from_tasks_globs(input_params, tasks, globs, runtime_data_names,
         
         
 
-    return expand_nested_tasks_or_globs(input_params, task_or_glob_to_files)
+    return expand_nested_tasks_or_globs(files_task_globs.params, task_or_glob_to_files)
     
 
     
@@ -381,9 +432,8 @@ def args_param_factory (orig_args):
 #                   ] 
 #       
 #_________________________________________________________________________________________
-def files_param_factory (tasks, globs, input_params, runtime_data_names, 
-                                flatten_input, 
-                                do_not_expand_single_job_tasks, output_extras):
+def files_param_factory (input_files_task_globs, flatten_input,
+                        do_not_expand_single_job_tasks, output_extras):
     """
     Factory for functions which 
         yield tuples of inputs, outputs / extras                            
@@ -397,32 +447,22 @@ def files_param_factory (tasks, globs, input_params, runtime_data_names,
 
     """
     def iterator(runtime_data):
-        for input_param, output_extra_param in zip(input_params, output_extras):
+        # substitute inputs
+        #input_params = file_names_from_tasks_globs(input_files_task_globs, runtime_data, False)
+
+        if input_files_task_globs.params == []:
+            if "ruffus_WARNING" not in runtime_data:
+                runtime_data["ruffus_WARNING"] = defaultdict(set)
+            runtime_data["ruffus_WARNING"][iterator].add(err_msg_empty_files_parameter)
+            return
+        
+        for input_spec, output_extra_param in zip(input_files_task_globs.param_iter(), output_extras):
+            input_param = file_names_from_tasks_globs(input_spec, runtime_data, False)
             if flatten_input:
                 yield_param = (get_strings_in_nested_sequence(input_param),) + output_extra_param
             else:
-                yield_param = (file_names_from_tasks_globs(input_param, tasks, globs, runtime_data_names, 
-                                                    runtime_data,
-                                                    do_not_expand_single_job_tasks),) + output_extra_param
+                yield_param = (input_param, ) + output_extra_param 
             yield yield_param, yield_param
-    return iterator
-
-def files_runtime_param_factory (input_params, runtime_data_names, 
-                                 flatten_input):
-    """
-    Factory for functions which 
-        yield tuples of inputs, outputs / extras                            
-    """
-    def iterator(runtime_data):
-        params = file_names_from_tasks_globs(input_params, [], [], runtime_data_names, 
-                                                    runtime_data,
-                                                    False) # do_not_expand_single_job_tasks is irrelevant
-        if non_str_sequence(params):
-            for p in params:
-                yield p, p
-        else:
-            yield params, params
-
     return iterator
 
 def files_custom_generator_param_factory (generator):
@@ -441,23 +481,22 @@ def files_custom_generator_param_factory (generator):
 #   split_param_factory
 
 #_________________________________________________________________________________________
-def split_param_factory (tasks, globs, orig_input_params, runtime_data_names, output_globs, output_runtime_data_names, output_files_specification, *extras):
+def split_param_factory (input_files_task_globs, output_files_task_globs, *extra_params):
     """
     Factory for task_split
     """
     def iterator(runtime_data):
         # flattened  = False
         # do_not_expand_single_job_tasks = True
-        orig_filenames = file_names_from_tasks_globs(orig_input_params, tasks, globs, runtime_data_names, 
-                                                    runtime_data, True)
-
-        output_files   = file_names_from_tasks_globs(output_files_specification, [], output_globs,
-                                                    output_runtime_data_names, 
-                                                    runtime_data)
-        output_files_display  = file_names_from_tasks_globs(output_files_specification, [], [],
-                                                    output_runtime_data_names, 
-                                                    runtime_data)
-        yield (orig_filenames, output_files) + extras, (orig_filenames, output_files_display) + extras
+        
+        #
+        #   substitute tasks / globs at runtime. No glob subsitution for logging 
+        #
+        input_param          = file_names_from_tasks_globs(input_files_task_globs,                     runtime_data, True)
+        output_param         = file_names_from_tasks_globs(output_files_task_globs,                    runtime_data)
+        output_param_logging = file_names_from_tasks_globs(output_files_task_globs.unexpanded_globs(), runtime_data)
+        
+        yield (input_param, output_param) + extra_params, (input_param, output_param_logging) + extra_params
 
 
 
@@ -470,9 +509,10 @@ def split_param_factory (tasks, globs, orig_input_params, runtime_data_names, ou
 #   split_ex_param_factory
 
 #_________________________________________________________________________________________
-def split_ex_param_factory (tasks, globs, orig_input_params, runtime_data_names, 
-                                flatten_input, regex, 
-                                output_globs, output_runtime_data_names, output_files_specification, *extras):
+def split_ex_param_factory (input_files_task_globs, 
+                            flatten_input, 
+                            regex, 
+                            output_files_task_globs, *extra_specs):
     """
     Factory for task_spl
     """
@@ -481,18 +521,18 @@ def split_ex_param_factory (tasks, globs, orig_input_params, runtime_data_names,
         # 
         # get list of input_params
         # 
-        input_params = file_names_from_tasks_globs(orig_input_params, tasks, globs,
-                                                    runtime_data_names, runtime_data)
+        input_params = file_names_from_tasks_globs(input_files_task_globs, runtime_data)
 
         if flatten_input:
             input_params = get_strings_in_nested_sequence(input_params)
+
+        if not len(input_params):
+            return
 
         # 
         #   Add extra warning if no regular expressions match: 
         #   This is a common class of frustrating errors            
         #
-        if not len(input_params):
-            return
         no_regular_expression_matches = True
 
         for input_param in sorted(input_params):
@@ -507,24 +547,20 @@ def split_ex_param_factory (tasks, globs, orig_input_params, runtime_data_names,
             no_regular_expression_matches = False
 
             # 
-            #   do regex substitution on output pattern and output glob if necessary
-            #       before glob substitution
+            #   do regex substitution to complete glob pattern
+            #       before glob matching
             # 
-            this_output_glob  = construct_filename_parameters_with_regex(filename, regex, output_globs) 
-            this_output_param = construct_filename_parameters_with_regex(filename, regex, output_files_specification) 
-            output_param      = file_names_from_tasks_globs(this_output_param, [], this_output_glob,
-                                                            output_runtime_data_names, 
-                                                            runtime_data)
-            output_param_display= file_names_from_tasks_globs(this_output_param, [], [],
-                                                            output_runtime_data_names, 
-                                                            runtime_data)
+            output_specs_with_regex = output_files_task_globs.regex_replaced (filename, regex)
+            output_param        = file_names_from_tasks_globs(output_specs_with_regex, runtime_data)
+            output_param_logging= file_names_from_tasks_globs(output_specs_with_regex.no_globs(), runtime_data)
 
             #
             #   regex substitution on everything else
             # 
-            extra_params =  tuple(construct_filename_parameters_with_regex(filename, regex, p) 
-                                        for p in extras)
-            yield (input_param, output_param) + extra_params, (input_param, output_param_display) + extra_params
+            extra_params =  tuple(regex_replace(filename, regex, p) for p in extra_specs)
+
+            yield ( (input_param, output_param          ) + extra_params, 
+                    (input_param, output_param_logging  ) + extra_params)
 
 
         # 
@@ -532,9 +568,9 @@ def split_ex_param_factory (tasks, globs, orig_input_params, runtime_data_names,
         #   This is a common class of frustrating errors            
         #
         if no_regular_expression_matches == True:
-            if "job_iterators_without_regex_matches" not in runtime_data:
-                runtime_data["job_iterators_without_regex_matches"] = set()
-            runtime_data["job_iterators_without_regex_matches"].add(iterator)
+            if "ruffus_WARNING" not in runtime_data:
+                runtime_data["ruffus_WARNING"] = defaultdict(set)
+            runtime_data["ruffus_WARNING"][iterator].add(err_msg_no_regex_match)
 
     return iterator
 
@@ -543,11 +579,12 @@ def split_ex_param_factory (tasks, globs, orig_input_params, runtime_data_names,
 #   transform_param_factory
 
 #_________________________________________________________________________________________
-def transform_param_factory (tasks, globs, orig_input_params, runtime_data_names, 
-                                flatten_input, regex, 
-                                regex_substitute_extra_parameters, 
-                                input_pattern, output_pattern, 
-                                *extras):
+def transform_param_factory (input_files_task_globs, 
+                             flatten_input, regex, 
+                             regex_substitute_extra_parameters, 
+                             extra_input_files_task_globs, 
+                             output_pattern, 
+                             *extra_specs):
     """
     Factory for task_transform
     """
@@ -556,63 +593,60 @@ def transform_param_factory (tasks, globs, orig_input_params, runtime_data_names
         # 
         # get list of input_params
         # 
-        input_params = file_names_from_tasks_globs(orig_input_params, tasks, globs,
-                                                    runtime_data_names, runtime_data)
+        input_params = file_names_from_tasks_globs(input_files_task_globs, runtime_data)
 
         if flatten_input:
             input_params = get_strings_in_nested_sequence(input_params)
             
+        if not len(input_params):
+            return
+
         # 
         #   Add extra warning if no regular expressions match: 
         #   This is a common class of frustrating errors            
         #
-        if not len(input_params):
-            return
         no_regular_expression_matches = True
             
-        for input_param in sorted(input_params):
+        for orig_input_param in sorted(input_params):
           
             #
             #   turn input param into a string and match with regular expression
             #   
-            filename = get_first_string_in_nested_sequence(input_param)
+            filename = get_first_string_in_nested_sequence(orig_input_param)
             if filename == None or not regex.search(filename):
                 continue
 
             no_regular_expression_matches = False
             
             #   
-            #   "inputs" defined  turn input string into i/o/extras with regex
+            #   if "inputs" defined  turn input string into i/o/extras with regex
             # 
-            if input_pattern != None:
-                if regex_substitute_extra_parameters:
-                    yield_param =  tuple(construct_filename_parameters_with_regex(filename, regex, p) 
-                                        for p in (input_pattern, output_pattern) + extras)
-                else:
-                    yield_param =  tuple(construct_filename_parameters_with_regex(filename, regex, p) 
-                                        for p in (input_pattern, output_pattern)) + extras
-            #   
-            #   "inputs" not defined:
-            #       keep real input param and turn input string into o/extras with regex
-            # 
+            if extra_input_files_task_globs != None:
+                extra_input_specs_with_regex = extra_input_files_task_globs.regex_replaced (filename, regex)
+                input_param = file_names_from_tasks_globs(extra_input_specs_with_regex, runtime_data)
             else:
-                if regex_substitute_extra_parameters:
-                    yield_param =  (input_param,) + \
-                                    tuple(construct_filename_parameters_with_regex(filename, regex, p) 
-                                                for p in (output_pattern,) + extras)
-                else:
-                    yield_param =  (input_param, 
-                                    construct_filename_parameters_with_regex(filename, regex, output_pattern)) + \
-                                    extras
+                input_param = orig_input_param
+
+            # output
+            output_param = regex_replace(filename, regex, output_pattern)
+                
+            # extras
+            if regex_substitute_extra_parameters:
+                extra_params = tuple(regex_replace(filename, regex, p) for p in extra_specs)
+            else:
+                extra_params = extra_specs
+
+            yield_param = (input_param, output_param) + extra_params
             yield yield_param, yield_param
+            
         # 
         #   Add extra warning if no regular expressions match: 
         #   This is a common class of frustrating errors            
         #
         if no_regular_expression_matches == True:
-            if "job_iterators_without_regex_matches" not in runtime_data:
-                runtime_data["job_iterators_without_regex_matches"] = set()
-            runtime_data["job_iterators_without_regex_matches"].add(iterator)
+            if "ruffus_WARNING" not in runtime_data:
+                runtime_data["ruffus_WARNING"] = defaultdict(set)
+            runtime_data["ruffus_WARNING"][iterator].add(err_msg_no_regex_match)
                 
     return iterator
                 
@@ -622,9 +656,9 @@ def transform_param_factory (tasks, globs, orig_input_params, runtime_data_names
 #   merge_param_factory
 
 #_________________________________________________________________________________________
-def merge_param_factory (tasks, globs, orig_input_params, runtime_data_names,  
-                                output_files, 
-                                *extras):
+def merge_param_factory (input_files_task_globs,  
+                                output_param, 
+                                *extra_params):
     """
     Factory for task_merge
     """
@@ -632,10 +666,9 @@ def merge_param_factory (tasks, globs, orig_input_params, runtime_data_names,
     def iterator(runtime_data):
         # flattened  = False
         # do_not_expand_single_job_tasks = True
-        orig_filenames = file_names_from_tasks_globs(orig_input_params, tasks, globs,
-                                                    runtime_data_names, runtime_data, 
+        input_param = file_names_from_tasks_globs(input_files_task_globs, runtime_data, 
                                                     True)
-        yield_param = (orig_filenames, output_files) + extras
+        yield_param = (input_param, output_param) + extra_params
         yield yield_param, yield_param
         
     return iterator
@@ -646,11 +679,11 @@ def merge_param_factory (tasks, globs, orig_input_params, runtime_data_names,
 #   collate_param_factory
 
 #_________________________________________________________________________________________
-def collate_param_factory (tasks, globs, orig_input_params, runtime_data_names, 
-                                flatten_input,
-                                regex,
-                                input_pattern,
-                                *output_and_extras):
+def collate_param_factory (input_files_task_globs, 
+                           flatten_input,
+                           regex,
+                           extra_input_files_task_globs,
+                           *output_extra_specs):
     """
     Factory for task_collate
     all [input] which lead to the same [output / extra] are combined together
@@ -668,54 +701,52 @@ def collate_param_factory (tasks, globs, orig_input_params, runtime_data_names,
 
         # flattened  = flatten_input
         # do_not_expand_single_job_tasks = False
-        input_params = file_names_from_tasks_globs(orig_input_params, tasks, globs,
-                                                    runtime_data_names, runtime_data)
+        input_params = file_names_from_tasks_globs(input_files_task_globs, runtime_data)
 
         if flatten_input:
             input_params = get_strings_in_nested_sequence(input_params)
 
-        # 
-        #   Add extra warning if no regular expressions match: 
-        #   This is a common class of frustrating errors            
-        #
         if not len(input_params):
             return
 
-        for input_param in sorted(input_params):
+        for orig_input_param in sorted(input_params):
             
             #
             #   turn input param into a string and match with regular expression
             #   
-            filename = get_first_string_in_nested_sequence(input_param)
+            filename = get_first_string_in_nested_sequence(orig_input_param)
             if filename == None or not regex.search(filename):
                 continue
 
-            if input_pattern != None:
-                actual_input_param = construct_filename_parameters_with_regex(filename, regex, input_pattern) 
-            else:
-                actual_input_param = input_param
-                
             #   
-            #   "inputs" defined  turn input string into i/o/extras with regex
+            #   if "inputs" defined  turn input string into i/o/extras with regex
             # 
-            output_extra_param = tuple(construct_filename_parameters_with_regex(filename, regex, p) 
-                                            for p in output_and_extras)
+            if extra_input_files_task_globs != None:
+                extra_input_specs_with_regex = extra_input_files_task_globs.regex_replaced (filename, regex)
+                input_param = file_names_from_tasks_globs(extra_input_specs_with_regex, runtime_data)
+            else:
+                input_param = orig_input_param
+                
+            #   output / extras
+            output_extra_params = tuple(regex_replace(filename, regex, p) 
+                                            for p in output_extra_specs)
             # 
             #   nothing matched
             # 
-            if len(output_extra_param) == 0:
+            if len(output_extra_params) == 0:
                 continue
                 
-            params_per_job.append((output_extra_param, actual_input_param))
+            params_per_job.append((output_extra_params, input_param))
 
         # 
         #   Add extra warning if no regular expressions match: 
         #   This is a common class of frustrating errors            
         #
         if len(params_per_job) == 0:
-            if "job_iterators_without_regex_matches" not in runtime_data:
-                runtime_data["job_iterators_without_regex_matches"] = set()
-            runtime_data["job_iterators_without_regex_matches"].add(iterator)
+            if "ruffus_WARNING" not in runtime_data:
+                runtime_data["ruffus_WARNING"] = defaultdict(set)
+            runtime_data["ruffus_WARNING"][iterator].add(err_msg_no_regex_match)
+            return
 
             
         # combine inputs which lead to the same output/extras into one tuple
@@ -746,8 +777,8 @@ def collate_param_factory (tasks, globs, orig_input_params, runtime_data_names,
 #                3) input_filename_str (optional)
 #                4) output_filename_str
 #_________________________________________________________________________________________
-def files_re_param_factory( tasks, globs, orig_input_params, runtime_data_names, combining_all_jobs, 
-                            regex, input_pattern, *output_and_extras):
+def files_re_param_factory( input_files_task_globs, combining_all_jobs, 
+                            regex, extra_input_files_task_globs, *output_and_extras):
     """
     Factory for functions which in turn
         yield tuples of input_file_name, output_file_name                                     
@@ -771,16 +802,16 @@ def files_re_param_factory( tasks, globs, orig_input_params, runtime_data_names,
     
     """
     if combining_all_jobs:
-        return collate_param_factory (tasks, globs, orig_input_params, runtime_data_names, 
+        return collate_param_factory (input_files_task_globs, 
                                         False,
                                         regex,
-                                        input_pattern,
+                                        extra_input_files_task_globs,
                                         *output_and_extras)
     else:
-        return transform_param_factory (tasks, globs, orig_input_params, runtime_data_names, 
+        return transform_param_factory (input_files_task_globs, 
                                         False, regex, 
                                         True,
-                                        input_pattern, 
+                                        extra_input_files_task_globs, 
                                         *output_and_extras)
 
 
