@@ -67,14 +67,14 @@ version 2.0.9
       Hitherto, **@split** only takes 1 set of input (tasks/files/globs) and split these
       into an indeterminate number of output.
       
-      It is a one->many operation.
+          This is a one->many operation.
       
       Sometimes it is desirable to take multiple input files, and split each of them further.
       
-      This is a many->many (more) operation.
+          This is a many->many (more) operation.
       
-      It is possible to hack something together using ``@transform`` but downstream tasks would not
-      aware that each job in ``@transform`` produces multiple outputs (rather than one input,
+      It is possible to hack something together using **@transform** but downstream tasks would not
+      aware that each job in **@transform** produces multiple outputs (rather than one input,
       one output per job).
       
       The syntax looks like::
@@ -107,10 +107,62 @@ version 2.0.9
       Tasks following ``split_files`` will have ten inputs corresponding to each of the
       output from ``split_files``.
       
-      If ``@transform`` was used instead of @split, then tasks following ``split_files`` 
+      If **@transform** was used instead of **@split**, then tasks following ``split_files`` 
       would only have 3 inputs.
 
+********************************************************************
+version 2.0.10
+********************************************************************
+    * **touch_files_only** option for **pipeline_run**
+    
+      When the pipeline runs, task functions will not be run. Instead, the output files for
+      each job (in each task) will be ``touch``\ -ed if necessary.
+      This can be useful for simulating a pipeline run so that all files look as
+      if they are up-to-date.
+
+      Caveats:
       
+        * This may not work correctly where output files are only determined at runtime, e.g. with **@split**
+        * Only the output from pipelined jobs which are currently out-of-date will be ``touch``\ -ed.
+          In other words, the pipeline runs *as normal*, the only difference is that the
+          output files are ``touch``\ -ed instead of being created by the python task functions
+          which would otherwise have been called.
+
+    * Parameter substitution for **inputs(...)**
+    
+      The **inputs(...)** parameter in **@transform**, **@collate** can now take tasks and globs,
+      and these will be expanded appropriately (after regular expression replacement).
+      
+      For example::
+      
+          @transform("dir/a.input", regex(r"(.*)\/(.+).input"), 
+                        inputs((r"\1/\2.other", r"\1/*.more")), r"elsewhere/\2.output")
+          def task1(i, o):
+            """
+            Some pipeline task
+            """
+            
+      Is equivalent to calling::
+            
+            task1(("dir/a.other", "dir/1.more", "dir/2.more"), "elsewhere/a.output")
+            
+      \ 
+            
+          Here::
+            
+                r"\1/*.more"
+              
+          is first converted to::
+          
+                r"dir/*.more"
+                
+          which matches::
+          
+                "dir/1.more" 
+                "dir/2.more"
+      
+                    
+
 
 ########################################
 Fixed Bugs
