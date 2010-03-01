@@ -1,11 +1,28 @@
+= v. 2.1.0=
+    _1/March/2010_
+    ==@jobs_limit directive==
+        * Some tasks are resource intensive and too many jobs should not be run at the 
+		  same time. Examples include disk intensive operations such as unzipping, or 
+          downloading from FTP sites. 
+          Adding 
+		  {{{
+		  @jobs_limit(4)
+          @transform(new_data_list, suffix(".big_data.gz"), ".big_data")
+          def unzip(i, o):
+			"unzip code goes here"
+          }}}
+          would limit the unzip operation to 4 jobs at a time, even if the rest of the
+          pipeline runs highly in parallel.
+          (Thanks to R. Young for suggesting this.)
+
 = v. 2.0.10=
-    _25/February/2010_
+    _27/February/2010_
     ==pipeline_run(..., touch_files_only = True)==
-		* This will only `touch` output files for each job without running the 
+        * This will only `touch` output files for each job without running the 
           python function. I.e. The output files are updated if they are old, or created
           if missing.
           This can be useful for simulating a pipeline run so that all files look as
-	      if they are up-to-date.
+          if they are up-to-date.
         Caveats:
         * This may not work correctly where output files are only determined at runtime, e.g. with @split
         * Only the output from pipelined jobs which are currently out-of-date will be touched.
@@ -18,7 +35,7 @@
     ==Bug Fix:==
         * From "Issue 21".
           Empty @files specifications no longer throw exceptions.
-		  If verbose logging is on, a warning is printed.
+          If verbose logging is on, a warning is printed.
           (Thanks to A. Heger)
 
 
