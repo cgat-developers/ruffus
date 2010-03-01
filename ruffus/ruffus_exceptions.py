@@ -125,6 +125,9 @@ class JobSignalledBreak(error_task):
     pass
 class PostTaskArgumentError(error_task):
     pass
+    
+class JobsLimitArgumentError(error_task):
+    pass
 
 class error_task_get_output(error_task_contruction):
     pass

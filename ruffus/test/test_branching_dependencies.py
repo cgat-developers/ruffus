@@ -103,7 +103,7 @@ parameters = [
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
+import time
 import StringIO
 import re
 import operator
@@ -234,6 +234,7 @@ def task3(infiles, outfiles, *extra_params):
 #
 #    task4
 #
+@jobs_limit(1)
 @transform(tempdir + "*.1", suffix(".1"), ".4")
 @follows(task1)
 @posttask(lambda: open(tempdir + "task.done", "a").write("Task 4 Done\n"))
@@ -256,6 +257,7 @@ def task5(infiles, outfiles, *extra_params):
     Fifth task is extra slow
     """
     open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    time.sleep(3)
     test_job_io(infiles, outfiles, extra_params)
     open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
     
@@ -359,8 +361,7 @@ def check_final_output_correct(after_touch_files = False):
 if __name__ == '__main__':
     if options.just_print:
         pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks, 
-                            long_winded=True, 
-                            gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode)
+                            verbose=options.verbose)
     
     elif options.dependency_file:
         pipeline_printout_graph (     open(options.dependency_file, "w"),
@@ -368,7 +369,6 @@ if __name__ == '__main__':
                              options.target_tasks, 
                              options.forced_tasks,
                              draw_vertically = not options.draw_horizontally,
-                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                              no_key_legend  = options.no_key_legend_in_graph)
         
     elif options.debug:    
@@ -376,8 +376,7 @@ if __name__ == '__main__':
         os.system("rm -rf %s" % tempdir)
         pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, 
                             logger = stderr_logger if options.verbose else black_hole_logger,
-                            gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                            verbose = options.verbose > 1)
+                            verbose = options.verbose)
 
         
         check_final_output_correct()
