@@ -92,6 +92,9 @@ import types
 from itertools import imap 
 import textwrap
 import time
+from multiprocessing.managers import SyncManager
+from contextlib import contextmanager
+
 
 
 if __name__ == '__main__':
@@ -214,6 +217,19 @@ class waiting_for_more_tasks_to_complete:
     pass
 
     
+# 
+# synchronisation data
+# 
+#SyncManager()
+#syncmanager.start()
+
+#
+# do nothing semaphore
+# 
+@contextmanager
+def do_nothing_semaphore():
+    yield
+
         
     
     
@@ -290,6 +306,8 @@ class merge(task_decorator):
 class posttask(task_decorator):
     pass
 
+class jobs_limit(task_decorator):
+    pass
     
     
 #
@@ -479,15 +497,21 @@ def run_pooled_job_without_exceptions (process_parameters):
     """
     
     (param, task_name, job_name, job_wrapper, user_defined_work_func, 
-            one_second_per_job, touch_files_only) = process_parameters
+            job_limit_semaphore, one_second_per_job, touch_files_only) = process_parameters
     
-    try:
-        if one_second_per_job:
-            time.sleep(1)
+    if job_limit_semaphore == None:
+        job_limit_semaphore = do_nothing_semaphore()
         
-        # if user return false, halt job
-        return_value =  job_wrapper(param, user_defined_work_func, register_cleanup, touch_files_only)
-        return t_job_result(task_name, JOB_COMPLETED, job_name, return_value, None)
+    try:
+        with job_limit_semaphore:
+            start_time = time.time()
+            # if user return false, halt job
+            return_value =  job_wrapper(param, user_defined_work_func, register_cleanup, touch_files_only)
+
+            end_time = time.time()
+            if end_time - start_time < 1 and one_second_per_job:
+                time.sleep(1.1 -end_time + start_time)
+            return t_job_result(task_name, JOB_COMPLETED, job_name, return_value, None)
     except:
         #   Wrap up one or more exceptions rethrown across process boundaries
         #   
@@ -561,6 +585,8 @@ class _task (node):
     multiple_jobs_outputs    = 0
     single_job_single_output = 1
     job_single_matches_parent= 2
+    
+    job_limit_semaphores = {}
 
     #_________________________________________________________________________________________
 
@@ -650,6 +676,8 @@ class _task (node):
         
         # cache output file names here
         self.output_filenames = None
+        
+        self.semaphore_name = module_name + "." + func_name
 
     #_________________________________________________________________________________________
 
@@ -1670,7 +1698,7 @@ class _task (node):
 
     #_________________________________________________________________________________________
 
-    #   task_check_if_uptodate
+    #   task_posttask
 
     #_________________________________________________________________________________________
     def task_posttask(self, args):
@@ -1687,6 +1715,32 @@ class _task (node):
                 raise PostTaskArgumentError("Expecting simple functions or touch_file in  " +
                                                 "@posttask(...)\n Task = %s" %
                                                 (self._name))
+
+    #_________________________________________________________________________________________
+
+    #   task_jobs_limit
+
+    #_________________________________________________________________________________________
+    def task_jobs_limit(self, args):
+        """
+        Limit the number of concurrent jobs
+        """
+        maximum_jobs, name = (args + (None,))[0:2]
+        if name != None:
+            self.semaphore_name = name
+        if self.semaphore_name in self.job_limit_semaphores:
+            curr_maximum_jobs = self.job_limit_semaphores[self.semaphore_name]
+            if curr_maximum_jobs != maximum_jobs:
+                raise JobsLimitArgumentError(('@jobs_limit(%d, "%s") cannot ' +
+                                            're-defined with a different limit of %d') %
+                                             (self.semaphore_name, curr_maximum_jobs,
+                                                maximum_jobs))
+        else:
+            #
+            #   save semaphore and limit
+            # 
+            self.job_limit_semaphores[self.semaphore_name] = maximum_jobs
+                                            
 
         
         
@@ -1970,15 +2024,41 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
         output_stream.write("_" * 40 + "\n")
         
 #_________________________________________________________________________________________
+
+#   get_semaphore
+
+#_________________________________________________________________________________________
+def get_semaphore (t, job_limit_semaphores, syncmanager):
+    """
+    return semaphore to limit the number of concurrent jobs
+    """
+    #
+    #   Is this task limited in the number of jobs?
+    # 
+    if t.semaphore_name not in t.job_limit_semaphores:
+        return None
+        
+        
+    #
+    #   create semaphore if not yet created
+    # 
+    if t.semaphore_name not in job_limit_semaphores:
+        maximum_jobs = t.job_limit_semaphores[t.semaphore_name]
+        job_limit_semaphores[t.semaphore_name] = syncmanager.BoundedSemaphore(maximum_jobs)
+    return job_limit_semaphores[t.semaphore_name]
+        
+#_________________________________________________________________________________________
 #
 #   Parameter generator for all jobs / tasks
 #
 #________________________________________________________________________________________ 
 def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forcedtorun_tasks, 
                                     count_remaining_jobs, runtime_data, verbose, 
+                                    syncmanager,
                                     one_second_per_job, touch_files_only):
 
     inprogress_tasks = set()
+    job_limit_semaphores = dict()
 
     def parameter_generator():
         log_at_level (logger, 10, verbose, "   job_parameter_generator BEGIN")
@@ -2078,6 +2158,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                                 job_name,   
                                 t.job_wrapper, 
                                 t.user_defined_work_func,
+                                get_semaphore (t, job_limit_semaphores, syncmanager),
                                 one_second_per_job,
                                 touch_files_only)
 
@@ -2163,7 +2244,7 @@ def feed_job_params_to_process_pool_factory (parameter_q, logger, verbose):
             log_at_level (logger, 10, verbose, "   Get next parameter size = %d" % 
                                                         parameter_q.qsize())
             if not parameter_q.qsize():
-                time.sleep(1)
+                time.sleep(0.1)
             param = parameter_q.get()
             log_at_level (logger, 10, verbose, "   Get next parameter done")
 
@@ -2259,6 +2340,8 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
 
 
     """
+    syncmanager = multiprocessing.Manager()
+    
     if runtime_data == None:
         runtime_data = {}
     if not isinstance(runtime_data, dict):
@@ -2335,6 +2418,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                                                         logger, forcedtorun_tasks, 
                                                         count_remaining_jobs, 
                                                         runtime_data, verbose, 
+                                                        syncmanager,
                                                         one_second_per_job,
                                                         touch_files_only)
     job_parameters = parameter_generator()
