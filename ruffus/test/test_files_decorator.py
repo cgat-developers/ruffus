@@ -212,6 +212,28 @@ def task3(infiles, outfiles, *extra_params):
     test_job_io(infiles, outfiles, extra_params)
     assert(infiles == tempdir + "b.1")
 
+#
+#    task4
+#
+@follows(task3)
+@files([[None, tempdir + 'd.1'], [None, tempdir + 'e.1']])
+def task4(infiles, outfiles, *extra_params):
+    """
+    Second task
+    """
+    test_job_io(infiles, outfiles, extra_params)
+
+#
+#    task5
+#
+@files(task4, tempdir + "f.1")
+def task5(infiles, outfiles, *extra_params):
+    """
+    Second task
+    """
+    test_job_io(infiles, outfiles, extra_params)
+    assert(infiles == [tempdir + "d.1", tempdir + "e.1"])
+
 import unittest
 
 class Test_task(unittest.TestCase):
@@ -226,7 +248,7 @@ class Test_task(unittest.TestCase):
 
 
     def test_task (self):
-        pipeline_run([task3], options.forced_tasks, multiprocess = options.jobs,
+        pipeline_run([task5], options.forced_tasks, multiprocess = options.jobs,
                             verbose = options.verbose)
 
 
