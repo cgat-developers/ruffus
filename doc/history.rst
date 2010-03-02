@@ -162,94 +162,35 @@ version 2.0.10
                 "dir/2.more"
       
                     
+********************************************************************
+version 2.1.0
+********************************************************************
+    * **@jobs_limit**
+      Some tasks are resource intensive and too many jobs should not be run at the 
+      same time. Examples include disk intensive operations such as unzipping, or 
+      downloading from FTP sites. 
+      
+      Adding::
+
+          @jobs_limit(4)
+          @transform(new_data_list, suffix(".big_data.gz"), ".big_data")
+          def unzip(i, o):
+            "unzip code goes here"
+            
+      would limit the unzip operation to 4 jobs at a time, even if the rest of the
+      pipeline runs highly in parallel.
+
+      (Thanks to R. Young for suggesting this.)
+
+
 
 
 ########################################
 Fixed Bugs
 ########################################
 
-********************************************************************    
-Issue3    
-********************************************************************
-    
-===============
-Manifestation
-===============
+    Critical Regression for v. 2.0.10 fixed in v 2.1.0
 
-    Calling::
-    
-           graph_printout(
-           open("flowchart.svg", "w"),
-           "svg",
-           [final_task]
-         )
- 
-    dies with::
-    
-        TypeError: "unbound method outward() ..." on call to "graph_printout"
-        
-===============
-Diagnosis
-===============
-    
-        
-    `graph_printout` resolves to `graph.graph_printout (...)`
-    
-    Should be `task.pipeline_printout_graph (...)`
-    
-    The error is in the documentation but the graph and print_dependencies modules
-    should probably not be exported by default.
-    
-===============
-Resolution
-===============
+    See `"issue 25: @files forwarding single arguments as lists" <http://code.google.com/p/ruffus/issues/detail?id=25&can=1>`_
 
-    #) Changed documentation
-    #) Removed the following code from ``ruffus/__init__.py``::
-    
-        from graph import *
-        from print_dependencies import *
-
-********************************************************************    
-mkdir
-********************************************************************
-    
-===============
-Manifestation
-===============
-
-    Calling::
-    
-        from ruffus import *
-        
-        directories = ['a', 'b']    
-        @follows(mkdir(directories))
-        def task_which_makes_directories ():
-            pass
-        
-    dies with:
-        File "build/bdist.linux-i686/egg/ruffus/task.py", line 1604, in task_mkdir
-        TypeError: sequence item 0: expected string, list found
-
-    
-        
-===============
-Diagnosis
-===============
-    
-    mkdir should handle cleanly all three cases::
-    
-        mkdir(['a', 'b'])
-        mkdir('a')
-        mkdir('a', 'b')
-    
-    
-===============
-Resolution
-===============
-
-    #) Changes to task.py
-    #) Ignores cases (especially race conditions) when the directory already exists
-    #) Added test case test/test_follows_mkdir.py
-
-
+    Full list at `"Latest Changes wiki entry" <http://code.google.com/p/ruffus/wiki/LatestChanges>`_
