@@ -457,7 +457,7 @@ def files_param_factory (input_files_task_globs, flatten_input,
             return
         
         for input_spec, output_extra_param in zip(input_files_task_globs.param_iter(), output_extras):
-            input_param = file_names_from_tasks_globs(input_spec, runtime_data, False)
+            input_param = file_names_from_tasks_globs(input_spec, runtime_data, do_not_expand_single_job_tasks)
             if flatten_input:
                 yield_param = (get_strings_in_nested_sequence(input_param),) + output_extra_param
             else:

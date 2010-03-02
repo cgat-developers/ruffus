@@ -725,9 +725,6 @@ class _task (node):
             raise error_decorator_args(("    %s\n      has duplicate task specifications: (%s)\n") % 
                                         (task_name, actions))
         self._action_type = new_action_type
-        #
-        #   DEBUGG
-        # 
         self._action_type_desc = _task.action_names[new_action_type]
 
 
@@ -978,6 +975,7 @@ class _task (node):
                     if len(param) >= 2:
                         self.output_filenames.append(param[1])
 
+                
                 if self._single_job_single_output == self.single_job_single_output:
                     if cnt_jobs > 1:
                         raise error_task_get_output(self, 
@@ -1442,8 +1440,13 @@ class _task (node):
             if len(orig_args) > 1:
 
                 # single jobs
+                # This is true even if the previous task has multiple output
+                # These will all be joined together at the hip (like @merge)
+                # If you want different behavior, use @transform
                 params = copy.copy([orig_args])
                 self._single_job_single_output = self.single_job_single_output
+
+
             else:
 
                 # multiple jobs with input/output parameters etc.
@@ -1461,6 +1464,7 @@ class _task (node):
             # 
             input_patterns = [j[0] for j in params]
             input_files_task_globs = self.handle_tasks_globs_in_inputs(input_patterns)
+            
 
             #
             #   extra params 
@@ -1744,7 +1748,6 @@ class _task (node):
 
         
         
-#   DEBUGG
 class task_encoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, set):
