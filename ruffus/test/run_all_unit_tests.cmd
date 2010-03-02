@@ -38,3 +38,5 @@ echo Running test_empty_files_decorator.py
 python ./test_empty_files_decorator.py
 echo Running test_transform_inputs.py
 python ./test_transform_inputs.py
+echo Running test_files_decorator.py
+python ./test_files_decorator.py
