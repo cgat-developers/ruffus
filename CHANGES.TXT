@@ -1,15 +1,20 @@
 = v. 2.1.0=
-    _1/March/2010_
+    _2/March/2010_
+    ==Bug Fix:==
+        * From "Issue 25".
+          Regression for v. 2.0.10
+          @files forwarding single arguments as lists.
+          (Thanks to A. Heger)
     ==@jobs_limit directive==
         * Some tasks are resource intensive and too many jobs should not be run at the 
-		  same time. Examples include disk intensive operations such as unzipping, or 
+          same time. Examples include disk intensive operations such as unzipping, or 
           downloading from FTP sites. 
           Adding 
-		  {{{
-		  @jobs_limit(4)
+          {{{
+          @jobs_limit(4)
           @transform(new_data_list, suffix(".big_data.gz"), ".big_data")
           def unzip(i, o):
-			"unzip code goes here"
+            "unzip code goes here"
           }}}
           would limit the unzip operation to 4 jobs at a time, even if the rest of the
           pipeline runs highly in parallel.
