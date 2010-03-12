@@ -94,7 +94,7 @@ import textwrap
 import time
 from multiprocessing.managers import SyncManager
 from contextlib import contextmanager
-
+from __future__ import with_statement
 
 
 if __name__ == '__main__':
