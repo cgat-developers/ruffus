@@ -1,3 +1,10 @@
+= v. 2.1.1=
+    _12/March/2010_
+    ==Bug Fix:==
+	    * The code "with job_limit_semaphore" breaks compatability with python 2.5
+          Thanks to patch from S. Binet
+
+
 = v. 2.1.0=
     _2/March/2010_
     ==Bug Fix:==
