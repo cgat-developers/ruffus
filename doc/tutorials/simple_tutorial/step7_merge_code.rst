@@ -1,11 +1,11 @@
-.. _Simple_Tutorial_6th_step_code:
+.. _Simple_Tutorial_7th_step_code:
 
 ###################################################################
-Code for Step 6: Merging results back together
+Code for Step 7: Merging results back together
 ###################################################################
 * :ref:`Simple tutorial overview <Simple_Tutorial>` 
 * :ref:`@merge in detail <decorators.merge>`
-* :ref:`back to step 6 <Simple_Tutorial_6th_step>`
+* :ref:`back to step 7 <Simple_Tutorial_7th_step>`
 
 ************************************
 Code
@@ -38,7 +38,7 @@ Code
         #
         @follows(create_random_numbers)        
         @split("random_numbers.list", "*.chunks")
-        def step_4_split_numbers_into_chunks (input_file_name, output_files):
+        def step_5_split_numbers_into_chunks (input_file_name, output_files):
             """
                 Splits random numbers file into XXX files of CHUNK_SIZE each
             """
@@ -63,8 +63,8 @@ Code
         #
         #   Calculate sum and sum of squares for each chunk file
         #
-        @transform(step_4_split_numbers_into_chunks, suffix(".chunks"), ".sums")
-        def step_5_calculate_sum_of_squares (input_file_name, output_file_name):
+        @transform(step_5_split_numbers_into_chunks, suffix(".chunks"), ".sums")
+        def step_6_calculate_sum_of_squares (input_file_name, output_file_name):
             output = open(output_file_name,  "w")
             sum_squared, sum = [0.0, 0.0]
             cnt_values = 0
@@ -79,8 +79,8 @@ Code
         #
         #   Calculate sum and sum of squares for each chunk
         #
-        @merge(step_5_calculate_sum_of_squares, "variance.result")
-        def step_6_calculate_variance (input_file_names, output_file_name):
+        @merge(step_6_calculate_sum_of_squares, "variance.result")
+        def step_7_calculate_variance (input_file_names, output_file_name):
             """
             Calculate variance naively
             """
@@ -110,18 +110,18 @@ Code
         #
         #       Run
         #
-        pipeline_run([step_6_calculate_variance], [create_random_numbers], verbose = 1)
+        pipeline_run([step_7_calculate_variance], [create_random_numbers], verbose = 1)
 
 ************************************
 Resulting Output
 ************************************
     ::
 
-        pipeline_run([step_6_calculate_variance], [create_random_numbers], verbose = 1)
+        pipeline_run([step_7_calculate_variance], [create_random_numbers], verbose = 1)
             Job = [None -> random_numbers.list] completed
         Completed Task = create_random_numbers
             Job = [random_numbers.list -> *.chunks] completed
-        Completed Task = step_4_split_numbers_into_chunks
+        Completed Task = step_5_split_numbers_into_chunks
             Job = [6.chunks -> 6.sums] completed
             Job = [1.chunks -> 1.sums] completed
             Job = [4.chunks -> 4.sums] completed
@@ -132,6 +132,6 @@ Resulting Output
             Job = [3.chunks -> 3.sums] completed
             Job = [5.chunks -> 5.sums] completed
             Job = [8.chunks -> 8.sums] completed
-        Completed Task = step_5_calculate_sum_of_squares
+        Completed Task = step_6_calculate_sum_of_squares
             Job = [[6.sums, 5.sums, 1.sums, 4.sums, 3.sums, 2.sums, 8.sums, 7.sums, 10.sums, 9.sums] -> variance.result] completed
-        Completed Task = step_6_calculate_variance
+        Completed Task = step_7_calculate_variance
