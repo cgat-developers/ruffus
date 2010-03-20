@@ -1,11 +1,11 @@
 .. index:: 
     pair: @posttask; Tutorial
 
-.. _Simple_Tutorial_7th_step:
+.. _Simple_Tutorial_8th_step:
 
 
 ###################################################################
-Step 7: Signal the completion of each stage of our pipeline
+Step 8: Signal the completion of each stage of our pipeline
 ###################################################################
 * :ref:`Simple tutorial overview <Simple_Tutorial>` 
 * :ref:`@posttask<decorators.posttask>` in detail
@@ -13,7 +13,7 @@ Step 7: Signal the completion of each stage of our pipeline
 .. note::
     Remember to look at the example code:
 
-    * :ref:`Python Code for step 7 <Simple_Tutorial_7th_step_code>` 
+    * :ref:`Python Code for step 8 <Simple_Tutorial_8th_step_code>` 
     
 Let us finish by celebrating the success of our modest pipeline example.
 

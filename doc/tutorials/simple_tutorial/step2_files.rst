@@ -71,7 +71,7 @@ Overview
         
         
 ************************************
-Running jobs in parallel
+Specifying jobs in parallel
 ************************************
     | Each :term:`task` function of the pipeline can also be a recipe or 
       `rule <http://www.gnu.org/software/make/manual/make.html#Rule-Introduction>`_  
@@ -117,6 +117,22 @@ Running jobs in parallel
                 Job = [job2.stage1 -> job2.stage2,     2nd_job] completed
             Completed Task = second_task
 
+************************************
+Multi-tasking
+************************************
+
+    Though, the two jobs have been specified in parallel, **Ruffus** defaults to running
+    each of them successively. With modern CPUs, it is often a lot faster to run parts
+    of your pipeline in parallel, all at the same time.
+    
+    To do this, all you have to do is to add a multiprocess parameter to pipeline_run::
+    
+            >>> pipeline_run([pipeline_task], multiprocess = 5)
+            
+    In this case, ruffus will try to run up to 5 jobs at the same time. Since our second
+    task only has two jobs, these will be started simultaneously.
+    
+
 
 ************************************
 Up-to-date jobs are not re-run
@@ -138,7 +154,7 @@ Up-to-date jobs are not re-run
         ::
     
             open("job1.stage1", "w")
-            pipeline_run([second_task], verbose =2)
+            pipeline_run([second_task], verbose =2, multiprocess = 5)
         
     
     You would see the following:

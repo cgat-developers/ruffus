@@ -1,11 +1,11 @@
-.. _Simple_Tutorial_7th_step_code:
+.. _Simple_Tutorial_8th_step_code:
 
 #########################################################################
-Code for Step 7: Signal the completion of each stage of our pipeline
+Code for Step 8: Signal the completion of each stage of our pipeline
 #########################################################################
 * :ref:`Simple tutorial overview <Simple_Tutorial>` 
 * :ref:`@posttask in detail <decorators.posttask>`
-* :ref:`back to step 7 <Simple_Tutorial_7th_step>`
+* :ref:`back to step 8 <Simple_Tutorial_8th_step>`
 
 ************************************
 Code
@@ -14,7 +14,7 @@ Code
     
         NUMBER_OF_RANDOMS = 10000
         CHUNK_SIZE = 1000
-        working_dir = "temp_tutorial7/"
+        working_dir = "temp_tutorial8/"
         
         
         
@@ -147,24 +147,24 @@ Resulting Output
     ::
 
         >> pipeline_run([step_6_calculate_variance], verbose = 1)
-            Make directories [temp_tutorial7/] completed
+            Make directories [temp_tutorial8/] completed
         Completed Task = create_random_numbers_mkdir_1
-            Job = [None -> temp_tutorial7/random_numbers.list] completed
+            Job = [None -> temp_tutorial8/random_numbers.list] completed
         Completed Task = create_random_numbers
-            Job = [temp_tutorial7/random_numbers.list -> temp_tutorial7/*.chunks] completed
+            Job = [temp_tutorial8/random_numbers.list -> temp_tutorial8/*.chunks] completed
         Completed Task = step_4_split_numbers_into_chunks
-            Job = [temp_tutorial7/1.chunks -> temp_tutorial7/1.sums] completed
-            Job = [temp_tutorial7/10.chunks -> temp_tutorial7/10.sums] completed
-            Job = [temp_tutorial7/2.chunks -> temp_tutorial7/2.sums] completed
-            Job = [temp_tutorial7/3.chunks -> temp_tutorial7/3.sums] completed
-            Job = [temp_tutorial7/4.chunks -> temp_tutorial7/4.sums] completed
-            Job = [temp_tutorial7/5.chunks -> temp_tutorial7/5.sums] completed
-            Job = [temp_tutorial7/6.chunks -> temp_tutorial7/6.sums] completed
-            Job = [temp_tutorial7/7.chunks -> temp_tutorial7/7.sums] completed
-            Job = [temp_tutorial7/8.chunks -> temp_tutorial7/8.sums] completed
-            Job = [temp_tutorial7/9.chunks -> temp_tutorial7/9.sums] completed
+            Job = [temp_tutorial8/1.chunks -> temp_tutorial8/1.sums] completed
+            Job = [temp_tutorial8/10.chunks -> temp_tutorial8/10.sums] completed
+            Job = [temp_tutorial8/2.chunks -> temp_tutorial8/2.sums] completed
+            Job = [temp_tutorial8/3.chunks -> temp_tutorial8/3.sums] completed
+            Job = [temp_tutorial8/4.chunks -> temp_tutorial8/4.sums] completed
+            Job = [temp_tutorial8/5.chunks -> temp_tutorial8/5.sums] completed
+            Job = [temp_tutorial8/6.chunks -> temp_tutorial8/6.sums] completed
+            Job = [temp_tutorial8/7.chunks -> temp_tutorial8/7.sums] completed
+            Job = [temp_tutorial8/8.chunks -> temp_tutorial8/8.sums] completed
+            Job = [temp_tutorial8/9.chunks -> temp_tutorial8/9.sums] completed
         Completed Task = step_5_calculate_sum_of_squares
-            Job = [[temp_tutorial7/1.sums, temp_tutorial7/10.sums, temp_tutorial7/2.sums, temp_tutorial7/3.sums, temp_tutorial7/4.sums, temp_tutorial7/5.sums, temp_tutorial7/6.sums, temp_tutorial7/7.sums, temp_tutorial7/8.sums, temp_tutorial7/9.sums] -> variance.result] completed
+            Job = [[temp_tutorial8/1.sums, temp_tutorial8/10.sums, temp_tutorial8/2.sums, temp_tutorial8/3.sums, temp_tutorial8/4.sums, temp_tutorial8/5.sums, temp_tutorial8/6.sums, temp_tutorial8/7.sums, temp_tutorial8/8.sums, temp_tutorial8/9.sums] -> variance.result] completed
         hooray again
         whoppee again
         hooray

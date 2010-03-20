@@ -8,13 +8,13 @@ Code for Step 3: Displaying the pipeline visually
 * :ref:`pipeline functions <pipeline_functions>` in detail
 * :ref:`Back to Step 3 <Simple_Tutorial_3rd_step>` 
 
-************************************
-Code
-************************************
+******************************************
+Display the initial state of the pipeline
+******************************************
     ::
         
         from ruffus import *
-        import time
+        import sys
         
         #---------------------------------------------------------------
         #
@@ -30,7 +30,6 @@ Code
             open(output_file, "w")
             #
             # pretend we have worked hard
-            time.sleep(1)
 
 
         #---------------------------------------------------------------
@@ -48,66 +47,8 @@ Code
             open(output_file, "w")
             print extra_parameter
         
-        #---------------------------------------------------------------
-        #
-        #       Show flow chart and tasks before running the pipeline
-        #
-        print "Show flow chart and tasks before running the pipeline"
-        pipeline_printout_graph ( open("flowchart_before.png", "w"),
-                                 "png",
-                                 [second_task],
-                                 no_key_legend=True)
-        pipeline_printout(sys.stdout, [second_task])
+        pipeline_printout(sys.stdout, [second_task], verbose = 3)
         
-        
-        #---------------------------------------------------------------
-        #
-        #       Run
-        #
-        pipeline_run([second_task])
-    
-   
-        # modify job1.stage1
-        open("job1.stage1", "w").close()
-   
-       
-        #---------------------------------------------------------------
-        #
-        #       Show flow chart and tasks after running the pipeline
-        #
-        print "Show flow chart and tasks after running the pipeline"
-        pipeline_printout_graph ( open("flowchart_after.png", "w"),
-                                 "png",
-                                 [second_task],
-                                 no_key_legend=True)
-        pipeline_printout(sys.stdout, [second_task])
-        
-        
-************************************
-Resulting Flowcharts
-************************************
-   +-------------------------------------------------------------+-----------------------------------------------------------------------+
-   | .. image:: ../../images/simple_tutorial_stage3_before.png   | .. image::  ../../images/simple_tutorial_stage3_after.png             |
-   |           :alt: Before running the pipeline                 |     :alt: After running the pipeline                                  |                           
-   |           :scale: 50                                        |     :scale: 50                                                        |                           
-   |           :align: center                                    |     :align: center                                                    |                           
-   |                                                             |                                                                       |                           
-   | .. centered:: Before                                        | .. centered:: After                                                   |                           
-   |                                                             |                                                                       |                           
-   +-------------------------------------------------------------+-----------------------------------------------------------------------+
-
-   +-------------------------------------------------------------------------------------------------------------------------------------+
-   | .. image:: ../../images/tutorial_key.jpg                                                                                            |
-   |           :alt: Legend key                                                                                                          |                           
-   |           :scale: 75                                                                                                                |                           
-   |           :align: center                                                                                                            |                           
-   |                                                                                                                                     |                           
-   | .. centered:: Legend                                                                                                                |                           
-   |                                                                                                                                     |                           
-   +-------------------------------------------------------------------------------------------------------------------------------------+
-
-
-
 ************************************
 Resulting Output
 ************************************
@@ -122,30 +63,49 @@ Resulting Output
             Task = second_task
                    Job = [job1.stage1 -> job1.stage2,     1st_job]
                    Job = [job2.stage1 -> job2.stage2,     2nd_job]
+            
+******************************************
+Display the partially up-to-date pipeline
+******************************************
+    Run the pipeline, modify ``job1.stage`` so that the second task is no longer up-to-date
+    and printout the pipeline stage again::
         
-        >>> pipeline_run([second_task])
+        pipeline_run([second_task])
+   
+        # modify job1.stage1
+        open("job1.stage1", "w").close()
+   
 
-            Start Task = first_task
-                Job = [None -> job1.stage1] completed
-                Job = [None -> job2.stage1] completed
-            Completed Task = first_task
-            Start Task = second_task
-                1st_job
-                Job = [job1.stage1 -> job1.stage2,     1st_job] completed
-                2nd_job
-                Job = [job2.stage1 -> job2.stage2,     2nd_job] completed
-            Completed Task = second_task
-
-        >>> # modify job1.stage1
-        ... open("job1.stage1", "w").close()
-
-        >>> pipeline_printout(sys.stdout, [second_task])
-        
-            Task = second_task
-                   Job = [job1.stage1 -> job1.stage2,     1st_job]
-                U: Job = [job2.stage1 -> job2.stage2,     2nd_job]
-
-                                                   
-    producing the following flowchart
+    At a verbosity of 5, even jobs which are up-to-date will be displayed::
     
+        >>> pipeline_printout(sys.stdout, [second_task], verbose = 5)
+        ________________________________________
+        Tasks which are up-to-date:
+        
+        Task = first_task
+               Job = [None
+                     ->job1.stage1]
+                 Job up-to-date
+               Job = [None
+                     ->job2.stage1]
+                 Job up-to-date
+        
+        
+        ________________________________________
+        Tasks which will be run:
+        
+        Task = second_task
+               Job = [job1.stage1
+                     ->job1.stage2,     1st_job]
+                 Job needs update: Need update file times= [[(1269025787.0, 'job1.stage1')], [(1269025785.0,
+                       'job1.stage2')]]
+               Job = [job2.stage1
+                     ->job2.stage2,     2nd_job]
+                 Job up-to-date
+        
+        ________________________________________
+
+    We can now see that the there is only one job in "second_task" which needs to be re-run
+    because 'job1.stage1' has been modified after 'job1.stage2'
+
 
