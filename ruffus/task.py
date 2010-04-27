@@ -370,6 +370,15 @@ class inputs(object):
     def __init__ (self, *args):
         self.args = args
 
+#_________________________________________________________________________________________
+
+#   add_inputs
+
+#_________________________________________________________________________________________
+class add_inputs(object):
+    def __init__ (self, *args):
+        self.args = args
+
 #8888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #       job descriptors
@@ -522,6 +531,11 @@ def run_pooled_job_without_exceptions (process_parameters):
         exception_value  = str(exceptionValue)
         if len(exception_value):
             exception_value = "(%s)" % exception_value
+            
+        if exceptionType == JobSignalledBreak:
+            job_state = JOB_SIGNALLED_BREAK
+        else:
+            job_state = JOB_ERROR
         return t_job_result(task_name, JOB_ERROR, job_name, None,
                             [task_name,
                              job_name, 
@@ -581,7 +595,11 @@ class _task (node):
     action_task_files         =  8
     action_mkdir              =  9
     action_parallel           = 10
-       
+
+    add_to_inputs             =  False
+    replace_inputs            =  True
+
+                                  
     multiple_jobs_outputs    = 0
     single_job_single_output = 1
     job_single_matches_parent= 2
@@ -616,8 +634,11 @@ class _task (node):
         t.set_action_type (_task.action_task)
         t.user_defined_work_func = func
         assert(t._name == task_name)
-        t._description           = func.__doc__ or ""
-        t._description = t._description.strip()
+        # convert description into one line
+        if func.__doc__:
+            t._description           = re.sub("\n\s+", " ", func.__doc__).strip()
+        else:
+            t._description = ""
 
         return t
 
@@ -660,6 +681,7 @@ class _task (node):
         # jobs which produce a single output. 
         # special handling for task.get_output_files for dependency chaining
         self._single_job_single_output = self.multiple_jobs_outputs
+        self.single_multi_io           = self.many_to_many
 
         # function which is decorated and does the actual work
         self.user_defined_work_func = None
@@ -678,6 +700,7 @@ class _task (node):
         self.output_filenames = None
         
         self.semaphore_name = module_name + "." + func_name
+
 
     #_________________________________________________________________________________________
 
@@ -1103,7 +1126,10 @@ class _task (node):
         #
         #   check enough arguments
         #
-        if len(orig_args) < 3:
+        if (len(orig_args) < 3 or         
+            (isinstance(orig_args[2], inputs) and len(orig_args) < 4) or
+            (isinstance(orig_args[2], add_inputs) and len(orig_args) < 4)
+            ):
             raise error_task_split(self, "Too few arguments for @split")
 
 
@@ -1123,27 +1149,58 @@ class _task (node):
         matching_regex = compile_regex(self, orig_args[1], error_task_split, "@split")
 
         #
+        #   inputs can also be defined by pattern match
+        #         
+        replace_inputs = _task.add_to_inputs
+        if isinstance(orig_args[2], inputs):
+            if len(orig_args[2].args) != 1:
+                raise error_task_transform_inputs_multiple_args(self, 
+                                    "inputs(...) expects only a single argument. "
+                                    "This can be, for example, a file name, "
+                                    "a regular expression pattern, or any "
+                                    "nested structure. If the intention was to "
+                                    "specify a tuple as the input parameter, "
+                                    "please wrap the elements of the tuple "
+                                    "in brackets in the decorator\n\n@transform(..., inputs(...), ...)\n")
+            extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[2].args[0])
+            output_pattern = orig_args[3]
+            replace_inputs = _task.replace_inputs
+            extra_params = orig_args[4:]
+        elif isinstance(orig_args[2], add_inputs):
+            extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[2].args)
+            output_pattern = orig_args[3]
+            extra_params = orig_args[4:]
+        else:
+            extra_inputs = None
+            output_pattern = orig_args[2]
+            extra_params = orig_args[3:]
+        
+        
+        
+        #
         #   replace output globs with files
         # 
-        output_files_task_globs = self.handle_tasks_globs_in_inputs(orig_args[2])
+        output_files_task_globs = self.handle_tasks_globs_in_inputs(output_pattern)
         if len(output_files_task_globs.tasks):
             raise error_task_split(self, "@split cannot output to another task. "
                                             "Do not include tasks in output parameters.")
-
-        extra_params = orig_args[3:]
 
 
 
         self.param_generator_func = split_ex_param_factory (   input_files_task_globs,
                                                                 False, # flatten input
                                                                 matching_regex, 
-                                                                output_files_task_globs, *extra_params)
+                                                                extra_inputs,
+                                                                replace_inputs,
+                                                                output_files_task_globs, 
+                                                                *extra_params)
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
         self.job_descriptor       = io_files_job_descriptor # (orig_args[2], output_runtime_data_names)
 
         # output is a glob
         self.indeterminate_output = 2
+        self.single_multi_io       = self.many_to_many
 
     #_________________________________________________________________________________________
 
@@ -1188,6 +1245,7 @@ class _task (node):
 
         # output is a glob
         self.indeterminate_output = 1
+        self.single_multi_io       = self.one_to_many
 
     #_________________________________________________________________________________________
 
@@ -1202,7 +1260,9 @@ class _task (node):
         #   check enough arguments
         #
         if (len(orig_args) < 3 or         
-            (isinstance(orig_args[2], inputs) and len(orig_args) < 4)):
+            (isinstance(orig_args[2], inputs) and len(orig_args) < 4) or
+            (isinstance(orig_args[2], add_inputs) and len(orig_args) < 4)
+            ):
             raise error_task_transform(self, "Too few arguments for @transform")
 
 
@@ -1232,8 +1292,9 @@ class _task (node):
             
         
         #
-        #   inputs also defined by pattern match
+        #   inputs can also be defined by pattern match
         #         
+        replace_inputs = _task.add_to_inputs
         if isinstance(orig_args[2], inputs):
             if len(orig_args[2].args) != 1:
                 raise error_task_transform_inputs_multiple_args(self, 
@@ -1245,6 +1306,10 @@ class _task (node):
                                     "please wrap the elements of the tuple "
                                     "in brackets in the decorator\n\n@transform(..., inputs(...), ...)\n")
             extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[2].args[0])
+            output_pattern_extras = orig_args[3:]
+            replace_inputs = _task.replace_inputs
+        elif isinstance(orig_args[2], add_inputs):
+            extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[2].args)
             output_pattern_extras = orig_args[3:]
         else:
             extra_inputs = None
@@ -1266,10 +1331,12 @@ class _task (node):
                                                                 matching_regex, 
                                                                 regex_substitute_extra_parameters,
                                                                 extra_inputs,
+                                                                replace_inputs,
                                                                 *output_pattern_extras)
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
         self.job_descriptor       = io_files_job_descriptor
+        self.single_multi_io       = self.many_to_many
 
     #_________________________________________________________________________________________
 
@@ -1303,6 +1370,7 @@ class _task (node):
         #
         #   inputs also defined by pattern match
         #         
+        replace_inputs = _task.add_to_inputs
         if isinstance(orig_args[2], inputs):
             if len(orig_args[2].args) != 1:
                 raise error_task_collate_inputs_multiple_args(self,
@@ -1315,16 +1383,22 @@ class _task (node):
                                     "in brackets in the decorator\n\n@collate(..., inputs(...), ...)\n")
             extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[2].args[0])
             output_pattern_extras = orig_args[3:]
+            replace_inputs = _task.replace_inputs
+        elif isinstance(orig_args[2], add_inputs):
+            extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[2].args)
+            output_pattern_extras = orig_args[3:]
         else:
             extra_inputs = None
             output_pattern_extras = orig_args[2:]
 
         extra_params = orig_args[2:]
+        self.single_multi_io           = self.many_to_many
 
         self.param_generator_func = collate_param_factory (input_files_task_globs, 
                                                             False, # flatten input
                                                             matching_regex, 
                                                             extra_inputs,
+                                                            replace_inputs,
                                                             *output_pattern_extras)
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
@@ -1359,7 +1433,10 @@ class _task (node):
                                                            *extra_params)
 
 
-        self._single_job_single_output = self.multiple_jobs_outputs
+#        self._single_job_single_output = self.multiple_jobs_outputs
+        self._single_job_single_output = self.single_job_single_output
+        self.single_multi_io           = self.many_to_one
+    
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
         self.job_descriptor       = io_files_job_descriptor
@@ -1432,6 +1509,9 @@ class _task (node):
         if len(orig_args) == 1 and type(orig_args[0]) == types.FunctionType:
             self.set_action_type (_task.action_task_files_func)
             self.param_generator_func = files_custom_generator_param_factory(orig_args[0])
+            
+            # assume
+            self.single_multi_io           = self.many_to_many
 
         #   Use parameters in supplied list
         else:
@@ -1445,6 +1525,7 @@ class _task (node):
                 # If you want different behavior, use @transform
                 params = copy.copy([orig_args])
                 self._single_job_single_output = self.single_job_single_output
+                self.single_multi_io           = self.one_to_one
 
 
             else:
@@ -1452,6 +1533,7 @@ class _task (node):
                 # multiple jobs with input/output parameters etc.
                 params = copy.copy(orig_args[0])
                 self._single_job_single_output = self.multiple_jobs_outputs
+                self.single_multi_io           = self.many_to_many
 
             check_files_io_parameters (self, params, error_task_files)
             
@@ -1527,18 +1609,22 @@ class _task (node):
 
 
         if combining_all_jobs:
+            self.single_multi_io           = self.many_to_many
             self.param_generator_func = collate_param_factory (input_files_task_globs, 
                                                                 False,                  # flatten
                                                                 matching_regex,
                                                                 extra_input_files_task_globs, 
+                                                                _task.replace_inputs,
                                                                 *output_and_extras)
         else:
 
+            self.single_multi_io           = self.many_to_many
             self.param_generator_func = transform_param_factory (input_files_task_globs, 
                                                                     False,              # flatten
                                                                     matching_regex, 
                                                                     True,               # substitute all parameters
                                                                     extra_input_files_task_globs, 
+                                                                    _task.replace_inputs,
                                                                     *output_and_extras)
             
             
@@ -1585,6 +1671,7 @@ class _task (node):
         # doesn't have a real function
         #  use job_wrapper just so it is not None
         self.user_defined_work_func = self.job_wrapper
+        self.single_multi_io           = self.one_to_one
         
         
 
@@ -1730,20 +1817,29 @@ class _task (node):
         Limit the number of concurrent jobs
         """
         maximum_jobs, name = (args + (None,))[0:2]
+        try:
+            maximum_jobs_num = int(maximum_jobs)
+            assert(maximum_jobs_num >= 1)
+        except:
+            limit_name = ", " + name if name else ""
+            raise JobsLimitArgumentError(('In @jobs_limit(%s%s), the limit '
+                                          'must be an integer number greater than or '
+                                          'equal to 1') %
+                                         (maximum_jobs_num, limit_name))
         if name != None:
             self.semaphore_name = name
         if self.semaphore_name in self.job_limit_semaphores:
             curr_maximum_jobs = self.job_limit_semaphores[self.semaphore_name]
-            if curr_maximum_jobs != maximum_jobs:
+            if curr_maximum_jobs != maximum_jobs_num:
                 raise JobsLimitArgumentError(('@jobs_limit(%d, "%s") cannot ' +
                                             're-defined with a different limit of %d') %
                                              (self.semaphore_name, curr_maximum_jobs,
-                                                maximum_jobs))
+                                                maximum_jobs_num))
         else:
             #
             #   save semaphore and limit
             # 
-            self.job_limit_semaphores[self.semaphore_name] = maximum_jobs
+            self.job_limit_semaphores[self.semaphore_name] = maximum_jobs_num
                                             
 
         
@@ -1867,6 +1963,7 @@ def pipeline_printout_graph (stream,
                              gnu_make_maximal_rebuild_mode  = True,
                              test_all_task_for_update       = True,
                              no_key_legend                  = False,
+                             minimal_key_legend             = True,
                              runtime_data= None):
     """
     print out pipeline dependencies in various formats
@@ -1918,6 +2015,7 @@ def pipeline_printout_graph (stream,
                       gnu_make_maximal_rebuild_mode,
                       test_all_task_for_update,
                       no_key_legend,
+                      minimal_key_legend,
                       extra_data_for_signal = t_verbose_logger(0, None, runtime_data))
 
     
@@ -1951,11 +2049,18 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
     :type output_stream: file-like object with ``write()`` function
     :param target_tasks: targets task functions which will be run if they are out-of-date
     :param forcedtorun_tasks: task functions which will be run whether or not they are out-of-date
-    :param verbose: More verbose output
+    :param verbose: level 0 : nothing
+                    level 1 : logs task names and warnings
+                    level 2 : logs task description if exists
+                    level 3 : logs job names for jobs to be run
+                    level 4 : logs list of up-to-date tasks and job names for jobs to be run
+                    level 5 : logs job names for all jobs whether up-to-date or not
+                    level 10: logs messages useful only for debugging ruffus pipeline code
     :param indent: How much indentation for pretty format. 
     :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all* out-of-date tasks. Runs minimal
                                           set to build targets if set to ``True``. Use with caution.
-    :param test_all_task_for_update: Ask all task functions if they are up-to-date 
+    :param wrap_width: The maximum length of each line
+    :param runtime_data: Experimental feature for passing data to tasks at run time
     """
     if verbose == 0:
         return
@@ -2046,8 +2151,8 @@ def get_semaphore (t, job_limit_semaphores, syncmanager):
     #   create semaphore if not yet created
     # 
     if t.semaphore_name not in job_limit_semaphores:
-        maximum_jobs = t.job_limit_semaphores[t.semaphore_name]
-        job_limit_semaphores[t.semaphore_name] = syncmanager.BoundedSemaphore(maximum_jobs)
+        maximum_jobs_num = t.job_limit_semaphores[t.semaphore_name]
+        job_limit_semaphores[t.semaphore_name] = syncmanager.BoundedSemaphore(maximum_jobs_num)
     return job_limit_semaphores[t.semaphore_name]
         
 #_________________________________________________________________________________________
@@ -2334,13 +2439,16 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     :type logger: `logging <http://docs.python.org/library/logging.html>`_ objects
     :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all* out-of-date tasks. Runs minimal
                                           set to build targets if set to ``True``. Use with caution. 
-    :param verbose: level 0: nothing
-                    level 1: logs completed jobs/tasks and warnings; 
-                    level 2: logs up to date jobs in incomplete tasks
-                    level 3: logs reason for running job;
-                    level 4: Shows the tasks Ruffus check for up-to-date/completion to decide which part of the pipeline to execute
-                    level 10: logs messages useful only for debug ruffus pipeline code
-
+    :param verbose: level 0 : nothing
+                    level 1 : logs task names and warnings
+                    level 2 : logs task description if exists
+                    level 3 : logs job names for jobs to be run
+                    level 4 : logs list of up-to-date tasks and job names for jobs to be run
+                    level 5 : logs job names for all jobs whether up-to-date or not
+                    level 10: logs messages useful only for debugging ruffus pipeline code
+    :param runtime_data: Experimental feature for passing data to tasks at run time
+    :param one_second_per_job: Defaults to (true) forcing jobs to take a minimum of 1 second to complete
+    :param touch_file_only: Create or update input/output files only to simulate running the pipeline. Do not run jobs
 
     """
     syncmanager = multiprocessing.Manager()
