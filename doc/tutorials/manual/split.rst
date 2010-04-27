@@ -1,7 +1,10 @@
-.. _manual_5th_chapter:
+.. include:: ../../global.inc
+.. include:: chapter_numbers.inc
+
+.. _manual.split:
 
 ###################################################################################
-**Chapter 5**: `Splitting up large tasks / files with` **@split**
+|manual.split.chapter_num|: `Splitting up large tasks / files with` **@split**
 ###################################################################################
     .. hlist::
     
@@ -18,17 +21,16 @@
     
     
     
-.. index:: 
-    pair: @split; Manual
+    .. index:: 
+        pair: @split; Manual
     
-.. _manual.split:
 
 =================
 **@split**
 =================
-This example is borrowed from :ref:`step 4 <Simple_Tutorial_4th_step>` of the simple tutorial.
+This example is borrowed from :ref:`step 4 <Simple_Tutorial_5th_step>` of the simple tutorial.
 
-    .. note :: See :ref:`accompanying Python Code <Simple_Tutorial_4th_step_code>` 
+    .. note :: See :ref:`accompanying Python Code <Simple_Tutorial_5th_step_code>` 
     
 **************************************************************************************
 Splitting up a long list of random numbers to calculate their variance
@@ -90,15 +92,14 @@ Output files
 =================
 
     The *output* (second) parameter of **@split** usually contains a 
-    `glob matching pattern <http://docs.python.org/library/glob.html>`_ like
-    the ``*.chunks`` above. 
+    |glob|_ pattern like the ``*.chunks`` above. 
 
     .. note::
         **Ruffus** is quite relaxed about the contents of the ``output`` parameter.
-        Strings are treated as file names. Strings containing `glob pattern <http://docs.python.org/library/glob.html>`_ are expanded.
+        Strings are treated as file names. Strings containing |glob|_ pattern are expanded.
         Other types are passed verbatim to the decorated task function.
     
-    The files which match the `glob pattern <http://docs.python.org/library/glob.html>`_  will be passed as the actual parameters to the job
+    The files which match the |glob|_ will be passed as the actual parameters to the job
     function. Thus, the first time you run the example code ``*.chunks`` will return an empty list because
     no ``.chunks`` files have been created, resulting in the following:
     
@@ -113,7 +114,7 @@ Output files
 
     File names in *output* are generally out of date or superfluous. They are useful 
     mainly for cleaning-up detritus from previous runs 
-    (have a look at :ref:`step_4_split_numbers_into_chunks(...) <Simple_Tutorial_4th_step_code>`).
+    (have a look at :ref:`step_4_split_numbers_into_chunks(...) <Simple_Tutorial_5th_step_code>`).
     
     .. note ::
 
@@ -122,7 +123,7 @@ Output files
         not be possible automatically to chain together the *ouput* of this pipeline task into the
         *inputs* of the next step.
         
-        You can specify multiple `glob patterns <http://docs.python.org/library/glob.html>`_  to match *all* the files which are the
+        You can specify multiple |glob|_ patterns to match *all* the files which are the
         result of the splitting task function. These can even cover different directories, 
         or groups of file names. This is a more extreme example:
         
@@ -168,7 +169,7 @@ Example
 
         In other words, dependent / down-stream tasks which obtain output files automatically 
         from the task decorated by **@split** receive the most current file list. 
-        The `glob patterns <http://docs.python.org/library/glob.html>`_  will be matched again to see exactly what files the task function
+        The |glob|_ patterns will be matched again to see exactly what files the task function
         has created in reality *after* the task completes.
 
     

@@ -1,3 +1,4 @@
+.. include:: global.inc
 .. _cheat_sheet:
 
 
@@ -22,13 +23,13 @@ Basic
    :header: "Decorator", "Syntax"
    :widths: 100, 600,1
    
-   "**@follows**  (:ref:`Manual <manual.follows>`)   
+   "@follows  (:ref:`Manual <manual.follows>`)   
    ", "
    | :ref:`@follows <decorators.follows>` ( ``task1``, ``'task2'`` ))
    | :ref:`@follows <decorators.follows>` ( ``task1``,  :ref:`mkdir <decorators.follows.directory_name>`\ ( ``'my/directory/for/results'`` ))
    
    ", ""
-   "**@files** (:ref:`Manual <manual.files>`)
+   "@files (:ref:`Manual <manual.files>`)
    ", "
    | :ref:`@files <decorators.files>`\ ( ``parameter_list`` )
    | :ref:`@files <decorators.files>`\ ( ``parameter_generating_function`` )
@@ -43,21 +44,21 @@ Core
    :header: "Decorator", "Syntax"
    :widths: 100, 600,1
 
-   "**@split** (:ref:`Manual <manual.split>`)   
+   "@split (:ref:`Manual <manual.split>`)   
    ", "
    :ref:`@split <decorators.split>` ( ``tasks_or_file_names``, ``output_files``, [``extra_parameters``,...] )
    ", ""
-   "**@transform** (:ref:`Manual <manual.transform>`)   
+   "@transform (:ref:`Manual <manual.transform>`)   
    ", "
    | :ref:`@transform <decorators.transform>` ( ``tasks_or_file_names``, :ref:`suffix <decorators.transform.suffix_string>`\ *(*\ ``suffix_string``\ *)*\ , ``output_pattern``, [``extra_parameters``,...] )
    | :ref:`@transform <decorators.transform>` ( ``tasks_or_file_names``, :ref:`regex <decorators.transform.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , ``output_pattern``, [``extra_parameters``,...] )
    
    ", ""
-   "**@merge** (:ref:`Manual <manual.merge>`)   
+   "@merge (:ref:`Manual <manual.merge>`)   
    ", "
    :ref:`@merge <decorators.merge>` (``tasks_or_file_names``, ``output``, [``extra_parameters``,...] )
    ", ""
-   "**@posttask** (:ref:`Manual <manual.posttask>`)   
+   "@posttask (:ref:`Manual <manual.posttask>`)   
    ", "
    | :ref:`@posttask <decorators.posttask>` ( ``signal_task_completion_function`` )
    | :ref:`@posttask <decorators.posttask>` (:ref:`touch_file <decorators.touch_file>`\ ( ``'task1.completed'`` ))

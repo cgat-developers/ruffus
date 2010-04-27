@@ -1,3 +1,4 @@
+.. include:: ../../global.inc
 .. _manual.introduction:
 
 .. index:: 
@@ -174,7 +175,7 @@ If any of these clash with names in your code, you can use qualified names inste
       called normally, outside of *Ruffus*.
     | *Ruffus* :term:`decorator`\ s can be added to (stacked on top of) any function in any order.
 
-    * :ref:`More on @follows in Chapter 1 <manual_1st_chapter>`
+    * :ref:`More on @follows in |manual.follows.chapter_num| <manual.follows>` 
     * :ref:`@follows syntax in detail <decorators.follows>`
 
 .. index:: 

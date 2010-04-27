@@ -1,8 +1,11 @@
-.. _manual_12th_chapter:
+.. include:: ../../global.inc
+.. include:: chapter_numbers.inc
 
-##############################################################################################################
-**Chapter 12**: `Advanced usage of` **@transform**: `controlling both input and output files`
-##############################################################################################################
+.. _manual.transform_ex:
+
+######################################################################################################################################################
+|manual.transform_ex.chapter_num|: `Advanced usage of` **@transform**: `controlling both input and output files`
+######################################################################################################################################################
 
     .. hlist::
 
@@ -10,10 +13,9 @@
         * :ref:`@transform <decorators.transform>` syntax in detail
 
     
-.. index:: 
-    pair: @transform (Advanced Usage); Manual
+    .. index:: 
+        pair: @transform (Advanced Usage); Manual
 
-.. _manual.transform_ex:
 
     The standard :ref:`@transform <manual.transform>` allows you to send a list of data files
     to the same pipelined function and for the resulting *outputs* parameter to be automatically

@@ -1,3 +1,4 @@
+.. include:: global.inc
 ******
 FAQ
 ******

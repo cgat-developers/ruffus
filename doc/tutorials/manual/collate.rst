@@ -1,26 +1,28 @@
-.. _manual_11th_chapter:
+.. include:: ../../global.inc
+.. include:: chapter_numbers.inc
 
-######################################################################################################
-**Chapter 11**: **@collate**\ : `group together disparate input into sets of results`
-######################################################################################################
-
-.. hlist::
-
-    * :ref:`Manual overview <manual>` 
-    * :ref:`@collate syntax in detail <decorators.collate>`
-
-It is often very useful to group together disparate *inputs* into several categories, each of which
-lead to a separate *output*. In the example shown below, we produce separate summaries of results 
-depending on which species the file belongs to.
-
-**Ruffus** uses the term ``collate`` in a rough analogy to the way printers group together
-copies of documents appropriately.
-    
-.. index:: 
-    pair: @collate; Manual
-    
 .. _manual.collate:
 
+######################################################################################################
+|manual.collate.chapter_num|: **@collate**\ : `group together disparate input into sets of results`
+######################################################################################################
+
+    .. hlist::
+    
+        * :ref:`Manual overview <manual>` 
+        * :ref:`@collate syntax in detail <decorators.collate>`
+    
+    It is often very useful to group together disparate *inputs* into several categories, each of which
+    lead to a separate *output*. In the example shown below, we produce separate summaries of results 
+    depending on which species the file belongs to.
+    
+    **Ruffus** uses the term ``collate`` in a rough analogy to the way printers group together
+    copies of documents appropriately.
+        
+    .. index:: 
+        pair: @collate; Manual
+        
+    
 
 
 

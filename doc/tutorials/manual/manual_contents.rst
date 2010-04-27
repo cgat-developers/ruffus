@@ -1,3 +1,4 @@
+.. include:: ../../global.inc
 .. _manual:
 
 ####################################################################
@@ -10,12 +11,15 @@
     manual_introduction.rst
     follows.rst                            
     tasks_as_recipes.rst                   
-    parallel_processing.rst                
     files.rst                              
+    tasks_and_globs_in_inputs.rst
+    tracing_pipeline_parameters.rst
+    parallel_processing.rst                
     split.rst                              
     transform.rst                          
     merge.rst                              
     posttask.rst
+    jobs_limit.rst
     dependencies.rst
     onthefly.rst
     collate.rst

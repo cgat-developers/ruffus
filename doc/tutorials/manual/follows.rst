@@ -1,15 +1,17 @@
-.. _manual_1st_chapter:
+.. include:: ../../global.inc
+.. include:: chapter_numbers.inc
+
 .. _manual.follows:
 
-###################################################################
-**Chapter 1**: `Arranging tasks into a pipeline with` **@follows**
-###################################################################
+#################################################################################################
+|manual.follows.chapter_num| : `Arranging tasks into a pipeline with` **@follows**
+#################################################################################################
 
-* :ref:`Manual overview <manual>` 
-* :ref:`@follows syntax in detail <decorators.follows>`
-
-.. index:: 
-    pair: @follows; Manual
+    * :ref:`Manual overview <manual>` 
+    * :ref:`@follows syntax in detail <decorators.follows>`
+    
+    .. index:: 
+        pair: @follows; Manual
 
 
 ***************************************

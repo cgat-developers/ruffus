@@ -1,8 +1,11 @@
-.. _manual_8th_chapter:
+.. include:: ../../global.inc
+.. include:: chapter_numbers.inc
 
-################################################################################################
-**Chapter 8**: `Signal the completion of each stage of our pipeline with` **@posttask**
-################################################################################################
+.. _manual.posttask:
+
+####################################################################################################################
+|manual.posttask.chapter_num|: `Signal the completion of each stage of our pipeline with` **@posttask**
+####################################################################################################################
 
     .. hlist::
 
@@ -19,10 +22,9 @@
 
     *Ruffus* uses the :ref:`@posttask <decorators.posttask>` decorator for this purpose.
     
-.. index:: 
-    pair: @posttask; Manual
+    .. index:: 
+        pair: @posttask; Manual
     
-.. _manual.posttask:
 
 =================
 **@posttask**

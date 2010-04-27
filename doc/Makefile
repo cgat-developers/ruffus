@@ -32,6 +32,7 @@ clean:
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) _build/html
 	@echo
+	rsync -t --recursive _build/html/* /home/lg/remotehomelg/public_html/oss/ruffus
 	@echo "Build finished. The HTML pages are in _build/html."
 
 dirhtml:

@@ -1,3 +1,4 @@
+.. include:: ../global.inc
 .. seealso::
     :ref:`Decorators <decorators>`
 
@@ -229,4 +230,5 @@ Indicator Objects
                 
 
         
+
 

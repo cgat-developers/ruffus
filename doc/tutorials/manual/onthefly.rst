@@ -1,9 +1,11 @@
-.. _manual_10th_chapter:
+.. include:: ../../global.inc
+.. include:: chapter_numbers.inc
+
 .. _manual.on_the_fly:
 
-###################################################################################
-**Chapter 10**: `Generating parameters on the fly with` **@files**
-###################################################################################
+#######################################################################################################
+|manual.on_the_fly.chapter_num|: `Generating parameters on the fly with` **@files**
+#######################################################################################################
     .. hlist::
     
        * :ref:`Manual overview <manual>` 
@@ -14,8 +16,8 @@
     | This  powerful ability to generate the exact parameters you need is 
       sometimes worth the slight increase in complexity.
 
-.. index:: 
-    pair: @files; Tutorial on-the-fly parameter generation
+    .. index:: 
+        pair: @files; Tutorial on-the-fly parameter generation
 
     
 ***********************
@@ -129,7 +131,7 @@
                 gwas_simulation(('2.gene', '2.gwas', 'c.sim'), "2.gene.c.sim.results")                
 
 
-    The :ref:`accompanying code<manual_10th_chapter>` looks slightly more complicated because
+    The :ref:`accompanying code<manual.on_the_fly_code>` looks slightly more complicated because
     of some extra bookkeeping.
     
 

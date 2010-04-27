@@ -1,3 +1,4 @@
+.. include:: ../../global.inc
 .. _Simple_Tutorial:
 
 
@@ -41,8 +42,8 @@ The first steps (1-4)
     
         1. Chain tasks (functions) together into a pipeline <step1_follows>
         2. Provide parameters to run jobs in parallel <step2_files>
-        3. Tracing through your new pipeline <step3_run_pipeline>,
-        4. Using flowcharts  <Simple_Tutorial_3rd_step_graphical>
+        3. Tracing through your new pipeline <step3_run_pipeline>
+        4. Using flowcharts  <step4_run_pipeline_graphically>
     
 ============================
 A worked example (steps 5-8)
@@ -54,10 +55,10 @@ A worked example (steps 5-8)
     .. toctree::
         :maxdepth: 1
         
-        5. Split up a large problem into smaller chunks<step4_split>
-        6. Calculate partial solutions in parallel <step5_transform>
-        7. Re-combine the partial solutions into the final result <step6_merge>
-        8. Automatically signal the completion of each step of our pipeline <step7_posttask>
+        5. Split up a large problem into smaller chunks<step5_split>
+        6. Calculate partial solutions in parallel <step6_transform>
+        7. Re-combine the partial solutions into the final result <step7_merge>
+        8. Automatically signal the completion of each step of our pipeline <step8_posttask>
 
 
     This covers the core functionality of *Ruffus*.

@@ -1,8 +1,11 @@
-.. _manual_7th_chapter:
+.. include:: ../../global.inc
+.. include:: chapter_numbers.inc
 
-#####################################################################
-**Chapter 7**: **Merge** `multiple input into a single result`
-#####################################################################
+.. _manual.merge:
+
+#########################################################################################
+|manual.merge.chapter_num|: **Merge** `multiple input into a single result`
+#########################################################################################
 
     .. hlist::
 
@@ -21,10 +24,9 @@
     As always, strings contained (even with nested sequences) within *output* will be treated
     as file names for the purpose of checking if the :term:`task` is up-to-date.
     
-.. index:: 
-    pair: @merge; Manual
+    .. index:: 
+        pair: @merge; Manual
     
-.. _manual.merge:
 
 =================
 **@merge**
@@ -48,9 +50,9 @@ Combining partial solutions: Calculating variances
         .. image:: ../../images/simple_tutorial_step4.png", "
             We wanted to calculate the sample variance of a large list of random numbers. We                                 
             have seen previously how we can split up this large problem into small pieces                                      
-            (using @merge in :ref:`chapter 5 <manual_5th_chapter>`), and work out the                                        
+            (using @split in :ref:`|manual.split.chapter_num| <manual.split>`), and work out the                                        
             partial solutions for each sub-problem (calculaing sums with @transform in                                       
-            :ref:`chapter 6 <manual_6th_chapter>`).                                                                          
+            :ref:`|manual.transform.chapter_num| <manual.transform>`).                                                                          
                                                                                                                              
             All that remains is to join up the partial solutions from the different ``.sums`` files                          
             and turn these into the variance as follows::                                                                    

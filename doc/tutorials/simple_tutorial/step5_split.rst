@@ -1,10 +1,12 @@
-.. _Simple_Tutorial_4th_step:
+.. include:: ../../global.inc
+.. _Simple_Tutorial_5th_step:
+.. _tutorial.split:
 .. index:: 
     pair: @split; Tutorial
 
 
 ###################################################################
-Step 4: Splitting up large tasks / files
+Step 5: Splitting up large tasks / files
 ###################################################################
     * :ref:`Simple tutorial overview <Simple_Tutorial>` 
     * :ref:`@split in detail <decorators.split>`
@@ -12,7 +14,7 @@ Step 4: Splitting up large tasks / files
     .. note::
         Remember to look at the example code:
     
-        * :ref:`Python Code for step 4 <Simple_Tutorial_4th_step_code>` 
+        * :ref:`Python Code for step 5 <Simple_Tutorial_5th_step_code>` 
     
     | The second half of this tutorial is a worked example to calculate 
       the sample variance of 10,000 random numbers.
@@ -38,9 +40,9 @@ Splitting up a long list of random numbers to calculate their variance
         :class: borderless
 
         ".. centered::
-            Step 4 from:
+            Step 5 from:
 
-        .. image:: ../../images/simple_tutorial_step4.png", "
+        .. image:: ../../images/simple_tutorial_step5.png", "
             Suppose we had a list of 100,000 random numbers in the file ``random_numbers.list``:
             
                 ::
@@ -70,7 +72,7 @@ Splitting up a long list of random numbers to calculate their variance
         ::
         
             @split("random_numbers.list", "*.chunks")
-            def step_4_split_numbers_into_chunks (input_file_name, output_files):
+            def step_5_split_numbers_into_chunks (input_file_name, output_files):
                 #
                 """code goes here"""
             
@@ -85,12 +87,12 @@ Splitting up a long list of random numbers to calculate their variance
     
         ::
         
-            step_4_split_numbers_into_chunks ("random_numbers.list", [])
+            step_5_split_numbers_into_chunks ("random_numbers.list", [])
     
     After that ``*.chunks`` will match the list of current ``.chunks`` files created by
     the previous pipeline run. Some of these files will be out of date or superfluous.
     These file names are usually only useful for removing detritus from previous runs 
-    (have a look at :ref:`step_4_split_numbers_into_chunks(...) <Simple_Tutorial_4th_step_code>`).
+    (have a look at :ref:`step_5_split_numbers_into_chunks(...) <Simple_Tutorial_5th_step_code>`).
     
     .. note ::
 

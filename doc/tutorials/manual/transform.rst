@@ -1,8 +1,11 @@
-.. _manual_6th_chapter:
+.. include:: ../../global.inc
+.. include:: chapter_numbers.inc
 
-###################################################################################################
-**Chapter 6**: `Applying the same recipe to create many different files with` **@transform**
-###################################################################################################
+.. _manual.transform:
+
+#######################################################################################################################
+|manual.transform.chapter_num|: `Applying the same recipe to create many different files with` **@transform**
+#######################################################################################################################
     .. hlist::
     
         * :ref:`Manual overview <manual>` 
@@ -25,10 +28,9 @@
     
     
     
-.. index:: 
-    pair: @transform; Manual
+    .. index:: 
+        pair: @transform; Manual
     
-.. _manual.transform:
 
 =================
 **@transform**

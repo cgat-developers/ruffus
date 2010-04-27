@@ -1,3 +1,4 @@
+.. include:: ../../global.inc
 .. _Simple_Tutorial_3nd_step_code:
 
 

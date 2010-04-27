@@ -1,7 +1,10 @@
-.. _manual_15th_chapter:
+.. include:: ../../global.inc
+.. include:: chapter_numbers.inc
+
+.. _manual.exceptions:
 
 ###################################################################################################
-**Chapter 15**: `Exceptions thrown inside a pipeline`
+|manual.exceptions.chapter_num|: `Exceptions thrown inside a pipeline`
 ###################################################################################################
 
     .. hlist::
@@ -9,10 +12,9 @@
         * :ref:`Manual overview <manual>` 
 
     
-.. index:: 
-    pair: Exceptions; Manual
+    .. index:: 
+        pair: Exceptions; Manual
     
-.. _manual.exceptions:
 
     The goal for **Ruffus** is that exceptions should just work *out-of-the-box* without any fuss.
     This is especially important for exceptions that come from your code which may be raised

@@ -12,7 +12,8 @@
 # serve to show the default.
 
 import sys, os
-sys.path.insert(0, os.path.abspath(os.path.join("..", "src")))
+sys.path.insert(0, os.path.abspath(os.path.join("..")))
+print sys.path
 import ruffus, ruffus.task, ruffus.ruffus_version
 
 
@@ -49,6 +50,7 @@ copyright = u'2009, Leo Goodstadt'
 #
 # The short X.Y version.
 version=ruffus.ruffus_version.__version #major.minor[.patch[.sub]]
+print version
 # The full version, including alpha/beta/rc tags.
 release = version
 

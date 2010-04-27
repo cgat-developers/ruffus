@@ -1,3 +1,4 @@
+.. include:: global.inc
 ***************************
 **Ruffus** documentation
 ***************************
@@ -28,6 +29,17 @@ Overview:
    Future plans <todo>
    faq.rst
    glossary.rst
+
+=====================
+Examples
+=====================
+.. toctree::
+   :maxdepth: 2
+
+   examples/bioinformatics/index.rst
+   examples/bioinformatics/part2.rst
+   examples/bioinformatics/part1_code.rst
+   examples/bioinformatics/part2_code.rst
 
 
 
@@ -72,6 +84,8 @@ Decorators
     .. toctree::
         :maxdepth: 1
 
+        decorators/jobs_limit.rst
+        decorators/split_ex.rst
         decorators/transform_ex.rst
         decorators/collate.rst
 

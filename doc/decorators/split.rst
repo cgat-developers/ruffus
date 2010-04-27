@@ -1,3 +1,4 @@
+.. include:: ../global.inc
 .. _decorators.split:
 .. index:: 
     pair: @split; Syntax
@@ -49,7 +50,7 @@ See :ref:`Decorators <decorators>` for more decorators
 
        #.  (Nested) list of file name strings (as in the example above).
 
-            | File names containing ``*[]?`` will be expanded as a glob.
+            | File names containing ``*[]?`` will be expanded as a |glob|_.
             | E.g.:``"a.*" => "a.1", "a.2"``
            
        #.  Task / list of tasks.
@@ -63,7 +64,7 @@ See :ref:`Decorators <decorators>` for more decorators
        Specifies the resulting output file name(s).
 
        | These are used **only** to check if the task is up to date.
-       | Normally you would use either a glob (e.g. ``*.little_files`` as above) or  a "sentinel file"
+       | Normally you would use either a |glob|_ (e.g. ``*.little_files`` as above) or  a "sentinel file"
          to indicate that the task has completed successfully. 
        | You can of course do both:
 

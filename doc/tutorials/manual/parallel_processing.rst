@@ -1,11 +1,14 @@
-.. _manual_3rd_chapter:
+.. include:: ../../global.inc
+.. include:: chapter_numbers.inc
 
-###################################################################
-**Chapter 3**: `Running Tasks and Jobs in parallel`
-###################################################################
-.. hlist::
+.. _manual.multiprocessing:
 
-   * :ref:`Manual overview <manual>` 
+#######################################################################################
+|manual.multiprocessing.chapter_num|: `Running Tasks and Jobs in parallel`
+#######################################################################################
+    .. hlist::
+    
+       * :ref:`Manual overview <manual>` 
 
 =====================
 Multi Processing
