@@ -789,6 +789,7 @@ class Test_transform_param_factory(unittest.TestCase):
         # 
         # simple 1 input, 1 output
         # 
+        # 
         paths = self.do_task_transform(test_path + "/*.test", task.regex(r"(.*)\.test"),  
                                             task.inputs(r"\1.testwhat"),
                                             [r"\1.output1", r"\1.output2"])
@@ -801,15 +802,40 @@ class Test_transform_param_factory(unittest.TestCase):
                             ('DIR/f2.testwhat', ['DIR/f2.output1', 'DIR/f2.output2']),
                                            ])
         paths = self.do_task_transform(test_path + "/*.test", task.suffix(".test"),  
-                                            task.inputs(r".testwhat"),
+                                            task.inputs(r"a.testwhat"),
                                             [".output1", ".output2"], ".output3")
 
         paths = recursive_replace(paths, test_path, "DIR")
         self.assertEqual(paths,
                         [
-                            ('DIR/f0.testwhat', ['DIR/f0.output1', 'DIR/f0.output2'], '.output3'), 
-                            ('DIR/f1.testwhat', ['DIR/f1.output1', 'DIR/f1.output2'], '.output3'), 
-                            ('DIR/f2.testwhat', ['DIR/f2.output1', 'DIR/f2.output2'], '.output3')])
+                            ('a.testwhat', ['DIR/f0.output1', 'DIR/f0.output2'], '.output3'), 
+                            ('a.testwhat', ['DIR/f1.output1', 'DIR/f1.output2'], '.output3'), 
+                            ('a.testwhat', ['DIR/f2.output1', 'DIR/f2.output2'], '.output3')])
+        #
+        # add inputs
+        # 
+        # 
+        paths = self.do_task_transform(test_path + "/*.test", task.regex(r"(.*)\.test"),  
+                                            task.add_inputs(r"\1.testwhat"),
+                                            [r"\1.output1", r"\1.output2"])
+
+        paths = recursive_replace(paths, test_path, "DIR")
+        self.assertEqual(paths,
+                        [
+                            (('DIR/f0.test','DIR/f0.testwhat'), ['DIR/f0.output1', 'DIR/f0.output2']), 
+                            (('DIR/f1.test','DIR/f1.testwhat'), ['DIR/f1.output1', 'DIR/f1.output2']),
+                            (('DIR/f2.test','DIR/f2.testwhat'), ['DIR/f2.output1', 'DIR/f2.output2']),
+                                           ])
+        paths = self.do_task_transform(test_path + "/*.test", task.suffix(".test"),  
+                                            task.add_inputs(r"a.testwhat"),
+                                            [".output1", ".output2"], ".output3")
+
+        paths = recursive_replace(paths, test_path, "DIR")
+        self.assertEqual(paths,
+                        [
+                            (('DIR/f0.test','a.testwhat'), ['DIR/f0.output1', 'DIR/f0.output2'], '.output3'), 
+                            (('DIR/f1.test','a.testwhat'), ['DIR/f1.output1', 'DIR/f1.output2'], '.output3'), 
+                            (('DIR/f2.test','a.testwhat'), ['DIR/f2.output1', 'DIR/f2.output2'], '.output3')])
 
     def test_tasks(self):
         """
@@ -1334,3 +1360,5 @@ unittest.main()
 
 
     
+
+
