@@ -1,4 +1,4 @@
-.. _manual_10th_chapter_code:
+.. include:: ../../global.inc
 .. _manual.on_the_fly_code:
 
 ###################################################################

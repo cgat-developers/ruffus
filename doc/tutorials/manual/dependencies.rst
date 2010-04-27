@@ -1,7 +1,10 @@
-.. _manual_9th_chapter:
+.. include:: ../../global.inc
+.. include:: chapter_numbers.inc
+
+.. _manual.dependencies:
 
 ##################################################################################
-**Chapter 9**: `Checking dependencies to run tasks in order`
+|manual.dependencies.chapter_num|: `Checking dependencies to run tasks in order`
 ##################################################################################
 
     .. hlist::
@@ -9,17 +12,16 @@
         * :ref:`Manual overview <manual>` 
 
     
-.. index:: 
-    pair: dependencies; Manual
+    .. index:: 
+        pair: dependencies; Manual
+        
     
-.. _manual.dependencies:
-
-
-How does **Ruffus** decide how to run your pipeline? 
-
-    * In which order should pipelined functions be called?
     
-    * Which parts of the pipeline are up-to-date and do not need to be rerun?
+    How does **Ruffus** decide how to run your pipeline? 
+    
+        * In which order should pipelined functions be called?
+        
+        * Which parts of the pipeline are up-to-date and do not need to be rerun?
 
 
 =============================================

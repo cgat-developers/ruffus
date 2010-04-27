@@ -1,19 +1,21 @@
+.. include:: ../../global.inc
+.. include:: chapter_numbers.inc
+
 .. _manual.check_if_uptodate:
-.. _manual_14th_chapter:
 
-###################################################################################################
-**Chapter 14**: `Writing custom functions to decide which jobs are up to date`
-###################################################################################################
+#######################################################################################################################
+|manual.check_if_uptodate.chapter_num|: `Writing custom functions to decide which jobs are up to date`
+#######################################################################################################################
 
-.. hlist::
-
-    * :ref:`Manual overview <manual>` 
-    * :ref:`@check_if_uptodate  syntax in detail<decorators.check_if_uptodate>`
-
+    .. hlist::
     
-
-.. index:: 
-    pair: @check_if_uptodate; Manual
+        * :ref:`Manual overview <manual>` 
+        * :ref:`@check_if_uptodate  syntax in detail<decorators.check_if_uptodate>`
+    
+        
+    
+    .. index:: 
+        pair: @check_if_uptodate; Manual
     
 ******************************************************************************
 **@check_if_uptodate** : Manual dependency checking
@@ -82,6 +84,6 @@
     The function specified by :ref:`@check_if_uptodate <manual.check_if_uptodate>` can be called
     more than once for each job. 
 
-    See the discussion of how **Ruffus** decides which tasks to run in :ref:`Chapter 9 <manual_9th_chapter>`
+    See the :ref:`description here <manual.dependencies>` of how **Ruffus** decides which tasks to run.
         
 

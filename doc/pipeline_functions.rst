@@ -1,3 +1,4 @@
+.. include:: global.inc
 .. _pipeline_functions:
 
 See :ref:`Decorators <decorators>` for more decorators
@@ -21,6 +22,12 @@ See :ref:`Decorators <decorators>` for more decorators
 .. _pr_gnu_make: `pipeline_functions.pipeline_run.gnu_make`_
 .. |pr_verbose| replace:: `verbose`
 .. _pr_verbose: `pipeline_functions.pipeline_run.verbose`_
+.. |pr_runtime_data| replace:: `runtime_data`
+.. _pr_runtime_data: `pipeline_functions.pipeline_run.runtime_data`_
+.. |pr_one_second_per_job| replace:: `one_second_per_job`
+.. _pr_one_second_per_job: `pipeline_functions.pipeline_run.one_second_per_job`_
+.. |pr_touch_files_only| replace:: `touch_files_only`
+.. _pr_touch_files_only: `pipeline_functions.pipeline_run.touch_files_only`_
 
 
 
@@ -38,6 +45,8 @@ See :ref:`Decorators <decorators>` for more decorators
 .. _pp_wrap_width: `pipeline_functions.pipeline_printout.wrap_width`_
 .. |pp_gnu_make| replace:: `gnu_make_maximal_rebuild_mode`
 .. _pp_gnu_make: `pipeline_functions.pipeline_printout.gnu_make`_
+.. |pp_runtime_data| replace:: `runtime_data`
+.. _pp_runtime_data: `pipeline_functions.pipeline_printout.runtime_data`_
 
 
 
@@ -90,7 +99,7 @@ Pipeline functions
 **************************************************************************************************************************************************************************************
 *pipeline_run*
 **************************************************************************************************************************************************************************************
-**pipeline_run** ( |pr_target_tasks|_, [ |pr_forcedtorun_tasks|_ = [], |pr_multiprocess|_ = 1, |pr_logger|_ = stderr_logger, |pr_gnu_make|_ = True, |pr_verbose|_ =1])
+**pipeline_run** ( |pr_target_tasks|_, [ |pr_forcedtorun_tasks|_ = [], |pr_multiprocess|_ = 1, |pr_logger|_ = stderr_logger, |pr_gnu_make|_ = True, |pr_verbose|_ =1], |pr_runtime_data|_ = None, |pr_one_second_per_job|_ = True, |pr_touch_files_only|_ = False)
 
     **Purpose:**
 
@@ -168,17 +177,40 @@ Pipeline functions
     
             ::
             
-                    verbose =  0: nothing
-                    verbose =  1: logs completed jobs/tasks; 
-                    verbose =  2: logs up to date jobs in incomplete tasks
-                    verbose =  3: logs reason for running job
-                    verbose =  4: Shows the tasks Ruffus check for up-to-date/completion to decide which part of the pipeline to execute
-                    verbose = 10: logs messages useful only for debugging ruffus pipeline code
+                verbose = 0 : prints nothing
+                verbose = 1 : logs warnings and tasks which are not up-to-date and which will be run
+                verbose = 2 : logs doc strings for task functions as well
+                verbose = 3 : logs job parameters for jobs which are out-of-date
+                verbose = 4 : logs list of up-to-date tasks but parameters for out-of-date jobs
+                verbose = 5 : logs parameters for all jobs whether up-to-date or not
+                verbose = 10: logs messages useful only for debugging ruffus pipeline code
 
 
-        ``verbose > 2`` are intended for debugging **Ruffus** by the developers and the details
+        ``verbose >= 10`` are intended for debugging **Ruffus** by the developers and the details
         are liable to change from release to release
         
+.. _pipeline_functions.pipeline_run.runtime_data:
+
+    * *runtime_data*
+        Experimental feature for passing data to tasks at run time
+
+.. _pipeline_functions.pipeline_run.one_second_per_job:
+
+    * *one_second_per_job*
+        By default, **Ruffus** ensures jobs take a minimum of 1 second to complete, to get around
+        coarse grained timestamps in some file systems. This is rarely an issue when many jobs run
+        *in parallel*. If your file system has sub-second time stamps, you can turn off this delay
+        by setting *one_second_per_job* to ``False``
+
+.. _pipeline_functions.pipeline_run.touch_files_only:
+
+    * *touch_files_only*
+        Create or update output files only to simulate the running of the pipeline. 
+        Does not invoke real task functions to run jobs. This is most useful to force a 
+        pipeline to acknowledge that a particular part is now up-to-date.
+        
+        This will not work properly if the identities of some files are not known before hand, 
+        and depend on run time. In other words, not recommended if ``@split`` or custom parameter generators are being used.
 
 
 .. _pipeline_functions.pipeline_printout:
@@ -190,7 +222,7 @@ Pipeline functions
 **********************************************************************************************************************************************************************************************************
 *pipeline_printout*
 **********************************************************************************************************************************************************************************************************
-**pipeline_printout** (|pp_output_stream|_, |pp_target_tasks|_, |pp_forcedtorun_tasks|_ = [], |pp_verbose|_ = 1, |pp_indent|_ = 4, |pp_gnu_make|_ = True, |pp_wrap_width|_ = 100)
+**pipeline_printout** (|pp_output_stream|_, |pp_target_tasks|_, |pp_forcedtorun_tasks|_ = [], |pp_verbose|_ = 1, |pp_indent|_ = 4, |pp_gnu_make|_ = True, |pp_wrap_width|_ = 100, |pp_runtime_data|_ = None)
 
     **Purpose:**
 
@@ -240,12 +272,13 @@ Pipeline functions
     
             ::
 
-                verbose = 0 : nothing
-                verbose = 1 : print task name
-                verbose = 2 : print task description if exists
-                verbose = 3 : print job names for jobs to be run
-                verbose = 4 : print list of up-to-date tasks and job names for jobs to be run
-                verbose = 5 : print job names for all jobs whether up-to-date or not
+                verbose = 0 : prints nothing
+                verbose = 1 : logs warnings and tasks which are not up-to-date and which will be run
+                verbose = 2 : logs doc strings for task functions as well
+                verbose = 3 : logs job parameters for jobs which are out-of-date
+                verbose = 4 : logs list of up-to-date tasks but parameters for out-of-date jobs
+                verbose = 5 : logs parameters for all jobs whether up-to-date or not
+                verbose = 10: logs messages useful only for debugging ruffus pipeline code
 
 
 .. _pipeline_functions.pipeline_printout.indent:
@@ -269,6 +302,11 @@ Pipeline functions
         Optional parameter governing the length of each line before it starts wrapping
         around.
 
+
+.. _pipeline_functions.pipeline_printout.runtime_data:
+
+    * *runtime_data*
+        Experimental feature for passing data to tasks at run time
 
 
         

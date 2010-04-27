@@ -1,11 +1,12 @@
-.. _Simple_Tutorial_6th_step:
+.. include:: ../../global.inc
+.. _Simple_Tutorial_7th_step:
 
 .. index:: 
     pair: @merge; Tutorial
 
 
 ###################################################################
-Step 6: Merging results back together
+Step 7: Merging results back together
 ###################################################################
 * :ref:`Simple tutorial overview <Simple_Tutorial>` 
 * :ref:`@merge in detail <decorators.merge>`
@@ -13,7 +14,7 @@ Step 6: Merging results back together
 .. note::
     Remember to look at the example code:
 
-    * :ref:`Python Code for step 6 <Simple_Tutorial_6th_step_code>` 
+    * :ref:`Python Code for step 7 <Simple_Tutorial_7th_step_code>` 
 
 
 Now that we have all the partial solutions in ``*.sums``, we can merge them
@@ -45,18 +46,18 @@ Calculating variances from the sums and sum of squares of all chunks
         
         ::
 
-            @merge(step_5_calculate_sum_of_squares, "variance.result")
-            def step_6_calculate_variance (input_file_names, output_file_name):
+            @merge(step_6_calculate_sum_of_squares, "variance.result")
+            def step_7_calculate_variance (input_file_names, output_file_name):
                 #
                 #   add together sums and sums of squares from each input_file_name
                 #       calculate variance and write to output_file_name
                 ""
 
 
-    The :ref:`@merge <decorators.merge>` decorator tells *Ruffus* to take all the files from the step 5 task (i.e. ``*.sums``),
+    The :ref:`@merge <decorators.merge>` decorator tells *Ruffus* to take all the files from the step 6 task (i.e. ``*.sums``),
     and produced a merged file in the form of ``"variance.result"``.
     
-    Thus if ``step_5_calculate_sum_of_squares`` created
+    Thus if ``step_6_calculate_sum_of_squares`` created
         | ``1.sums`` and 
         | ``2.sums`` etc.
         
@@ -68,7 +69,7 @@ Calculating variances from the sums and sum of squares of all chunks
 
         ::
         
-            step_6_calculate_variance (["1.sums", "2.sums"], "variance.result")
+            step_7_calculate_variance (["1.sums", "2.sums"], "variance.result")
             
 
     The final result is, of course, in ``"variance.result"``.

@@ -1,3 +1,4 @@
+.. include:: ../../global.inc
 .. index:: 
     pair: @posttask; Tutorial
 
@@ -45,8 +46,8 @@ Running some code to show that a stage of the pipeline has finished
                 sys.stdout.write("hooray\n")
         
             @posttask(print_hooray)
-            @merge(step_5_calculate_sum_of_squares, "variance.result")
-            def step_6_calculate_variance (input_file_names, output_file_name):
+            @merge(step_6_calculate_sum_of_squares, "variance.result")
+            def step_7_calculate_variance (input_file_names, output_file_name):
                 ""
     
     This is such a short function, we can even write it in-line:
@@ -54,8 +55,8 @@ Running some code to show that a stage of the pipeline has finished
         ::
         
             @posttask(lambda: sys.stdout.write("hooray\n"))
-            @merge(step_5_calculate_sum_of_squares, "variance.result")
-            def step_6_calculate_variance (input_file_names, output_file_name):
+            @merge(step_6_calculate_sum_of_squares, "variance.result")
+            def step_7_calculate_variance (input_file_names, output_file_name):
                 ""
     
 .. index:: 

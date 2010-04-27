@@ -1,3 +1,4 @@
+.. include:: ../global.inc
 .. _decorators.files_on_the_fly:
 .. index:: 
     pair: @files (on-the-fly parameter generation); Syntax

@@ -1,3 +1,4 @@
+.. include:: ../../global.inc
 .. _Simple_Tutorial_1st_step:
     
 
@@ -92,7 +93,7 @@ Step 1: An introduction to Ruffus pipelines
       called normally, outside of *Ruffus*.
     | *Ruffus* :term:`decorator`\ s can be added to (stacked on top of) any function in any order.
 
-    * :ref:`More on @follows in the full tutorial <manual_1st_chapter>`
+    * :ref:`More on @follows in the in the Ruffus `Manual <manual.follows>`
     * :ref:`@follows syntax in detail <decorators.follows>`
 
 

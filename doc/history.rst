@@ -1,3 +1,4 @@
+.. include:: global.inc
 ########################################
 Major Features added to Ruffus 
 ########################################
@@ -38,7 +39,7 @@ version 2.0
     * Major redesign. Decorator *inputs* can mix
 
         * Output from previous tasks
-        * `"glob" <http://docs.python.org/library/glob.html>`_ patterns e.g. ``*.txt``
+        * |glob|_ patterns e.g. ``*.txt``
         * Files names
         * Any other data type
 

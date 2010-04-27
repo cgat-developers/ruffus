@@ -1,3 +1,4 @@
+.. include:: ../global.inc
 .. _decorators.posttask:
 .. index:: 
     pair: @posttask; Syntax

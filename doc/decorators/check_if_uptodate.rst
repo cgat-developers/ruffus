@@ -1,3 +1,4 @@
+.. include:: ../global.inc
 .. _decorators.check_if_uptodate:
 
 .. index:: 

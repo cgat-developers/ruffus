@@ -1,7 +1,10 @@
-.. _manual_16th_chapter:
+.. include:: ../../global.inc
+.. include:: chapter_numbers.inc
+
+.. _manual.logging:
 
 ###################################################################################################
-**Chapter 16**: `Logging progress through a pipeline`
+|manual.logging.chapter_num|: `Logging progress through a pipeline`
 ###################################################################################################
 
     .. hlist::
@@ -9,34 +12,33 @@
         * :ref:`Manual overview <manual>` 
 
     
-.. index:: 
-    pair: Logging; Manual
-    
-.. _manual.logging:
-
-There are two parts to logging with **Ruffus**:
-    
-* Logging progress through the pipeline
-
-    This produces the sort of output displayed in this manual:
-    
-    ::
-    
-        >>> pipeline_run([parallel_io_task])
-        Task = parallel_io_task
-            Job = ["a.1" -> "a.2", "A file"] completed
-            Job = ["b.1" -> "b.2", "B file"] unnecessary: already up to date
-        Completed Task = parallel_io_task    
-            
-
-* Logging your own messages from within your pipelined functions.
-
-    Because **Ruffus** may run these in separate process (multiprocessing), some
-    attention has to be paid to how to send and synchronise your log messages
-    across process boundaries.
+    .. index:: 
+        pair: Logging; Manual
     
 
-We shall deal with these in turn.
+    There are two parts to logging with **Ruffus**:
+        
+    * Logging progress through the pipeline
+    
+        This produces the sort of output displayed in this manual:
+        
+        ::
+        
+            >>> pipeline_run([parallel_io_task])
+            Task = parallel_io_task
+                Job = ["a.1" -> "a.2", "A file"] completed
+                Job = ["b.1" -> "b.2", "B file"] unnecessary: already up to date
+            Completed Task = parallel_io_task    
+                
+    
+    * Logging your own messages from within your pipelined functions.
+    
+        Because **Ruffus** may run these in separate process (multiprocessing), some
+        attention has to be paid to how to send and synchronise your log messages
+        across process boundaries.
+        
+    
+    We shall deal with these in turn.
 
 
 .. _manual.logging.pipeline:
@@ -146,7 +148,7 @@ Your own logging *within* each job
     jobs. This requires just two simple steps:
 
     .. note::    
-        :ref:`The full code <manual_16th_chapter_code>` shows how this can be coded.
+        :ref:`The full code <manual.logging_code>` shows how this can be coded.
     
     
     

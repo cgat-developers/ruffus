@@ -1,3 +1,4 @@
+.. include:: ../../global.inc
 .. _Simple_Tutorial_2nd_step:
 
 .. index:: 
@@ -175,7 +176,7 @@ Up-to-date jobs are not re-run
     **Ruffus** will, however, look inside each
     of your *input* and *output* parameters to see if they contain any names of up to date files. 
 
-    If the *input* parameter contains a `"glob" <http://docs.python.org/library/glob.html>`_ pattern,
+    If the *input* parameter contains a |glob|_ pattern,
     that will even be expanded to the matching file names.
     
     

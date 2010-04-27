@@ -1,4 +1,4 @@
-.. _manual_9th_chapter_code:
+.. include:: ../../global.inc
 .. _manual.dependencies.code:
 
 

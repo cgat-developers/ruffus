@@ -1,0 +1,21 @@
+.. |manual.follows.chapter_num|                     replace:: **Chapter  1**
+.. |manual.tasks_as_recipes.chapter_num|            replace:: **Chapter  2**
+.. |manual.files.chapter_num|                       replace:: **Chapter  3**
+.. |manual.tasks_and_globs_in_inputs.chapter_num|   replace:: **Chapter  4**
+.. |manual.tracing_pipeline_parameters.chapter_num| replace:: **Chapter  5**
+.. |manual.multiprocessing.chapter_num|             replace:: **Chapter  6**
+.. |manual.split.chapter_num|                       replace:: **Chapter  7**
+.. |manual.transform.chapter_num|                   replace:: **Chapter  8**
+.. |manual.merge.chapter_num|                       replace:: **Chapter  9**
+.. |manual.posttask.chapter_num|                    replace:: **Chapter 10**
+.. |manual.jobs_limit.chapter_num|                  replace:: **Chapter 11**
+.. |manual.dependencies.chapter_num|                replace:: **Chapter 12**
+.. |manual.on_the_fly.chapter_num|                  replace:: **Chapter 13**
+.. |manual.collate.chapter_num|                     replace:: **Chapter 14**
+.. |manual.transform_ex.chapter_num|                replace:: **Chapter 15**
+.. |manual.parallel.chapter_num|                    replace:: **Chapter 16**
+.. |manual.check_if_uptodate.chapter_num|           replace:: **Chapter 17**
+.. |manual.exceptions.chapter_num|                  replace:: **Chapter 18**
+.. |manual.logging.chapter_num|                     replace:: **Chapter 19**
+.. |manual.files_re.chapter_num|                    replace:: **Chapter 20**
+                                                    

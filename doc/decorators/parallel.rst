@@ -1,3 +1,4 @@
+.. include:: ../global.inc
 .. _decorators.parallel:
 .. index:: 
     pair: @parallel; Syntax

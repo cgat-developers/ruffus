@@ -1,8 +1,11 @@
-.. _manual_4th_chapter:
+.. include:: ../../global.inc
+.. include:: chapter_numbers.inc
 
-###################################################################
-**Chapter 4**: `Passing parameters to the pipeline with` **@files**
-###################################################################
+.. _manual.files:
+
+#######################################################################################
+|manual.files.chapter_num|: `Passing parameters to the pipeline with` **@files**
+#######################################################################################
     .. hlist::
     
        * :ref:`Manual overview <manual>` 
@@ -17,10 +20,9 @@
     The easiest way to specify parameters to *Ruffus* :term:`task` functions is to use 
     the :ref:`@files <decorators.files>` decorator.
     
-.. index:: 
-    pair: @files; Manual
+    .. index:: 
+        pair: @files; Manual
     
-.. _manual.files:
 
 ***************************************
 **@files**

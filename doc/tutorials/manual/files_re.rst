@@ -1,7 +1,10 @@
-.. _manual_17th_chapter:
+.. include:: ../../global.inc
+.. include:: chapter_numbers.inc
+
+.. _manual.files_re:
 
 ###############################################################################################################
-**Chapter 17**: **@files_re**: Deprecated `syntax using regular expressions`
+|manual.files_re.chapter_num|: **@files_re**: Deprecated `syntax using regular expressions`
 ###############################################################################################################
 
     .. hlist::
@@ -10,10 +13,9 @@
         * :ref:`@files_re <decorators.files_re>` syntax in detail
 
     
-.. index:: 
-    pair: @files_re; Manual
+    .. index:: 
+        pair: @files_re; Manual
     
-.. _manual.files_re:
 
 
 
@@ -36,7 +38,7 @@ Transforming input and output filenames
 =======================================
 
                                        
-    For example, the following code from :ref:`Chapter 6<manual_6th_chapter>` takes files from
+    For example, the following code from |manual.transform.chapter_num| takes files from
     the previous pipeline task, and makes new output parameters with the ``.sums`` suffix
     in place of the ``.chunks`` suffix:
     
@@ -65,7 +67,7 @@ Transforming input and output filenames
 Collating many *inputs* into a single *output*
 =====================================================
 
-    Similarly, the following code from :ref:`Chapter 11<manual_11th_chapter>` collects **inputs**
+    Similarly, the following code from :ref:`|manual.collate.chapter_num| <manual.collate>` collects **inputs**
     from the same species in the same directory:
     
         ::
@@ -96,7 +98,7 @@ Collating many *inputs* into a single *output*
 Generating *input* and *output* parameter using regular expresssions
 ==============================================================================
 
-    The following code from :ref:`Chapter 12<manual_12th_chapter>` generates additional
+    The following code from :ref:`|manual.transform_ex.chapter_num| <manual.transform_ex>` generates additional
     *input* prerequisite file names which match the original *input* files.
     
     We want each job of our ``analyse()`` function to get corresponding pairs

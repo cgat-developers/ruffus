@@ -1,3 +1,4 @@
+.. include:: ../global.inc
 .. _decorators.files:
 .. index:: 
     pair: @files; Syntax

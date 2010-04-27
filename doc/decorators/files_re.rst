@@ -1,3 +1,4 @@
+.. include:: ../global.inc
 .. _decorators.files_re:
 
 .. index:: 
@@ -70,7 +71,7 @@ Legacy design now deprecated. We suggest using :ref:`@transform() <decorators.tr
        #.  Task / list of tasks (as in the example above).
             File names are taken from the output of the specified task(s)
        #.  (Nested) list of file name strings.
-            File names containing ``*[]?`` will be expanded as a glob.
+            File names containing ``*[]?`` will be expanded as a |glob|_ .
              E.g.:``"a.*" => "a.1", "a.2"``
 
 .. _decorators.files_re.matching_regex:

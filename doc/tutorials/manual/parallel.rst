@@ -1,8 +1,11 @@
-.. _manual_13th_chapter:
+.. include:: ../../global.inc
+.. include:: chapter_numbers.inc
 
-###################################################################################################
-**Chapter 13**: `Esoteric: Running jobs in parallel without using files with` **@parallel**
-###################################################################################################
+.. _manual.parallel:
+
+#######################################################################################################################
+|manual.parallel.chapter_num|: `Esoteric: Running jobs in parallel without using files with` **@parallel**
+#######################################################################################################################
 
     .. hlist::
 
@@ -10,10 +13,9 @@
         * :ref:`@parallel<decorators.parallel>` syntax in detail
 
     
-.. index:: 
-    pair: @parallel; Manual
+    .. index:: 
+        pair: @parallel; Manual
     
-.. _manual.parallel:
 
 
 
@@ -27,7 +29,7 @@
         #. The first two parameters are not treated like *inputs* and *ouputs* parameters, 
            and strings are not assumed to be file names
         #. Thus no checking of whether each job is up-to-date is made using *inputs* and *outputs* files
-        #. No expansions of `glob patterns <http://docs.python.org/library/glob.html>`_  or *output* from previous tasks is carried out.
+        #. No expansions of |glob|_ patterns or *output* from previous tasks is carried out.
         
     This syntax is most useful when a pipeline stage does not involve creating or consuming any files, and
     you wish to forego the conveniences of :ref:`@files<manual.files>`, :ref:`@transform<manual.transform>` etc.
