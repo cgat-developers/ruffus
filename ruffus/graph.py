@@ -70,6 +70,11 @@ class node (object):
     _all_nodes         = list()
     _name_to_node      = dict()
     _global_node_index = 0
+
+    one_to_one              = 0 
+    many_to_many            = 1 
+    one_to_many             = 2 
+    many_to_one             = 3 
     
     @staticmethod
     def get_leaves ():
@@ -895,6 +900,7 @@ def graph_printout_in_dot_format (  stream,
                                     gather_all_non_signalled  = True,
                                     test_all_signals          = True,
                                     no_key_legend             = False,
+                                    minimal_key_legend        = True,
                                     extra_data_for_signal     = None):
     """
     print out pipeline dependencies in dot formatting
@@ -931,7 +937,8 @@ def graph_printout_in_dot_format (  stream,
                                             nodes_to_display,
                                             draw_vertically,
                                             skip_signalling_nodes,
-                                            no_key_legend)
+                                            no_key_legend,
+                                            minimal_key_legend)
     
 #_________________________________________________________________________________________
 
@@ -948,6 +955,7 @@ def graph_printout (stream,
                     gather_all_non_signalled  = True,
                     test_all_signals          = True,
                     no_key_legend             = False,
+                    minimal_key_legend        = True,
                     extra_data_for_signal     = None):
     """
     print out pipeline dependencies in a variety of formats, using the programme "dot"
@@ -964,6 +972,7 @@ def graph_printout (stream,
                                         gather_all_non_signalled,
                                         test_all_signals,
                                         no_key_legend,
+                                        minimal_key_legend,
                                         extra_data_for_signal)
         return
         
@@ -981,6 +990,7 @@ def graph_printout (stream,
                                     gather_all_non_signalled,
                                     test_all_signals,
                                     no_key_legend,
+                                    minimal_key_legend,
                                     extra_data_for_signal)
     temp_dot_file.close()
     
