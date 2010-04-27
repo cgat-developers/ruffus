@@ -512,9 +512,11 @@ def split_param_factory (input_files_task_globs, output_files_task_globs, *extra
 def split_ex_param_factory (input_files_task_globs, 
                             flatten_input, 
                             regex, 
+                            extra_input_files_task_globs, 
+                            replace_inputs,
                             output_files_task_globs, *extra_specs):
     """
-    Factory for task_spl
+    Factory for task_split (advanced form)
     """
     def iterator(runtime_data):
 
@@ -535,16 +537,29 @@ def split_ex_param_factory (input_files_task_globs,
         #
         no_regular_expression_matches = True
 
-        for input_param in sorted(input_params):
+        for orig_input_param in sorted(input_params):
 
             #
             #   turn input param into a string and match with regular expression
             #   
-            filename = get_first_string_in_nested_sequence(input_param)
+            filename = get_first_string_in_nested_sequence(orig_input_param)
             if filename == None or not regex.search(filename):
                 continue
 
             no_regular_expression_matches = False
+
+            #   
+            #   if "inputs" defined  turn input string into i/o/extras with regex
+            # 
+            if extra_input_files_task_globs != None:
+                # extras
+                extra_input_specs_with_regex = extra_input_files_task_globs.regex_replaced (filename, regex)
+                if replace_inputs:
+                    input_param = file_names_from_tasks_globs(extra_input_specs_with_regex, runtime_data)
+                else:
+                    input_param = (orig_input_param,) + file_names_from_tasks_globs(extra_input_specs_with_regex, runtime_data)
+            else:
+                input_param = orig_input_param
 
             # 
             #   do regex substitution to complete glob pattern
@@ -552,7 +567,7 @@ def split_ex_param_factory (input_files_task_globs,
             # 
             output_specs_with_regex = output_files_task_globs.regex_replaced (filename, regex)
             output_param        = file_names_from_tasks_globs(output_specs_with_regex, runtime_data)
-            output_param_logging= file_names_from_tasks_globs(output_specs_with_regex.no_globs(), runtime_data)
+            output_param_logging= file_names_from_tasks_globs(output_specs_with_regex.unexpanded_globs(), runtime_data)
 
             #
             #   regex substitution on everything else
@@ -583,6 +598,7 @@ def transform_param_factory (input_files_task_globs,
                              flatten_input, regex, 
                              regex_substitute_extra_parameters, 
                              extra_input_files_task_globs, 
+                             replace_inputs,
                              output_pattern, 
                              *extra_specs):
     """
@@ -622,8 +638,15 @@ def transform_param_factory (input_files_task_globs,
             #   if "inputs" defined  turn input string into i/o/extras with regex
             # 
             if extra_input_files_task_globs != None:
-                extra_input_specs_with_regex = extra_input_files_task_globs.regex_replaced (filename, regex)
-                input_param = file_names_from_tasks_globs(extra_input_specs_with_regex, runtime_data)
+                # extras
+                if regex_substitute_extra_parameters:
+                    extra_input_specs_with_regex = extra_input_files_task_globs.regex_replaced (filename, regex)
+                else:
+                    extra_input_specs_with_regex = extra_input_files_task_globs
+                if replace_inputs:
+                    input_param = file_names_from_tasks_globs(extra_input_specs_with_regex, runtime_data)
+                else:
+                    input_param = (orig_input_param,) + file_names_from_tasks_globs(extra_input_specs_with_regex, runtime_data)
             else:
                 input_param = orig_input_param
 
@@ -682,7 +705,8 @@ def merge_param_factory (input_files_task_globs,
 def collate_param_factory (input_files_task_globs, 
                            flatten_input,
                            regex,
-                           extra_input_files_task_globs,
+                           extra_input_files_task_globs, 
+                           replace_inputs,
                            *output_extra_specs):
     """
     Factory for task_collate
@@ -723,7 +747,10 @@ def collate_param_factory (input_files_task_globs,
             # 
             if extra_input_files_task_globs != None:
                 extra_input_specs_with_regex = extra_input_files_task_globs.regex_replaced (filename, regex)
-                input_param = file_names_from_tasks_globs(extra_input_specs_with_regex, runtime_data)
+                if replace_inputs:
+                    input_param = file_names_from_tasks_globs(extra_input_specs_with_regex, runtime_data)
+                else:
+                    input_param = (orig_input_param,) + file_names_from_tasks_globs(extra_input_specs_with_regex, runtime_data)
             else:
                 input_param = orig_input_param
                 
@@ -806,12 +833,14 @@ def files_re_param_factory( input_files_task_globs, combining_all_jobs,
                                         False,
                                         regex,
                                         extra_input_files_task_globs,
+                                        True,
                                         *output_and_extras)
     else:
         return transform_param_factory (input_files_task_globs, 
                                         False, regex, 
                                         True,
                                         extra_input_files_task_globs, 
+                                        True,
                                         *output_and_extras)
 
 
