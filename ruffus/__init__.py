@@ -26,7 +26,7 @@
 #################################################################################
 #from graph import *
 #from print_dependencies import *
-from task import pipeline_printout, pipeline_printout_graph, pipeline_run, register_cleanup, check_if_uptodate, split, transform, merge, collate, files, files_re, follows, parallel, stderr_logger, black_hole_logger, suffix, regex, inputs, touch_file, combine, mkdir, output_from, posttask, JobSignalledBreak, runtime_parameter, jobs_limit
+from task import pipeline_printout, pipeline_printout_graph, pipeline_run, register_cleanup, check_if_uptodate, split, transform, merge, collate, files, files_re, follows, parallel, stderr_logger, black_hole_logger, suffix, regex, inputs, add_inputs, touch_file, combine, mkdir, output_from, posttask, JobSignalledBreak, runtime_parameter, jobs_limit
 #output_dependency_tree_in_dot_format, output_dependency_tree_key_in_dot_format 
 import ruffus_version
 __version__=ruffus_version.__version
