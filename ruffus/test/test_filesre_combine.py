@@ -74,10 +74,6 @@ parser.add_option("-n", "--just_print", dest="just_print",
                     action="store_true", default=False,
                     help="Print a description of the jobs that would be executed, "
                         "but do not execute them.")
-parser.add_option("-M", "--minimal_rebuild_mode", dest="minimal_rebuild_mode",
-                    action="store_true", default=False,
-                    help="Rebuild a minimum of tasks necessary for the target. "
-                    "Ignore upstream out of date tasks if intervening tasks are fine.")
 parser.add_option("-K", "--no_key_legend_in_graph", dest="no_key_legend_in_graph",
                     action="store_true", default=False,
                     help="Do not print out legend and key for dependency graph.")
@@ -218,8 +214,7 @@ def check_species_correct():
 if __name__ == '__main__':
     if options.just_print:
         pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
-                            long_winded=True,
-                            gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode)
+                            verbose=options.verbose)
 
     elif options.flowchart:
         pipeline_printout_graph (     open(options.flowchart, "w"),
@@ -227,15 +222,12 @@ if __name__ == '__main__':
                              options.target_tasks,
                              options.forced_tasks,
                              draw_vertically = not options.draw_horizontally,
-                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                              no_key_legend  = options.no_key_legend_in_graph)
     elif options.debug:
         import os
         os.system("rm -rf %s" % tempdir)
         pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
-                            logger = stderr_logger if options.verbose else black_hole_logger,
-                            gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                            verbose = options.verbose > 1)
+                            verbose = options.verbose)
 
 
         check_species_correct()
@@ -243,8 +235,6 @@ if __name__ == '__main__':
         print "OK"
     else:
         pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
-                            logger = stderr_logger if options.verbose else black_hole_logger,
-                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                            verbose = options.verbose > 1)
+                            verbose = options.verbose)
 
 
