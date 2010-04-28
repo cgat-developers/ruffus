@@ -513,13 +513,13 @@ def run_pooled_job_without_exceptions (process_parameters):
         
     try:
         with job_limit_semaphore:
-            start_time = time.time()
-            # if user return false, halt job
             return_value =  job_wrapper(param, user_defined_work_func, register_cleanup, touch_files_only)
 
-            end_time = time.time()
-            if end_time - start_time < 1 and one_second_per_job:
-                time.sleep(1.1 -end_time + start_time)
+            #
+            #   ensure one second between jobs
+            # 
+            if one_second_per_job:
+                time.sleep(1.1)
             return t_job_result(task_name, JOB_COMPLETED, job_name, return_value, None)
     except:
         #   Wrap up one or more exceptions rethrown across process boundaries
