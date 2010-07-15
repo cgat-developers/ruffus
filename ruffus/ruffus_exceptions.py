@@ -11,17 +11,17 @@
 #
 #
 #   Copyright (c) 10/9/2009 Leo Goodstadt
-#   
+#
 #   Permission is hereby granted, free of charge, to any person obtaining a copy
 #   of this software and associated documentation files (the "Software"), to deal
 #   in the Software without restriction, including without limitation the rights
 #   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 #   copies of the Software, and to permit persons to whom the Software is
 #   furnished to do so, subject to the following conditions:
-#   
+#
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
-#   
+#
 #   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -44,17 +44,17 @@ from collections import defaultdict
 
 #if __name__ != '__main__':
 #    import task
-    
+
 class error_task(Exception):
     def __init__(self, *errmsg):
         Exception.__init__(self, *errmsg)
-        
+
         # list of associated tasks
         self.tasks = []
 
         # error message
         self.main_msg = ""
-        
+
     def get_main_msg(self):
         """
         Make main message with lists of task names
@@ -67,14 +67,14 @@ class error_task(Exception):
             if t.action_names[t._action_type] != "task_mkdir":
                 task_name = "'def %s(...):'" % (task_name)
             task_names.append(task_name)
-        
+
         task_names = "\n".join(task_names)
         if len(self.main_msg):
             return "\n\n" + self.main_msg + " for\n\n%s\n" % task_names
         else:
             return "\n\n%s\n" % task_names
-        
-        
+
+
     def __str__(self):
         #indent
         msg = self.get_main_msg() + " ".join(map(str, self.args))
@@ -125,7 +125,7 @@ class JobSignalledBreak(error_task):
     pass
 class PostTaskArgumentError(error_task):
     pass
-    
+
 class JobsLimitArgumentError(error_task):
     pass
 
@@ -173,7 +173,8 @@ class error_node_not_task(error_task):
     pass
 class error_missing_runtime_parameter(error_task):
     pass
-    
+class error_unescaped_regular_expression_forms(error_task):
+    pass
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -187,7 +188,7 @@ if __name__ == '__main__':
 
     #
     #   minimal task object to test exceptions
-    # 
+    #
     class task:
         class _task (object):
             """
@@ -200,16 +201,16 @@ if __name__ == '__main__':
 
 
     class Test_exceptions(unittest.TestCase):
-    
+
         #       self.assertEqual(self.seq, range(10))
         #       self.assert_(element in self.seq)
         #       self.assertRaises(ValueError, random.sample, self.seq, 20)
-    
-    
-                
+
+
+
         def test_error_task(self):
             """
-                test 
+                test
             """
             fake_task1       = task._task("task1")
             fake_task2       = task._task("task2")
@@ -220,11 +221,11 @@ if __name__ == '__main__':
             e.specify_task (fake_task2      , "Some message 1")
             e.specify_task (fake_mkdir_task3, "Some message 2")
             e.specify_task (fake_mkdir_task4, "Some message 3")
-            self.assertEqual(str(e), 
-"""    
-    
+            self.assertEqual(str(e),
+"""
+
     Some message 3 for
-    
+
     'def task1(...):'
     'def task2(...):'
     task3
@@ -233,25 +234,25 @@ if __name__ == '__main__':
 
         def test_RethrownJobError(self):
             """
-                test 
+                test
             """
             #job_name, exception_name, exception_value, exception_stack
             exception_data = [
                 [
                     "task1",
-                    "[[temp_branching_dir/a.2, a.1] -> temp_branching_dir/a.3]", 
-                    "ruffus.task.MissingInputFileError",  
-                    "(instance value)",      
+                    "[[temp_branching_dir/a.2, a.1] -> temp_branching_dir/a.3]",
+                    "ruffus.task.MissingInputFileError",
+                    "(instance value)",
                     "Traceback (most recent call last):\n  File \"what.file.py\", line 333, in some_func\n  somecode(sfasf)\n"
                  ],
                 [
                     "task1",
-                    "[None -> [temp_branching_dir/a.1, temp_branching_dir/b.1, temp_branching_dir/c.1]]", 
-                    "exceptions.ZeroDivisionError:",  
-                    "(1)",      
+                    "[None -> [temp_branching_dir/a.1, temp_branching_dir/b.1, temp_branching_dir/c.1]]",
+                    "exceptions.ZeroDivisionError:",
+                    "(1)",
                     "Traceback (most recent call last):\n  File \"anotherfile.py\", line 345, in other_func\n  badcode(rotten)\n"
                  ]
-                
+
             ]
             e = RethrownJobError(exception_data)
             fake_task1       = task._task("task1")
@@ -262,42 +263,42 @@ if __name__ == '__main__':
             e.specify_task (fake_task2      , "Exceptions running jobs")
             e.specify_task (fake_mkdir_task3, "Exceptions running jobs")
             e.specify_task (fake_mkdir_task4, "Exceptions running jobs")
-            self.assertEqual(str(e), 
+            self.assertEqual(str(e),
 """
-    
+
     Exceptions running jobs for
-    
+
     'def task1(...):'
     'def task2(...):'
     task3
     task4
-    
+
     Original exceptions:
-    
+
     Exception #1
     ruffus.task.MissingInputFileError(instance value):
     for task1.[[temp_branching_dir/a.2, a.1] -> temp_branching_dir/a.3]
-    
+
     Traceback (most recent call last):
       File "what.file.py", line 333, in some_func
       somecode(sfasf)
-    
-    
+
+
     Exception #2
     exceptions.ZeroDivisionError:(1):
     for task1.[None -> [temp_branching_dir/a.1, temp_branching_dir/b.1, temp_branching_dir/c.1]]
-    
+
     Traceback (most recent call last):
       File "anotherfile.py", line 345, in other_func
       badcode(rotten)
-    
+
     """)
-    
+
 
 
 #
 #   debug code not run if called as a module
-#     
+#
 if __name__ == '__main__':
     if sys.argv.count("--debug"):
         sys.argv.remove("--debug")
@@ -305,4 +306,4 @@ if __name__ == '__main__':
 
 
 
-    
+
