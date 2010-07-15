@@ -5,17 +5,17 @@
 #
 #
 #   Copyright (c) 10/9/2009 Leo Goodstadt
-#   
+#
 #   Permission is hereby granted, free of charge, to any person obtaining a copy
 #   of this software and associated documentation files (the "Software"), to deal
 #   in the Software without restriction, including without limitation the rights
 #   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 #   copies of the Software, and to permit persons to whom the Software is
 #   furnished to do so, subject to the following conditions:
-#   
+#
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
-#   
+#
 #   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,7 +26,7 @@
 #################################################################################
 """
     print_dependencies.py
-    
+
         provides support for dependency trees
 
 """
@@ -34,6 +34,17 @@
 import types
 from adjacent_pairs_iterate import adjacent_pairs_iterate
 
+def _get_name (node):
+    """
+    Get name for node
+        use display_name or _name
+    """
+    if hasattr(node, "display_name"):
+        return node.display_name
+    elif hasattr(node, "_name"):
+        return node._name
+    else:
+        raise Exception("Unknown node type [%s] has neither _name or display_name" % str(node))
 
 #_________________________________________________________________________________________
 
@@ -47,10 +58,15 @@ def attributes_to_str (attributes, name):
     """
     name = name.replace("__main__.", "")
     attributes["label"] = '"' + name + '"'
+    # support for html labels
+    #if "<" in name and ">" in name:
+    #    attributes["label"] = '<' + name + '>'
+    #else:
+    #    attributes["label"] = '"' + name + '"'
 
     return "[" + ", ".join ("%s=%s" % (k,v) for k,v in attributes.iteritems()) + "];\n"
 
-    
+
 def get_connection_dot_str (from_task_type, to_task_type, n1, n2):
     if "Vicious cycle" in (from_task_type, to_task_type):
         return ("%s -> %s[color=red, arrowtype=normal];\n" % (n1, n2) +
@@ -61,25 +77,29 @@ def get_connection_dot_str (from_task_type, to_task_type, n1, n2):
         return "%s -> %s[color=blue, arrowtype=normal];\n" % (n1, n2)
     elif from_task_type in ("Up-to-date task", "Up-to-date dependence","Up-to-date Final target"):
         return "%s -> %s[color=gray, arrowtype=normal];\n" % (n1, n2)
-    # 
+    #
     # shouldn't be here!!
-    # 
+    #
     else:
         return "%s -> %s[color=gray, arrowtype=normal];\n" % (n1, n2)
 
 def get_dot_format (task_type, attributes, used_formats):
     used_formats.add(task_type)
     if task_type == "Final target":
-        attributes["fontcolor"]="orange"
-        attributes["color"]="orange"
-        attributes["peripheries"] = 2
+        attributes["fontcolor"]="black"
+        attributes["fillcolor"]="khaki1"
+        attributes["color"]="black"
+        attributes["style"]="filled"
+        #attributes["shape"]="rect"
+        #attributes["peripheries"] = 2
     elif task_type == "Up-to-date Final target":
         attributes["fontcolor"]="gray"
         attributes["color"]="gray"
-        attributes["peripheries"] = 2
+        #attributes["shape"]="rect"
+        #attributes["peripheries"] = 2
     elif task_type == "Vicious cycle":
+        attributes["color"]="white"
         attributes["fillcolor"]="red"
-        attributes["color"]="red"
         #attributes["shape"]="box"
         attributes["style"]="filled"
     elif task_type == "Task to run":
@@ -99,17 +119,16 @@ def get_dot_format (task_type, attributes, used_formats):
         #attributes["shape"]="tripleoctagon"
         attributes["peripheries"] = 2
     elif task_type == "Up-to-date task":
-        attributes["color"] = "olivedrab"
+        attributes["color"] = "green"
         attributes["style"]="filled"
-        attributes["fillcolor"]="olivedrab"
+        #attributes["fillcolor"]="olivedrab"
+        attributes["fillcolor"]="palegreen2"
         attributes["fontcolor"]="black"
-        #attributes["shape"]="octagon"
     elif task_type == "Up-to-date dependence":
         attributes["color"] = "gray"
         attributes["style"]="filled"
         attributes["fillcolor"]="white"
         attributes["fontcolor"]="gray"
-        #attributes["shape"]="octagon"
 
 
 
@@ -119,7 +138,7 @@ def output_dependency_tree_key_in_dot_format (stream, used_task_types, minimal_k
     """
     if not len(used_task_types):
         return
-        
+
 
     stream.write( 'subgraph clusterkey\n')
     stream.write( '{\n')
@@ -128,12 +147,12 @@ def output_dependency_tree_key_in_dot_format (stream, used_task_types, minimal_k
     stream.write( 'color=gray90;\n')
     stream.write( 'label = "Key:";\n')
     stream.write( 'node[margin=0.2,0.2];\n')
-    
-        
+
+
     #
     #   Only include used task types
-    # 
-    all_task_types = [ 
+    #
+    all_task_types = [
                        "Vicious cycle"                     ,
                        "Up-to-date dependence" ,
                        "Up-to-date task"                   ,
@@ -144,7 +163,7 @@ def output_dependency_tree_key_in_dot_format (stream, used_task_types, minimal_k
                        "Final target"                      ,]
     if not minimal_key_legend:
         used_task_types |= set(all_task_types)
-    wrapped_task_types = [ 
+    wrapped_task_types = [
                        "Vicious cycle"                     ,
                        "Up-to-date\\ndependence" ,
                        "Up-to-date task"                   ,
@@ -159,7 +178,8 @@ def output_dependency_tree_key_in_dot_format (stream, used_task_types, minimal_k
     def outputkey (key, task_type, stream):
         ignore_used_task_types = set()
         attributes = dict()
-        attributes["shape"] = "rect"
+        attributes["shape"]="box3d"
+        #attributes["shape"] = "rect"
         get_dot_format (task_type, attributes, ignore_used_task_types)
         #attributes["fontsize"] = '15'
         stream.write(key + attributes_to_str(attributes, wrapped_task_types[task_type]))
@@ -169,7 +189,7 @@ def output_dependency_tree_key_in_dot_format (stream, used_task_types, minimal_k
     for t in all_task_types:
         if t in used_task_types:
             sorted_used_task_types.append(t)
-    
+
     # print first key type
     outputkey("k1", sorted_used_task_types[0], stream)
 
@@ -180,8 +200,8 @@ def output_dependency_tree_key_in_dot_format (stream, used_task_types, minimal_k
         outputkey(to_key, to_task_type, stream)
         # connection between keys
         stream.write(get_connection_dot_str (from_task_type, to_task_type, from_key, to_key))
-        
-            
+
+
     #stream.write(
     #            "k1->k2[color=red];"
     #            "k2->k1 [color=red];"
@@ -197,12 +217,12 @@ def output_dependency_tree_key_in_dot_format (stream, used_task_types, minimal_k
 #_________________________________________________________________________________________
 def output_dependency_tree_in_dot_format(   jobs_to_run,
                                             up_to_date_jobs,
-                                            dag_violating_edges, 
-                                            dag_violating_nodes, 
-                                            stream, 
-                                            target_jobs, 
-                                            forced_to_run_jobs      = [], 
-                                            all_jobs                = None, 
+                                            dag_violating_edges,
+                                            dag_violating_nodes,
+                                            stream,
+                                            target_jobs,
+                                            forced_to_run_jobs      = [],
+                                            all_jobs                = None,
                                             vertical                = True,
                                             skip_uptodate_tasks     = False,
                                             no_key_legend           = False,
@@ -213,19 +233,19 @@ def output_dependency_tree_in_dot_format(   jobs_to_run,
             jobs_to_run         = pipeline jobs which are not up to date or have dependencies
                                     which are not up to date
                                   Blue
-            up_to_date_jobs     = Green       
-            cyclic dependencies = Red (jobs and dependencies) 
+            up_to_date_jobs     = Green
+            cyclic dependencies = Red (jobs and dependencies)
             ignored jobs        = Gray
             target_jobs         = Orange
             forced_to_run_jobs  = Octagon
     """
     up_to_date_jobs  = set(up_to_date_jobs)
 
-    # 
+    #
     #   cases where child points back to ancestor
-    # 
-    dag_violating_dependencies = set(dag_violating_edges)    
-    
+    #
+    dag_violating_dependencies = set(dag_violating_edges)
+
 
 
     stream.write( "digraph tree\n{\n")
@@ -244,102 +264,104 @@ def output_dependency_tree_in_dot_format(   jobs_to_run,
     #    stream.write( 'edge[minlen=2];\n')
     delayed_task_strings = list()
     vicious_cycle_task_strings = list()
-    
-    # 
+
+    #
     #   all jobs should be specified
     #       this is a bad fall-back
     #       because there is no guarantee that we are printing what we want to print
     if all_jobs == None:
         all_jobs = node.all_nodes
-        
-        
+
+
     used_task_types = set()
-    
+
     #
     #   defined duplicately in graph. Bad practice
-    #     
-    one_to_one              = 0 
-    many_to_many            = 1 
-    one_to_many             = 2 
-    many_to_one             = 3 
-        
+    #
+    one_to_one              = 0
+    many_to_many            = 1
+    one_to_many             = 2
+    many_to_one             = 3
+
     for n in all_jobs:
         attributes = dict()
-        attributes["shape"] = "rect"
+        attributes["shape"]="box3d"
+        #attributes["shape"] = "rect"
         if hasattr(n, "single_multi_io"):
             if n.single_multi_io == one_to_many:
                 attributes["shape"] = "house"
+                attributes["peripheries"] = 2
             elif n.single_multi_io == many_to_one:
                 attributes["shape"] = "invhouse"
                 attributes["height"] = 1.1
-            
-                
+                attributes["peripheries"] = 2
+
         #
         #   circularity violating DAG: highlight in red
-        # 
+        #
         if n in dag_violating_nodes:
             get_dot_format ("Vicious cycle"                    , attributes, used_task_types)
-            vicious_cycle_task_strings.append('t%d' % n._node_index + attributes_to_str(attributes, n._name))
+            vicious_cycle_task_strings.append('t%d' % n._node_index + attributes_to_str(attributes, _get_name(n)))
         #
         #   these jobs will be run
-        # 
+        #
         elif n in jobs_to_run:
 
-            # 
+            #
             #   up to date but forced to run: outlined in blue
-            # 
+            #
             if n in forced_to_run_jobs:
                 get_dot_format ("Force pipeline run from this task", attributes, used_task_types)
 
             #
-            #   final target: outlined in orange 
+            #   final target: outlined in orange
             #
             elif n in target_jobs:
                 get_dot_format("Final target"                  , attributes, used_task_types)
-            
-            # 
+
+            #
             #   up to date dependency but forced to run: outlined in green
-            # 
+            #
             elif n in up_to_date_jobs:
                 get_dot_format ("Up-to-date task forced to rerun"  , attributes, used_task_types)
 
             else:
                 get_dot_format ("Task to run"                      , attributes, used_task_types)
-            stream.write('t%d' % n._node_index + attributes_to_str(attributes, n._name))
+            stream.write('t%d' % n._node_index + attributes_to_str(attributes, _get_name(n)))
 
         else:
             #
             #   these jobs are up to date and will not be re-run
-            # 
-            
+            #
+
             if not skip_uptodate_tasks:
                 if n in target_jobs:
                     get_dot_format ("Up-to-date Final target"          , attributes, used_task_types)
-                
+
                 elif n in up_to_date_jobs:
                     get_dot_format ("Up-to-date task"                  , attributes, used_task_types)
 
                 #
                 #   these jobs will be ignored: gray with gray dependencies
-                # 
+                #
                 else:
                     get_dot_format ("Up-to-date dependence"            , attributes, used_task_types)
-                    delayed_task_strings.append('t%d' % n._node_index + attributes_to_str(attributes, n._name))
+                    delayed_task_strings.append('t%d' % n._node_index + attributes_to_str(attributes, _get_name(n)))
                     for o in n.outward():
                         delayed_task_strings.append('t%d -> t%d[color=gray, arrowtype=normal];\n' % (o._node_index, n._node_index))
                     continue
 
-            stream.write('t%d' % n._node_index + attributes_to_str(attributes, n._name))
+            stream.write('t%d' % n._node_index + attributes_to_str(attributes, _get_name(n)))
 
-        # 
+        #
         #   write edges
-        # 
+        #
         unconstrained = False
         for o in sorted(n.outward(), reverse=True, key = lambda x: x._node_index):
             #
             #   circularity violating DAG: highlight in red: should never be a constraint
             #       in drawing the graph
-            # 
+            #
             if (n, o) in dag_violating_dependencies:
                 constraint_str = ", constraint=false" if o._node_index >  n._node_index else ""
                 vicious_cycle_task_strings.append('t%d -> t%d[color=red %s];\n' % (o._node_index, n._node_index, constraint_str))
@@ -357,15 +379,15 @@ def output_dependency_tree_in_dot_format(   jobs_to_run,
 
     for l in delayed_task_strings:
         stream.write(l)
-        
+
     #
     #   write vicious cycle at end so not constraint in drawing graph
-    # 
+    #
     for l in vicious_cycle_task_strings:
         stream.write(l)
     stream.write( '}\n')
 
-        
+
     if not no_key_legend:
         output_dependency_tree_key_in_dot_format (stream, used_task_types, minimal_key_legend)
     stream.write("}\n")
