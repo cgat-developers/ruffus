@@ -5,17 +5,17 @@
 #
 #
 #   Copyright (c) 10/9/2009 Leo Goodstadt
-#   
+#
 #   Permission is hereby granted, free of charge, to any person obtaining a copy
 #   of this software and associated documentation files (the "Software"), to deal
 #   in the Software without restriction, including without limitation the rights
 #   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 #   copies of the Software, and to permit persons to whom the Software is
 #   furnished to do so, subject to the following conditions:
-#   
+#
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
-#   
+#
 #   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -45,25 +45,25 @@
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   imports        
+#   imports
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 import os,copy
 import re
 import types
-import glob    
+import glob
 if __name__ == '__main__':
     import sys
     sys.path.insert(0,".")
 from ruffus_exceptions import *
 #import task
 
-                                
-                                
+
+
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   Functions        
+#   Functions
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -73,24 +73,48 @@ from ruffus_exceptions import *
 #_________________________________________________________________________________________
 #
 #   construct_filename_parameters_with_regex
-# 
+#
 #_________________________________________________________________________________________
-def regex_replace(filename, regex, p):
+REGEX_SUBSTITUTE               = 0
+SUFFIX_SUBSTITUTE_IF_SPECIFIED = 1
+SUFFIX_SUBSTITUTE_ALWAYS       = 2
+def regex_replace(filename, regex, p, regex_or_suffix = REGEX_SUBSTITUTE):
     """
     recursively replaces file name specifications using regular expressions
     Non-strings are left alone
     """
     if isinstance(p, basestring):
-        return regex.sub(p, filename) 
+        if "\1"in p or "\2" in p:
+            raise error_unescaped_regular_expression_forms("['%s'] "  % (p.replace("\1", r"\1").replace("\2", r"\2")) +
+                                                           "The special regular expression characters "
+                                                           r"\1 and \2 need to be 'escaped' in python. "
+                                                           r"The easiest option is to use python 'raw' strings "
+                                                           r"e.g. r'\1_in_a string\2'. See http://docs.python.org/library/re.html.")
+
+        if regex_or_suffix == REGEX_SUBSTITUTE:
+            return regex.sub(p, filename)
+
+        # only subsitute if \1 is specified
+        elif regex_or_suffix == SUFFIX_SUBSTITUTE_IF_SPECIFIED and r"\1" in p:
+            return regex.sub(p, filename)
+
+        # implicit assumes leading \1 if missing
+        elif regex_or_suffix == SUFFIX_SUBSTITUTE_ALWAYS:
+            if r"\1" not in p:
+                return regex.sub(r"\1" + p, filename)
+            else:
+                return regex.sub(p, filename)
+
+        return p
     elif non_str_sequence (p):
-        return type(p)(regex_replace(filename, regex, pp) for pp in p)
+        return type(p)(regex_replace(filename, regex, pp, regex_or_suffix) for pp in p)
     else:
         return p
-        
+
 #_________________________________________________________________________________________
 #
 #   regex_replace
-# 
+#
 #_________________________________________________________________________________________
 #def regex_replace(filename, regex, p):
 #    """
@@ -98,7 +122,7 @@ def regex_replace(filename, regex, p):
 #    Non-strings are left alone
 #    """
 #    if isinstance(p, str):
-#        return regex.sub(p, filename) 
+#        return regex.sub(p, filename)
 #    elif non_str_sequence (p):
 #        return tuple(regex_replace(filename, regex, pp) for pp in p)
 #    else:
@@ -124,7 +148,7 @@ def non_str_sequence (arg):
     """
     Whether arg is a sequence.
     We treat strings / dicts however as a singleton not as a sequence
-    
+
     """
     if (isinstance(arg, (basestring, dict))):
         return False
@@ -154,7 +178,7 @@ def get_strings_in_nested_sequence_aux(p, l = None):
             get_strings_in_nested_sequence_aux(pp, l)
     return l
 
-    
+
 #_________________________________________________________________________________________
 
 #   non_str_sequence
@@ -166,23 +190,23 @@ def get_strings_in_nested_sequence (p, first_only = False):
     """
     if p == None:
         return []
-    
+
     #
     #  string is returned as list of single string
-    # 
+    #
     if isinstance(p, basestring):
         return [p]
-        
+
     #
     #  Get all strings flattened into list
-    # 
+    #
     if not first_only:
         return get_strings_in_nested_sequence_aux(p)
-        
-        
+
+
     #
     #  Get all first string in each element
-    # 
+    #
     elif non_str_sequence (p):
         filenames = []
         for pp in p:
@@ -204,13 +228,13 @@ def get_first_string_in_nested_sequence (p):
 
     #
     #  string is returned as list of single string
-    # 
+    #
     if isinstance(p, basestring):
         return p
 
     #
     #  Get all first string in each element
-    # 
+    #
     elif non_str_sequence (p):
         filenames = []
         for pp in p:
@@ -252,33 +276,33 @@ def shorten_filenames_encoder (obj):
 #
 #   get_tasks_filename_globs_in_nested_sequence
 #
-#________________________________________________________________________________________ 
+#________________________________________________________________________________________
 glob_letters = set('*[]?')
 def is_glob(s):
     """Check whether 's' contains ANY of glob chars"""
     return len(glob_letters.intersection(s)) > 0
 
-   
-   
+
+
 #_________________________________________________________________________________________
 #
 #   get_nested_tasks_or_globs
 #
-#________________________________________________________________________________________ 
+#________________________________________________________________________________________
 def get_nested_tasks_or_globs(p, treat_strings_as_tasks = False, runtime_data_names=None, tasks=None, globs = None):
     """
     Get any tasks or globs which are within parameter
         tasks are returned as functions or function names
     """
-    # 
+    #
     # create storage if this is not a recursive call
-    # 
+    #
     if globs == None:
         runtime_data_names, tasks, globs = set(), set(), set()
 
     #
     #   task function
-    # 
+    #
     if (type(p) == types.FunctionType):
         tasks.add(p)
     elif isinstance(p, runtime_parameter):
@@ -286,7 +310,7 @@ def get_nested_tasks_or_globs(p, treat_strings_as_tasks = False, runtime_data_na
 
     #
     #   output_from treats all arguments as tasks or task names
-    # 
+    #
     elif isinstance(p, output_from):
         for pp in p.args:
             get_nested_tasks_or_globs(pp, True, runtime_data_names, tasks, globs)
@@ -306,72 +330,72 @@ def get_nested_tasks_or_globs(p, treat_strings_as_tasks = False, runtime_data_na
 #
 #   replace_func_names_with_tasks
 #
-#________________________________________________________________________________________ 
+#________________________________________________________________________________________
 def replace_func_names_with_tasks(p, func_or_name_to_task, treat_strings_as_tasks = False):
     """
     Replaces task functions or task name (strings) with the tasks they represent
     func_or_name_to_task are a dictionary of function and task names to tasks
-    
+
     """
-    # 
+    #
     # Expand globs or tasks as a list only if they are top level
-    # 
+    #
     if type(p) == types.FunctionType:
         return func_or_name_to_task[p]
 
     #
     #   output_from treats all arguments as tasks or task names
-    # 
+    #
     if isinstance(p, output_from):
         if len(p.args) == 1:
-            return replace_func_names_with_tasks(p.args[0], func_or_name_to_task, True) 
+            return replace_func_names_with_tasks(p.args[0], func_or_name_to_task, True)
         else:
             return [replace_func_names_with_tasks(pp, func_or_name_to_task, True) for pp in p.args]
 
-    # 
+    #
     # strings become tasks if treat_strings_as_tasks
-    # 
+    #
     if isinstance(p, basestring):
         if treat_strings_as_tasks:
             return func_or_name_to_task[p]
         return p
-        
-    # 
+
+    #
     # No conversions within dictionaries
-    # 
+    #
     if isinstance(p, dict):
         return p
 
-    # 
+    #
     # Other sequences are recursed down
-    # 
+    #
     elif non_str_sequence(p):
         l = list()
         for pp in p:
-            
-            # 
+
+            #
             #   To be intuitive:
             #   arguments wrapped by output_from are always treated "in-line"
             #           e.g. 1, output_from("a") => 1, task_a
             #           e.g. 1, output_from("a", 2) => 1, task_a, 2
-            # 
+            #
             if isinstance(pp, output_from):
                 if len(pp.args) > 1:
                     l.extend(tuple(replace_func_names_with_tasks(pp, func_or_name_to_task, True)))
                 elif len(pp.args) == 1:
                     l.append(replace_func_names_with_tasks(pp.args[0], func_or_name_to_task, True))
                 # else len(pp.args) == 0 !! do nothing
-                    
+
             else:
                 l.append(replace_func_names_with_tasks(pp, func_or_name_to_task, treat_strings_as_tasks))
         return type(p)(l)
 
-    # 
+    #
     # No expansions of non-string/non-sequences
-    # 
+    #
     else:
         return p
-        
+
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   compiling regular expressions
@@ -455,7 +479,7 @@ def compile_suffix(enclosing_task, regex, error_object, descriptor_string):
                                    "suffix('%s') is malformed.\n" % (regex.args,) +
                                     "suffix(...) should only be used to wrap a single string matching the suffices of file names")
     try:
-        matching_regex = re.compile(re.escape(regex.args[0]) + "$")
+        matching_regex = re.compile("(.*)" + re.escape(regex.args[0]) + "$")
         return matching_regex
     except:
         raise error_object(enclosing_task, "%s: " % descriptor_string +
@@ -480,7 +504,7 @@ def check_parallel_parameters (enclosing_task, params, error_object):
         if isinstance(job_param, basestring):
             message = ("Wrong syntax for @parallel.\n"
                         "@parallel(%s)\n" % ignore_unknown_encoder(params) +
-                        "If you are supplying parameters for a task " 
+                        "If you are supplying parameters for a task "
                         "running as a single job, "
                         "either don't put enclosing brackets at all (with each parameter "
                         "separated by commas) or enclose all parameters as a nested list of "
@@ -508,23 +532,23 @@ def check_files_io_parameters (enclosing_task, params, error_object):
         for job_param in params:
             if isinstance(job_param, basestring):
                 raise TypeError
-            
+
             if len(job_param) < 1:
-                raise error_object(enclosing_task, "Missing input files for job " +   
-                                                    ignore_unknown_encoder(job_param))      
+                raise error_object(enclosing_task, "Missing input files for job " +
+                                                    ignore_unknown_encoder(job_param))
             if len(job_param) < 2:
-                raise error_object(enclosing_task, "Missing output files for job " +   
-                                                    ignore_unknown_encoder(job_param))      
-            if len(get_strings_in_nested_sequence(job_param[0:2])) == 0:            
+                raise error_object(enclosing_task, "Missing output files for job " +
+                                                    ignore_unknown_encoder(job_param))
+            if len(get_strings_in_nested_sequence(job_param[0:2])) == 0:
                 raise error_object(enclosing_task, "Input or output file parameters should "
-                                                    "contain at least one or more file names strings." + 
+                                                    "contain at least one or more file names strings." +
                                                     ignore_unknown_encoder(job_param))
     except TypeError:
-        # 
+        #
         # job_param was not a list
-        # 
+        #
         message = ("Wrong syntax for @files.\n@files(%s)\n" % ignore_unknown_encoder(params) +
-                    "If you are supplying parameters for a task " 
+                    "If you are supplying parameters for a task "
                     "running as a single job, "
                     "either don't put enclosing brackets at all (with each parameter "
                     "separated by commas) or enclose all parameters as a nested list of "
@@ -536,34 +560,34 @@ def check_files_io_parameters (enclosing_task, params, error_object):
 #
 #   expand_nested_tasks_or_globs
 #
-#________________________________________________________________________________________ 
+#________________________________________________________________________________________
 def expand_nested_tasks_or_globs(p, tasksglobs_to_filenames):
     """
     Expand globs and tasks "in-line", unless they are the top level, in which case turn
     it into a list
-    
+
     N.B. Globs are only expanded if they are in tasksglobs_to_filenames
          This function is called for @split descriptors which leave output globs untouched
          for clarity. Thanks to Noah Spies for spotting this!
     """
 
-    # 
+    #
     # Expand globs or tasks as a list only if they are top level
-    # 
-    if (    (isinstance(p, basestring) and is_glob(p) and p in tasksglobs_to_filenames) or 
-            p.__class__.__name__ == '_task'     or 
+    #
+    if (    (isinstance(p, basestring) and is_glob(p) and p in tasksglobs_to_filenames) or
+            p.__class__.__name__ == '_task'     or
             isinstance(p, runtime_parameter)    ):
         return tasksglobs_to_filenames[p]
 
-    # 
+    #
     # No expansions of strings and dictionaries
-    # 
+    #
     if isinstance(p, (basestring, dict)):
         return p
 
-    # 
+    #
     # Other sequences are recursed down
-    # 
+    #
     elif non_str_sequence(p):
         l = list()
         for pp in p:
@@ -580,15 +604,15 @@ def expand_nested_tasks_or_globs(p, tasksglobs_to_filenames):
                 l.append(expand_nested_tasks_or_globs(pp, tasksglobs_to_filenames))
         return type(p)(l)
 
-    # 
+    #
     # No expansions of non-string/non-sequences
-    # 
+    #
     else:
         return p
 
 
 
-        
+
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   special markers used by @files_re
@@ -601,14 +625,14 @@ class combine(object):
 class output_from(object):
     def __init__ (self, *args):
         self.args = args
-    
+
 class runtime_parameter(object):
     def __init__ (self, *args):
         if len(args) != 1 or not isinstance(args[0], basestring):
             raise Exception("runtime_parameter takes the name of the run time parameter as a single string")
         self.args = args
 
-    
+
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Unit Testing code in test/test_ruffus_utility.py
