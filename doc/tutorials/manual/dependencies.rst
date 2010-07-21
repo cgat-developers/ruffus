@@ -28,16 +28,14 @@
 Running all out-of-date tasks and dependents
 =============================================
 
-    .. image:: ../../images/manual_dependencies_flowchart4.png
+    .. image:: ../../images/manual_dependencies_flowchart_intro.png
     
 
     By default, *ruffus* will 
     
         * build a flow chart (dependency tree) of pipelined tasks (functions) 
-        * start from the most ancestral tasks with the fewest dependencies (``task3`` and ``task1`` in the flowchart above).
-        * walk up the tree to find the first incomplete / out-of-date tasks (i.e. ``task6`` and ``task2``. 
-          The order by which tasks are asked if they are complete and up-to-date
-          is indicated by the red numbers on yellow).
+        * start from the most ancestral tasks with the fewest dependencies (``task1`` and ``task4`` in the flowchart above).
+        * walk up the tree to find the first incomplete / out-of-date tasks (i.e. ``task3`` and ``task5``. 
         * start running from there
 
     All down-stream (dependent) tasks will be re-run anyway, so we don't have to test

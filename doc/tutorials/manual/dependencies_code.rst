@@ -31,7 +31,6 @@ Code
                 output_text = "None"
             output_text += json.dumps(infile) + " -> " + json.dumps(outfile) + "\n"
             open(outfile, "w").write(output_text)
-            time.sleep(1)
 
 
 

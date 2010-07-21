@@ -74,9 +74,89 @@ Indicator Objects
             def compile(infile, outfile):
                 pass
 
+.. _decorators.add_inputs:
+.. index:: 
+    pair: add_inputs; Indicator Object (Adding additional input parameters)
+
+***************************************
+*add_inputs(*\ `input_file_pattern`\ *)*
+***************************************
+    The enclosed parameter(s) are pattern strings or a nested structure which is added to the
+    input for each job. 
+    
+    **Used by:**
+        * :ref:`@transform <decorators.transform_ex>`
+          ``regex(...)`` and ``suffix(...)`` only
+        * :ref:`@collate <decorators.transform_ex>`
+          ``regex(...)`` only 
+        * :ref:`@split <decorators.transform_ex>`
+          ``regex(...)`` only 
+   
+    **Example @transform with suffix(...)**
+
+        A common task in compiling C code is to include the corresponding header file for the source.
+        To compile ``*.c`` to ``*.o``, adding ``*.h`` and the common header ``universal.h``:
+            ::
+
+                @transform(["1.c", "2.c"], suffix(".c"), add_inputs([r"\1.h", "universal.h"]),  ".o")
+                def compile(infile, outfile):
+                    # do something here
+                    pass
+
+        | The starting files names are ``1.c`` and ``2.c``.
+        | ``suffix(".c")`` matches ".c" so ``\1`` stands for the unmatched prefices  ``"1"`` and ``"2"``
+        This will result in the following functional calls:
+            ::    
+            
+                compile(["1.c", "1.h", "universal.h"], "1.o")
+                compile(["2.c", "2.h", "universal.h"], "2.o")
+
+
+        A string like ``universal.h`` in ``add_inputs`` will added *as is*. 
+        ``r"\1.h"``, however, performs suffix substitution, with the special form ``r"\1"`` matching everything up to the suffix.
+        Remember to 'escape' ``r"\1"`` otherwise Ruffus will complain and throw an ``Exception`` to remind you.
+        The most convenient way is to use a python "raw" string.
+
+    **Example of add_inputs(...) with regex(...)**
+
+        The suffix match (``suffix(...)``) is exactly equivalent to the following code using regular expression (``regex(...)``):
+            ::
+                
+                @transform(["1.c", "2.c"], regex(r"^(.+)\.c$"), add_inputs([r"\1.h", "universal.h"]),  r"\1.o")
+                def compile(infile, outfile):
+                    # do something here
+                    pass
+
+        The ``suffix(..)`` code is much simpler but the regular expression allows more complex substitutions.
+                    
+    **add_inputs(...) preserves original inputs**
+
+        ``add_inputs`` nests the the original input parameters in a list before adding additional dependencies.
+        This can be seen in the following example:
+            ::
+
+                @transform([    ["1.c", "A.c", 2]
+                                ["2.c", "B.c", "C.c", 3]], 
+                                suffix(".c"), add_inputs([r"\1.h", "universal.h"]),  ".o")
+                def compile(infile, outfile):
+                    # do something here
+                    pass
+
+        This will result in the following functional calls:
+            ::    
+            
+                compile([["1.c", "A.c", 2],        "1.h", "universal.h"], "1.o")
+                compile([["3.c", "B.c", "C.c", 3], "2.h", "universal.h"], "2.o")
+
+
+        The original parameters are retained unchanged as the first item in a list
+
+                 
+        
+            
 .. _decorators.inputs:
 .. index:: 
-    pair: inputs; Indicator Object (Disambiguating parameters)
+    pair: inputs; Indicator Object (Replacing input parameters)
 
 ***************************************
 *inputs(*\ `input_file_pattern`\ *)*
@@ -91,26 +171,27 @@ Indicator Objects
     **Used by:**
         * The advanced form of :ref:`@transform <decorators.transform_ex>`
    
-    **Example**:
-        ::
-        
-             @transform(["x.c", "y.c"], regex(r"(.*).c"), inputs([r"\1.c", r"\1.h"]), r"\1.o")
-             def compile(infiles, outfile):
-                 # do something here
-                 pass
-                 
-        
-        | The starting files names are ``x.c`` and ``y.c``.
-        | The regular expression is ``r(.*).c`` so the first matching part 
-          ``\1`` will be ``x`` and ``y``
-        | Because the input file pattern is [``\1.c``, ``\1.h``], the resulting input files will be:
-        
-        ::
-        
-            job1:   ["x.c", "x.h"]
-            job2:   ["y.c", "y.h"]
-            
+    **inputs(...) replaces original inputs**
 
+        ``inputs(...)`` allows the original input parameters to be replaced wholescale.
+        This can be seen in the following example:
+            ::
+
+                @transform([    ["1.c", "A.c", 2]
+                                ["2.c", "B.c", "C.c", 3]], 
+                                suffix(".c"), inputs([r"\1.py", "docs.rst"]),  ".pyc")
+                def compile(infile, outfile):
+                    # do something here
+                    pass
+
+        This will result in the following functional calls:
+            ::    
+            
+                compile(["1.py", "docs.rst"], "1.pyc")
+                compile(["2.py", "docs.rst"], "2.pyc")
+
+        In this example, the corresponding python files have been sneakily substituted 
+        without trace in the place of the C source files.
             
 .. _decorators.mkdir:
 

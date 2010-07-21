@@ -88,6 +88,7 @@ Decorators
         decorators/split_ex.rst
         decorators/transform_ex.rst
         decorators/collate.rst
+        decorators/collate_ex.rst
 
 .. topic::
     Esoteric

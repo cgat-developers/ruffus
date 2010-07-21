@@ -26,7 +26,7 @@ import ruffus, ruffus.task, ruffus.ruffus_version
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'rst2pdf.pdfbuilder']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo']#, 'rst2pdf.pdfbuilder']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

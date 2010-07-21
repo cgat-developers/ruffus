@@ -41,9 +41,9 @@ Splitting up a long list of random numbers to calculate their variance
         :class: borderless
 
         ".. centered::
-            Step 4 from:
+            Step 5 from the tutorial:
 
-        .. image:: ../../images/simple_tutorial_step4.png", "
+        .. image:: ../../images/simple_tutorial_step5_sans_key.png", "
             Suppose we had a list of 100,000 random numbers in the file ``random_numbers.list``:
             
                 ::

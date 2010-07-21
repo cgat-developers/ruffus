@@ -110,7 +110,15 @@ See :ref:`Decorators <decorators>` for more decorators
     
         This is the ``@collate`` code required::
     
-            @collate("*.animal", regex(r"(.+)\.(.+)\.animal"),  r"\2.results")
+            animals = [     "cows.mammals.animal", 
+                            "horses.mammals.animal", 
+                            "sheep.mammals.animal", 
+                            "snake.reptile.animal", 
+                            "lizard.reptile.animal", 
+                            "crocodile.reptile.animal", 
+                            "pufferfish.fish.animal"]
+    
+            @collate(animals, regex(r"(.+)\.(.+)\.animal"),  r"\2.results")
             # \1 = species [cow, horse]
             # \2 = phylogenetics group [mammals, reptile, fish]
             def summarize_animals_into_groups(species_file, result_file):

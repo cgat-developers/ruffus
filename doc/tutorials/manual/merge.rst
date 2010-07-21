@@ -47,12 +47,12 @@ Combining partial solutions: Calculating variances
         ".. centered::
             Step 6 from:
 
-        .. image:: ../../images/simple_tutorial_step4.png", "
+        .. image:: ../../images/simple_tutorial_step5_sans_key.png", "
             We wanted to calculate the sample variance of a large list of random numbers. We                                 
             have seen previously how we can split up this large problem into small pieces                                      
-            (using @split in :ref:`|manual.split.chapter_num| <manual.split>`), and work out the                                        
-            partial solutions for each sub-problem (calculaing sums with @transform in                                       
-            :ref:`|manual.transform.chapter_num| <manual.transform>`).                                                                          
+            (using :ref:`@split <manual.split>` in |manual.split.chapter_num|), and work out the                                        
+            partial solutions for each sub-problem (calculating sums with :ref:`@transform<manual.transform>`
+            in |manual.transform.chapter_num| ).                                                                          
                                                                                                                              
             All that remains is to join up the partial solutions from the different ``.sums`` files                          
             and turn these into the variance as follows::                                                                    

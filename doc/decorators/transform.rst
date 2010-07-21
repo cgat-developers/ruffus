@@ -34,19 +34,36 @@ See :ref:`Decorators <decorators>` for more decorators
 
         Only out of date tasks (comparing input and output files) will be run
         
-    **Example**
+    **Simple Example**
 
         Transforms ``*.c`` to ``*.o``::
     
-            @transform(previous_task, suffix(".c"), ".o")
+            @transform(["1.c", "2.c"], suffix(".c"), ".o")
             def compile(infile, outfile):
                 pass
     
         Same example with a regular expression::
             
-            @transform(previous_task, regex(r".c$"), ".o")
+            @transform(["1.c", "2.c"], regex(r".c$"), ".o")
             def compile(infile, outfile):
                 pass
+
+        Both result in the following function calls:
+
+            ::
+
+                # 1.c -> 1.o
+                # 2.c -> 2.o
+                compile("1.c", "1.o")
+                compile("2.c", "2.o")
+
+
+    **Escaping regular expression patterns**
+
+        A string like ``universal.h`` in ``add_inputs`` will added *as is*. 
+        ``r"\1.h"``, however, performs suffix substitution, with the special form ``r"\1"`` matching everything up to the suffix.
+        Remember to 'escape' ``r"\1"`` otherwise Ruffus will complain and throw an Exception to remind you.
+        The most convenient way is to use a python "raw" string.
 
     **Parameters:**
                 
@@ -66,18 +83,48 @@ See :ref:`Decorators <decorators>` for more decorators
     * *suffix_string*
        must be wrapped in a :ref:`suffix<decorators.suffix` indicator object.
        The end of each input file name which matches ``suffix_string`` will be replaced by ``output_pattern``.
-       Thus::
 
-            @transform(["a.c", "b.c"], suffix(".c"), ".o")
+       Input file names which do not match suffix_string will be ignored
+
+
+       The non-suffix part of the match can be referred to using the ``"\1"`` pattern. This
+       can be useful for putting the output in different directory, for example::
+    
+            
+            @transform(["1.c", "2.c"], suffix(".c"), r"my_path/\1.o")
             def compile(infile, outfile):
                 pass
-                
-       will result in the following function calls::         
 
-           compile("a.c", "a.o")
-           compile("b.c", "b.o")
-             
-       input file names which do not match suffix_string will be ignored
+       This results in the following function calls:
+
+            ::
+
+                # 1.c -> my_path/1.o
+                # 2.c -> my_path/2.o
+                compile("1.c", "my_path/1.o")
+                compile("2.c", "my_path/2.o")
+
+       For convenience and visual clarity, the  ``"\1"`` can be omitted from the output parameter.
+       However, the ``"\1"`` is mandatory for string substitutions in additional parameters, .
+    
+            
+            @transform(["1.c", "2.c"], suffix(".c"), [r"\1.o", ".o"], "Compiling \1", "verbatim")
+            def compile(infile, outfile):
+                pass
+
+       Results in the following function calls:
+
+            ::
+
+                compile("1.c", ["1.o", "1.o"], "Compiling 1", "verbatim")
+                compile("2.c", ["2.o", "2.o"], "Compiling 2", "verbatim")
+
+       Since r"\1" is optional for the output parameter, ``"\1.o"`` and ``".o"`` are equivalent. 
+       However, strings in other parameters which do not contain r"\1" will be included verbatim, much
+       like the string ``"verbatim"`` in the above example.
+
+
+
     
 .. _decorators.transform.matching_regex:
 

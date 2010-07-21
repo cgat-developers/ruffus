@@ -11,18 +11,21 @@
         </ul>
         <h3><a href="{{ pathto('decorators/decorators') }}">Decorators:</a></h3>   
         <ul>
-            <li><a href="{{ pathto('decorators/follows') }}">@follows</a>                              </li>
-            <li><a href="{{ pathto('decorators/files') }}">@files</a>                                  </li>
-            <li><a href="{{ pathto('decorators/split') }}">@split</a>                                  </li>
-            <li><a href="{{ pathto('decorators/transform') }}">@transform</a>                          </li>
-            <li><a href="{{ pathto('decorators/merge') }}">@merge</a>                                  </li>
-            <li><a href="{{ pathto('decorators/posttask') }}">@posttask</a>                            </li>
-            <li><a href="{{ pathto('decorators/jobs_limit') }}">@jobs_limit</a>                        </li>
-            <li><a href="{{ pathto('decorators/transform_ex') }}">@transform (advanced uses) </a>      </li>
-            <li><a href="{{ pathto('decorators/collate') }}">@collate</a>                              </li>
-            <li><a href="{{ pathto('decorators/files_ex') }}">@files (on the fly)</a>                  </li>
-            <li><a href="{{ pathto('decorators/parallel') }}">@parallel</a>                            </li>
-            <li><a href="{{ pathto('decorators/check_if_uptodate') }}">@check_if_uptodate</a>          </li>
+            <li><a href="{{ pathto('decorators/follows') }}">@follows / mkdir</a>                       </li>
+            <li><a href="{{ pathto('decorators/files') }}">@files</a>                                   </li>
+            <li><a href="{{ pathto('decorators/split') }}">@split</a>                                   </li>
+            <li><a href="{{ pathto('decorators/transform') }}">@transform</a>                           </li>
+            <li><a href="{{ pathto('decorators/merge') }}">@merge</a>                                   </li>
+            <li><a href="{{ pathto('decorators/posttask') }}">@posttask touch_file</a>                  </li>
+            <li><a href="{{ pathto('decorators/jobs_limit') }}">@jobs_limit</a>                         </li>
+            <li><a href="{{ pathto('decorators/split_ex') }}">@split (regex/add_inputs/inputs)</a>      </li>
+            <li><a href="{{ pathto('decorators/transform_ex') }}">@transform (add_inputs/inputs) </a>   </li>
+            <li><a href="{{ pathto('decorators/collate') }}">@collate</a>                               </li>
+            <li><a href="{{ pathto('decorators/collate_ex') }}">@collate (add_inputs/inputs) </a>       </li>
+            <li><a href="{{ pathto('decorators/jobs_limit') }}">@jobs_limit</a>                         </li>
+            <li><a href="{{ pathto('decorators/files_ex') }}">@files (on the fly)</a>                   </li>
+            <li><a href="{{ pathto('decorators/parallel') }}">@parallel</a>                             </li>
+            <li><a href="{{ pathto('decorators/check_if_uptodate') }}">@check_if_uptodate</a>           </li>
         </ul>
     
         <h4 ><a href="{{ pathto('decorators/indicator_objects') }}">Indicator objects</a></h4>
@@ -43,6 +46,8 @@
         <li><a href="{{ pathto('tutorials/manual/manual_introduction') }}">Manual</a>  | </li>
         <li><a href="{{ pathto('cheatsheet') }}">Cheat sheet</a> | </li>
         <li><a href="{{ pathto('contents') }}">Contents</a> | </li>
+        <li><a href="{{ pathto('gallery') }}">Hall of Fame</a> | </li>
+        <li><a href="{{ pathto('python_template') }}">Python Template</a> | </li>
         <li><a href="{{ pathto('search') }}">Search</a> &raquo;</li>     
 {% endblock %}
 

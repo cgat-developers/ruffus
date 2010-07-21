@@ -173,18 +173,17 @@ Missing files
 Caveats: Timestamp resolution
 =======================================
 
-    | Note that modification times have precision to the nearest second under certain versions of Linux and
-      Windows. This is especially true for networked file systems.
+    | Note that modification times have precision to the nearest second under some older file systems 
+      (ext2/ext3?). This may be also be true for networked file systems.
     | **Ruffus** is very conservative, and assumes that files with *exactly* the same date stamp might have been
       created in the wrong order, and will treat the job as out-of-date. This would result in some
       jobs re-running unnecessarily, simple because an underlying coarse-grained file system does not 
       distinguish between successively created files with sufficiently accuracy.
       
-    To get around this, **Ruffus** makes sure that each job takes at least 1 second to complete
-    (adding appropropriate calls to ``time.sleep()`` if necessary. This is
-    seldom a significantly delay, because hundreds of jobs running in parallel (``pipeline_run(..., multiprocess = 100)``)
-    will still only take a second. However, if this is a hindrance, you can turn off the delay
-    by setting ``one_second_per_job`` to ``False`` in :ref:`pipeline_run <pipeline_functions.pipeline_run>` 
+    To get around this, **Ruffus** makes sure that each task is punctuated by a 1 second pause
+    (via ``time.sleep()``). If this is gets in the way, and you are using a modern file system with
+    nanosecond timestamp resolution, you can turn off the delay by setting 
+    ``one_second_per_job`` to ``False`` in :ref:`pipeline_run <pipeline_functions.pipeline_run>` 
 
     Later versions of **Ruffus** will allow file modification times to be saved at higher precision
     in a log file or database to get around this.

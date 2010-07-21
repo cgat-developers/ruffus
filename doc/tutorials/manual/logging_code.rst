@@ -92,7 +92,6 @@ Code
             output_text += json.dumps(infiles) + " -> " + json.dumps(outfiles) + "\n"
             for f in outfiles:
                 open(f, "w").write(output_text)
-            time.sleep(1)
         
             
         

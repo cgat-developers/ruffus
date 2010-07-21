@@ -80,14 +80,14 @@ Displaying
     We can see a flowchart of our fledgling pipeline by executing:
         ::
         
-            pipeline_printout_graph ( "flowchart.jpg",
-                                     "jpg",
+            pipeline_printout_graph ( "manual_follows1.png",
+                                     "png",
                                      [final_task], 
                                      no_key_legend=True)
         
     producing the following flowchart
     
-        .. image:: ../../images/manual_follows1.jpg
+        .. image:: ../../images/manual_follows1.png
         
 
     or in text format with:

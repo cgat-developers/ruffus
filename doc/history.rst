@@ -183,15 +183,151 @@ version 2.1.0
 
       (Thanks to R. Young for suggesting this.)
 
+********************************************************************
+version 2.1.1
+********************************************************************
+    * **@transform(.., add_inputs(...))**
+        ``add_inputs(...)`` allows the addition of extra input dependencies / parameters for each job.
+        Unlike ``inputs(...)``, the original input parameter is retained:
+            ::
 
+                from ruffus import *
+                @transform(["a.input", "b.input"], suffix(".input"), add_inputs("just.1.more","just.2.more"), ".output")
+                def task(i, o):
+                ""
+
+        Produces:
+            ::
+
+                Job = [[a.input, just.1.more, just.2.more] ->a.output]
+                Job = [[b.input, just.1.more, just.2.more] ->b.output]
+
+
+        Like ``inputs``, ``add_inputs`` accepts strings, tasks and globs
+        This minor syntactic change promises add much clarity to Ruffus code.
+        ``add_inputs()`` is available for ``@transform``, ``@collate`` and ``@split``
+
+
+********************************************************************
+version 2.2
+********************************************************************
+    * Touch files without running the pipeline*
+        ::
+
+            pipeline_run(touch_files_only = True)
+
+        Do not run pipelined code but simulate by `touch`-ing the requisite files
+
+    * Parameter substitution for ``inputs(...)`` / ``add_inputs(...)``
+
+        ``glob``s and tasks can be added as the prerequisites / input files using
+        ``inputs(...)`` and ``add_inputs(...)``. ``glob`` expansions will take place when the task
+        is run.
+
+    * Simplifying ``@transform`` syntax
+
+        Regular expressions within ruffus are very powerful, and can allow files to be moved
+        from one directory to another and renamed at will.
+
+        However, using consistent file extensions and
+        ``@transform(..., suffix(...))`` makes the code much simpler and easier to read. 
+
+        Previously, ``suffix(...)`` did not cooperately well with ``inputs(...)``.
+        For example, finding the corresponding header file (".h") for the matching input
+        required a complicated ``regex(...)`` regular expression and ``input(...)``. This simple case,
+        e.g. matching "something.c" with "something.h", is now much easier in Ruffus.
+
+
+        For example:
+          ::
+
+            source_files = ["something.c", "more_code.c"]
+            @transform(source_files, suffix(".c"), add_inputs(r"\1.h", "common.h"), ".o")
+            def compile(input_files, output_file):
+                ( source_file,
+                  header_file,
+                  common_header) = input_files
+                # call compiler to make object file
+
+          This is equivalent to calling:
+
+            ::
+
+              compile(["something.c", "something.h", "common.h"], "something.o")
+              compile(["more_code.c", "more_code.h", "common.h"], "more_code.o")
+
+        The ``\1`` matches everything *but* the suffix and will be applied to both ``glob``s and file names.
+
+	For simplicity and compatibility with previous versions, there is always an implied r"\1" before
+	the output parameters. I.e. output parameters strings are *always* substituted.
+
+        
+    * Advanced form of ``@split``:
+
+        The standard ``@split`` divided one set of inputs into multiple outputs (the number of which
+        can be determined at runtime).
+
+        This is a ``one->many`` operation.
+
+
+        An advanced form of ``@split`` has been added which can split each of several files further.
+
+        In other words, this is a ``many->"many more"`` operation.
+
+        For example, given three starting files:
+            ::
+
+                original_files = ["original_0.file",
+                                  "original_1.file",
+                                  "original_2.file"]
+        We can split each into its own set of sub-sections:
+            ::
+
+                @split(original_files,
+                   regex(r"starting_(\d+).fa"),                         # match starting files
+                         r"files.split.\1.*.fa"                         # glob pattern
+                         r"\1")                                         # index of original file
+                def split_files(input_file, output_files, original_index):
+                    """
+                        Code to split each input_file
+                            "original_0.file" -> "files.split.0.*.fa"
+                            "original_1.file" -> "files.split.1.*.fa"
+                            "original_2.file" -> "files.split.2.*.fa"
+                    """
+
+
+        This is, conceptually, the reverse of the @collate(...) decorator
+
+    * Ruffus will complain about unescaped regular expression special characters:
+
+        Ruffus uses "\1" and "\2" in regular expression substitutions. Even seasoned python
+    	users may not remember that these have to be 'escaped' in strings. The best option is
+    	to use 'raw' python strings e.g. 
+            ::
+
+                r"\1_substitutes\2correctly\3four\4times"
+
+    	Ruffus will throw an exception if it sees an unescaped "\1" or "\2" in a file name,
+    	which should catch most of these bugs.
+
+    * Flowchart changes:
+
+        Changed to nicer colours, symbols etc. for a more professional look.
+		Colours, size and resolution are now fully customisable::
+
+			pipeline_printout_graph( #...
+									 user_colour_scheme = {
+															"colour_scheme_index":1,
+															"Task to run"  : {"fillcolor":"blue"},
+															 pipeline_name : "My flowchart",
+															 size          : (11,8),
+															 dpi           : 120)})
+
+        An SVG bug in firefox has been worked around so that font size are displayed correctly.
 
 
 ########################################
 Fixed Bugs
 ########################################
-
-    Critical Regression for v. 2.0.10 fixed in v 2.1.0
-
-    See `"issue 25: @files forwarding single arguments as lists" <http://code.google.com/p/ruffus/issues/detail?id=25&can=1>`_
 
     Full list at `"Latest Changes wiki entry" <http://code.google.com/p/ruffus/wiki/LatestChanges>`_
