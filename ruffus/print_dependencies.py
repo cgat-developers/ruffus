@@ -31,9 +31,15 @@
 
 """
 
+#
+#   Number of pre-canned colour schemes
+#
+CNT_COLOUR_SCHEMES = 8
+
+
 import types
 from adjacent_pairs_iterate import adjacent_pairs_iterate
-
+from collections import defaultdict
 def _get_name (node):
     """
     Get name for node
@@ -67,72 +73,177 @@ def attributes_to_str (attributes, name):
     return "[" + ", ".join ("%s=%s" % (k,v) for k,v in attributes.iteritems()) + "];\n"
 
 
-def get_connection_dot_str (from_task_type, to_task_type, n1, n2):
+
+#_________________________________________________________________________________________
+#
+#   get_arrow_str_for_legend_key
+#_________________________________________________________________________________________
+def get_arrow_str_for_legend_key (from_task_type, to_task_type, n1, n2, colour_scheme):
+    """
+    Get dot format for arrows inside legend key
+    """
     if "Vicious cycle" in (from_task_type, to_task_type):
-        return ("%s -> %s[color=red, arrowtype=normal];\n" % (n1, n2) +
-                "%s -> %s[color=red, arrowtype=normal];\n" % (n2, n1))
+        return ("%s -> %s[color=%s, arrowtype=normal];\n" % (n1, n2, colour_scheme["Vicious cycle"]["linecolor"]) +
+                "%s -> %s[color=%s, arrowtype=normal];\n" % (n2, n1, colour_scheme["Vicious cycle"]["linecolor"]))
     if from_task_type in ("Final target", "Task to run",
                             "Up-to-date task forced to rerun",
-                            "Force pipeline run from this task"):
-        return "%s -> %s[color=blue, arrowtype=normal];\n" % (n1, n2)
-    elif from_task_type in ("Up-to-date task", "Up-to-date dependence","Up-to-date Final target"):
-        return "%s -> %s[color=gray, arrowtype=normal];\n" % (n1, n2)
+                            "Explicitly specified task"):
+        return "%s -> %s[color=%s, arrowtype=normal];\n" % (n1, n2, colour_scheme["Task to run"]["linecolor"])
+    elif from_task_type in ("Up-to-date task", "Down stream","Up-to-date Final target"):
+        return "%s -> %s[color=%s, arrowtype=normal];\n" % (n1, n2, colour_scheme["Up-to-date"]["linecolor"])
     #
     # shouldn't be here!!
     #
     else:
-        return "%s -> %s[color=gray, arrowtype=normal];\n" % (n1, n2)
+        return "%s -> %s[color=%s, arrowtype=normal];\n" % (n1, n2, colour_scheme["Up-to-date"]["linecolor"])
 
-def get_dot_format (task_type, attributes, used_formats):
+
+#_________________________________________________________________________________________
+#
+#   get_default_colour_scheme
+#_________________________________________________________________________________________
+def get_default_colour_scheme(default_colour_scheme_index = 0):
+    """
+    A selection of default colour schemes "inspired" by entries in
+        http://kuler.adobe.com/#create/fromacolor
+    """
+
+    if default_colour_scheme_index ==0:
+        bluey_outline  = '"#0044A0"'
+        bluey          = '"#EBF3FF"'
+        greeny_outline = '"#006000"'
+        greeny         = '"#B8CC6E"'
+        orangey        = '"#EFA03B"'
+        orangey_outline= greeny_outline
+        ruddy          = '"#FF3232"'
+    elif default_colour_scheme_index ==1:
+        bluey_outline  = '"#000DDF"'
+        bluey          = 'transparent'
+        greeny_outline = '"#4B8C2E"'
+        greeny         = '"#9ED983"'
+        orangey        = '"#D98100"'
+        orangey_outline= '"#D9D911"'
+        ruddy          = '"#D93611"'
+    elif default_colour_scheme_index ==2:
+        bluey_outline  = '"#4A64A5"'
+        bluey          = 'transparent'
+        greeny_outline = '"#4A92A5"'
+        greeny         = '"#99D1C1"'
+        orangey        = '"#D2C24A"'
+        orangey_outline= greeny_outline
+        ruddy          = '"#A54A64"'
+    elif default_colour_scheme_index ==3:
+        bluey_outline  = '"#BFB5FF"'
+        bluey          = 'transparent'
+        greeny_outline = '"#7D8A2E"'
+        greeny         = '"#C9D787"'
+        orangey        = '"#FFF1DC"'
+        orangey_outline= greeny_outline
+        ruddy          = '"#FF3E68"'
+    elif default_colour_scheme_index ==4:
+        bluey_outline  = '"#004460"'
+        bluey          = 'transparent'
+        greeny_outline = '"#4B6000"'
+        greeny         = '"#B8CC6E"'
+        orangey        = '"#FFF0A3"'
+        orangey_outline= greeny_outline
+        ruddy          = '"#F54F29"'
+    elif default_colour_scheme_index ==5:
+        bluey_outline  = '"#1122FF"'
+        bluey          = '"#AABBFF"'
+        greeny_outline = '"#007700"'
+        greeny         = '"#44FF44"'
+        orangey        = '"#EFA03B"'
+        orangey_outline= '"#FFCC3B"'
+        ruddy          = '"#FF0000"'
+    elif default_colour_scheme_index ==6:
+        bluey_outline  = '"#0044A0"'
+        bluey          = '"#EBF3FF"'
+        greeny_outline = 'black'
+        greeny         = '"#6cb924"'
+        orangey        = '"#ece116"'
+        orangey_outline= greeny_outline
+        ruddy          = '"#FF3232"'
+    else:
+        bluey_outline  = '"#87BAE4"'
+        bluey          = 'transparent'
+        greeny_outline = '"#87B379"'
+        greeny         = '"#D3FAE3"'
+        orangey        = '"#FDBA40"'
+        orangey_outline= greeny_outline
+        ruddy          = '"#b9495e"'
+    default_colour_scheme = defaultdict(dict)
+    default_colour_scheme["Vicious cycle"]["linecolor"]                        = ruddy
+    default_colour_scheme["Pipeline"]["fontcolor"]                             = ruddy
+    default_colour_scheme["Key"]["fontcolor"]                                  = "black"
+    default_colour_scheme["Key"]["fillcolor"]                                  = '"#F6F4F4"'
+    default_colour_scheme["Task to run"]["linecolor"]                          = bluey_outline
+    default_colour_scheme["Up-to-date"]["linecolor"]                           = "gray"
+    default_colour_scheme["Final target"]["fillcolor"]                         = orangey
+    default_colour_scheme["Final target"]["fontcolor"]                         = "black"
+    default_colour_scheme["Final target"]["color"]                             = "black"
+    default_colour_scheme["Final target"]["dashed"]                            = 0
+    default_colour_scheme["Vicious cycle"]["fillcolor"]                        = ruddy
+    default_colour_scheme["Vicious cycle"]["fontcolor"]                        = 'white'
+    default_colour_scheme["Vicious cycle"]["color"]                            = "white"
+    default_colour_scheme["Vicious cycle"]["dashed"]                           = 0
+    default_colour_scheme["Up-to-date task"]["fillcolor"]                      = greeny
+    default_colour_scheme["Up-to-date task"]["fontcolor"]                      = greeny_outline
+    default_colour_scheme["Up-to-date task"]["color"]                          = greeny_outline
+    default_colour_scheme["Up-to-date task"]["dashed"]                         = 0
+    default_colour_scheme["Down stream"]["fillcolor"]                          = "white"
+    default_colour_scheme["Down stream"]["fontcolor"]                          = "gray"
+    default_colour_scheme["Down stream"]["color"]                              = "gray"
+    default_colour_scheme["Down stream"]["dashed"]                             = 0
+    default_colour_scheme["Explicitly specified task"]["fillcolor"]    = "transparent"
+    default_colour_scheme["Explicitly specified task"]["fontcolor"]    = "black"
+    default_colour_scheme["Explicitly specified task"]["color"]        = "black"
+    default_colour_scheme["Explicitly specified task"]["dashed"]       = 0
+    default_colour_scheme["Task to run"]["fillcolor"]                          = bluey
+    default_colour_scheme["Task to run"]["fontcolor"]                          = bluey_outline
+    default_colour_scheme["Task to run"]["color"]                              = bluey_outline
+    default_colour_scheme["Task to run"]["dashed"]                             = 0
+    default_colour_scheme["Up-to-date task forced to rerun"]["fillcolor"]      = 'transparent'
+    default_colour_scheme["Up-to-date task forced to rerun"]["fontcolor"]      = bluey_outline
+    default_colour_scheme["Up-to-date task forced to rerun"]["color"]          = bluey_outline
+    default_colour_scheme["Up-to-date task forced to rerun"]["dashed"]         = 1
+    default_colour_scheme["Up-to-date Final target"]["fillcolor"]              = orangey
+    default_colour_scheme["Up-to-date Final target"]["fontcolor"]              = orangey_outline
+    default_colour_scheme["Up-to-date Final target"]["color"]                  = orangey_outline
+    default_colour_scheme["Up-to-date Final target"]["dashed"]                 = 0
+
+
+
+    if default_colour_scheme_index ==6:
+        default_colour_scheme["Vicious cycle"]["fontcolor"]                        = 'black'
+        default_colour_scheme["Task to run"]["fillcolor"]                          = '"#5f52ee"'
+        default_colour_scheme["Task to run"]["fontcolor"]                          = "lightgrey"
+        default_colour_scheme["Up-to-date Final target"]["fontcolor"]              = '"#EFA03B"'
+
+    return default_colour_scheme
+
+
+#_________________________________________________________________________________________
+#
+#   get_dot_format_for_task_type
+#_________________________________________________________________________________________
+def get_dot_format_for_task_type (task_type, attributes, colour_scheme, used_formats):
+    """
+    Look up appropriate colour and style for each type of task
+    """
     used_formats.add(task_type)
-    if task_type == "Final target":
-        attributes["fontcolor"]="black"
-        attributes["fillcolor"]="khaki1"
-        attributes["color"]="black"
+    for color_type in ("fontcolor", "fillcolor", "color"):
+        attributes[color_type] = colour_scheme[task_type][color_type]
         attributes["style"]="filled"
-        #attributes["shape"]="rect"
-        #attributes["peripheries"] = 2
-    elif task_type == "Up-to-date Final target":
-        attributes["fontcolor"]="gray"
-        attributes["color"]="gray"
-        #attributes["shape"]="rect"
-        #attributes["peripheries"] = 2
-    elif task_type == "Vicious cycle":
-        attributes["color"]="white"
-        attributes["fillcolor"]="red"
-        #attributes["shape"]="box"
-        attributes["style"]="filled"
-    elif task_type == "Task to run":
-        attributes["fontcolor"]="blue"
-        #attributes["shape"]="plaintext"
-        attributes["color"]="blue"
-    elif task_type == "Up-to-date task forced to rerun":
-        attributes["fontcolor"]="blue"
-        #attributes["color"]="olivedrab"
-        attributes["color"]="blue"
-        attributes["style"]="dashed"
-        #attributes["shape"]="tripleoctagon"
-        #attributes["peripheries"] = 2
-    elif task_type ==  "Force pipeline run from this task":
-        attributes["fontcolor"]="blue"
-        attributes["color"]="blue"
-        #attributes["shape"]="tripleoctagon"
-        attributes["peripheries"] = 2
-    elif task_type == "Up-to-date task":
-        attributes["color"] = "green"
-        attributes["style"]="filled"
-        #attributes["fillcolor"]="olivedrab"
-        attributes["fillcolor"]="palegreen2"
-        attributes["fontcolor"]="black"
-    elif task_type == "Up-to-date dependence":
-        attributes["color"] = "gray"
-        attributes["style"]="filled"
-        attributes["fillcolor"]="white"
-        attributes["fontcolor"]="gray"
+        if colour_scheme[task_type]["dashed"]:
+            attributes["style"]="dashed"
 
 
-
-def output_dependency_tree_key_in_dot_format (stream, used_task_types, minimal_key_legend):
+#_________________________________________________________________________________________
+#
+#   write_legend_key
+#_________________________________________________________________________________________
+def write_legend_key (stream, used_task_types, minimal_key_legend, colour_scheme, key_name = "Key:", subgraph_index = 1):
     """
     Write legend/key to dependency tree graph
     """
@@ -140,12 +251,15 @@ def output_dependency_tree_key_in_dot_format (stream, used_task_types, minimal_k
         return
 
 
-    stream.write( 'subgraph clusterkey\n')
+    stream.write( 'subgraph clusterkey%d\n' % subgraph_index)
     stream.write( '{\n')
+
+    stream.write( 'rank="min";\n')
     stream.write( 'style=filled;\n')
     #stream.write( 'fontsize=30;\n')
-    stream.write( 'color=gray90;\n')
-    stream.write( 'label = "Key:";\n')
+    stream.write( 'color=%s;\n' % (colour_scheme["Key"]["fillcolor"]))
+    stream.write( 'label = "%s";\n' % key_name)
+    stream.write( 'fontcolor = %s;' % (colour_scheme["Key"]["fontcolor"]))
     stream.write( 'node[margin=0.2,0.2];\n')
 
 
@@ -154,9 +268,9 @@ def output_dependency_tree_key_in_dot_format (stream, used_task_types, minimal_k
     #
     all_task_types = [
                        "Vicious cycle"                     ,
-                       "Up-to-date dependence" ,
+                       "Down stream" ,
                        "Up-to-date task"                   ,
-                       "Force pipeline run from this task" ,
+                       "Explicitly specified task" ,
                        "Task to run"                       ,
                        "Up-to-date task forced to rerun"   ,
                        "Up-to-date Final target"           ,
@@ -165,9 +279,9 @@ def output_dependency_tree_key_in_dot_format (stream, used_task_types, minimal_k
         used_task_types |= set(all_task_types)
     wrapped_task_types = [
                        "Vicious cycle"                     ,
-                       "Up-to-date\\ndependence" ,
+                       "Down stream" ,
                        "Up-to-date task"                   ,
-                       "Force pipeline run\\nfrom this task" ,
+                       "Explicitly specified task" ,
                        "Task to run"                       ,
                        "Up-to-date task\\nforced to rerun"   ,
                        "Up-to-date\\nFinal target"           ,
@@ -180,7 +294,7 @@ def output_dependency_tree_key_in_dot_format (stream, used_task_types, minimal_k
         attributes = dict()
         attributes["shape"]="box3d"
         #attributes["shape"] = "rect"
-        get_dot_format (task_type, attributes, ignore_used_task_types)
+        get_dot_format_for_task_type (task_type, attributes, colour_scheme, ignore_used_task_types)
         #attributes["fontsize"] = '15'
         stream.write(key + attributes_to_str(attributes, wrapped_task_types[task_type]))
 
@@ -191,54 +305,121 @@ def output_dependency_tree_key_in_dot_format (stream, used_task_types, minimal_k
             sorted_used_task_types.append(t)
 
     # print first key type
-    outputkey("k1", sorted_used_task_types[0], stream)
+    outputkey("k1_%d" % subgraph_index, sorted_used_task_types[0], stream)
 
     for i, (from_task_type, to_task_type) in enumerate(adjacent_pairs_iterate(sorted_used_task_types)):
-        from_key = 'k%d' % (i + 1)
-        to_key = 'k%d' % (i + 2)
+        from_key = 'k%d_%d' % (i + 1, subgraph_index)
+        to_key = 'k%d_%d' % (i + 2, subgraph_index)
         # write key
         outputkey(to_key, to_task_type, stream)
         # connection between keys
-        stream.write(get_connection_dot_str (from_task_type, to_task_type, from_key, to_key))
+        stream.write(get_arrow_str_for_legend_key (from_task_type, to_task_type, from_key, to_key, colour_scheme))
 
 
-    #stream.write(
-    #            "k1->k2[color=red];"
-    #            "k2->k1 [color=red];"
-    #            "k2->k3->k4->k5[color=blue];"
-    #            "k5->k6->k7->k8[color=gray];")
     stream.write("}\n")
 
 
 #_________________________________________________________________________________________
 
-#   output_dependency_tree_in_dot_format
+#   write_colour_scheme_demo_in_dot_format
 
 #_________________________________________________________________________________________
-def output_dependency_tree_in_dot_format(   jobs_to_run,
-                                            up_to_date_jobs,
-                                            dag_violating_edges,
-                                            dag_violating_nodes,
-                                            stream,
-                                            target_jobs,
-                                            forced_to_run_jobs      = [],
-                                            all_jobs                = None,
-                                            vertical                = True,
-                                            skip_uptodate_tasks     = False,
-                                            no_key_legend           = False,
-                                            minimal_key_legend      = True):
+def write_colour_scheme_demo_in_dot_format(stream):
     """
-        output_dependencies_in_dot_format
+    Write all the colour schemes in different colours
+    """
+    stream.write( 'digraph "Colour schemes"\n{\n')
+    stream.write( 'size="8,11";\n')
+    stream.write( 'splines=true;\n')
+    stream.write( 'fontsize="30.12";\n')
+    stream.write( 'ranksep = 0.3;\n')
+    stream.write( 'node[fontsize="20.12"];\n')
+    for colour_scheme_index in range(CNT_COLOUR_SCHEMES):
+        colour_scheme = get_default_colour_scheme(colour_scheme_index)
+        write_legend_key (stream, set("test"), False, colour_scheme, "Colour Scheme %d" % colour_scheme_index, colour_scheme_index)
+    stream.write("}\n")
 
-            jobs_to_run         = pipeline jobs which are not up to date or have dependencies
-                                    which are not up to date
-                                  Blue
-            up_to_date_jobs     = Green
-            cyclic dependencies = Red (jobs and dependencies)
-            ignored jobs        = Gray
-            target_jobs         = Orange
-            forced_to_run_jobs  = Octagon
+
+#_________________________________________________________________________________________
+
+#   write_flowchart_in_dot_format
+
+#_________________________________________________________________________________________
+def write_flowchart_in_dot_format(  jobs_to_run,
+                                    up_to_date_jobs,
+                                    dag_violating_edges,
+                                    dag_violating_nodes,
+                                    stream,
+                                    target_jobs,
+                                    forced_to_run_jobs      = [],
+                                    all_jobs                = None,
+                                    vertical                = True,
+                                    skip_uptodate_tasks     = False,
+                                    no_key_legend           = False,
+                                    minimal_key_legend      = True,
+                                    user_colour_scheme      = None,
+                                    pipeline_name           = "Pipeline:"):
     """
+    jobs_to_run         = pipeline jobs which are not up to date or have dependencies
+                            which are not up to date
+
+    vertical            = print flowchart vertically
+    minimal_key_legend  = only print used task types in key legend
+    user_colour_scheme  = dictionary for overriding default colours
+                          Colours can be names e.g. "black" or quoted hex e.g. '"#F6F4F4"'
+                          Default values will be used unless specified
+
+                          key    = "colour_scheme_index": index of default colour scheme
+                          key    = "Final target"
+                                   "Explicitly specified task"
+                                   "Task to run"
+                                   "Down stream"
+                                   "Up-to-date Final target"
+                                   "Up-to-date task forced to rerun"
+                                   "Up-to-date task"
+                                   "Vicious cycle"
+                                   Specifies colours for each task type
+
+                              Subkey = "fillcolor"
+                                       "fontcolor"
+                                       "color"
+                                       "dashed"   = 0/1
+
+
+                          key    =  "Vicious cycle"
+                                    "Task to run"
+                                    "Up-to-date"
+
+                              Subkey = "linecolor"
+                                       Specifying colours for arrows between tasks
+
+                          key    = "Pipeline"
+
+                              Subkey = "fontcolor"
+                                        Specifying flowchart title colour
+
+                          key    = "Key"
+
+                              Subkey = "fontcolor"
+                                       "fillcolor"
+                                       Specifies legend colours
+    """
+    if user_colour_scheme == None:
+        colour_scheme = get_default_colour_scheme()
+    else:
+        if "colour_scheme_index" in user_colour_scheme:
+            colour_scheme_index = user_colour_scheme["colour_scheme_index"]
+        else:
+            colour_scheme_index = 0
+        colour_scheme = get_default_colour_scheme(colour_scheme_index)
+        for k, v in user_colour_scheme.items():
+            if k not in colour_scheme:
+                continue
+            if isinstance(v, dict):
+                colour_scheme[k].update(v)
+            else:
+                colour_scheme[k] = v
+
     up_to_date_jobs  = set(up_to_date_jobs)
 
     #
@@ -248,18 +429,21 @@ def output_dependency_tree_in_dot_format(   jobs_to_run,
 
 
 
-    stream.write( "digraph tree\n{\n")
-    stream.write( 'size="8,11!";\n')
+    stream.write( 'digraph "%s"\n{\n' % pipeline_name)
+    stream.write( 'size="8,11";\n')
     stream.write( 'splines=true;\n')
-    stream.write( 'fontsize=30;\n')
+    stream.write( 'fontsize="30.12";\n')
     stream.write( 'ranksep = 0.3;\n')
-    stream.write( 'node[fontsize=20];\n')
-    #stream.write( 'node[regular=1];\n')
+    stream.write( 'node[fontsize="20.12"];\n')
+    stream.write( 'graph[clusterrank="local"];\n')
+
     if not vertical:
         stream.write( 'rankdir="LR";\n')
     stream.write( 'subgraph clustertasks\n'
                   "{\n")
-    stream.write( 'label = "Pipeline:";\n')
+    stream.write( 'rank="min";\n')
+    stream.write( 'fontcolor = %s;\n' % colour_scheme["Pipeline"]["fontcolor"])
+    stream.write( 'label = "%s";\n'   % pipeline_name)
     #if vertical:
     #    stream.write( 'edge[minlen=2];\n')
     delayed_task_strings = list()
@@ -300,7 +484,7 @@ def output_dependency_tree_in_dot_format(   jobs_to_run,
         #   circularity violating DAG: highlight in red
         #
         if n in dag_violating_nodes:
-            get_dot_format ("Vicious cycle"                    , attributes, used_task_types)
+            get_dot_format_for_task_type ("Vicious cycle", attributes, colour_scheme, used_task_types)
             vicious_cycle_task_strings.append('t%d' % n._node_index + attributes_to_str(attributes, _get_name(n)))
         #
         #   these jobs will be run
@@ -311,22 +495,22 @@ def output_dependency_tree_in_dot_format(   jobs_to_run,
             #   up to date but forced to run: outlined in blue
             #
             if n in forced_to_run_jobs:
-                get_dot_format ("Force pipeline run from this task", attributes, used_task_types)
+                get_dot_format_for_task_type ("Explicitly specified task", attributes, colour_scheme, used_task_types)
 
             #
             #   final target: outlined in orange
             #
             elif n in target_jobs:
-                get_dot_format("Final target"                  , attributes, used_task_types)
+                get_dot_format_for_task_type("Final target", attributes, colour_scheme, used_task_types)
 
             #
             #   up to date dependency but forced to run: outlined in green
             #
             elif n in up_to_date_jobs:
-                get_dot_format ("Up-to-date task forced to rerun"  , attributes, used_task_types)
+                get_dot_format_for_task_type ("Up-to-date task forced to rerun"  , attributes, colour_scheme, used_task_types)
 
             else:
-                get_dot_format ("Task to run"                      , attributes, used_task_types)
+                get_dot_format_for_task_type ("Task to run", attributes, colour_scheme, used_task_types)
             stream.write('t%d' % n._node_index + attributes_to_str(attributes, _get_name(n)))
 
         else:
@@ -336,19 +520,19 @@ def output_dependency_tree_in_dot_format(   jobs_to_run,
 
             if not skip_uptodate_tasks:
                 if n in target_jobs:
-                    get_dot_format ("Up-to-date Final target"          , attributes, used_task_types)
+                    get_dot_format_for_task_type ("Up-to-date Final target"          , attributes, colour_scheme, used_task_types)
 
                 elif n in up_to_date_jobs:
-                    get_dot_format ("Up-to-date task"                  , attributes, used_task_types)
+                    get_dot_format_for_task_type ("Up-to-date task"                  , attributes, colour_scheme, used_task_types)
 
                 #
                 #   these jobs will be ignored: gray with gray dependencies
                 #
                 else:
-                    get_dot_format ("Up-to-date dependence"            , attributes, used_task_types)
+                    get_dot_format_for_task_type ("Down stream"            , attributes, colour_scheme, used_task_types)
                     delayed_task_strings.append('t%d' % n._node_index + attributes_to_str(attributes, _get_name(n)))
                     for o in n.outward():
-                        delayed_task_strings.append('t%d -> t%d[color=gray, arrowtype=normal];\n' % (o._node_index, n._node_index))
+                        delayed_task_strings.append('t%d -> t%d[color=%s, arrowtype=normal];\n' % (o._node_index, n._node_index, colour_scheme["Up-to-date"]["linecolor"]))
                     continue
 
             stream.write('t%d' % n._node_index + attributes_to_str(attributes, _get_name(n)))
@@ -364,17 +548,17 @@ def output_dependency_tree_in_dot_format(   jobs_to_run,
             #
             if (n, o) in dag_violating_dependencies:
                 constraint_str = ", constraint=false" if o._node_index >  n._node_index else ""
-                vicious_cycle_task_strings.append('t%d -> t%d[color=red %s];\n' % (o._node_index, n._node_index, constraint_str))
+                vicious_cycle_task_strings.append('t%d -> t%d[color=%s %s];\n' % (o._node_index, n._node_index, colour_scheme["Vicious cycle"]["linecolor"], constraint_str))
                 continue
             elif not o in jobs_to_run or not n in jobs_to_run:
                 if not skip_uptodate_tasks:
-                    edge_str = 't%d -> t%d[color=gray, arrowtype=normal];\n' % (o._node_index, n._node_index)
+                    edge_str = 't%d -> t%d[color=%s, arrowtype=normal];\n' % (o._node_index, n._node_index, colour_scheme["Up-to-date"]["linecolor"])
                     if unconstrained:
                         delayed_task_strings.append(edge_str)
                     else:
                         stream.write(edge_str)
             else:
-                stream.write('t%d -> t%d[color=blue];\n' % (o._node_index, n._node_index))
+                stream.write('t%d -> t%d[color=%s];\n' % (o._node_index, n._node_index, colour_scheme["Task to run"]["linecolor"]))
             unconstrained = True
 
     for l in delayed_task_strings:
@@ -389,7 +573,7 @@ def output_dependency_tree_in_dot_format(   jobs_to_run,
 
 
     if not no_key_legend:
-        output_dependency_tree_key_in_dot_format (stream, used_task_types, minimal_key_legend)
+        write_legend_key (stream, used_task_types, minimal_key_legend, colour_scheme)
     stream.write("}\n")
 
 

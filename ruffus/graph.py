@@ -5,17 +5,17 @@
 #
 #
 #   Copyright (c) 10/9/2009 Leo Goodstadt
-#   
+#
 #   Permission is hereby granted, free of charge, to any person obtaining a copy
 #   of this software and associated documentation files (the "Software"), to deal
 #   in the Software without restriction, including without limitation the rights
 #   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 #   copies of the Software, and to permit persons to whom the Software is
 #   furnished to do so, subject to the following conditions:
-#   
+#
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
-#   
+#
 #   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,7 +26,7 @@
 #################################################################################
 """
     graph.py
-    
+
         provides support for diacyclic graph
         with topological_sort
 
@@ -39,12 +39,12 @@ try:
 except ImportError:
     import simplejson
     json = simplejson
-    
+
 from collections import defaultdict
-from itertools import chain 
+from itertools import chain
 from print_dependencies import *
 import tempfile
-
+import subprocess
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   class node
@@ -66,16 +66,16 @@ class node (object):
         contains lists of nodes and
         dictionary to look up node name from node
     """
-    
+
     _all_nodes         = list()
     _name_to_node      = dict()
     _global_node_index = 0
 
-    one_to_one              = 0 
-    many_to_many            = 1 
-    one_to_many             = 2 
-    many_to_one             = 3 
-    
+    one_to_one              = 0
+    many_to_many            = 1
+    one_to_many             = 2
+    many_to_one             = 3
+
     @staticmethod
     def get_leaves ():
         for n in node._all_nodes:
@@ -87,12 +87,12 @@ class node (object):
         for n in node._all_nodes:
             if len(n._outward) == 0:
                 yield n
-    
-        
+
+
     @staticmethod
     def count_nodes ():
         return len(_all_nodes)
-    
+
     @staticmethod
     def dump_tree_as_str ():
         """
@@ -100,17 +100,17 @@ class node (object):
         """
         return ("%d nodes " % node.count_nodes()) + "\n" + \
             "\n".join(map(lambda x: x.fullstr(), node._all_nodes))
-        
+
 
     @staticmethod
     def lookup_node_from_name (name):
         return node._name_to_node[name]
-    
+
     @staticmethod
     def is_node (name):
         return name in node._name_to_node
 
-    
+
     #_____________________________________________________________________________________
 
     #   init
@@ -125,7 +125,7 @@ class node (object):
         """
         #
         #   make sure node name is unique
-        # 
+        #
         if name in node._name_to_node:
             raise error_duplicate_node_name("[%s] has already been added" % name)
 
@@ -139,7 +139,7 @@ class node (object):
         node._global_node_index += 1
 
         #
-        #   for looking up node for name 
+        #   for looking up node for name
         #
         node._all_nodes.append(self)
         node._name_to_node[name] = self
@@ -156,7 +156,7 @@ class node (object):
         # do not add duplicates
         if no_duplicates and child in self._outward:
             return child
-            
+
         self._outward.append(child)
         child._inward.append(self)
         return child
@@ -172,7 +172,7 @@ class node (object):
             (for reversed graphs)
         """
         return self._outward
-        
+
     def inward (self):
         """
         just in case we need to return inward when we mean outward!
@@ -180,7 +180,7 @@ class node (object):
         """
         return self._inward
 
-        
+
     #_____________________________________________________________________________________
 
     #   fullstr
@@ -200,7 +200,7 @@ class node (object):
             else:
                 self_desc.append(indent + str(k) + "=" + str(v))
         return "\n".join(self_desc)
-        
+
     #_____________________________________________________________________________________
 
     #   __str__
@@ -220,13 +220,13 @@ class node (object):
             else:
                 self_desc.append(indent + str(k) + "=" + str(v))
         return "\n".join(self_desc)
-    
-        
-            
+
+
+
     #_____________________________________________________________________________________
 
     #   signal
-    # 
+    #
     #_____________________________________________________________________________________
     def signal (self, extra_data_for_signal = None):
         """
@@ -242,22 +242,22 @@ class node (object):
 #_____________________________________________________________________________________
 
 #   node_to_json
-# 
-# 
+#
+#
 #_____________________________________________________________________________________
 class node_to_json(json.JSONEncoder):
     """
     output node using json
     """
     def default(self, obj):
-        print str(obj)                       
-        if isinstance(obj, node):              
+        print str(obj)
+        if isinstance(obj, node):
             return obj._name, {
                     "index": obj._node_index,
                     "signal": obj._signal,
                     "inward": [n._name for n in obj._inward],
                     "outward": [n._name for n in obj._outward],
-                    }           
+                    }
         return json.JSONEncoder.default(self, obj)
 
 
@@ -279,19 +279,19 @@ class topological_sort_visitor (object):
     topological sort
         used with DFS to find all nodes in topologically sorted order
         All finds all DAG breaking cycles
-    
+
     """
 
     IGNORE_NODE_SIGNAL = 0
     NOTE_NODE_SIGNAL   = 1
     END_ON_SIGNAL      = 2
-    
+
     #_____________________________________________________________________________________
 
     #   init
 
     #_____________________________________________________________________________________
-    def __init__ (self, forced_dfs_nodes, 
+    def __init__ (self, forced_dfs_nodes,
                     node_termination = END_ON_SIGNAL,
                     extra_data_for_signal = None):
         """
@@ -309,9 +309,9 @@ class topological_sort_visitor (object):
         self._examined_edges           = list()
         # keep order for topological sorted results
         self._finished_nodes           = list()
-        
+
         self._extra_data_for_signal    = extra_data_for_signal
-        
+
 
     def combine_with (self, other):
         """
@@ -322,8 +322,8 @@ class topological_sort_visitor (object):
         self._back_nodes              .update(other._back_nodes)
         extra_finished_nodes          = set(other._finished_nodes) - set(self._finished_nodes)
         self._finished_nodes          .extend(extra_finished_nodes)
-        
-        
+
+
 
     #_____________________________________________________________________________________
 
@@ -340,10 +340,10 @@ class topological_sort_visitor (object):
         start_str         = get_nodes_str ("Start", self._start_nodes)
         back_edges_str    = get_edges_str ("back", self._back_edges)
         return (""
-                        + finished_str 
-                        + start_str 
+                        + finished_str
+                        + start_str
                         + back_edges_str
-                        + signalling_str            
+                        + signalling_str
                         + finished_str
                 )
 
@@ -381,20 +381,20 @@ class topological_sort_visitor (object):
         all nodes involved in cycless
         """
         return self._back_nodes
-    
+
     #_____________________________________________________________________________________
-    
+
     #   identify_dag_violating_nodes_and_edges
-    #     
+    #
     #_____________________________________________________________________________________
     def identify_dag_violating_nodes_and_edges (self):
         """
         find all nodes and edges in any cycles
-        
+
         All dag violating cycles are defined by the back edge identified in DFS.
         All paths which go the other way: start at the to_node and end up at the from_node
             are therefore also part of the cycle
-        
+
         """
         if not len(self._back_edges):
             return
@@ -402,47 +402,47 @@ class topological_sort_visitor (object):
 
         # add this to _back_edges at the end
         cycle_edges = set()
-        
-        # 
-        #   each cycle 
-        #       starts from the to_node   of each back_edge and 
+
+        #
+        #   each cycle
+        #       starts from the to_node   of each back_edge and
         #       ends   with the from_node of each back_edge
-        # 
+        #
         for cycle_to_node, cycle_from_node in self._back_edges:
             start_search_from = 0
             while 1:
-                # 
+                #
                 # find start of cycle
                 for i, (f,t,n) in enumerate(self._examined_edges[start_search_from:]):
                     if f == cycle_from_node:
                         break
 
-                # no more cycles for this cycle_from_node/cycle_to_node pair    
+                # no more cycles for this cycle_from_node/cycle_to_node pair
                 else:
                     break
-    
-                
+
+
                 #
                 # cycle end might be within the same pair
                 #   if so, don't search the current (not the next) edge for the cycle end
-                # 
+                #
                 #   Otherwise incrementing search position avoids infinite loop
-                # 
+                #
                 start_search_from = cycle_start = start_search_from + i
                 if self._examined_edges[cycle_start][1] != cycle_to_node:
                     start_search_from += 1
-                    
+
                 for i, (f,t,n) in enumerate(self._examined_edges[start_search_from:]):
 
-                    # 
+                    #
                     #   found end of cycle
-                    # 
+                    #
                     if t == cycle_to_node:
                         cycle_end = start_search_from + i + 1
                         #
                         #   ignore backtracked nodes which will not be part of the cycle
                         #       we are essentially doing tree traversal here
-                        # 
+                        #
                         backtracked_nodes = set()
                         for f,t,n in self._examined_edges[cycle_start:cycle_end]:
                             if t == None:
@@ -462,17 +462,17 @@ class topological_sort_visitor (object):
                             i += 1
                         start_search_from = start_search_from + i
                         break
-                        
-                        
+
+
                     continue
-                
-                # no more cycles for this cycle_from_node/cycle_to_node pair    
+
+                # no more cycles for this cycle_from_node/cycle_to_node pair
                 else:
                     break
-                
-        self._back_edges.update(cycle_edges)            
-                
-        
+
+        self._back_edges.update(cycle_edges)
+
+
     #_____________________________________________________________________________________
 
     #   not_dag
@@ -483,7 +483,7 @@ class topological_sort_visitor (object):
         _finished_nodes
         """
         return self._finished_nodes
-        
+
 
 
 
@@ -496,50 +496,50 @@ class topological_sort_visitor (object):
         """
         Allow node to terminate this path in DFS without including itself
             (see terminate_at)
-            
+
         If node in _forced_dfs_nodes that overrides what the node wants
         """
 
-        #   
+        #
         #   If _node_termination = IGNORE_NODE_TERMINATION
-        #       always go through whole tree 
+        #       always go through whole tree
         #
         if self._node_termination == self.IGNORE_NODE_SIGNAL:
             return False
-            
-        #   
+
+        #
         #   If _node_termination = NOTE_NODE_TERMINATION
-        #       always go through whole tree but remember 
+        #       always go through whole tree but remember
         #       which nodes want to terminate
-        # 
-        #   Note that _forced_dfs_nodes is ignored 
+        #
+        #   Note that _forced_dfs_nodes is ignored
         #
         if self._node_termination == self.NOTE_NODE_SIGNAL:
             if node.signal(self._extra_data_for_signal):
                 self._signalling_nodes.add(node)
             return False
-            
-        #   
+
+        #
         #   _forced_dfs_nodes always overrides node preferences
         #       but let us save what the node says anyway for posterity
-        # 
+        #
         if node in self._forced_dfs_nodes:
             ##   Commented out code lets us save self_terminating_nodes even when
             ##       they have been overridden by _forced_dfs_nodes
             #if node.signal():
             #    self._signalling_nodes.add(node)
             return False
-                        
-        #   
+
+        #
         #   OK. Go by what the node wants then
-        # 
+        #
         if node.signal(self._extra_data_for_signal):
             self._signalling_nodes.add(node)
             return True
         return False
-        
-        
-            
+
+
+
 
     #_____________________________________________________________________________________
 
@@ -552,15 +552,15 @@ class topological_sort_visitor (object):
         self._start_nodes.add(node)
     def finish_vertex(self, node):
         """
-        Save 
+        Save
             1) topologically sorted nodes
             2) as "None" (back) edges which allows _examined_edges to be traversed
                like a tree
-        
+
         """
         self._examined_edges.append((None, None, node))
         self._finished_nodes.append(node)
-        
+
     def examine_edge(self, node_from, node_to):
         """
         Save edges as we encounter then so we can look for loops
@@ -609,21 +609,21 @@ class debug_print_visitor (object):
     def forward_or_cross_edge(self, node_from, node_to):
         print "   - forward/cross edge %s -> %s" % (node_from._name, node_to._name)
 
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   Functions        
+#   Functions
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -635,8 +635,8 @@ class debug_print_visitor (object):
 
 #_________________________________________________________________________________________
 #
-# 
-# 
+#
+#
 WHITE = 0       # virgin
 GRAY  = 1       # processing
 BLACK = 2       # finished
@@ -653,9 +653,9 @@ def depth_first_visit(u, visitor, colours, outedges_func):
 
     #
     # unused callback
-    # 
+    #
     #visitor.discover_vertex(u)
-     
+
     curr_edges = outedges_func(u)
 
 
@@ -684,7 +684,7 @@ def depth_first_visit(u, visitor, colours, outedges_func):
             if v_colour == WHITE:
                 #
                 # unused callback
-                # 
+                #
                 #visitor.tree_edge(u, v)
                 curr_edge_pos += 1
                 stack.append((u, curr_edges, curr_edge_pos))
@@ -692,7 +692,7 @@ def depth_first_visit(u, visitor, colours, outedges_func):
                 colours[u] = GRAY
                 #
                 # unused callback
-                # 
+                #
                 #visitor.discover_vertex(u)
                 curr_edges = outedges_func(u)
                 curr_edge_pos = 0
@@ -706,7 +706,7 @@ def depth_first_visit(u, visitor, colours, outedges_func):
             else:
                 #
                 # unused callback
-                # 
+                #
                 #visitor.forward_or_cross_edge(u, v)
                 curr_edge_pos += 1
         colours[u] = BLACK
@@ -725,10 +725,10 @@ def depth_first_search(starting_nodes, visitor, outedges_func = node.outward):
             if colours[start] == WHITE:
                 visitor.start_vertex(start)
                 depth_first_visit(start, visitor, colours, outedges_func)
-    else:        
-        
+    else:
+
         #
-        #   go through all nodes, maintaining order 
+        #   go through all nodes, maintaining order
         #
         for start in node._all_nodes:
             if colours[start] == WHITE:
@@ -744,8 +744,8 @@ def depth_first_search(starting_nodes, visitor, outedges_func = node.outward):
 
 
 #_________________________________________________________________________________________
-def topologically_sorted_nodes( to_leaves, 
-                                force_start_from = [], 
+def topologically_sorted_nodes( to_leaves,
+                                force_start_from = [],
                                 gather_all_non_signalled = True,
                                 test_all_signals = False,
                                 extra_data_for_signal = None):
@@ -764,60 +764,60 @@ def topologically_sorted_nodes( to_leaves,
     force_start_from
     Optionally specify all the child nodes which *have* to
         be included in the list at least
-        This will override any node signals 
-        
+        This will override any node signals
+
     force_start_from = True to get the whole tree irrespective of signalling
-    
-    
-    Rewritten to minimise calls to node.signal()    
-        
+
+
+    Rewritten to minimise calls to node.signal()
+
     """
-    
+
     #
     #   got through entire tree, looking for signalling nodes,
     #       usually for debugging or for printing
-    # 
+    #
     if test_all_signals:
-        v = topological_sort_visitor([], 
+        v = topological_sort_visitor([],
                                     topological_sort_visitor.NOTE_NODE_SIGNAL,
                                     extra_data_for_signal)
         depth_first_search(to_leaves, v, node.outward)
         signalling_nodes = v._signalling_nodes
     else:
         signalling_nodes = set()
-        
+
     if gather_all_non_signalled:
         #
         #   get whole tree, ignoring signalling
         #
-        v = topological_sort_visitor([], 
+        v = topological_sort_visitor([],
                                      topological_sort_visitor.IGNORE_NODE_SIGNAL,
-                                    None) 
+                                    None)
         depth_first_search(to_leaves, v, node.outward)
 
         #
         #   not dag: no further processing
-        # 
+        #
         if v.not_dag():
             v.identify_dag_violating_nodes_and_edges ()
-            return (v.topological_sorted(), v._signalling_nodes, v.dag_violating_edges(), 
+            return (v.topological_sorted(), v._signalling_nodes, v.dag_violating_edges(),
                     v.dag_violating_nodes())
 
 
         #
         #   return entire tree
-        # 
+        #
         if force_start_from == True:
-            return (v.topological_sorted(), v._signalling_nodes, v.dag_violating_edges(), 
+            return (v.topological_sorted(), v._signalling_nodes, v.dag_violating_edges(),
                     v.dag_violating_nodes())
-        
-            
+
+
 
         #
-        #   If we include these nodes anyway, 
+        #   If we include these nodes anyway,
         #       why bother to check if they do not signal?
         #   Expensive signal checking should  be minimised
-        # 
+        #
         nodes_to_include = set()
         for n in force_start_from:
             if n in nodes_to_include:
@@ -825,57 +825,57 @@ def topologically_sorted_nodes( to_leaves,
             nodes_to_include.add(n)
             nodes_to_include.update(get_parent_nodes([n]))
 
-        
+
         reversed_nodes = v.topological_sorted()
         for n in reversed_nodes:
             if n in nodes_to_include:
                 continue
-                
+
             if not n.signal(extra_data_for_signal):
                 nodes_to_include.add(n)
                 nodes_to_include.update(get_parent_nodes([n]))
             else:
                 signalling_nodes.add(n)
                 #sys.stderr.write(json.dumps(n, cls=node_to_json, sort_keys=1) + "\n")
-        
-        
+
+
         return ([n for n in v.topological_sorted() if n in nodes_to_include],
                 signalling_nodes,
                 [],[])
 
     else:
-        
+
         if force_start_from == True:
             #
             #   get whole tree, ignoring signalling
-            # 
-            v = topological_sort_visitor([], 
+            #
+            v = topological_sort_visitor([],
                                          topological_sort_visitor.IGNORE_NODE_SIGNAL,
-                                         extra_data_for_signal) 
+                                         extra_data_for_signal)
         else:
-            #   
+            #
             #   End at each branch without including signalling node
-            #       but ignore signalling for forced_nodes_and_dependencies  
-            # 
+            #       but ignore signalling for forced_nodes_and_dependencies
+            #
 
-            #   Get all parents of forced nodes if necessary 
+            #   Get all parents of forced nodes if necessary
             forced_nodes_and_dependencies = []
             if len(force_start_from):
                 forced_nodes_and_dependencies = get_parent_nodes(force_start_from)
 
-            v = topological_sort_visitor(   forced_nodes_and_dependencies, 
+            v = topological_sort_visitor(   forced_nodes_and_dependencies,
                                             topological_sort_visitor.END_ON_SIGNAL,
                                             extra_data_for_signal)
 
 
         #
         #   Forward graph iteration
-        # 
+        #
         depth_first_search(to_leaves, v, node.outward)
-        
+
         if v.not_dag():
             v.identify_dag_violating_nodes_and_edges ()
-            
+
         signalling_nodes.update(v._signalling_nodes)
         return (v.topological_sorted(), signalling_nodes, v.dag_violating_edges(), v.dag_violating_nodes())
 
@@ -885,22 +885,63 @@ def debug_print_nodes(to_leaves):
     v = debug_print_visitor()
     depth_first_search(to_leaves, v, node.outward)
 
-    
+
+
+#_________________________________________________________________________________________
+
+#   graph_printout
+
+#_________________________________________________________________________________________
+def graph_colour_demo_printout (stream,
+                                output_format,
+                                size                      = '11,8',
+                                dpi                       = '120'):
+    """
+    Demo of the different colour schemes
+    """
+
+    if output_format == 'dot':
+        write_colour_scheme_demo_in_dot_format(stream)
+        return
+
+    # print to dot file
+    #temp_dot_file = tempfile.NamedTemporaryFile(suffix='.dot', delete=False)
+    fh, temp_dot_file_name = tempfile.mkstemp(suffix='.dot')
+    temp_dot_file = os.fdopen(fh, "w")
+
+    write_colour_scheme_demo_in_dot_format(temp_dot_file)
+    temp_dot_file.close()
+
+    print_dpi = ("-Gdpi='%s'" % dpi) if output_format != "svg" else ""
+    run_dot = os.popen("dot -Gsize='%s' %s -T%s < %s" % (size, print_dpi, output_format, temp_dot_file_name))
+
+    #
+    #   wierd bug fix for firefox and svg
+    #
+    result_str = run_dot.read()
+    err = run_dot.close()
+    if err:
+        raise RuntimeError("dot failed to run with exit code %d" % err)
+    if output_format == "svg":
+        result_str = result_str.replace("0.12", "0.0px")
+    stream.write(result_str)
 #_________________________________________________________________________________________
 
 #   graph_printout_in_dot_format
 
 #_________________________________________________________________________________________
-def graph_printout_in_dot_format (  stream, 
-                                    to_leaves, 
-                                    force_start_from          = [], 
-                                    draw_vertically           = True, 
+def graph_printout_in_dot_format (  stream,
+                                    to_leaves,
+                                    force_start_from          = [],
+                                    draw_vertically           = True,
                                     ignore_upstream_of_target = False,
                                     skip_signalling_nodes     = False,
                                     gather_all_non_signalled  = True,
                                     test_all_signals          = True,
                                     no_key_legend             = False,
                                     minimal_key_legend        = True,
+                                    user_colour_scheme        = None,
+                                    pipeline_name             = "Pipeline:",
                                     extra_data_for_signal     = None):
     """
     print out pipeline dependencies in dot formatting
@@ -909,7 +950,7 @@ def graph_printout_in_dot_format (  stream,
     (topological_sorted,
     signalling_nodes,
     dag_violating_edges,
-    dag_violating_nodes) = topologically_sorted_nodes(to_leaves, force_start_from, 
+    dag_violating_nodes) = topologically_sorted_nodes(to_leaves, force_start_from,
                                                         gather_all_non_signalled,
                                                         test_all_signals,
                                                         extra_data_for_signal)
@@ -919,43 +960,48 @@ def graph_printout_in_dot_format (  stream,
     #           upstream   = parent
     #           dependents/downstream
     #                      = children
-    #           
-    # 
+    #
+    #
     nodes_to_display = get_reachable_nodes(to_leaves, not ignore_upstream_of_target)
 
-
-    #   
+    #
     #   print out dependencies in dot format
-    # 
-    output_dependency_tree_in_dot_format(   topological_sorted,
-                                            signalling_nodes,
-                                            dag_violating_edges, 
-                                            dag_violating_nodes,
-                                            stream, 
-                                            to_leaves, 
-                                            force_start_from, 
-                                            nodes_to_display,
-                                            draw_vertically,
-                                            skip_signalling_nodes,
-                                            no_key_legend,
-                                            minimal_key_legend)
-    
+    #
+    write_flowchart_in_dot_format(topological_sorted,
+                                  signalling_nodes,
+                                  dag_violating_edges,
+                                  dag_violating_nodes,
+                                  stream,
+                                  to_leaves,
+                                  force_start_from,
+                                  nodes_to_display,
+                                  draw_vertically,
+                                  skip_signalling_nodes,
+                                  no_key_legend,
+                                  minimal_key_legend,
+                                  user_colour_scheme,
+                                  pipeline_name)
+
 #_________________________________________________________________________________________
 
 #   graph_printout
 
 #_________________________________________________________________________________________
-def graph_printout (stream, 
+def graph_printout (stream,
                     output_format,
-                    to_leaves, 
-                    force_start_from          = [], 
-                    draw_vertically           = True, 
+                    to_leaves,
+                    force_start_from          = [],
+                    draw_vertically           = True,
                     ignore_upstream_of_target = False,
                     skip_signalling_nodes     = False,
                     gather_all_non_signalled  = True,
                     test_all_signals          = True,
                     no_key_legend             = False,
                     minimal_key_legend        = True,
+                    user_colour_scheme        = None,
+                    pipeline_name             = "Pipeline:",
+                    size                      = (11,8),
+                    dpi                       = 120,
                     extra_data_for_signal     = None):
     """
     print out pipeline dependencies in a variety of formats, using the programme "dot"
@@ -963,43 +1009,80 @@ def graph_printout (stream,
     """
 
     if output_format == 'dot':
-        graph_printout_in_dot_format (  stream, 
-                                        to_leaves, 
-                                        force_start_from, 
-                                        draw_vertically, 
+        graph_printout_in_dot_format (  stream,
+                                        to_leaves,
+                                        force_start_from,
+                                        draw_vertically,
                                         ignore_upstream_of_target,
                                         skip_signalling_nodes,
                                         gather_all_non_signalled,
                                         test_all_signals,
                                         no_key_legend,
                                         minimal_key_legend,
+                                        user_colour_scheme,
+                                        pipeline_name,
                                         extra_data_for_signal)
         return
-        
+
     # print to dot file
     #temp_dot_file = tempfile.NamedTemporaryFile(suffix='.dot', delete=False)
     fh, temp_dot_file_name = tempfile.mkstemp(suffix='.dot')
     temp_dot_file = os.fdopen(fh, "w")
-    
-    graph_printout_in_dot_format (  temp_dot_file, 
-                                    to_leaves, 
-                                    force_start_from, 
-                                    draw_vertically, 
+
+    graph_printout_in_dot_format (  temp_dot_file,
+                                    to_leaves,
+                                    force_start_from,
+                                    draw_vertically,
                                     ignore_upstream_of_target,
                                     skip_signalling_nodes,
                                     gather_all_non_signalled,
                                     test_all_signals,
                                     no_key_legend,
                                     minimal_key_legend,
+                                    user_colour_scheme,
+                                    pipeline_name,
                                     extra_data_for_signal)
     temp_dot_file.close()
-    
-    run_dot = os.popen("dot -Gsize='6,8' -T%s < %s" % (output_format, temp_dot_file_name))
-    
-    stream.write(run_dot.read())
-    err = run_dot.close()
-    if err:
-        raise RuntimeError("dot failed to run with exit code %d" % err)
+
+    if isinstance(size, tuple):
+        print_size = "(%d,%d)" % size
+    elif isinstance(size, basestring):
+        print_size = size
+    else:
+        raise Exception("Flowchart print size [%s] should be specified as a tuple of X,Y in inches" % str(size))
+
+    #
+    #   N.B. Resolution doesn't seem to play nice with SVG and is ignored
+    #
+    print_dpi = ("-Gdpi='%s'" % dpi) if output_format != "svg" else ""
+    cmd = "dot -Gsize='%s' %s -T%s < %s" % (print_size, print_dpi, output_format, temp_dot_file_name)
+
+
+    proc = subprocess.Popen(cmd, shell = True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result_str, error_str = proc.communicate()
+    retcode = proc.returncode
+    if retcode:
+        raise subprocess.CalledProcessError(retcode, cmd + "\n" + "\n".join([result_str, error_str]))
+
+
+
+    #run_dot = os.popen(cmd)
+    #result_str = run_dot.read()
+    #err = run_dot.close()
+    #
+    #if err:
+    #    raise RuntimeError("dot failed to run with exit code %d" % err)
+
+
+    #
+    #   wierd workaround for bug / bad interaction between firefox and svg:
+    #           Font sizes have "px" appended.
+    #
+
+
+    if output_format == "svg":
+        result_str = result_str.replace("0.12", "0.0px")
+    stream.write(result_str)
 
 
 
@@ -1013,11 +1096,11 @@ def get_parent_nodes (nodes):
     Get all parent nodes by DFS in the inward direction,
     Ignores signals
     """
-    parent_visitor = topological_sort_visitor([], 
+    parent_visitor = topological_sort_visitor([],
                                             topological_sort_visitor.IGNORE_NODE_SIGNAL)
     depth_first_search(nodes, parent_visitor, node.inward)
     return parent_visitor.topological_sorted()
-    
+
 
 #_________________________________________________________________________________________
 
@@ -1028,7 +1111,7 @@ def get_reachable_nodes(nodes, parents_as_well = True):
     """
     Get all nodes which are parents and children of nodes
         recursing through the entire tree
-        
+
     1) specify parents_as_well = False
         to only get children and not parents of nodes
         """
@@ -1037,12 +1120,12 @@ def get_reachable_nodes(nodes, parents_as_well = True):
     if parents_as_well:
         nodes = get_parent_nodes (nodes)
 
-    child_visitor = topological_sort_visitor([], 
+    child_visitor = topological_sort_visitor([],
                                                 topological_sort_visitor.IGNORE_NODE_SIGNAL)
     depth_first_search(nodes, child_visitor, node.outward)
     return child_visitor.topological_sorted()
 
-    
+
 #_________________________________________________________________________________________
 
 #   Helper functions to dump edges and nodes
@@ -1063,4 +1146,4 @@ def get_nodes_str (name, nodes):
     nodes_str += "    " + ", ".join(map(lambda x: x._name, nodes)) + "\n"
     return nodes_str
 
-    
+
