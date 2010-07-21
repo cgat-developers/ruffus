@@ -1,8 +1,158 @@
+= v. 2.2=
+    _21/July/2010_
+    ==Touch files without running the pipeline==
+        {{{
+            pipeline_run(touch_files_only = True)
+        }}}
+        Do not run pipelined code but simulate by `touch`-ing the requisite files
+    ==Parameter substitution for `inputs(...)` / `add_inputs(...)`==
+        `glob`s and tasks can be added as the prerequisites / input files using
+        `inputs(...)` and `add_inputs(...)`. `glob` expansions will take place when the task
+        is run.
+    ==Simplifying `@transform` syntax with suffix==
+        Regular expressions within ruffus are very powerful, and can allow files to be moved
+        from one directory to another and renamed at will.<br><br>
+        However, using consistent file extensions and
+        `@transform(..., suffix(...))` makes the code much simpler and easier to read. <br><br>
+        Previously, `suffix(...)` did not cooperately well with `inputs(...)`.
+        For example, finding the corresponding header file (``'.h'``) for the matching input
+        required a complicated `regex(...)` regular expression and `input(...)`. This simple case,
+        e.g. matching ``'something.c'`` with ``'something.h'``, is now much easier in Ruffus.<br><br>
+        For example:
+          {{{
+            source_files = ["something.c", "more_code.c"]
+            @transform(source_files, suffix(".c"), add_inputs(r"\1.h", "common.h"), ".o")
+            def compile(input_files, output_file):
+                ( source_file,
+                  header_file,
+                  common_header) = input_files
+                # call compiler to make object file
+          }}}
+          This is equivalent to calling:
+          {{{
+              compile(["something.c", "something.h", "common.h"], "something.o")
+              compile(["more_code.c", "more_code.h", "common.h"], "more_code.o")
+          }}}
+
+        The `\1` matches everything *but* the suffix and will be applied to both `glob`s and file names.<br>
+        For simplicity and compatibility with previous versions, there is always an implied `r"\1"` before
+        the output parameters. I.e. output parameters strings are *always* substituted.<br>
+        
+    ==Advanced form of `@split`:==
+        The standard `@split` divided one set of inputs into multiple outputs (the number of which
+        can be determined at runtime).<br>
+        This is a `one->many` operation.<br><br>
+        An advanced form of `@split` has been added which can split each of several files further.<br>
+        In other words, this is a `many->"many more"` operation.<br><br>
+        For example, given three starting files:
+        {{{
+            original_files = ["original_0.file",
+                              "original_1.file",
+                              "original_2.file"]
+        }}}
+        We can split each into its own set of sub-sections:
+        {{{
+            @split(original_files,
+               regex(r"starting_(\d+).fa"),                         # match starting files
+                     r"files.split.\1.*.fa"                         # glob pattern
+                     r"\1")                                         # index of original file
+            def split_files(input_file, output_files, original_index):
+                """
+                    Code to split each input_file
+                        "original_0.file" -> "files.split.0.*.fa"
+                        "original_1.file" -> "files.split.1.*.fa"
+                        "original_2.file" -> "files.split.2.*.fa"
+                """
+        }}}
+        This is, conceptually, the reverse of the @collate(...) decorator
+    ==Ruffus will complain about unescaped regular expression special characters:==
+        Ruffus uses ``'\1'`` and ``'\2'`` in regular expression substitutions. Even seasoned python
+        users may not remember that these have to be 'escaped' in strings. The best option is
+        to use 'raw' python strings e.g. `r"\1_substitutes\2correctly\3four\4times"`.<br>
+        Ruffus will throw an exception if it sees an unescaped ``'\1'`` or ``'\2'`` in a file name,
+        which should catch most of these bugs.
+    ==Flowchart changes:==
+        Changed to nicer colours, symbols etc. for a more professional look.
+                Colours, size and resolution are now fully customisable. An svg bug in firefox has
+                been worked around so that font size are displayed correctly
+                {{{
+                    pipeline_printout_graph( #...
+                                            user_colour_scheme = {
+                                                                  "colour_scheme_index":1
+                                                                  "Task to run"  : {"fillcolor":"blue"},
+                                                                   pipeline_name : "My flowchart",
+                                                                   size          : (11,8),
+                                                                   dpi           : 120)})
+                }}}
+    ==Bug Fix:==
+        * From "Issue 27"
+            Previously, Ruffus paused for one second after each job.
+            This accomodates poor (one second) timestamp precision in some older file systems (ext3?),  
+            and makes sure that output from the previous tasks has a different
+            timestamp from that of the following task.<br><br>
+            Unfortunately, Ruffus (was too clever by half and) paused only when the jobs were less
+            than a second in duration. 
+            Output files may be created at the end of a task, and
+            the timestamps checked at the beginning of the following task. We thus *always* need a 
+            gap of > 1 seconds between tasks in older filesystems, whether the jobs are long or short.<br><br>
+            The fix is to introduce a pause before the first job of each task.
+            (See `one_second_per_job` in `task.py:make_job_parameter_generator(...)`)<br><br>
+            As previously, if you are using a modern file system (e.g. ext4 / JFS / NTFS), you can avoid these unnecessary pauses by setting the `one_second_per_job` flag:
+            {{{
+                pipeline_run(one_second_per_job=False)
+            }}}
+        * From "Issue 30"
+            @split with empty input files crashes Ruffus 
+    ==Documentation changes:==
+        * New bioinformatics example
+        * New contributed Gallery of flowcharts
+
+
+
 = v. 2.1.1=
     _12/March/2010_
     ==Bug Fix:==
-	    * The code "with job_limit_semaphore" breaks compatability with python 2.5
+        * From "Issue 26"
+          The code "with job_limit_semaphore" breaks compatability with python 2.5<br>
           Thanks to patch from S. Binet
+        * From "Issue 25"
+          @merge forwarding single arguments to @merge erroneously as lists<br>
+          Thanks to A. heger.
+        * @transform(..., suffix(...), inputs(...))
+          Suffix substitution should not have been taking place within `inputs()`. This
+          makes it pass a file name to `inputs()` without suffix substitution.
+          `Regex()` regular expression substitution continues to take place within `inputs()`<br>
+          However, see changes in v. 2.2
+    ==Documentation changes:==
+        * New step in tutorial emphasising the value of Pipeline_printout(...) in pipeline development
+        * pipeline_printout discussion in the manual.
+        * @jobs_limit directive described in the manual.
+        * Advance uses of @split described in the manual.
+        * touch_files_only parameter described in the manual.
+        * `add_inputs(...)` parameter described in the manual.
+    ==`@transform(.., add_inputs(...))`==
+        * `inputs(...)` allowed the addition of extra input dependencies / parameters for each job.
+          For example, compiling a source file might require pulling in a corresponding 
+          header file.
+          However, replacing all the input parameters always seemed a very blunt instrument
+          just to inject an extra dependency (e.g. a header file).
+        * `add_inputs(...)`, as the name suggests, just adds the additional items as the input parameter
+          {{{
+          from ruffus import *
+          @transform(["a.input", "b.input"], suffix(".input"), add_inputs("just.1.more","just.2.more"), ".output")
+          def task(i, o):
+            ""
+          }}}
+          produces:
+          {{{
+             Job = [[a.input, just.1.more, just.2.more] ->a.output]
+             Job = [[b.input, just.1.more, just.2.more] ->b.output]
+          }}}
+        * like `inputs`, `add_inputs` accepts strings, tasks and globs
+          This minor syntactic change promises to add much clarity to some of our
+          Ruffus code.
+        * `add_inputs()` is available for `@transform`, `@collate` and `@split`
+   
 
 
 = v. 2.1.0=
@@ -130,7 +280,9 @@
     _18/November/2009_
     ==Better Logging:==
         * pipeline_printout output much prettier
-        * pipeline_run at high verbose levels show which tasks are being checked
+        * pipeline_run at high verbose levels 
+
+          Shows which tasks are being checked
           to see if they are up-to-date or not
     ==Documentation:==
         * New tutorial
