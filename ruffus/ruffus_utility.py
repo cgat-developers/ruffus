@@ -58,7 +58,7 @@ if __name__ == '__main__':
     sys.path.insert(0,".")
 from ruffus_exceptions import *
 #import task
-
+import collections
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -84,7 +84,7 @@ def regex_replace(filename, regex, p, regex_or_suffix = REGEX_SUBSTITUTE):
     Non-strings are left alone
     """
     if isinstance(p, basestring):
-        if "\1"in p or "\2" in p:
+        if "\1"in p or "\2" in p :
             raise error_unescaped_regular_expression_forms("['%s'] "  % (p.replace("\1", r"\1").replace("\2", r"\2")) +
                                                            "The special regular expression characters "
                                                            r"\1 and \2 need to be 'escaped' in python. "
@@ -95,13 +95,13 @@ def regex_replace(filename, regex, p, regex_or_suffix = REGEX_SUBSTITUTE):
             return regex.sub(p, filename)
 
         # only subsitute if \1 is specified
-        elif regex_or_suffix == SUFFIX_SUBSTITUTE_IF_SPECIFIED and r"\1" in p:
+        elif regex_or_suffix == SUFFIX_SUBSTITUTE_IF_SPECIFIED and (r"\g<1>" in p or r"\1" in p):
             return regex.sub(p, filename)
 
         # implicit assumes leading \1 if missing
         elif regex_or_suffix == SUFFIX_SUBSTITUTE_ALWAYS:
-            if r"\1" not in p:
-                return regex.sub(r"\1" + p, filename)
+            if r"\1" not in p and r"\g<1>" not in p:
+                return regex.sub(r"\g<1>" + p, filename)
             else:
                 return regex.sub(p, filename)
 
@@ -303,7 +303,8 @@ def get_nested_tasks_or_globs(p, treat_strings_as_tasks = False, runtime_data_na
     #
     #   task function
     #
-    if (type(p) == types.FunctionType):
+    if (isinstance(p, collections.Callable)):
+    #if (type(p) == types.FunctionType):
         tasks.add(p)
     elif isinstance(p, runtime_parameter):
         runtime_data_names.add(p)
@@ -340,7 +341,8 @@ def replace_func_names_with_tasks(p, func_or_name_to_task, treat_strings_as_task
     #
     # Expand globs or tasks as a list only if they are top level
     #
-    if type(p) == types.FunctionType:
+    if isinstance(p, collections.Callable):
+    #if type(p) == types.FunctionType:
         return func_or_name_to_task[p]
 
     #
