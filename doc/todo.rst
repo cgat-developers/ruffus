@@ -150,6 +150,16 @@ Clean up
     
     Of course that allows you to fake the whole process and not even use real files...
     
+*********************************************************
+Extra signalling before and after each task and job
+*********************************************************
+    @pretask(custom_func)
+    @prejob(custom_func)
+    @postjob(custom_func)
+    
+    @pretask would be run in the master process while @prejob / @postjob would be run
+    in the child processes (if any).
+
 
 ************************
 SQL hooks

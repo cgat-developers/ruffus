@@ -71,6 +71,18 @@ See :ref:`Decorators <decorators>` for more decorators
 .. _ppg_test_all_task_for_update: `pipeline_functions.pipeline_printout_graph.test_all_task_for_update`_
 .. |ppg_no_key_legend| replace:: `no_key_legend`
 .. _ppg_no_key_legend: `pipeline_functions.pipeline_printout_graph.no_key_legend`_
+.. |ppg_minimal_key_legend| replace:: `minimal_key_legend`
+.. _ppg_minimal_key_legend: `pipeline_functions.pipeline_printout_graph.minimal_key_legend`_
+.. |ppg_pipeline_name| replace:: `pipeline_name`
+.. _ppg_pipeline_name: `pipeline_functions.pipeline_printout_graph.pipeline_name`_
+.. |ppg_user_colour_scheme| replace:: `user_colour_scheme`
+.. _ppg_user_colour_scheme: `pipeline_functions.pipeline_printout_graph.user_colour_scheme`_
+.. |ppg_size| replace:: `size`
+.. _ppg_size: `pipeline_functions.pipeline_printout_graph.size`_
+.. |ppg_dpi| replace:: `dpi`
+.. _ppg_dpi: `pipeline_functions.pipeline_printout_graph.dpi`_
+.. |ppg_runtime_data| replace:: `runtime_data`
+.. _ppg_runtime_data: `pipeline_functions.pipeline_printout_graph.runtime_data`_
     
     
     
@@ -316,16 +328,20 @@ Pipeline functions
     single: pipeline functions; pipeline_printout_graph
     pair: pipeline_printout_graph; print flowchart representation of pipeline functions
 
+
+
 ************************************************************************************************************************************************************************************************************************************************************************************
 *pipeline_printout_graph*
 ************************************************************************************************************************************************************************************************************************************************************************************
 
-**pipeline_printout_graph** (|ppg_stream|_, |ppg_output_format|_, |ppg_target_tasks|_, |ppg_forcedtorun_tasks|_ = [], |ppg_ignore_upstream_of_target|_ = False, |ppg_skip_uptodate_tasks|_ = False, |ppg_gnu_make|_ = True, |ppg_test_all_task_for_update|_ = True, |ppg_no_key_legend|_  = False)
+**pipeline_printout_graph** (|ppg_stream|_, |ppg_output_format|_, |ppg_target_tasks|_, |ppg_forcedtorun_tasks|_ = [], |ppg_ignore_upstream_of_target|_ = False, |ppg_skip_uptodate_tasks|_ = False, |ppg_gnu_make|_ = True, |ppg_test_all_task_for_update|_ = True, |ppg_no_key_legend|_  = False, |ppg_minimal_key_legend|_ = True, |ppg_user_colour_scheme|_ = None, |ppg_pipeline_name|_ = "Pipeline", |ppg_size|_ = (11,8), |ppg_dpi|_ = 120, |ppg_runtime_data|_ = None)
 
     **Purpose:**
 
         Prints out flowchart of all the pipelined functions which will be invoked given specified ``target_tasks``
         without actually running the pipeline.
+
+        See :ref:`Flowchart colours <flowchart_colours>` 
 
     **Example**:
         ::
@@ -406,4 +422,86 @@ Pipeline functions
         Do not include key legend explaining the colour scheme of the flowchart.
 
 
+.. _pipeline_functions.pipeline_printout_graph.minimal_key_legend:
+
+     * *minimal_key_legend*
+        Do not include unused task types in key legend.
+
+.. _pipeline_functions.pipeline_printout_graph.user_colour_scheme:
+
+     * *user_colour_scheme*
+        Dictionary specifying colour scheme for flowchart
+
+        | Colours can be names e.g. ``"black"`` or quoted hex e.g. ``'"#F6F4F4"'`` (note extra quotes)
+        | Default values will be used unless specified
+
+        .. csv-table::
+           :header: "key", "Subkey", ""
+
+           "
+           - ``'colour_scheme_index'`` ", "| index of default colour scheme, 
+           | 0-7, defaults to 0 unless specified", ""
+           "
+           - ``'Final target'``
+           - ``'Explicitly specified task'``
+           - ``'Task to run'``
+           - ``'Down stream'``
+           - ``'Up-to-date Final target'``
+           - ``'Up-to-date task forced to rerun'``
+           - ``'Up-to-date task'``
+           - ``'Vicious cycle'``                  
+           ","
+           - ``'fillcolor'``
+           - ``'fontcolor'``
+           - ``'color'``    
+           - ``'dashed'``   = ``0/1``
+           ", "Colours / attributes for each task type"
+           "
+           - ``'Vicious cycle'``
+           - ``'Task to run'``
+           - ``'Up-to-date'``", "- ``'linecolor'``", "Colours for arrows between tasks"
+           "- ``'Pipeline'``",  "- ``'fontcolor'``","Flowchart title colour"
+           "- ``'Key'``", "
+           - ``'fontcolor'``
+           - ``'fillcolor'``", "Legend colours"
+
+        Example:
+
+            Use colour scheme index  = 1
+            ::
+
+                pipeline_printout_graph ("flowchart.svg", "svg", [final_task],
+                                         user_colour_scheme = {
+                                                                "colour_scheme_index" :1,
+                                                                "Pipeline"      :{"fontcolor" : '"#FF3232"' },
+                                                                "Key"           :{"fontcolor" : "Red",      
+                                                                                  "fillcolor" : '"#F6F4F4"' },
+                                                                "Task to run"   :{"linecolor" : '"#0044A0"' },
+                                                                "Final target"  :{"fillcolor" : '"#EFA03B"',
+                                                                                  "fontcolor" : "black",    
+                                                                                  "dashed"    : 0           }
+                                                               })
+
+
+
+
+.. _pipeline_functions.pipeline_printout_graph.pipeline_name:
+
+     * *pipeline_name*
+        Specify title for flowchart
+
+.. _pipeline_functions.pipeline_printout_graph.size:
+
+     * *size*
+        Size in inches for flowchart
+
+.. _pipeline_functions.pipeline_printout_graph.dpi:
+
+     * *dpi*
+        Resolution in dots per inch. Ignored for svg output
+
+.. _pipeline_functions.pipeline_printout_graph.runtime_data:
+
+     * *runtime_data*
+        Experimental feature for passing data to tasks at run time
 

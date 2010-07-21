@@ -14,30 +14,12 @@ Q. *Ruffus* won't create dependency graphs
 A. You need to have installed ``dot`` from `Graphviz <http://www.graphviz.org/>`_ to produce 
 pretty flowcharts likes this:
         
-        .. image:: images/tutorial_four_stage_pipeline.jpg
+        .. image:: images/pretty_flowchart.png
         
 
-        (Flow Chart Key):
         
-        .. image:: images/tutorial_key.jpg
 
 
-=========================================================
-Q. Some jobs re-run even when they seem up-to-date
-=========================================================
-
-A. You might have fallen foul of coarse timestamp precision in some
-operating systems.
-
-If you are using ``@files`` or ``@files_re``, *ruffus* uses
-file modification times to see if input files were created before
-output files.
-
-Unfortunately, some file systems in some versions of 
-Windows, Unix, linux or NFS do not record file times with
-sub-second precision.
-
-In the worse case, you might try adding some ``time.sleep(1)`` judiciously.
 
 
 =========================================================
@@ -128,3 +110,155 @@ introduce a random time delay at the beginining of your jobs::
     
         # Wake up and do work
 
+
+=========================================================
+Q. Regular expression substitutions don't work
+=========================================================
+
+A. If you are using the special regular expression forms ``"\1"``, ``"\2"`` etc.
+to refer to matching groups, remember to 'escape' the subsitution pattern string.
+The best option is to use `'raw' python strings <http://docs.python.org/library/re.html>`_.
+For example:
+
+    ::
+
+        r"\1_substitutes\2correctly\3four\4times"
+
+Ruffus will throw an exception if it sees an unescaped ``"\1"`` or ``"\2"`` in a file name.
+        
+        
+======================================================================================
+Q. How to use decorated functions in Ruffus
+======================================================================================
+A. Place your decorator after Ruffus decorators. This ensures that by the time Ruffus sees
+your function, it has already been decorated.
+
+    ::
+
+        @transform(["example.abc"], suffix(".abc"), ".xyz")
+        @custom_decoration
+        def func(input, output):
+            pass
+
+You will also need to use either ``@wraps`` or ``update_wrapper`` from ``functools``
+to write your decorator:
+    
+    ::
+
+        def custom(task_func):
+            """ Decorate a function to print progress        
+            """
+            @wraps(task_func)
+            def wrapper_function(*args, **kwargs):
+                print "Before"
+                task_func(*args, **kwargs)
+                print "After"
+        
+            return wrapper_function
+
+This ensures that the ``__name__`` and ``__module__`` attributes from the task function
+are made available to Ruffus via your decorator.
+
+
+======================================================================================
+Q. Can a task function in a Ruffus pipeline be called normally outside of Ruffus?
+======================================================================================
+A. Yes. Most python decorators wrap themselves around a function. However, Ruffus leaves the
+original function untouched and unwrapped. Instead, Ruffus adds a "pipeline_task" attribute
+to the task function to signal that this is a pipelined function.
+
+This means the original task function can be called just like any other python function.
+
+
+======================================================================================
+Q. How can a Ruffus pipeline produce output which goes off in different directions?
+======================================================================================
+A. Anytime there is a situation which requires a one-to-many operation, you should reach
+for :ref:`@split <decorators.split_ex>`. The advanced form takes a regular expression, making
+it easier to produce multiple derivatives of the input file:
+
+    ::
+
+        from ruffus import *
+        import sys
+        @split(["1.input_file",
+                "2.input_file"],
+                regex(r"(.+).input_file"),      # match file prefix
+               [r"\1.file_type1",
+                r"\1.file_type2",
+                r"\1.file_type3"])
+        def split_task(input, output):
+           pass
+
+
+        @transform(split_task, regex("(.+)"), r"\1.test")
+        def test_split_output(i, o):
+           pass
+
+        pipeline_printout(sys.stdout, [test_split_output], verbose = 3)
+
+    Each of the original 2 files have been split in three so that test_split_output will run
+    6 jobs simultaneously.
+        
+        ::
+
+            ________________________________________
+            Tasks which will be run:
+            
+            Task = split_task
+                   Job = [1.input_file ->[1.file_type1, 1.file_type2, 1.file_type3]]
+                   Job = [2.input_file ->[2.file_type1, 2.file_type2, 2.file_type3]]
+            
+            Task = test_split_output
+                   Job = [1.file_type1 ->1.file_type1.test]
+                   Job = [1.file_type2 ->1.file_type2.test]
+                   Job = [1.file_type3 ->1.file_type3.test]
+                   Job = [2.file_type1 ->2.file_type1.test]
+                   Job = [2.file_type2 ->2.file_type2.test]
+                   Job = [2.file_type3 ->2.file_type3.test]
+            ________________________________________
+
+
+
+======================================================================================
+Q. Can I call extra code before each job?
+======================================================================================
+A. This is easily accomplished by hijacking the process :ref:`@check_if_uptodate <decorators.check_if_uptodate>` 
+for checking if jobs are up to date or not:
+
+    ::
+
+        from ruffus import *
+        import sys
+        
+        def run_this_before_each_job (*args):
+            print "Calling function before each job using these args", args
+            # Remember to delegate to the default Ruffus code for checking if
+            #   jobs need to run.
+            return needs_update_check_modify_time(*args)
+        
+        @check_if_uptodate(run_this_before_each_job)
+        @files([[None, "a.1"], [None, "b.1"]])
+        def task_func(input, output):
+            pass
+        
+        pipeline_printout(sys.stdout, [task_func])
+
+    This results in:
+    ::
+
+        ________________________________________
+        >>> pipeline_run([task_func])
+        Calling function before each job using these args (None, 'a.1')
+        Calling function before each job using these args (None, 'a.1')
+        Calling function before each job using these args (None, 'b.1')
+            Job = [None -> a.1] completed
+            Job = [None -> b.1] completed
+        Completed Task = task_func
+    
+    .. note :
+
+        Because ``run_this_before_each_job(...)`` is called whenever Ruffus checks to see if
+        a job is up to date or not, the function may be called twice for some jobs
+        (e.g. ``(None, 'a.1')`` above).
+        

@@ -29,9 +29,6 @@ Code
         @files(task1_param)
         def first_task(no_input_file, output_file):
             open(output_file, "w")
-            #
-            # pretend we have worked hard
-            time.sleep(1)
 
 
         #---------------------------------------------------------------

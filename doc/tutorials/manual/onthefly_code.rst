@@ -67,7 +67,6 @@ Code
         
         #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
         import os, sys
-        from time import sleep
         from itertools import izip
         import glob
         #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -278,7 +277,6 @@ Code
             summary_file = open(summary_file, "w")
             for f in result_files:
                 summary_file.write(open(f).read())
-            sleep(1)
         
         
         

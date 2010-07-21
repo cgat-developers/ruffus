@@ -3,14 +3,17 @@
 .. _decorators.split_ex:
 .. index:: 
     pair: @split (Advanced Usage); Syntax
+    pair: @split, inputs; Syntax
+    pair: @split, add_inputs; Syntax
+    pair: @split, regex; Syntax
 
 See :ref:`Decorators <decorators>` for more decorators
 See :ref:`@split <decorators.split>` for basic syntax.
 
 
-########################
-@split
-########################
+########################################################################
+@split with ``regex(...)``, ``add_inputs`` and ``inputs``
+########################################################################
 
 .. |tasks_or_file_names| replace:: `tasks_or_file_names`
 .. _tasks_or_file_names: `decorators.split.tasks_or_file_names`_
@@ -18,13 +21,15 @@ See :ref:`@split <decorators.split>` for basic syntax.
 .. _matching_regex: `decorators.split.matching_regex`_
 .. |extra_parameters| replace:: `extra_parameters`
 .. _extra_parameters: `decorators.split.extra_parameters`_
-.. |output_files| replace:: `output_files`
-.. _output_files: `decorators.split.output_files`_
+.. |output_pattern| replace:: `output_pattern`
+.. _output_pattern: `decorators.split.output_pattern`_
+.. |input_pattern_or_glob| replace:: `input_pattern_or_glob`
+.. _input_pattern_or_glob: `decorators.split.input_pattern_or_glob`_
 
 
-**********************************************************************************************************************************************************************************************************
-*@split* ( |tasks_or_file_names|_, :ref:`regex<decorators.regex>`\ *(*\ |matching_regex|_\ *)*\, |output_files|_, [|extra_parameters|_,...]  )
-**********************************************************************************************************************************************************************************************************
+********************************************************************************************************************************************************************************************************************************************************************
+*@split* ( |tasks_or_file_names|_, :ref:`regex<decorators.regex>`\ *(*\ |matching_regex|_\ *)*\, :ref:`inputs<decorators.inputs>` | :ref:`add_inputs<decorators.add_inputs>`\ *(*\ |input_pattern_or_glob|_\ *)*\ , |output_pattern|_, [|extra_parameters|_,...]  )
+********************************************************************************************************************************************************************************************************************************************************************
     **Purpose:**
         Splits a set of input files each into multiple output file names, where the number of
         output files may not be known beforehand.     
@@ -41,6 +46,11 @@ See :ref:`@split <decorators.split>` for basic syntax.
         :ref:`regex<decorators.regex>` indicator from |tasks_or_file_names|_, i.e. from the output
         of specified tasks, or a list of file names, or a |glob|_ matching pattern.
 
+        Additional inputs or dependencies can be added dynamically to the task:
+            :ref:`add_inputs<decorators.add_inputs>` nests the the original input parameters in a list before adding additional dependencies.
+
+            :ref:`inputs<decorators.inputs>` replaces the original input parameters wholescale.
+
         Only out of date tasks (comparing input and output files) will be run.
 
     **Example**::
@@ -51,14 +61,24 @@ See :ref:`@split <decorators.split>` for basic syntax.
                 print "output_file = %s" % output_file
 
     
-        will produce::
+        This results in the following calls::
+
+            split_big_to_small("a.big_file", "a.*.little_files")
+            split_big_to_small("b.big_file", "b.*.little_files")
+        
+    **Example of** :ref:`add_inputs<decorators.add_inputs>` ::
+
+            @split(["a.big_file","b.big_file"], regex(r"(.+)\.big_file"), add_inputs(r"\1.another_big_file"), r'\1.*.little_files')
+            def split_big_to_small(input_file, output_files):
+                print "input_file  = %s" % input_file
+                print "output_file = %s" % output_file
+
     
-            input_file  = a.big_file
-            output_file = a.*.little_files
-        
-            input_file  = b.big_file
-            output_file = b.*.little_files
-        
+        This results in the following calls::
+
+            split_big_to_small(["a.big_file", "a.another_big_file"], "a.*.little_files")
+            split_big_to_small(["b.big_file", "b.another_big_file"], "b.*.little_files")
+
     **Parameters:**
                 
 .. _decorators.split.tasks_or_file_names:
@@ -86,7 +106,24 @@ See :ref:`@split <decorators.split>` for basic syntax.
        Each output file name is created using regular expression substitution with ``output_pattern``
 
                 
-.. _decorators.split.output_files:
+.. _decorators.split.input_pattern_or_glob:
+
+    * *input_pattern*
+       Specifies the resulting input(s) to each job. 
+       Must be wrapped in an :ref:`inputs<decorators.inputs>` or an :ref:`inputs<decorators.add_inputs>` indicator object.
+
+       Can be a:
+
+       #.  Task / list of tasks (as in the example above).
+            File names are taken from the output of the specified task(s)
+       #.  (Nested) list of file name strings.
+            Strings will be subject to (regular expression or suffix) pattern substitution. 
+            File names containing ``*[]?`` will be expanded as a |glob|_.
+            E.g.:``"a.*" => "a.1", "a.2"``
+            
+       
+
+.. _decorators.split.output_pattern:
 
     * *output_files*
        Specifies the resulting output file name(s).

@@ -33,7 +33,7 @@ Ruffus Decorators
       \ 
    
    ", ""
-   "**@files** (:ref:`Manual <manual.files>`)
+   "**@files** (:ref:`see Manual <manual.files>`)
    
    - I/O parameters
    - skips up-to-date jobs
@@ -55,7 +55,7 @@ Ruffus Decorators
    :header: "Decorator", "Examples"
    :widths: 400, 600,1
 
-   "**@split** (:ref:`Manual <manual.split>`)   
+   "**@split** (:ref:`see Manual <manual.split>`)   
    
    - Splits a single input into multiple output
    - Globs in ``output`` can specify an indeterminate number of files.
@@ -65,7 +65,7 @@ Ruffus Decorators
            \ 
 
    ", ""
-   "**@transform** (:ref:`Manual <manual.transform>`)   
+   "**@transform** (:ref:`see Manual <manual.transform>`)   
     
    - Applies the task function to transform input data to output.
     
@@ -76,7 +76,7 @@ Ruffus Decorators
            \ 
    
    ", ""
-   "**@merge** (:ref:`Manual <manual.merge>`)   
+   "**@merge** (:ref:`see Manual <manual.merge>`)   
 
    - Merges multiple input files into a single output.
    
@@ -104,13 +104,16 @@ Ruffus Decorators
    :header: "Decorator", "Examples"
    :widths: 400, 600,1
 
-   "**@collate** (:ref:`Manual <manual.collate>`)   
+   "**@collate** (See Manual :ref:`here <manual.collate>` and :ref:`here <manual.collate>`)   
 
    - Groups multiple input files using regular expression matching
    - Input resulting in the same output after substitution will be collated together.
    
    ", "
-   * :ref:`@collate <decorators.collate>` (``tasks_or_file_names``, :ref:`regex <decorators.transform.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , ``output_pattern``, [``extra_parameters``,...] )
+   * :ref:`@collate <decorators.collate>` (``tasks_or_file_names``, :ref:`regex <decorators.collate.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , ``output_pattern``, [``extra_parameters``,...] )
+           \ 
+   ", "
+   * :ref:`@collate <decorators.collate_ex>` (``tasks_or_file_names``, :ref:`regex <decorators.collate_ex.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , :ref:`inputs <decorators.inputs>` | :ref:`add_inputs <decorators.add_inputs>`\ *(*\ ``input_pattern``\ *)*\ , ``output_pattern``, [``extra_parameters``,...] )
            \ 
 
    ", ""
@@ -120,23 +123,24 @@ Ruffus Decorators
    - Useful for adding additional file dependencies
     
    ", "
-   * :ref:`@transform <decorators.transform_ex>` ( ``tasks_or_file_names``, :ref:`suffix <decorators.transform.suffix_string>`\ *(*\ ``suffix_string``\ *)*\ , :ref:`inputs <decorators.inputs>`\ *(*\ ``input_pattern``\ *)*\ ,  ``output_pattern``, [``extra_parameters``,...] )
+   * :ref:`@transform <decorators.transform_ex>` ( ``tasks_or_file_names``, :ref:`suffix <decorators.transform.suffix_string>`\ *(*\ ``suffix_string``\ *)*\ , [ :ref:`inputs <decorators.inputs>` | :ref:`add_inputs <decorators.add_inputs>`\ *(*\ ``input_pattern``\ *)*\ , ] ``output_pattern``, [``extra_parameters``,...] )
            \ 
-   * :ref:`@transform <decorators.transform_ex>` ( ``tasks_or_file_names``, :ref:`regex <decorators.transform.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , :ref:`inputs <decorators.inputs>`\ *(*\ ``input_pattern``\ *)*\ ,  ``output_pattern``, [``extra_parameters``,...] )
+   ", "
+   * :ref:`@transform <decorators.transform_ex>` ( ``tasks_or_file_names``, :ref:`regex <decorators.transform.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , [ :ref:`inputs <decorators.inputs>` | :ref:`add_inputs <decorators.add_inputs>`\ *(*\ ``input_pattern``\ *)*\ , ] ``output_pattern``, [``extra_parameters``,...] )
            \ 
       
    ", ""
-   "**@split** (:ref:`Manual <manual.split_ex>`)   
+   "**@split** (:ref:`see Manual <manual.split_ex>`)   
 
    - Splits multiple input each further into many more output
    - Globs in ``output`` can specify an indeterminate number of files.
     
    ", "
-   * :ref:`@split <decorators.split_ex>` ( ``tasks_or_file_names``, :ref:`regex <decorators.transform.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , ``output_pattern``, [``extra_parameters``,...] )
+   * :ref:`@split <decorators.split_ex>` ( ``tasks_or_file_names``, :ref:`regex <decorators.split_ex.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , [ :ref:`inputs <decorators.inputs>` | :ref:`add_inputs <decorators.add_inputs>`\ *(*\ ``input_pattern``\ *)*\ , ] ``output_pattern``, [``extra_parameters``,...] )
            \ 
       
    ", ""
-   "**@jobs_limit** (:ref:`Manual <manual.jobs_limit>`)   
+   "**@jobs_limit** (:ref:`see Manual <manual.jobs_limit>`)   
 
    - Limits the amount of multiprocessing for the specified task
    - Ensures that fewer than N jobs for this task are run in parallel
@@ -168,7 +172,7 @@ Ruffus Decorators
            \ 
    
    ", ""
-   "**@check_if_uptodate** (:ref:`Manual <manual.check_if_uptodate>`)
+   "**@check_if_uptodate** (:ref:`see Manual <manual.check_if_uptodate>`)
 
    - Custom function to determine if jobs need to be run
    

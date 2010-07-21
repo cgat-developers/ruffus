@@ -29,13 +29,6 @@ Code
         open("mammals.dog.wild.animals"       , "w")
         open("reptiles.crocodile.wild.animals", "w")
         
-        #
-        #   Pretend some time has passed for this do-nothing
-        #       code so that file modification times will be correct
-        #
-        import time
-        time.sleep(1)
-
         # 
         #   create destinations for each species
         #
