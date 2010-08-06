@@ -27,9 +27,24 @@
         .. image:: ../../images/manual_exceptions.png
 
 
-.. index:: signalling, interrupts, break
+.. _manual.exceptions.multiple_errors:
 
-.. _interrupting:
+.. index:: signalling, interrupts, break, errors, exceptions, multiple errors
+    
+=====================
+Multiple Errors
+=====================
+    For any task where exceptions are thrown, *Ruffus* will continue executing all the jobs
+    currently in progress (up to the maximum number of concurrent jobs 
+    (``multiprocess``) set in :ref:`pipeline_run <pipeline_functions.pipeline_run>`). 
+    Each of these may raise separate exceptions.
+    This seems a fair tradeoff between being able to gather detailed error information for
+    running jobs, and not wasting too much time for a task that is going to fail anyway.
+
+
+.. index:: signalling, interrupts, break, errors, exceptions
+
+.. _manual.exceptions.interrupting:
 
 =================================
 Interrupting the pipeline
@@ -64,14 +79,4 @@ Interrupting the pipeline
                 task.JobSignalledBreak: Job = ["A", 1] returned False
                 for Job = ["A", 1]
         
-    
-=====================
-Multiple Errors
-=====================
-    For any task where exceptions are thrown, *Ruffus* will continue executing all the jobs
-    currently in progress (up to the maximum number of concurrent jobs 
-    (``multiprocess``) set in :ref:`pipeline_run <pipeline_functions.pipeline_run>`). 
-    Each of these may raise separate exceptions.
-    This seems a fair tradeoff between being able to gather detailed error information for
-    running jobs, and not wasting too much time for a task that is going to fail anyway.
     

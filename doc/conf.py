@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 #
 # ruffus documentation build configuration file, created by
 # sphinx-quickstart on Tue Apr 21 16:55:56 2009.
@@ -42,7 +42,7 @@ master_doc = 'contents'
 
 # General information about the project.
 project = u'ruffus'
-copyright = u'2009, Leo Goodstadt'
+copyright = u'2010, Leo Goodstadt 顧維斌'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -149,7 +149,7 @@ html_static_path = ['_static']
 html_additional_pages = { 'index' : 'index.html'}
 
 # If false, no module index is generated.
-#html_use_modindex = True
+html_use_modindex = False
 
 # If false, no index is generated.
 #html_use_index = True
@@ -203,8 +203,8 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
-# 
-# 
+#
+#
 # -- Options for PDF output ---------------------------------------
 
 # Grouping the document tree into PDF files. List of tuples

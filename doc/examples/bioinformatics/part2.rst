@@ -143,4 +143,9 @@ Step 5. Errors
 
         .. image:: ../../images/examples_bioinformatics_error.png
     
+============================================================
+Step 6. Will it run?
+============================================================
+    The full code can be :ref:`viewed here <examples_bioinformatics_part2_code>` and 
+    `downloaded from run_parallel_blast.py <../../_static/examples/bioinformatics/run_parallel_blast.py>`_.
 

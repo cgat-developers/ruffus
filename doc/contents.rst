@@ -29,6 +29,8 @@ Overview:
    Future plans <todo>
    faq.rst
    glossary.rst
+   gallery.rst
+   examples/code_template/code_template.rst
 
 =====================
 Examples
@@ -40,6 +42,13 @@ Examples
    examples/bioinformatics/part2.rst
    examples/bioinformatics/part1_code.rst
    examples/bioinformatics/part2_code.rst
+   examples/colour_schemes/flowchart_colours.rst
+   examples/colour_schemes/flowchart_colours_code.rst
+   examples/code_template/code_template_code.rst
+   tutorials/manual/manual_code.rst
+   tutorials/simple_tutorial/simple_tutorial_code.rst
+
+
 
 
 

@@ -16,15 +16,15 @@ See :ref:`@split <decorators.split>` for basic syntax.
 ########################################################################
 
 .. |tasks_or_file_names| replace:: `tasks_or_file_names`
-.. _tasks_or_file_names: `decorators.split.tasks_or_file_names`_
+.. _tasks_or_file_names: `decorators.split_ex.tasks_or_file_names`_
 .. |matching_regex| replace:: `matching_regex`
-.. _matching_regex: `decorators.split.matching_regex`_
+.. _matching_regex: `decorators.split_ex.matching_regex`_
 .. |extra_parameters| replace:: `extra_parameters`
-.. _extra_parameters: `decorators.split.extra_parameters`_
+.. _extra_parameters: `decorators.split_ex.extra_parameters`_
 .. |output_pattern| replace:: `output_pattern`
-.. _output_pattern: `decorators.split.output_pattern`_
+.. _output_pattern: `decorators.split_ex.output_pattern`_
 .. |input_pattern_or_glob| replace:: `input_pattern_or_glob`
-.. _input_pattern_or_glob: `decorators.split.input_pattern_or_glob`_
+.. _input_pattern_or_glob: `decorators.split_ex.input_pattern_or_glob`_
 
 
 ********************************************************************************************************************************************************************************************************************************************************************
@@ -81,7 +81,7 @@ See :ref:`@split <decorators.split>` for basic syntax.
 
     **Parameters:**
                 
-.. _decorators.split.tasks_or_file_names:
+.. _decorators.split_ex.tasks_or_file_names:
 
                 
     * *tasks_or_file_names*
@@ -96,7 +96,7 @@ See :ref:`@split <decorators.split>` for basic syntax.
 
             File names are taken from the output of the specified task(s)
 
-.. _decorators.split.matching_regex:
+.. _decorators.split_ex.matching_regex:
 
     * *matching_regex*
        is a python regular expression string, which must be wrapped in
@@ -106,7 +106,7 @@ See :ref:`@split <decorators.split>` for basic syntax.
        Each output file name is created using regular expression substitution with ``output_pattern``
 
                 
-.. _decorators.split.input_pattern_or_glob:
+.. _decorators.split_ex.input_pattern_or_glob:
 
     * *input_pattern*
        Specifies the resulting input(s) to each job. 
@@ -123,7 +123,7 @@ See :ref:`@split <decorators.split>` for basic syntax.
             
        
 
-.. _decorators.split.output_pattern:
+.. _decorators.split_ex.output_pattern:
 
     * *output_files*
        Specifies the resulting output file name(s).
@@ -155,7 +155,7 @@ See :ref:`@split <decorators.split>` for basic syntax.
         
                 
                 
-.. _decorators.split.extra_parameters:
+.. _decorators.split_ex.extra_parameters:
 
     * [*extra_parameters, ...*]
        Any extra parameters are passed to the task function after regular expression substitution

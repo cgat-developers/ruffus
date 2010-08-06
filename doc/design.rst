@@ -1,9 +1,11 @@
-.. include:: global.inc
 .. Design:
+
+.. include:: global.inc
 
 ###############################
 Design & Architecture
 ###############################
+
     The *ruffus* module has the following design goals:
     
         * Simplicity.
@@ -16,7 +18,7 @@ Design & Architecture
 Task-based rather than file-based work flow
 **************************************************
 
-.. design.file_based_pipelines:
+.. _design.file_based_pipelines:
 .. index:: 
     pair: Design; File-based pipeline management
 
@@ -149,10 +151,10 @@ Obscure and inadequate language
 =====================================
 Declarative file dependencies
 =====================================
-    Pipeline specifications are usually written in a "declarative" rather than "imperative"
-    manner. You write a specification that describes the dependencies, and the tool 
-    figures out how to perform the computations in the correct order. However, because
-    GNU make and its kin depend entirely on file dependencies, the links between pipeline
+    The order of pipeline operations is specified in a "declarative" rather than "imperative"
+    manner. Once the dependencies are specified, and the tool 
+    figures out how to perform the computations in the correct order. However, because stages in
+    GNU make and its kin are specified only in terms of file name matches, the links between pipeline
     stages can be difficult to trace, and nigh impossible to debug when there are problems.
     
 =====================================
@@ -230,6 +232,8 @@ Acknowledgements
  *  The `Boost Graph library <http://www.boost.org>`_ for text book implementations of directed
     graph traversals.
  *  `Graphviz <http://www.graphviz.org/>`_. Just works. Wonderful.
+ *  Andreas Heger, Christoffer Nellåker and Grant Belgard for driving Ruffus towards
+    ever simpler syntax.
 
    
 .. index:: 
@@ -249,7 +253,8 @@ Be careful not to step on one when running down country park lanes at full speed
 in Hong Kong: this snake is a `rare breed <http://www.hkras.org/eng/info/hkspp.htm>`_!
 
 *Ruffus* is a shy creature, and pretends to be a cobra by putting up its red tail and ducking its
-head in its coils when startled. It is not venomous and is Mostly Harmless.
+head in its coils when startled. It is not venomous and is 
+`Mostly Harmless <http://en.wikipedia.org/wiki/Mostly_Harmless>`_.
 *Ruffus* does most of its work at night and sleeps during the day:
 typical of many (but alas not all) python programmers!
 

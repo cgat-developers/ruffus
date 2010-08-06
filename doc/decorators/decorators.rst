@@ -83,6 +83,7 @@ Ruffus Decorators
    ", "
    * :ref:`@merge <decorators.merge>` (``tasks_or_file_names``, ``output``, [``extra_parameters``,...] )
            \
+
           ", ""
    "**@posttask**
 
@@ -112,7 +113,6 @@ Ruffus Decorators
    ", "
    * :ref:`@collate <decorators.collate>` (``tasks_or_file_names``, :ref:`regex <decorators.collate.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , ``output_pattern``, [``extra_parameters``,...] )
            \ 
-   ", "
    * :ref:`@collate <decorators.collate_ex>` (``tasks_or_file_names``, :ref:`regex <decorators.collate_ex.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , :ref:`inputs <decorators.inputs>` | :ref:`add_inputs <decorators.add_inputs>`\ *(*\ ``input_pattern``\ *)*\ , ``output_pattern``, [``extra_parameters``,...] )
            \ 
 
@@ -125,10 +125,9 @@ Ruffus Decorators
    ", "
    * :ref:`@transform <decorators.transform_ex>` ( ``tasks_or_file_names``, :ref:`suffix <decorators.transform.suffix_string>`\ *(*\ ``suffix_string``\ *)*\ , [ :ref:`inputs <decorators.inputs>` | :ref:`add_inputs <decorators.add_inputs>`\ *(*\ ``input_pattern``\ *)*\ , ] ``output_pattern``, [``extra_parameters``,...] )
            \ 
-   ", "
    * :ref:`@transform <decorators.transform_ex>` ( ``tasks_or_file_names``, :ref:`regex <decorators.transform.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , [ :ref:`inputs <decorators.inputs>` | :ref:`add_inputs <decorators.add_inputs>`\ *(*\ ``input_pattern``\ *)*\ , ] ``output_pattern``, [``extra_parameters``,...] )
            \ 
-      
+
    ", ""
    "**@split** (:ref:`see Manual <manual.split_ex>`)   
 

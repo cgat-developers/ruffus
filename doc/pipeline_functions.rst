@@ -350,6 +350,15 @@ Pipeline functions
                                         forcedtorun_tasks = [task2], 
                                         no_key_legend = True)
 
+    **Customising appearance:**
+
+        The :ref:`user_colour_scheme <pipeline_functions.pipeline_printout_graph.user_colour_scheme>` parameter can be used to change
+        flowchart colours. This allows the default :ref:`Colour Schemes <flowchart_colours>` 
+        to be set. An example of customising flowchart appearance is available :ref:`(see code) <flowchart_colours.code>` .
+    
+
+
+
     **Parameters:**
 
 .. _pipeline_functions.pipeline_printout_graph.stream:
@@ -431,6 +440,8 @@ Pipeline functions
 
      * *user_colour_scheme*
         Dictionary specifying colour scheme for flowchart
+
+        See complete :ref:`list of Colour Schemes <flowchart_colours>`.
 
         | Colours can be names e.g. ``"black"`` or quoted hex e.g. ``'"#F6F4F4"'`` (note extra quotes)
         | Default values will be used unless specified

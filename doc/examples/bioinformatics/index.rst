@@ -145,6 +145,7 @@ Step 2. Run BLAST jobs in parallel
     code:
 
         ::
+
             os.system("blastall -p blastp -d human.protein.faa -i 1.segment > 1.blastResult")
         
     To pipeline this, we need to simply wrap in a function, decorated with the **Ruffus** 

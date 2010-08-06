@@ -12,15 +12,15 @@ See :ref:`Decorators <decorators>` for more decorators
 ####################################################
 
 .. |tasks_or_file_names| replace:: `tasks_or_file_names`
-.. _tasks_or_file_names: `decorators.collate.tasks_or_file_names`_
+.. _tasks_or_file_names: `decorators.collate_ex.tasks_or_file_names`_
 .. |extra_parameters| replace:: `extra_parameters`
-.. _extra_parameters: `decorators.collate.extra_parameters`_
+.. _extra_parameters: `decorators.collate_ex.extra_parameters`_
 .. |output_pattern| replace:: `output_pattern`
-.. _output_pattern: `decorators.collate.output_pattern`_
+.. _output_pattern: `decorators.collate_ex.output_pattern`_
 .. |input_pattern_or_glob| replace:: `input_pattern_or_glob`
-.. _input_pattern_or_glob: `decorators.collate.input_pattern_or_glob`_
+.. _input_pattern_or_glob: `decorators.collate_ex.input_pattern_or_glob`_
 .. |matching_regex| replace:: `matching_regex`
-.. _matching_regex: `decorators.collate.matching_regex`_
+.. _matching_regex: `decorators.collate_ex.matching_regex`_
 
 
 **********************************************************************************************************************************************************************************************************************************************************************************************************************
@@ -79,7 +79,7 @@ See :ref:`Decorators <decorators>` for more decorators
     **Parameters:**
                 
                 
-.. _decorators.collate.tasks_or_file_names:
+.. _decorators.collate_ex.tasks_or_file_names:
 
     * *tasks_or_file_names*
        can be a:
@@ -91,7 +91,7 @@ See :ref:`Decorators <decorators>` for more decorators
              E.g.:``"a.*" => "a.1", "a.2"``
            
                 
-.. _decorators.collate.matching_regex:
+.. _decorators.collate_ex.matching_regex:
 
     * *matching_regex*
        is a python regular expression string, which must be wrapped in
@@ -99,7 +99,7 @@ See :ref:`Decorators <decorators>` for more decorators
        See python `regular expression (re) <http://docs.python.org/library/re.html>`_ 
        documentation for details of regular expression syntax
                 
-.. _decorators.collate.input_pattern_or_glob:
+.. _decorators.collate_ex.input_pattern_or_glob:
 
     * *input_pattern*
        Specifies the resulting input(s) to each job. 
@@ -116,12 +116,12 @@ See :ref:`Decorators <decorators>` for more decorators
             
        
 
-.. _decorators.collate.output_pattern:
+.. _decorators.collate_ex.output_pattern:
 
     * *output_pattern*
         Specifies the resulting output file name(s).
                 
-.. _decorators.collate.extra_parameters:
+.. _decorators.collate_ex.extra_parameters:
 
     * *extra_parameters*
         Any extra parameters are passed verbatim to the task function

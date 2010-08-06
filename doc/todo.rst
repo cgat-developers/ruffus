@@ -1,14 +1,33 @@
 .. include:: global.inc
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Future plans for *Ruffus*
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Future plans for *Ruffus*:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. _todo.update_documentation:
 
 ###################################
-What is completed on this list?
+Update documentation
 ###################################
+    There have been major changes in Ruffus and not all of the documentation has caught up yet.
+    This will be the top priority.
 
-.. _todo-dependencies:
-.. _todo-combining:
+    Outstand topics are:
+
+    * Add Manual Chapter for using **@split** with **regex** and **add_inputs** 
+        see :ref:`@split syntax <decorators.split_ex>`
+    * Update collate to include **add_inputs** 
+    * Add Manual Chapter on "best practices" in constructing pipelines
+    * Revise chapter on :ref:`Design and Architecture <design.file_based_pipelines>`
+
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Completed already:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. _todo.dependencies:
+.. _todo.combining:
+
+    Theses were previous "Future plan" items
 
     * Linking the output from one task as the input to the next automatically*
         See :ref:`split <decorators.split>`, :ref:`transform <decorators.transform>` or :ref:`merge <decorators.merge>`
@@ -17,9 +36,9 @@ What is completed on this list?
 
     
 
-#######################
-What is left to do?
-#######################
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Left to do:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     I would appreciated feedback and help on all these issues and where
     next to take *ruffus*. 
@@ -43,15 +62,28 @@ What is left to do?
 
 
     
+.. _todo.multiple_exception:
+###################################
+Exceptions
+###################################
+
+.. _manual.exceptions.multiple_errors:
+
+    The current behaviour is to continue executing all the jobs currently in progress
+    when an exception is thrown (See the :ref:`manual <manual.exceptions.multiple_errors>`).
+
+    A.H. has suggested that
+
+        * Exceptions should be displayed early
+        * Ctrl-C should not leave dangling jobs
+        * As an option, Ruffus should try to keep running as far as possible (i.e. ignoring downstream tasks)
 
 
+.. _todo.cleanup:
 
-
-.. _todo-cleanup:
-
-************************
+###################################
 Clean up
-************************
+###################################
 
     The plan is to store the files and directories created via
     a standard interface.
@@ -105,11 +137,11 @@ Clean up
         
     
 
-.. _file-dependency-checking:
+.. _file.dependency_checking:
 
-*********************************************************************
+######################################################################
 (Plug-in) File Dependency Checking via MD5 or Databases
-*********************************************************************
+######################################################################
     So that MD5 / a database can be used instead of coarse-grained file modification times.
     
     As always, the design is a compromise between flexibility and easy of use.
@@ -150,9 +182,87 @@ Clean up
     
     Of course that allows you to fake the whole process and not even use real files...
     
-*********************************************************
+    
+.. _todo.intermediate:
+
+######################################################################
+Remove intermediate files
+######################################################################
+
+    Often large intermediate files are produced in the middle of a pipeline which could be
+    removed. However, their absence would cause the pipeline to appear out of date. What is
+    the best way to solve this?
+
+    In gmake, all intermediate files which are not marked ``.PRECIOUS`` are deleted.
+
+    We do not want to manually mark intermediate files for several reasons:
+        * The syntax would be horrible and clunky
+        * The gmake distinction between ``implicit`` and ``explicit`` rules is not one we
+          would like to impose on Ruffus
+        * Gmake uses statically determined (DAG) dependency trees so it is quite natural and
+          easy to prune intermediate paths
+
+    Our preferred solution should impose little to no semantic load on Ruffus, i.e. it should
+    not make it more complex / difficult to use. There are several alternatives we are 
+    considering:
+
+        #) Have an **update** mode in which pipeline_run would ignore missing files and only run tasks with existing, out-of-date files.
+        #) Optionally ignore all out-of-date dependencies beyond a specified point in the pipeline
+        #) Add a decorator to flag sections of the pipeline where intermediate files can be removed
+
+
+    Option (1) is rather unnerving because it makes inadvertent errors difficult to detect.
+
+    Option (2) involves relying on the user of a script to remember the corect chain of dependencies in
+    often complicated pipelines. It would be advised to keep a flowchart to hand. Again,
+    the chances of error are much greater.
+
+    Option (3) springs from the observation by Andreas Heger that parts of a pipeline with 
+    disposable intermediate files can usually be encapsulated as an autonomous section.
+    Within this subpipeline, all is well provided that the outputs of the last task are complete
+    and up-to-date with reference to the inputs of the first task. Intermediate files
+    could be removed with impunity.
+
+    The suggestion is that these autonomous subpipelines could be marked out using the Ruffus
+    decorator syntax::
+    
+        #
+        #   First task in autonomous subpipeline 
+        #
+        @files("who.isit", "its.me")
+        def first_task(*args):
+            pass
+
+        #   
+        #   Several intermediate tasks
+        #
+        @transform(subpipeline_task1, suffix(".me"), ".her")
+        def task2_etc(*args):
+           pass
+
+        #   
+        #   Final task
+        #
+        @sub_pipeline(subpipeline_task1)
+        @transform(subpipeline_task1, suffix(".her"), ".you")
+        def final_task(*args):
+           pass
+
+    **@sub_pipeline** marks out all tasks between ``first_task`` and ``final_task`` and
+    intermediate files such as ``"its.me"``, ``"its.her`` can be deleted. The pipeline will
+    only run if ``"its.you"`` is missing or out-of-date compared with ``"who.isit"``.
+
+    Over the next few Ruffus releases we will see if this is a good design, and whether
+    better keyword can be found than **@sub_pipeline** (candidates include **@shortcut**
+    and **@intermediate**)
+
+
+
+.. _todo.pre_post_job:
+    
+######################################################################
 Extra signalling before and after each task and job
-*********************************************************
+######################################################################
     @pretask(custom_func)
     @prejob(custom_func)
     @postjob(custom_func)
@@ -161,9 +271,9 @@ Extra signalling before and after each task and job
     in the child processes (if any).
 
 
-************************
+######################################################################
 SQL hooks
-************************
+######################################################################
     See above.
     
     I have no experience with systems which link to SQL. What would people want from such a
@@ -172,11 +282,11 @@ SQL hooks
     Ian Holmes?
     
     
-.. _todo-return-values:
+.. _todo.return_values:
     
-************************
+######################################################################
 Return values
-************************
+######################################################################
     Is it a good idea to allow jobs to pass back calculated values?
     
     This requires trivial modifications to run_pooled_job_without_exceptions
@@ -185,26 +295,26 @@ Return values
     
     What should be the syntax for getting the results back?
 
-.. _todo-multiprocessing:
+.. _todo.hadoop:
 
-************************************************************
+######################################################################
 Run jobs on remote (clustered) processes via SGE/Hadoop
-************************************************************
+######################################################################
     Can we run jobs on remote processes using SGE / Hadoop?
     
     Can we abstract all job management using drmaa?
     
     Python examples at http://gridengine.sunsource.net/howto/drmaa_python.html
     
-=========
+***************
 SGE
-=========
-
+***************
     Look at Qmake execution model:
 
 
+===================================================
 1)  SGE nodes are taken over completely
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+===================================================
 
     See last example in `multiprocessing <http://docs.python.org/library/multiprocessing.html#examples>`_
     for creating a distributed queue.
@@ -224,8 +334,9 @@ SGE
     
     
     
+===================================================
 2)  Start a qrsh per job
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+===================================================
 
     Advantages:
     
@@ -239,10 +350,9 @@ SGE
       the code might be difficult to write (may not fit into the multiprocessing
       way of doing things / race-conditions etc.)
     
-=========
+***************
 Hadoop
-=========
-
+***************
 Can anyone help me with this / have any experience?
 
                                            
