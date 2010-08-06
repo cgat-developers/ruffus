@@ -7,6 +7,7 @@ Code for flowchart_colours
 ########################################################################################
     * :ref:`Flowchart colours <flowchart_colours>` 
     * :ref:`pipeline_printout_graph <pipeline_functions.pipeline_printout_graph>` 
+    * :download:`Download code <../../static_data/example_scripts/play_with_colours.py>`
 
     This example shows how flowchart colours can be customised.
               

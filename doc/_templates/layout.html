@@ -18,10 +18,10 @@
             <li><a href="{{ pathto('decorators/merge') }}">@merge</a>                                   </li>
             <li><a href="{{ pathto('decorators/posttask') }}">@posttask touch_file</a>                  </li>
             <li><a href="{{ pathto('decorators/jobs_limit') }}">@jobs_limit</a>                         </li>
-            <li><a href="{{ pathto('decorators/split_ex') }}">@split (regex/add_inputs/inputs)</a>      </li>
-            <li><a href="{{ pathto('decorators/transform_ex') }}">@transform (add_inputs/inputs) </a>   </li>
+            <li><a href="{{ pathto('decorators/split_ex') }}">@split (regex / add_inputs)</a>             </li>
+            <li><a href="{{ pathto('decorators/transform_ex') }}">@transform (add_inputs) </a>          </li>
             <li><a href="{{ pathto('decorators/collate') }}">@collate</a>                               </li>
-            <li><a href="{{ pathto('decorators/collate_ex') }}">@collate (add_inputs/inputs) </a>       </li>
+            <li><a href="{{ pathto('decorators/collate_ex') }}">@collate (add_inputs)        </a>       </li>
             <li><a href="{{ pathto('decorators/jobs_limit') }}">@jobs_limit</a>                         </li>
             <li><a href="{{ pathto('decorators/files_ex') }}">@files (on the fly)</a>                   </li>
             <li><a href="{{ pathto('decorators/parallel') }}">@parallel</a>                             </li>
@@ -40,15 +40,15 @@
 
 {% block rootrellink %}
         Ruffus v. {{ release }}
-    <li><a href="{{ pathto('index') }}">Home</a> | </li>
-        <li><a href="{{ pathto('installation') }}">Download</a>  | </li>
-        <li><a href="{{ pathto('tutorials/simple_tutorial/simple_tutorial') }}">Tutorial</a>  | </li>
-        <li><a href="{{ pathto('tutorials/manual/manual_introduction') }}">Manual</a>  | </li>
-        <li><a href="{{ pathto('cheatsheet') }}">Cheat sheet</a> | </li>
-        <li><a href="{{ pathto('contents') }}">Contents</a> | </li>
-        <li><a href="{{ pathto('gallery') }}">Hall of Fame</a> | </li>
-        <li><a href="{{ pathto('python_template') }}">Python Template</a> | </li>
-        <li><a href="{{ pathto('search') }}">Search</a> &raquo;</li>     
+            <li><a href="{{ pathto('index') }}">Home</a> | </li>
+            <li><a href="{{ pathto('contents') }}">Contents</a> | </li>
+            <li><a href="{{ pathto('installation') }}">Install</a>  | </li>
+            <li><a href="{{ pathto('tutorials/simple_tutorial/simple_tutorial') }}">Tutorial</a>  / </li>
+            <li><a href="{{ pathto('tutorials/manual/manual_introduction') }}">Manual</a>  / </li>
+            <li><a href="{{ pathto('examples/bioinformatics/index') }}">Bioinformatics</a>  | </li>
+            <li><a href="{{ pathto('cheatsheet') }}">Cheat sheet</a> | </li>
+            <li><a href="{{ pathto('examples/code_template/code_template') }}">Python Template</a> | </li>
+            <li><a href="{{ pathto('gallery') }}">Gallery</a>  &raquo;</li>
 {% endblock %}
 
 

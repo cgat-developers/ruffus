@@ -4,32 +4,30 @@
 .. _manual.transform_ex:
 
 ######################################################################################################################################################
-|manual.transform_ex.chapter_num|: `Advanced usage of` **@transform**: `controlling both input and output files`
+|manual.transform_ex.chapter_num|: **add_inputs()** `and` **inputs()**: `Controlling both input and output files with` **@transform**
 ######################################################################################################################################################
 
     .. hlist::
 
-        * :ref:`Manual overview <manual>` 
+        * :ref:`Manual overview <manual>`
         * :ref:`@transform <decorators.transform>` syntax in detail
 
-    
-    .. index:: 
+
+    .. index::
         pair: @transform (Advanced Usage); Manual
 
 
     The standard :ref:`@transform <manual.transform>` allows you to send a list of data files
     to the same pipelined function and for the resulting *outputs* parameter to be automatically
     inferred from file names in the *inputs*.
-    
+
     There are two situations where you might desire additional flexibility:
-    
         #. You need to add additional prequisites or filenames to the *inputs* of every single one
            of your jobs
-           
         #. (Less often,) the actual *inputs* file names are some variant of the *outputs* of another
-           task. 
-           
-    Either way, it is occasionally very useful to be able to generate the actual *inputs* as 
+           task.
+
+    Either way, it is occasionally very useful to be able to generate the actual *inputs* as
     well as *outputs* parameters by regular expression substitution. The following examples will show
     you both how and why you would want to do this.
 
@@ -37,145 +35,313 @@
 Adding additional *input* prerequisites per job
 ====================================================================
 
-    Suppose we had two pipelined tasks which create, respectively, one file called ``important.file``,
-    and three little ``.chunks`` files (``0.chunks``, ``1.chunks``, ``2.chunks``):
+
+************************************************************************
+1.) Example: compiling c++ code
+************************************************************************
+
+    Suppose we wished to compile some c++ (``"*.cpp"``) files:
+        .. comment << Pythoncode
+
+        ::
+
+            source_files = "hasty.cpp", "tasty.cpp", "messy.cpp"
+            for source_file in source_files:
+                open(source_file, "w")
+
+    .. comment
+        Pythoncode
+
+
+    The ruffus code would look like this:
+        .. comment << Pythoncode
 
         ::
 
             from ruffus import *
 
-            @files(None, 'important.file')
-            def make_important_file(no_input_filename, output_file_name):
+            @transform(source_files, suffix(".cpp"), ".o")
+            def compile(input_filename, output_file_name):
                 open(output_file_name, "w")
-                
-            @split(None, '*.chunks')
-            def split_up_problem(input_filename, output_file_names):
-                for i in range(3):
-                    open("%d.chunks" % i, "w")
-                    
 
-    The problem is that our ``analysis()`` function requires both ``important.file`` and one of the ``.chunks`` files
-    at a time. There is no way that we can use vanilla **@transform** to do this. Do we have
-    to fall back on :ref:`generating parameters on the fly <manual.on_the_fly>`?
-    
+    .. comment
+        Pythoncode
 
-    Instead, let us just add the extra ``important.file`` to the *inputs* of each job like so:
-    
-        ::  
-          
-            @follows(make_important_file)
-            @transform(split_up_problem,                # starting set of *inputs*
-                        regex(r"(.*).chunks"),          # regular expression
-                        inputs([r"\g<0>",               # xx.chunks
-                                "important.file"]),     # important.file
-                         r"\1.results"                  # xx.results
-                          )
-            def analyse(input_filenames, output_file_name):
-                "Do analysis here"
-    
-    This results in the following equivalent calls to the pipelined function:
-    
+
+    This results in the following jobs:
         ::
-        
-            analyse(["0.chunks", "important.file"], "0.results")
-            analyse(["1.chunks", "important.file"], "1.results")
-            analyse(["2.chunks", "important.file"], "2.results")
-            
-            
-    This is exactly what ``analyse()`` needs, giving the following output:
-    
-        ::
-        
-            >>> pipeline_run([analyse])
-                Job = [big.file -> *.chunks] completed
-            Completed Task = split_up_problem
-                Job = [[0.chunks, important.file] -> 0.results] completed
-                Job = [[1.chunks, important.file] -> 1.results] completed
-                Job = [[2.chunks, important.file] -> 2.results] completed
-            Completed Task = analyse
 
-    
+            >>> pipeline_run([compile], verbose = 2, multiprocess = 3)
+
+                Job = [None -> hasty.cpp] completed
+                Job = [None -> tasty.cpp] completed
+                Job = [None -> messy.cpp] completed
+            Completed Task = prepare_cpp_source
+
+                Job = [hasty.cpp -> hasty.o] completed
+                Job = [messy.cpp -> messy.o] completed
+                Job = [tasty.cpp -> tasty.o] completed
+            Completed Task = compile
+
+************************************************************************
+2.) Example: Adding a header file with **add_inputs(..)**
+************************************************************************
+
+
+    All this is plain vanilla **@transform** syntax. But suppose that we need to add a
+    common header file ``"universal.h"`` to our compilation.
+    The **add_inputs** provides for this with the minimum of fuss:
+
+        .. comment << Pythoncode
+
+        ::
+
+            # create header file
+            open("universal.h", "w")
+
+            # compile C++ files with extra header
+            @transform(prepare_cpp_source, suffix(".cpp"), add_inputs("universal.h"), ".o")
+            def compile(input_filename, output_file_name):
+                open(output_file_name, "w")
+
+    .. comment
+        Pythoncode
+
+    Now the input file is a python list, with ``"universal.h"`` added to each ``"*.cpp"``
+
+        ::
+
+            >>> pipeline_run([compile], verbose = 2, multiprocess = 3)
+
+                Job = [ [hasty.cpp, universal.h] -> hasty.o] completed
+                Job = [ [messy.cpp, universal.h] -> messy.o] completed
+                Job = [ [tasty.cpp, universal.h] -> tasty.o] completed
+            Completed Task = compile
+
+
+================================================================================
+Additional *input* prerequisites can be globs, tasks or pattern matches
+================================================================================
+
+    A common requirement is to include the corresponding header file in compilations.
+    It is easy to use **add_inputs** to look up additional files via pattern matches.
+
+************************************************************************
+3.) Example: Adding matching header file
+************************************************************************
+
+    To make this example more fun, we shall also:
+        #) Give each source code file its own ordinal
+        #) Use ``add_inputs`` to add files produced by another task function
+
+    .. comment << Pythoncode
+
+    ::
+
+        # each source file has its own index
+        source_names = [("hasty.cpp", 1),
+                        ("tasty.cpp", 2),
+                        ("messy.cpp", 3), ]
+        header_names = [sn.replace(".cpp", ".h") for (sn, i) in source_names]
+        header_names.append("universal.h")
+
+        #
+        #   create header and source files
+        #
+        for source, source_index in source_names:
+            open(source, "w")
+
+        for header in header_names:
+            open(header, "w")
+
+
+
+        from ruffus import *
+
+        #
+        #   lookup embedded strings in each source files
+        #
+        @transform(source_names, suffix(".cpp"), ".embedded")
+        def get_embedded_strings(input_filename, output_file_name):
+            open(output_file_name, "w")
+
+
+
+        # compile C++ files with extra header
+        @transform(source_names, suffix(".cpp"),
+                   add_inputs(  "universal.h",
+                                r"\1.h",
+                                get_embedded_strings     ), ".o")
+        def compile(input_params, output_file_name):
+            open(output_file_name, "w")
+
+
+        pipeline_run([compile], verbose = 2, multiprocess = 3)
+
+    .. comment
+        Pythoncode
+
+    This script gives the following output
+
+        ::
+
+                >>> pipeline_run([compile], verbose = 2, multiprocess = 3)
+
+                    Job = [[hasty.cpp,  1] -> hasty.embedded] completed
+                    Job = [[messy.cpp,  3] -> messy.embedded] completed
+                    Job = [[tasty.cpp,  2] -> tasty.embedded] completed
+                Completed Task = get_embedded_strings
+
+                    Job = [[[hasty.cpp,  1],                                            # inputs
+                            universal.h,                                                # common header
+                            hasty.h,                                                    # corresponding header
+                            hasty.embedded, messy.embedded, tasty.embedded]             # output of get_embedded_strings()
+                           -> hasty.o] completed
+                    Job = [[[messy.cpp, 3],                                             # inputs
+                            universal.h,                                                # common header
+                            messy.h,                                                    # corresponding header
+                            hasty.embedded, messy.embedded, tasty.embedded]             # output of get_embedded_strings()
+                           -> messy.o] completed
+                    Job = [[[tasty.cpp, 2],                                             # inputs
+                            universal.h,                                                # common header
+                            tasty.h,                                                    # corresponding header
+                            hasty.embedded, messy.embedded, tasty.embedded]             # output of get_embedded_strings()
+                           -> tasty.o] completed
+                Completed Task = compile
+
+    We can see that the ``compile(...)`` task now has four sets of *inputs*:
+        1) The original inputs (e.g. ``[hasty.cpp,  1]``)
+
+    And three additional added by **add_inputs(...)**
+        2) A header file (``universal.h``) common to all jobs
+        3) The matching header (e.g. ``hasty.h``)
+        4) The output from another task ``get_embedded_strings()`` (e.g. ``hasty.embedded, messy.embedded, tasty.embedded``)
+
     .. note::
-    
-        The backreference ``\g<0>`` usefully substitutes the entire substring matched by 
+        For input parameters with nested structures (lists or sets), the pattern matching is
+        on the first filename string Ruffus comes across (DFS).
+
+        So for ``["hasty.c", 0]``, the pattern matches ``"hasty.c"``.
+
+        If in doubt, use :ref:`pipeline_printout <manual.tracing_pipeline_parameters>` to
+        check what parameters Ruffus is using.
+
+
+************************************************************************
+4.) Example: Using **regex(..)** instead of **suffix(..)**
+************************************************************************
+    Suffix pattern matching is much simpler and hence is usually preferable to the more
+    powerful regular expressions. We can rewrite the above example to use **regex** as well
+    to give exactly the same output.
+
+    .. comment << Pythoncode
+
+    ::
+
+        # compile C++ files with extra header
+        @transform(source_names, regex(r"(.+)\.cpp"),
+                   add_inputs(  "universal.h",
+                                r"\1.h",
+                                get_embedded_strings     ), r"\1.o")
+        def compile(input_params, output_file_name):
+            open(output_file_name, "w")
+
+    .. comment
+        Pythoncode
+
+    .. note::
+        The backreference ``\g<0>`` usefully substitutes the entire substring matched by
         the regular expression.
-        
-    .. note::
-        One side effect of regular expression substitution on the *inputs* parameter is 
-        that if the *inputs* parameter contains other (nested) data types, all but the 
-        first string encountered will be ignored. 
-
-        If the *inputs* parameter for one job is :
-            ::
-
-                [3, ["0.chunks", "1.funfair", 7.4]]
-                
-        **Ruffus** will treat this as if the *inputs* parameter was just:
-            ::
-            
-                "0.chunks" 
-                
-        which was the first string encountered.
-
-
 
 
 
 ====================================================================
-Generating additional **variable** *input* prerequisites per job
+Replacing all input parameters with **inputs(...)**
 ====================================================================
 
-    Continuing our previous example, suppose that our pipeline contained another function
-    which generated ``.red_indian`` files:
-    
-        ::
-        
-            @split(None, '*.red_indian')
-            def make_red_indians(no_input_filename, output_file_names):
-                for i in range(10):
-                    open("%d.red_indian" % i, "w")
-                    
+    More rarely, it is necessary to replace all the input parameters wholescale.
 
-    How could we organise the pipeline so that ``analyse()`` gets corresponding pairs
-    of ``xx.chunks`` and ``xx.red_indian`` files?
+************************************************************************
+4.) Example: Running matching python scripts
+************************************************************************
+    In the following example, we are not compiling C++ source files but invoking
+    corresponding python scripts which have the same name.
 
-    It turns out that this is just a minor variant on the above code, with a slightly
-    different regular expression:
-    
-        ::    
-            
-            @follows(make_red_indians)
-            @transform(split_up_problem,                # starting set of *inputs*
-                        regex(r"(.*).chunks"),          # regular expression
-                        inputs([r"\g<0>",               # xx.chunks
-                                r"\1.red_indian"]),     # important.file
-                         r"\1.results"                  # xx.results
-                          )
-            def analyse(input_filenames, output_file_name):
-                "Do analysis here"
-    
-    This results in the following equivalent calls to the pipelined function:
-    
+    Given three c++ files and their corresponding python scripts:
+
+        .. comment << Pythoncode
+
         ::
-        
-            analyse(["0.chunks", "0.red_indian"], "0.results")
-            analyse(["1.chunks", "1.red_indian"], "1.results")
-            analyse(["2.chunks", "2.red_indian"], "2.results")
-            
-    and the following results:
-    
+
+            # each source file has its own index
+            source_names = [("hasty.cpp", 1),
+                            ("tasty.cpp", 2),
+                            ("messy.cpp", 3), ]
+
+            #
+            #   create c++ source files and corresponding python files
+            #
+            for source, source_index in source_names:
+                open(source, "w")
+                open(source.replace(".cpp", ".py"), "w")
+
+        .. comment
+            Pythoncode
+
+    The Ruffus code will call each python script corresponding to their c++ counterpart:
+
+        .. comment << Pythoncode
+
         ::
-        
-            >>> pipeline_run([analyse])
-                Job = [None -> *.red_indian] completed
-            Completed Task = make_red_indians
-                Job = [big.file -> *.chunks] completed
-            Completed Task = split_up_problem
-                Job = [[0.chunks, 0.red_indian] -> 0.results] completed
-                Job = [[1.chunks, 1.red_indian] -> 1.results] completed
-                Job = [[2.chunks, 2.red_indian] -> 2.results] completed
-            Completed Task = analyse
-            
+
+            from ruffus import *
+
+
+            # run corresponding python files
+            @transform(source_names, suffix(".cpp"), inputs(  r"\1.py"), ".results")
+            def run_python_file(input_params, output_file_name):
+                open(output_file_name, "w")
+
+
+            pipeline_run([run_python_file], verbose = 2, multiprocess = 3)
+
+        .. comment
+            Pythoncode
+
+    Resulting in this output:
+        ::
+
+            >>> pipeline_run([run_python_file], verbose = 2, multiprocess = 3)
+                Job = [hasty.py -> hasty.results] completed
+                Job = [messy.py -> messy.results] completed
+                Job = [tasty.py -> tasty.results] completed
+            Completed Task = run_python_file
+
+
+************************************************************************
+5.) Example: Using **regex** instead of **suffix**
+************************************************************************
+
+    Again, the same code can be written (less clearly) using the more powerful
+    **regex** and python regular expressions:
+
+        .. comment << Pythoncode
+
+        ::
+
+            from ruffus import *
+
+
+            # run corresponding python files
+            @transform(source_names, regex(r"(.+)\.cpp"), inputs(  r"\1.py"), r\"1.results")
+            def run_python_file(input_params, output_file_name):
+                open(output_file_name, "w")
+
+
+            pipeline_run([run_python_file], verbose = 2, multiprocess = 3)
+
+        .. comment
+            Pythoncode
+
 
     This is about as sophisticated as **@transform** ever gets!
-    

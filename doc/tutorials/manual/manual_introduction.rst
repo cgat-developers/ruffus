@@ -17,6 +17,37 @@ If you are looking for a quick introduction to **Ruffus**, you may want to look 
 :ref:`Simple Tutorial <Simple_Tutorial>` first, some of which content is shared with,
 or elaborated on, by this manual.
 
+
+***************************************
+**Ruffus** Manual: Table of Contents:
+***************************************
+
+.. toctree::
+    :maxdepth: 1
+
+    follows.rst                            
+    tasks_as_recipes.rst                   
+    files.rst                              
+    tasks_and_globs_in_inputs.rst
+    tracing_pipeline_parameters.rst
+    parallel_processing.rst                
+    split.rst                              
+    transform.rst                          
+    merge.rst                              
+    posttask.rst
+    jobs_limit.rst
+    dependencies.rst
+    onthefly.rst
+    collate.rst
+    advanced_transform.rst
+    parallel.rst
+    check_if_uptodate.rst
+    exceptions.rst
+    logging.rst
+    files_re.rst
+
+
+
 ***************************************
 Introduction
 ***************************************
@@ -118,6 +149,7 @@ Importing ruffus
         @merge
         @collate
         @posttask
+        @jobs_limit
         @parallel
         @check_if_uptodate
         @files_re"

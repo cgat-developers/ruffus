@@ -78,9 +78,9 @@ Indicator Objects
 .. index:: 
     pair: add_inputs; Indicator Object (Adding additional input parameters)
 
-***************************************
+***********************************************
 *add_inputs(*\ `input_file_pattern`\ *)*
-***************************************
+***********************************************
     The enclosed parameter(s) are pattern strings or a nested structure which is added to the
     input for each job. 
     
@@ -96,6 +96,7 @@ Indicator Objects
 
         A common task in compiling C code is to include the corresponding header file for the source.
         To compile ``*.c`` to ``*.o``, adding ``*.h`` and the common header ``universal.h``:
+
             ::
 
                 @transform(["1.c", "2.c"], suffix(".c"), add_inputs([r"\1.h", "universal.h"]),  ".o")
@@ -250,18 +251,26 @@ Indicator Objects
 
 .. _decorators.combine:
 .. index:: 
-    single: @files_re; combine (Syntax)
-    single: combine; @follows (Syntax)
+    single: @files_re; combine (Deprecated Syntax)
+    single: combine; @follows (Deprecated Syntax)
     single: Indicator Object (Disambiguating parameters); combine
 
 ******************************************************************************************
 *combine(*\ `arguments`\ *)*
 ******************************************************************************************
+    .. note::
+        
+        This is deprecated syntax.    
+    
+        Please do not use!
+    
+        `@merge <decorators.merge>` and :ref:`@collate <decorators.collate>` are more powerful
+        and have straightforward syntax.
+
     Indicates that the *inputs* of :ref:`@files_re <decorators.files_re>` will be collated
     or summarised into *outputs* by category. See the :ref:`Manual <manual.files_re.combine>`  or
     :ref:` @collate <manual.collate>` for examples.
     
-    This is deprecated syntax.    
     
     **Used by:**
         * :ref:`@files_re <manual.files_re.combine>`

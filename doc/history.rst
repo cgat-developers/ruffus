@@ -211,20 +211,7 @@ version 2.1.1
 ********************************************************************
 version 2.2
 ********************************************************************
-    * Touch files without running the pipeline*
-        ::
-
-            pipeline_run(touch_files_only = True)
-
-        Do not run pipelined code but simulate by `touch`-ing the requisite files
-
-    * Parameter substitution for ``inputs(...)`` / ``add_inputs(...)``
-
-        ``glob``s and tasks can be added as the prerequisites / input files using
-        ``inputs(...)`` and ``add_inputs(...)``. ``glob`` expansions will take place when the task
-        is run.
-
-    * Simplifying ``@transform`` syntax
+    * Simplifying **@transform** syntax with **suffix(...)**
 
         Regular expressions within ruffus are very powerful, and can allow files to be moved
         from one directory to another and renamed at will.
@@ -258,11 +245,17 @@ version 2.2
 
         The ``\1`` matches everything *but* the suffix and will be applied to both ``glob``s and file names.
 
-	For simplicity and compatibility with previous versions, there is always an implied r"\1" before
-	the output parameters. I.e. output parameters strings are *always* substituted.
+    For simplicity and compatibility with previous versions, there is always an implied r"\1" before
+    the output parameters. I.e. output parameters strings are *always* substituted.
 
         
-    * Advanced form of ``@split``:
+    * Tasks and glob in **inputs(...)** / **add_inputs(...)**
+
+        ``glob``s and tasks can be added as the prerequisites / input files using
+        ``inputs(...)`` and ``add_inputs(...)``. ``glob`` expansions will take place when the task
+        is run.
+
+    * Advanced form of **@split** with **regex**:
 
         The standard ``@split`` divided one set of inputs into multiple outputs (the number of which
         can be determined at runtime).
@@ -301,27 +294,28 @@ version 2.2
     * Ruffus will complain about unescaped regular expression special characters:
 
         Ruffus uses "\1" and "\2" in regular expression substitutions. Even seasoned python
-    	users may not remember that these have to be 'escaped' in strings. The best option is
-    	to use 'raw' python strings e.g. 
+        users may not remember that these have to be 'escaped' in strings. The best option is
+        to use 'raw' python strings e.g. 
             ::
 
                 r"\1_substitutes\2correctly\3four\4times"
 
-    	Ruffus will throw an exception if it sees an unescaped "\1" or "\2" in a file name,
-    	which should catch most of these bugs.
+        Ruffus will throw an exception if it sees an unescaped "\1" or "\2" in a file name,
+        which should catch most of these bugs.
 
-    * Flowchart changes:
+    * Prettier output from *pipeline_printout_graph*
 
         Changed to nicer colours, symbols etc. for a more professional look.
-		Colours, size and resolution are now fully customisable::
+        @split and @merge tasks now look different from @transform.
+        Colours, size and resolution are now fully customisable::
 
-			pipeline_printout_graph( #...
-									 user_colour_scheme = {
-															"colour_scheme_index":1,
-															"Task to run"  : {"fillcolor":"blue"},
-															 pipeline_name : "My flowchart",
-															 size          : (11,8),
-															 dpi           : 120)})
+            pipeline_printout_graph( #...
+                                     user_colour_scheme = {
+                                                            "colour_scheme_index":1,
+                                                            "Task to run"  : {"fillcolor":"blue"},
+                                                             pipeline_name : "My flowchart",
+                                                             size          : (11,8),
+                                                             dpi           : 120)})
 
         An SVG bug in firefox has been worked around so that font size are displayed correctly.
 
