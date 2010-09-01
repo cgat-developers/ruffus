@@ -1006,12 +1006,54 @@ class _task (node):
                                "Task which is supposed to produce a single output "
                                "somehow has more than one job.")
 
-                # the output of split should be treated as multiple jobs
+                #
+                #   The output of @split should be treated as multiple jobs
+                #
+                #       The output of @split is always a list of lists:
+                #         1) There is a list of @split jobs
+                #            A) For advanced (regex) @split
+                #               this is a many -> many more operation
+                #               So len(list) == many (i.e. the number of jobs
+                #            B) For normal @split
+                #               this is a  1   -> many operation
+                #               So len(list)  = 1
+                #
+                #         2) The output of each @split job is a list
+                #            The items in this list of lists are each a job in subsequent tasks
+                #
+                #
+                #         So we need to concatenate these separate lists into a single list of output
+                #
+                #         For example:
+                #         @split(["a.1", "b.1"], regex(r"(.)\.1"), r"\1.*.2")
+                #         def example(input, output):
+                #             # JOB 1
+                #             #   a.1 -> a.i.2
+                #             #       -> a.j.2
+                #
+                #             # JOB 2
+                #             #   b.1 -> b.i.2
+                #             #       -> b.j.2
+                #
+                #         output_filenames = [ [a.i.2, a.j.2], [b.i.2, b.j.2] ]
+                #
+                #         we want [ a.i.2, a.j.2, b.i.2, b.j.2 ]
+                #
+                #         This also works for simple @split
+                #
+                #         @split("a.1", r"a.*.2")
+                #         def example(input, output):
+                #             # only job
+                #             #   a.1 -> a.i.2
+                #             #       -> a.j.2
+                #
+                #         output_filenames = [ [a.i.2, a.j.2] ]
+                #
+                #         we want [ a.i.2, a.j.2 ]
+                #
                 if len(self.output_filenames) and self.indeterminate_output:
-                    if self.indeterminate_output == 2:
-                        self.output_filenames = reduce(lambda x,y: x + y, self.output_filenames)
-                    else:
-                        self.output_filenames = self.output_filenames[0]
+                    self.output_filenames = reduce(lambda x,y: x + y, self.output_filenames)
+
 
         if flattened:
             # if single file name, return that
@@ -2084,6 +2126,9 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
     """
     if verbose == 0:
         return
+
+    if not hasattr(output_stream, "write"):
+        raise Exception("The first parameter to pipeline_printout needs to be an output file, e.g. sys.stdout")
 
     if runtime_data == None:
         runtime_data = {}
