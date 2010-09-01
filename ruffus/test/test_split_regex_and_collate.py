@@ -51,7 +51,7 @@ parser.add_option("-s", "--start_again", dest="start_again",
                     help="Make a new 'original.fa' file to simulate having to restart "
                             "pipeline from scratch.")
 parser.add_option("--jobs_per_task", dest="jobs_per_task",
-                      default=50,
+                      default=2,
                       metavar="N",
                       type="int",
                       help="Simulates tasks with N numbers of files per task.")

@@ -1,10 +1,5 @@
 = v. 2.2=
     _21/July/2010_
-    ==Touch files without running the pipeline==
-        {{{
-            pipeline_run(touch_files_only = True)
-        }}}
-        Do not run pipelined code but simulate by `touch`-ing the requisite files
     ==Parameter substitution for `inputs(...)` / `add_inputs(...)`==
         `glob`s and tasks can be added as the prerequisites / input files using
         `inputs(...)` and `add_inputs(...)`. `glob` expansions will take place when the task
