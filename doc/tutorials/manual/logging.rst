@@ -181,5 +181,5 @@ Your own logging *within* each job
                 """
                 open(outfile, "w").write("Here we go")
                 with logging_mutex:
-                    logger.proxy.info("Here we go logging")
+                    logger_proxy.info("Here we go logging")
 
