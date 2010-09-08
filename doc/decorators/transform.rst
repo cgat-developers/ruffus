@@ -151,7 +151,7 @@ See :ref:`Decorators <decorators>` for more decorators
        
        For example::
        
-             @transform(["a.c", "b.c"], regex("r(.*).c"), r"\1.o", r"\1")
+             @transform(["a.c", "b.c"], regex(r"(.*).c"), r"\1.o", r"\1")
              def compile(infile, outfile):
                  pass
                  
