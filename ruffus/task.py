@@ -480,9 +480,19 @@ def job_wrapper_mkdir(param, user_defined_work_func, register_cleanup, touch_fil
         try:
             os.makedirs(d)
             register_cleanup(d, "makedirs")
-        except OSError, e:
-            if "File exists" not in e:
-                raise
+        except:
+            #
+            #   ignore exception if exception == OSError / "File exists"
+            #
+            exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+            if exceptionType == OSError and "File exists" in str(exceptionValue):
+                continue
+            raise
+
+        #   changed for compatibility with python 3.x
+        #except OSError, e:
+        #    if "File exists" not in e:
+        #        raise
 
 
 JOB_ERROR           = 0
@@ -943,13 +953,25 @@ class _task (node):
 
                 return True
 
+        #
+        # removed for compatibility with python 3.x
+        #
         # rethrow exception after adding task name
-        except error_task, inst:
-            inst.specify_task(self, "Exceptions in dependency checking")
-            raise
+        #except error_task, inst:
+        #    inst.specify_task(self, "Exceptions in dependency checking")
+        #    raise
 
         except:
             exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+
+            #
+            # rethrow exception after adding task name
+            #
+            if exceptionType == error_task:
+                exceptionValue.specify
+                inst.specify_task(self, "Exceptions in dependency checking")
+                raise
+
             exception_stack  = traceback.format_exc(exceptionTraceback)
             exception_name   = exceptionType.__module__ + '.' + exceptionType.__name__
             exception_value  = str(exceptionValue)
