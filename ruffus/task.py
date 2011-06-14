@@ -997,7 +997,7 @@ class _task (node):
         """
         Cache output files
 
-            If flattened is True, returns file as a list of strints,
+            If flattened is True, returns file as a list of strings,
                 flattening any nested structures and discarding non string names
             Normally returns a list with one item for each job or a just a list of file names.
             For "single_job_single_output" i.e. @merge and @files with single jobs,
