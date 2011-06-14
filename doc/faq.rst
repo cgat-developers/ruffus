@@ -102,11 +102,81 @@ to the task function to signal that this is a pipelined function.
 
 This means the original task function can be called just like any other python function.
 
+======================================================================================
+Q. My tasks creates two files but why does only one survive in the ruffus pipeline?
+======================================================================================
+    ::
+
+        from ruffus import *                                               
+        import sys                                                         
+        @transform("start.input", regex(".+"), ("first_output.txt", "second_output.txt"))
+        def task1(i,o):                                                    
+            pass                                                           
+        
+        @transform(task1, suffix(".txt"), ".result")
+        def task2(i, o):                                                   
+            pass                                                           
+        
+        pipeline_printout(sys.stdout, [task2], verbose=3)
+
+    ::
+
+        ________________________________________
+        Tasks which will be run:
+        
+        Task = task1
+               Job = [start.input
+                     ->[first_output.txt, second_output.txt]]
+        
+        Task = task2
+               Job = [[first_output.txt, second_output.txt]
+                     ->first_output.result]
+        
+        ________________________________________
+
+A: This code produces a single output of a tuple of 2 files. In fact, you want two
+outputs, each consisting of 1 file. 
+
+You want a single job (single input) to be produce multiple outputs (multiple jobs
+in downstream tasks). This is a one-to-many operation which calls for 
+:ref:`@split <decorators.split>`:
+
+    ::
+
+        from ruffus import *                                               
+        import sys                                                         
+        @split("start.input", ("first_output.txt", "second_output.txt"))
+        def task1(i,o):                                                    
+            pass                                                           
+        
+        @transform(task1, suffix(".txt"), ".result")
+        def task2(i, o):                                                   
+            pass                                                           
+        
+        pipeline_printout(sys.stdout, [task2], verbose=3)
+
+    ::
+
+        ________________________________________
+        Tasks which will be run:
+        
+        Task = task1
+               Job = [start.input
+                     ->[first_output.txt, second_output.txt]]
+        
+        Task = task2
+               Job = [first_output.txt
+                     ->first_output.result]
+               Job = [second_output.txt
+                     ->second_output.result]
+        
+        ________________________________________
+
 
 ======================================================================================
 Q. How can a Ruffus task produce output which goes off in different directions?
 ======================================================================================
-A. Anytime there is a situation which requires a one-to-many operation, you should reach
+A. As above, anytime there is a situation which requires a one-to-many operation, you should reach
 for :ref:`@split <decorators.split_ex>`. The advanced form takes a regular expression, making
 it easier to produce multiple derivatives of the input file. The following example splits
 *2* jobs each into *3*, so that the subsequence task will run *2* x *3* = *6* jobs.
