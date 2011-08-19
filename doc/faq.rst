@@ -271,6 +271,8 @@ for checking if jobs are up to date or not (:ref:`@check_if_uptodate <decorators
 Q. Does *Ruffus* allow checkpointing: to distinguish interrupted and completed results?
 =========================================================================================================
 
+(Thanks to Bernie Pope for sorting this out.)
+
 A. When gmake is interrupted, it will delete the target file it is updating so that the target is
 remade from scratch when make is next run.
 
