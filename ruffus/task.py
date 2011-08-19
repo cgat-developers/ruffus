@@ -76,7 +76,7 @@ Running the pipeline
 
 from __future__ import with_statement
 import os,sys,copy, multiprocessing
-from collections import namedtuple
+#from collections import namedtuple
 import collections
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -499,7 +499,57 @@ JOB_ERROR           = 0
 JOB_SIGNALLED_BREAK = 1
 JOB_UP_TO_DATE      = 2
 JOB_COMPLETED       = 3
-t_job_result = namedtuple('t_job_result', 'task_name state job_name return_value exception')
+
+#_________________________________________________________________________________________
+
+#   t_job_result
+#       Previously a collections.namedtuple (introduced in python 2.6)
+#       Now using implementation from running
+#           t_job_result = namedtuple('t_job_result', 'task_name state job_name return_value exception', verbose =1)
+#           for compatibility with python 2.5
+
+#_________________________________________________________________________________________
+class t_job_result(tuple):
+        't_job_result(task_name, state, job_name, return_value, exception)'
+
+        __slots__ = ()
+
+        fields = ('task_name', 'state', 'job_name', 'return_value', 'exception')
+
+        def __new__(cls, task_name, state, job_name, return_value, exception):
+            return tuple.__new__(cls, (task_name, state, job_name, return_value, exception))
+
+        @classmethod
+        def make(cls, iterable, new=tuple.__new__, len=len):
+            'Make a new t_job_result object from a sequence or iterable'
+            result = new(cls, iterable)
+            if len(result) != 5:
+                raise TypeError('Expected 5 arguments, got %d' % len(result))
+            return result
+
+        def __repr__(self):
+            return 't_job_result(task_name=%r, state=%r, job_name=%r, return_value=%r, exception=%r)' % self
+
+        def asdict(t):
+            'Return a new dict which maps field names to their values'
+            return {'task_name': t[0], 'state': t[1], 'job_name': t[2], 'return_value': t[3], 'exception': t[4]}
+
+        def replace(self, **kwds):
+            'Return a new t_job_result object replacing specified fields with new values'
+            result = self.make(map(kwds.pop, ('task_name', 'state', 'job_name', 'return_value', 'exception'), self))
+            if kwds:
+                raise ValueError('Got unexpected field names: %r' % kwds.keys())
+            return result
+
+        def __getnewargs__(self):
+            return tuple(self)
+
+        task_name   = property(itemgetter(0))
+        state       = property(itemgetter(1))
+        job_name    = property(itemgetter(2))
+        return_value= property(itemgetter(3))
+        exception   = property(itemgetter(4))
+
 
 
 #_________________________________________________________________________________________
