@@ -266,75 +266,6 @@ for checking if jobs are up to date or not (:ref:`@check_if_uptodate <decorators
         a job is up to date or not, the function may be called twice for some jobs
         (e.g. ``(None, 'a.1')`` above).
 
-^^^^^^^^^^^^^^^
-Windows
-^^^^^^^^^^^^^^^
-
-=========================================================
-Q. Windows seems to spawn *ruffus* processes recursively
-=========================================================
-
-A. It is necessary to protect the "entry point" of the program under windows.
-Otherwise, a new process will be started each time the main module is imported
-by a new Python interpreter as an unintended side effects. Causing a cascade
-of new processes.
-
-See: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
-
-This code works::
-
-    if __name__ == '__main__':
-        try:
-            pipeline_run([parallel_task], multiprocess = 5)
-    except Exception, e:
-        print e.args
-
-
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Sun Grid Engine
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-=========================================================
-Q. *qrsh* eats up all my processor time under *ruffus*
-=========================================================
-A. `Sun Grid Engine <http://gridengine.sunsource.net/>`_ provides the 
-`qrsh <http://gridengine.sunsource.net/nonav/source/browse/~checkout~/gridengine/doc/htmlman/manuals.html?content-type=text/html>`_
-command to run an interactive rsh session. ``qrsh`` can
-be used to run commands/scripts in a compute farm or grid cluster. 
-
-However, when run within *ruffus*, ``qrsh`` seems to spin idly, polling for input, consuming
-all the CPU resources in that process.
-
-An interim solution is to close the ``STDIN`` for the ``qrsh`` invocation::
-
-    from subprocess import Popen, PIPE
-    qrsh_cmd = ["qrsh", 
-                "-now", "n", 
-                "-cwd", 
-                "-p", "-%d" % priority, 
-                "-q",  queue_name, 
-                "little_script.py"]
-    p = Popen(qrsh_cmd, stdin = PIPE)
-    p.stdin.close()
-    sts = os.waitpid(p.pid, 0)
-
-=====================================================================
-Q. When I submit lots of jobs at the same time, SGE freezes and dies
-=====================================================================
-A. This seems to be dependent on your setup. One workaround may be to
-introduce a random time delay at the beginining of your jobs::
-
-    import time, random
-    @parallel(param_func)
-    def task_in_parallel(input_file, output_file):
-        """
-        Works starts after a random delay so that SGE has a chance to manage the queue
-        """
-        time.sleep(random.random() / 2.0)
-    
-        # Wake up and do work
-
 
 =========================================================================================================
 Q. Does *Ruffus* allow checkpointing: to distinguish interrupted and completed results?
@@ -408,6 +339,79 @@ downstream task, which should accordingly look like this:
 
 
 The :ref:`Bioinformatics example<examples_bioinformatics_part2.step2>` contains :ref:`code <examples_bioinformatics_part2_code>` for checkpointing.
+
+
+
+
+^^^^^^^^^^^^^^^
+Windows
+^^^^^^^^^^^^^^^
+
+=========================================================
+Q. Windows seems to spawn *ruffus* processes recursively
+=========================================================
+
+A. It is necessary to protect the "entry point" of the program under windows.
+Otherwise, a new process will be started each time the main module is imported
+by a new Python interpreter as an unintended side effects. Causing a cascade
+of new processes.
+
+See: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
+
+This code works::
+
+    if __name__ == '__main__':
+        try:
+            pipeline_run([parallel_task], multiprocess = 5)
+    except Exception, e:
+        print e.args
+
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Sun Grid Engine
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+=========================================================
+Q. *qrsh* eats up all my processor time under *ruffus*
+=========================================================
+A. `Sun Grid Engine <http://gridengine.sunsource.net/>`_ provides the 
+`qrsh <http://gridengine.sunsource.net/nonav/source/browse/~checkout~/gridengine/doc/htmlman/manuals.html?content-type=text/html>`_
+command to run an interactive rsh session. ``qrsh`` can
+be used to run commands/scripts in a compute farm or grid cluster. 
+
+However, when run within *ruffus*, ``qrsh`` seems to spin idly, polling for input, consuming
+all the CPU resources in that process.
+
+An interim solution is to close the ``STDIN`` for the ``qrsh`` invocation::
+
+    from subprocess import Popen, PIPE
+    qrsh_cmd = ["qrsh", 
+                "-now", "n", 
+                "-cwd", 
+                "-p", "-%d" % priority, 
+                "-q",  queue_name, 
+                "little_script.py"]
+    p = Popen(qrsh_cmd, stdin = PIPE)
+    p.stdin.close()
+    sts = os.waitpid(p.pid, 0)
+
+=====================================================================
+Q. When I submit lots of jobs at the same time, SGE freezes and dies
+=====================================================================
+A. This seems to be dependent on your setup. One workaround may be to
+introduce a random time delay at the beginining of your jobs::
+
+    import time, random
+    @parallel(param_func)
+    def task_in_parallel(input_file, output_file):
+        """
+        Works starts after a random delay so that SGE has a chance to manage the queue
+        """
+        time.sleep(random.random() / 2.0)
+    
+        # Wake up and do work
 
 
 
