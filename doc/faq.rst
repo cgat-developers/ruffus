@@ -335,3 +335,79 @@ introduce a random time delay at the beginining of your jobs::
     
         # Wake up and do work
 
+
+=========================================================================================================
+Q. Does *Ruffus* allow checkpointing: to distinguish interrupted and completed results?
+=========================================================================================================
+
+A. When gmake is interrupted, it will delete the target file it is updating so that the target is
+remade from scratch when make is next run.
+
+There is no direct support for this in *ruffus* **yet**. In any case, the partial / incomplete
+file may be usefully if only to reveal, for example, what might have caused an interrupting error
+or exception.
+
+A common *Ruffus* convention is create an empty checkpoint or "flag" file whose sole purpose
+is to record a modification-time and the successful completion of a job.
+
+This would be task with a completion flag:
+
+::
+
+    # 
+    #   Assuming a pipelined task function named "stage1" 
+    #
+    @transform(stage1, suffix(".stage1"), [".stage2", ".stage2_finished"] )
+    def stage2 (input_files, output_files):
+        task_output_file, flag_file = output_files
+        cmd = ("do_something2 %(input_file)s >| %(task_output_file)s ")
+        cmd = cmd % {
+                        "input_file":               input_files[0],
+                        "task_output_file":         task_output_file
+                    }
+        if not os.system( cmd ):
+            #88888888888888888888888888888888888888888888888888888888888888888888888888888
+            #
+            #   It worked: Create completion flag_file
+            #
+            open(flag_file, "w")
+            #
+            #88888888888888888888888888888888888888888888888888888888888888888888888888888
+
+
+The flag_files ``xxx.stage2_finished`` indicate that each job is finished. If this is missing,
+``xxx.stage2`` is only a partial, interrupted result.
+
+
+The only thing to be aware of is that the flag file will appear in the list of inputs of the
+downstream task, which should accordingly look like this:
+
+
+::
+
+    @transform(stage2, suffix(".stage2"), [".stage3", ".stage3_finished"] )
+    def stage3 (input_files, output_files):
+
+        #888888888888888888888888888888888888888888888888888888888888888888888888888888888
+        #
+        #   Note that the first parameter is a LIST of input files, the last of which
+        #       is the flag file from the previous task which we can ignore
+        #
+        input_file, previous_flag_file  = input_files
+        #
+        #888888888888888888888888888888888888888888888888888888888888888888888888888888888
+        task_output_file, flag_file     = output_files
+        cmd = ("do_something3 %(input_file)s >| %(task_output_file)s ")
+        cmd = cmd % {
+                        "input_file":               input_file,
+                        "task_output_file":         task_output_file
+                    }
+        # completion flag file for this task
+        if not os.system( cmd ):
+            open(flag_file, "w")
+
+
+The :ref:`Bioinformatics example<examples_bioinformatics_part2.step2>` contains :ref:`code <examples_bioinformatics_part2_code>` for checkpointing.
+
+
+
