@@ -915,7 +915,8 @@ class _task (node):
                 needs_update, msg = self.needs_update_func (*param)
                 if needs_update:
                     messages.extend(get_job_names (descriptive_param, indent_str))
-                    messages.append(indent_str + "  Job needs update: %s" % msg)
+                    per_job_messages = [(indent_str + s) for s in ("  Job needs update: %s" % msg).split("\n")]
+                    messages.extend(per_job_messages)
                 else:
                     if verbose > 4:
                         messages.extend(get_job_names (descriptive_param, indent_str))
