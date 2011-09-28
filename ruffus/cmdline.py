@@ -33,24 +33,155 @@
 .. moduleauthor:: Leo Goodstadt <ruffus@llew.org.uk>
 
 
-    parser = OptionParser(version="%prog 1.0", usage = "\n\n    %prog [options]")
-    parser.add_option("-c", "--custom", dest="custom", action="count",
-                      help = "Some custom option comes first")
+    #
+    #   Using argparse (new in python v 2.7)
+    #
+    from ruffus import *
+
+    parser = cmdline.get_argparse(   description='WHAT DOES THIS PIPELINE DO?')
+
+    parser.add_argument("--input_file")
+
+    options = parser.parse_args()
+
+    //  logger which can be passed to ruffus tasks
+    logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
+
+    #_____________________________________________________________________________________
+
+    #   pipelined functions go here
+
+    #_____________________________________________________________________________________
+
+    cmdline.run (options)
 
 
-    parser = cmdline.prepare_optparse(parser)
 
-    logger, logger_mutex = cmdline.setup_logging ("this_program", options.log_file, options.verbose)
+    #
+    #   Using optparse (new in python v 2.6)
+    #
+    from ruffus import *
+
+    parser = cmdline.get_optgparse(version="%prog 1.0", usage = "\n\n    %prog [options]")
+
+    parser.add_option("-c", "--custom", dest="custom", action="count")
+
 
     (options, remaining_args) = parser.parse_args()
 
+    //  logger which can be passed to ruffus tasks
+    logger, logger_mutex = cmdline.setup_logging ("this_program", options.log_file, options.verbose)
+
+    #_____________________________________________________________________________________
+
+    #   pipelined functions go here
+
+    #_____________________________________________________________________________________
+
     cmdline.run (options)
+
 
 """
 
 
+def get_argparse (*args, **args_dict):
+    """
+    Common options:
 
-def prepare_optparse (parser = None):
+            --verbose
+            --version
+            --log_file
+            --skip_parameter_logging
+            --debug
+    """
+    import argparse
+
+    parser = argparse.ArgumentParser(*args, **args_dict)
+
+    return append_to_argparse(parser)
+
+def append_to_argparse (parser):
+    """
+    Common options:
+
+            --verbose
+            --version
+            --log_file
+            --skip_parameter_logging
+            --debug
+    """
+
+
+
+    common_options = parser.add_argument_group('Common options')
+    common_options.add_argument('--verbose', "-v", const=1, default=0, nargs='?', type= int,
+                                help="Print more verbose messages for each additional verbose level.")
+    common_options.add_argument('--version', action='version', version='%(prog)s 1.0')
+    common_options.add_argument("-L", "--log_file", metavar="FILE", type=str,
+                                  help="Name and path of log file")
+    common_options.add_argument("--skip_parameter_logging", action="store_true",
+                                help="Do not print program parameters to log.")
+
+
+    #
+    #   pipeline
+    #
+    pipline_options = parser.add_argument_group('pipeline arguments')
+    pipline_options.add_argument("-T", "--target_tasks", action="append",
+                                metavar="JOBNAME", type=str,
+                                help="Target task(s) of pipeline.", default = [])
+    pipline_options.add_argument("-j", "--jobs", default=1, metavar="N", type=int,
+                                help="Allow N jobs (commands) to run simultaneously.")
+    pipline_options.add_argument("-n", "--just_print", action="store_true",
+                                help="Don't actually run any commands; just print the pipeline.")
+    pipline_options.add_argument("--flowchart", metavar="FILE", type=str,
+                                help="Don't run any commands; just print pipeline as a flowchart.")
+
+    #
+    #   Less common pipeline options
+    #
+    pipline_options.add_argument("--key_legend_in_graph",     action="store_true",
+                                help="Print out legend and key for dependency graph.")
+    pipline_options.add_argument("--draw_graph_horizontally", action="store_true",
+                                help="Draw horizontal dependency graph.")
+    pipline_options.add_argument("--flowchart_format", metavar="FORMAT",
+                                type=str, choices = ["svg", "svgz", "png", "jpg", "pdf", "dot"],
+                                #  "eps", "jpeg", "gif", "plain", "ps", "wbmp", "canon",
+                                #  "cmap", "cmapx", "cmapx_np", "fig", "gd", "gd2",
+                                # "gv", "imap", "imap_np", "ismap", "jpe", "plain-ext",
+                                # "ps2", "tk", "vml", "vmlz", "vrml", "x11", "xdot", "xlib"
+                                default = 'svg',
+                                help="format of dependency graph file. Can be 'pdf', " +
+                                      "'svg', 'svgz' (Structured Vector Graphics), 'pdf', " +
+                                      "'png' 'jpg' (bitmap  graphics) etc ")
+    pipline_options.add_argument("--forced_tasks", action="append",
+                                metavar="JOBNAME", type=str,
+                                help="Task(s) which will be included even if they are up to date.", default = [])
+
+
+
+    return parser
+
+
+
+
+def get_optparse (*args, **args_dict):
+    """
+    Common options:
+
+            --verbose
+            --version
+            --log_file
+            --skip_parameter_logging
+            --debug
+    """
+    from optparse import OptionParser
+
+    parser = OptionParser(*args, **args_dict)
+
+    return append_to_argparse(parser)
+
+def append_to_optparse (parser):
     """
     Set up OptionParser from optparse
         to allow for ruffus specific options:
@@ -67,11 +198,6 @@ def prepare_optparse (parser = None):
             --forced_tasks
 
     """
-    from optparse import OptionParser
-
-    if not parser:
-        parser = OptionParser(version="%prog 1.0", usage = "\n\n    %prog [options]")
-
     #
     #   general options: verbosity / logging
     #
@@ -151,17 +277,76 @@ import sys
 #
 #   Allow logging across Ruffus pipeline
 #
-global_logger = None
-def get_logger (logger_name, args):
-    return global_logger
+def setup_logging (module_name, log_file_name, verbose):
+    return proxy_logger.make_shared_logger_and_proxy (setup_logging_factory, module_name, [log_file_name, verbose])
 
-def setup_logging (module_name, log_file, verbose):
+
+def setup_logging_factory (logger_name, args):
+    log_file_name, verbose = args
     """
-    Set up log using module_name
+    This function is a simple around wrapper around the python
+    `logging <http://docs.python.org/library/logging.html>`_ module.
+
+    This *logger_factory* example creates logging objects which can
+    then be managed by proxy via ``ruffus.proxy_logger.make_shared_logger_and_proxy()``
+
+    This can be:
+
+        * a `disk log file <http://docs.python.org/library/logging.html#filehandler>`_
+        * a automatically backed-up `(rotating) log <http://docs.python.org/library/logging.html#rotatingfilehandler>`_.
+        * any log specified in a `configuration file <http://docs.python.org/library/logging.html#configuration-file-format>`_
+
+    These are specified in the ``args`` dictionary forwarded by ``make_shared_logger_and_proxy()``
+
+    :param logger_name: name of log
+    :param args: a dictionary of parameters forwarded from ``make_shared_logger_and_proxy()``
+
+        Valid entries include:
+
+            .. describe:: "level"
+
+                Sets the `threshold <http://docs.python.org/library/logging.html#logging.Handler.setLevel>`_ for the logger.
+
+            .. describe:: "config_file"
+
+                The logging object is configured from this `configuration file <http://docs.python.org/library/logging.html#configuration-file-format>`_.
+
+            .. describe:: "file_name"
+
+                Sets disk log file name.
+
+            .. describe:: "rotating"
+
+                Chooses a `(rotating) log <http://docs.python.org/library/logging.html#rotatingfilehandler>`_.
+
+            .. describe:: "maxBytes"
+
+                Allows the file to rollover at a predetermined size
+
+            .. describe:: "backupCount"
+
+                If backupCount is non-zero, the system will save old log files by appending the extensions ``.1``, ``.2``, ``.3`` etc., to the filename.
+
+            .. describe:: "delay"
+
+                Defer file creation until the log is written to.
+
+            .. describe:: "formatter"
+
+                `Converts <http://docs.python.org/library/logging.html#formatter-objects>`_ the message to a logged entry string.
+                For example,
+                ::
+
+                    "%(asctime)s - %(name)s - %(levelname)6s - %(message)s"
+
+
 
     """
-    global global_logger
-    global_logger = logging.getLogger(module_name)
+
+    #
+    #   Log file name with logger level
+    #
+    new_logger = logging.getLogger(logger_name)
 
     class debug_filter(logging.Filter):
         """
@@ -178,12 +363,12 @@ def setup_logging (module_name, log_file, verbose):
             pass
 
     # We are interesting in all messages
-    global_logger.setLevel(logging.DEBUG)
+    new_logger.setLevel(logging.DEBUG)
     has_handler = False
 
     # log to file if that is specified
-    if log_file:
-        handler = logging.FileHandler(log_file, delay=False)
+    if log_file_name:
+        handler = logging.FileHandler(log_file_name, delay=False)
         class stipped_down_formatter(logging.Formatter):
             def format(self, record):
                 prefix = ""
@@ -198,7 +383,7 @@ def setup_logging (module_name, log_file, verbose):
                 return prefix + logging.Formatter.format(self, record)
         handler.setFormatter(stipped_down_formatter("%(asctime)s - %(name)s - %(levelname)6s - %(message)s", "%H:%M:%S"))
         handler.setLevel(MESSAGE)
-        global_logger.addHandler(handler)
+        new_logger.addHandler(handler)
         has_handler = True
 
     # log to stderr if verbose
@@ -206,18 +391,22 @@ def setup_logging (module_name, log_file, verbose):
         stderrhandler = logging.StreamHandler(sys.stderr)
         stderrhandler.setFormatter(logging.Formatter("    %(message)s"))
         stderrhandler.setLevel(logging.DEBUG)
-        if log_file:
+        if log_file_name:
             stderrhandler.addFilter(debug_filter())
-        global_logger.addHandler(stderrhandler)
+        new_logger.addHandler(stderrhandler)
         has_handler = True
 
     # no logging
     if not has_handler:
-        global_logger.addHandler(NullHandler())
+        new_logger.addHandler(NullHandler())
+
+    #
+    #   This log object will be wrapped in proxy
+    #
+    return new_logger
 
 
 
-    return proxy_logger.make_shared_logger_and_proxy (get_logger, module_name, {})
 
 
 
@@ -225,13 +414,11 @@ def run (options, option_logger = None):
     """
     Take action depending on options
     """
-    global global_logger
     if option_logger == False:
         option_logger = task.black_hole_logger
     elif option_logger == None:
-        if global_logger == None:
-            raise("Need to call setup_logging() first. For no logging using option_logger = False.")
-        option_logger = global_logger
+        option_logger = task.stderr_logger
+
 
     if options.just_print:
         task.pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
@@ -250,11 +437,5 @@ def run (options, option_logger = None):
                             multiprocess    = options.jobs,
                             logger          = option_logger,
                             verbose         = options.verbose)
-
-
-
-
-
-
 
 
