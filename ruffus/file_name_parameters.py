@@ -341,6 +341,8 @@ def needs_update_check_modify_time (*params):
 
             filename_to_times[index].append((mtime, f))
 
+    #   debug
+    #print >>sys.stderr, pretty_io_with_date_times(filename_to_times), file_times, (max(file_times[0]) >= min(file_times[1]))
 
     #
     #   update if any input file >= (more recent) output fifle
