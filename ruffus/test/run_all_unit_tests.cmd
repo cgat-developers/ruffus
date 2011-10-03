@@ -40,3 +40,5 @@ echo Running test_transform_inputs.py
 python ./test_transform_inputs.py
 echo Running test_files_decorator.py
 python ./test_files_decorator.py
+echo Running test_active_if.py
+python ./test_active_if.py -j2 -v
