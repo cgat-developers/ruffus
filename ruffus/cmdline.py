@@ -44,7 +44,7 @@
 
     options = parser.parse_args()
 
-    //  logger which can be passed to ruffus tasks
+    #  logger which can be passed to ruffus tasks
     logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
 
     #_____________________________________________________________________________________
@@ -69,7 +69,7 @@
 
     (options, remaining_args) = parser.parse_args()
 
-    //  logger which can be passed to ruffus tasks
+    #  logger which can be passed to ruffus tasks
     logger, logger_mutex = cmdline.setup_logging ("this_program", options.log_file, options.verbose)
 
     #_____________________________________________________________________________________
@@ -91,8 +91,6 @@ def get_argparse (*args, **args_dict):
             --verbose
             --version
             --log_file
-            --skip_parameter_logging
-            --debug
     """
     import argparse
 
@@ -107,8 +105,6 @@ def append_to_argparse (parser):
             --verbose
             --version
             --log_file
-            --skip_parameter_logging
-            --debug
     """
 
 
@@ -119,8 +115,6 @@ def append_to_argparse (parser):
     common_options.add_argument('--version', action='version', version='%(prog)s 1.0')
     common_options.add_argument("-L", "--log_file", metavar="FILE", type=str,
                                   help="Name and path of log file")
-    common_options.add_argument("--skip_parameter_logging", action="store_true",
-                                help="Do not print program parameters to log.")
 
 
     #
@@ -172,8 +166,6 @@ def get_optparse (*args, **args_dict):
             --verbose
             --version
             --log_file
-            --skip_parameter_logging
-            --debug
     """
     from optparse import OptionParser
 
@@ -187,7 +179,9 @@ def append_to_optparse (parser):
         to allow for ruffus specific options:
 
             --verbose
+            --version
             --log_file
+
         -t, --target_tasks
         -j, --jobs
         -n, --just_print
