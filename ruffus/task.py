@@ -317,6 +317,9 @@ class jobs_limit(task_decorator):
 class collate(task_decorator):
     pass
 
+class active_if(task_decorator):
+    pass
+
 #
 #   Esoteric
 #
@@ -644,6 +647,7 @@ class _task (node):
                     "task_files",
                     "task_mkdir",
                     "task_parallel",
+                    "task_active_if",
                     ]
     action_unspecified        =  0
     action_task               =  1
@@ -656,6 +660,7 @@ class _task (node):
     action_task_files         =  8
     action_mkdir              =  9
     action_parallel           = 10
+    action_active_if          = 11
 
     add_to_inputs             =  False
     replace_inputs            =  True
@@ -666,6 +671,7 @@ class _task (node):
     job_single_matches_parent= 2
 
     job_limit_semaphores = {}
+    
 
     #_________________________________________________________________________________________
 
@@ -732,35 +738,42 @@ class _task (node):
 
 
 
-        self.param_generator_func   = None
-        self.needs_update_func      = None
-        self.job_wrapper            = job_wrapper_generic
+        self.param_generator_func       = None
+        self.needs_update_func          = None
+        self.job_wrapper                = job_wrapper_generic
 
-        #
-        self.job_descriptor         = generic_job_descriptor
+        #                               
+        self.job_descriptor             = generic_job_descriptor
 
         # jobs which produce a single output.
         # special handling for task.get_output_files for dependency chaining
-        self._single_job_single_output = self.multiple_jobs_outputs
-        self.single_multi_io           = self.many_to_many
+        self._single_job_single_output  = self.multiple_jobs_outputs
+        self.single_multi_io            = self.many_to_many
 
         # function which is decorated and does the actual work
         self.user_defined_work_func = None
 
         # functions which will be called when task completes
-        self.posttask_functions    = []
+        self.posttask_functions         = []
 
         # give makedir automatically made parent tasks unique names
-        self.cnt_task_mkdir         = 0
+        self.cnt_task_mkdir             = 0
 
         # whether only task function itself knows what output it will produce
         # i.e. output is a glob or something similar
-        self.indeterminate_output   = 0
+        self.indeterminate_output       = 0
 
         # cache output file names here
-        self.output_filenames = None
+        self.output_filenames           = None
 
-        self.semaphore_name = module_name + "." + func_name
+        self.semaphore_name             = module_name + "." + func_name
+
+        # do not test for whether task is active
+        self.active_if_checks           = None
+
+        # extra flag for outputfiles
+        self.is_active                  = True
+
 
 
     #_________________________________________________________________________________________
@@ -875,6 +888,19 @@ class _task (node):
         indent_str += " " * 3
 
         #
+        #   If has an @active_if decorator, check if the task needs to be run
+        #       @active_if parameters may be call back functions or booleans
+        #
+        if (self.active_if_checks != None and
+            any( not arg() if isinstance(arg, collections.Callable) else not arg
+                     for arg in self.active_if_checks)):
+                if verbose <= 3:
+                    return messages
+                messages.append(indent_str + "Task is inactive")
+                return messages
+                
+
+        #
         #   No parameters: just call task function
         #
         if self.param_generator_func == None:
@@ -956,6 +982,17 @@ class _task (node):
             log_at_level (logger, 4, verbose,
                             "  Task = " + short_task_name)
 
+            #
+            #   If job is inactive, always consider it up-to-date
+            #     
+            if (self.active_if_checks != None and
+                any( not arg() if isinstance(arg, collections.Callable) else not arg
+                         for arg in self.active_if_checks)):
+                log_at_level (logger, 4, verbose,
+                                "    Inactive task: treat as Up to date")
+                #print 'signaling that the inactive task is up to date'
+                return True
+            
             #
             #   Always needs update if no way to check if up to date
             #
@@ -1054,6 +1091,20 @@ class _task (node):
             For "single_job_single_output" i.e. @merge and @files with single jobs,
                 returns the output of a single job (i.e. can be a string)
         """
+
+        #
+        #   N.B. active_if_checks is called once per task 
+        #        in make_job_parameter_generator() for consistency
+        #
+        #   self.is_active can be set using self.active_if_checks in that function,
+        #       and therefore can be changed BETWEEN invocations of pipeline_run
+        #
+        #   self.is_active is not used anywhere else
+        #
+        if (not self.is_active):
+            #print >>sys.stderr, "    Removing all outputs from " + self._name.replace('__main__.', '')
+            return []
+        
         #
         #   This looks like the wrong place to flatten
         #
@@ -1967,6 +2018,20 @@ class _task (node):
             self.job_limit_semaphores[self.semaphore_name] = maximum_jobs_num
 
 
+    #_________________________________________________________________________________________
+
+    #   task_active_if
+
+    #_________________________________________________________________________________________
+    def task_active_if (self, active_if_checks):
+        """
+        If any of active_checks is False or returns False, then the task is
+        marked as "inactive" and its outputs removed.
+        """
+        #print 'job is active:', active_checks, [
+        #                arg() if isinstance(arg, collections.Callable) else arg
+        #                for arg in active_checks]
+        self.active_if_checks = active_if_checks
 
 
 class task_encoder(json.JSONEncoder):
@@ -2351,10 +2416,22 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     t.output_filenames = []
 
 
+
                     #
                     #   If no parameters: just call task function (empty list)
                     #
-                    if t.param_generator_func == None:
+                    if (t.active_if_checks != None):
+                        t.is_active = all(arg() if isinstance(arg, collections.Callable) else arg
+                                            for arg in t.active_if_checks)
+                    if not t.is_active:
+                        parameters = []
+
+
+
+                    #
+                    #   If no parameters: just call task function (empty list)
+                    #
+                    elif t.param_generator_func == None:
                         parameters = ([[], []],)
                     else:
                         parameters = t.param_generator_func(runtime_data)
