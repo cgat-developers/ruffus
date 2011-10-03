@@ -32,6 +32,7 @@
 
 .. moduleauthor:: Leo Goodstadt <ruffus@llew.org.uk>
 
+Initial implementation of @active_if by Jacob Biesinger
 
 ============================
 Decorator syntax:
