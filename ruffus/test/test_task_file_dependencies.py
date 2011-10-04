@@ -89,7 +89,8 @@ class Test_needs_update_check_modify_time(unittest.TestCase):
         # 
         self.assert_(    task.needs_update_check_modify_time (self.files[3], 
                                                               self.files[0])[0])
-        self.assert_(    task.needs_update_check_modify_time (self.files[0], 
+        # self -self = no update
+        self.assert_(not task.needs_update_check_modify_time (self.files[0], 
                                                               self.files[0])[0])
         
         #

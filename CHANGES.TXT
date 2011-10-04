@@ -1,3 +1,89 @@
+= v. 2.3=
+    _03/October/2011_
+    ==Bug fix==
+        * From "Issue 45"
+          @split operations now show the 1->many output
+          {{{
+          Task = split_animals
+               Job = [None
+                     -> cows
+                     -> horses
+                     -> pigs
+                      , any_extra_parameters]
+          }}}
+    ==Improved display from pipeline_printout
+        * File date and time are displayed in human readable form and out of date
+          files are flagged with asterisks. 
+    ==@active_if turns off tasks at runtime==
+        * Issue 36
+        * Design and initial implementation from Jacob Biesinger
+        * Takes one or more parameters which can be either booleans or functions / 
+          callable objects which return True / False
+        * The expressions inside @active_if are evaluated each time 
+          `pipeline_run`, `pipeline_printout` or `pipeline_printout_graph` is called.
+        * Dormant tasks behave as if they are up to date and have no output.
+    ==Command line parsing for pipelines==
+        * From "Issue 44"
+        * Added ruffus/cmdline.py
+        * Supports both argparse (python 2.7) and optparse (python 2.6):
+        * The following options are defined by default:
+          {{{
+                    --verbose
+                    --version
+                    --log_file
+
+                -t, --target_tasks
+                -j, --jobs
+                -n, --just_print
+                    --flowchart
+                    --key_legend_in_graph
+                    --draw_graph_horizontally
+                    --flowchart_format
+                    --forced_tasks
+           }}}
+        * Usage with argparse (Python > 2.7):
+          {{{
+                from ruffus import *
+
+                parser = cmdline.get_argparse(   description='WHAT DOES THIS PIPELINE DO?')
+
+                # for example...
+                parser.add_argument("--input_file")
+
+                options = parser.parse_args()
+
+                #  optional logger which can be passed to ruffus tasks
+                logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
+
+                #_____________________________________________________________________________________
+                #   pipelined functions go here
+                #_____________________________________________________________________________________
+
+                cmdline.run (options)
+          }}}
+        * Usage with optparse (Python 2.6):
+          {{{
+                from ruffus import *
+
+                parser = cmdline.get_optgparse(version="%prog 1.0", usage = "\n\n    %prog [options]")
+
+                # for example...
+                parser.add_option("-c", "--custom", dest="custom", action="count")
+
+                (options, remaining_args) = parser.parse_args()
+
+                #  logger which can be passed to ruffus tasks
+                logger, logger_mutex = cmdline.setup_logging ("this_program", options.log_file, options.verbose)
+
+                #_____________________________________________________________________________________
+                #   pipelined functions go here
+                #_____________________________________________________________________________________
+
+                cmdline.run (options)
+          }}}
+
+
+
 = v. 2.2=
     _21/July/2010_
     ==Parameter substitution for `inputs(...)` / `add_inputs(...)`==
