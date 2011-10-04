@@ -388,32 +388,61 @@ class add_inputs(object):
 
 #       job descriptors
 
-#           given parameters, returns string describing job
+#           given parameters, returns strings describing job
+#           First returned parameter is string in strong form
+#           Second returned parameter is a list of strings for input, output and extra parameters
+#               intended to be reformatted with indentation
 #           main use in error logging
 
 #8888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 def generic_job_descriptor (param, runtime_data):
     if param in ([], None):
-        return "Job"
+        m = "Job"
     else:
-        return "Job = %s" % ignore_unknown_encoder(param)
+        m = "Job = %s" % ignore_unknown_encoder(param)
+
+    return m, [m]
 
 def io_files_job_descriptor (param, runtime_data):
-    # input, output
-    if len(param) >= 2:
-        extra_param = "" if len(param) == 2 else ", " + shorten_filenames_encoder(param[2:])[1:-1]
-        return ("Job = [%s -> %s%s]" % (shorten_filenames_encoder(param[0]),
-                                        shorten_filenames_encoder(param[1]),
-                                        extra_param))
-    elif len(param) == 0:
-            return "JOb = [ ?? -> ?? ]"
-    else:
-        return ("Job = [%s -> ??]" % (shorten_filenames_encoder(param[0])))
+    extra_param = ", " + shorten_filenames_encoder(param[2:])[1:-1] if len(param) > 2 else ""
+    out_param   =        shorten_filenames_encoder(param[1])        if len(param) > 1 else "??"
+    in_param    =        shorten_filenames_encoder(param[0])        if len(param) > 0 else "??"
+
+    return ("Job = [%s -> %s%s]" % (in_param, out_param, extra_param),
+            ["Job = [%s" % in_param, "-> " + out_param + extra_param + "]"])
+
+
+def io_files_one_to_many_job_descriptor (param, runtime_data):
+
+    extra_param = ", " + shorten_filenames_encoder(param[2:])[1:-1] if len(param) > 2 else ""
+    out_param   =        shorten_filenames_encoder(param[1])        if len(param) > 1 else "??"
+    in_param    =        shorten_filenames_encoder(param[0])        if len(param) > 0 else "??"
+
+    # start with input parameter
+    ret_params = ["Job = [%s" % in_param]
+
+    # add output parameter to list,
+    #   processing one by one if multiple output parameters
+    if len(param) > 1:
+        if isinstance(param[1], (list, tuple)):
+            ret_params.extend("-> " + shorten_filenames_encoder(p) for p in param[1])
+        else:
+            ret_params.append("-> " + out_param)
+
+    # add extra
+    if len(param) > 2 :
+        ret_params.append(" , " + shorten_filenames_encoder(param[2:])[1:-1])
+
+    # add closing bracket
+    ret_params[-1] +="]"
+
+    return ("Job = [%s -> %s%s]" % (in_param, out_param, extra_param), ret_params)
 
 
 def mkdir_job_descriptor (param, runtime_data):
     # input, output and parameters
-    return "Make directories %s" % (shorten_filenames_encoder(param[0]))
+    m = "Make directories %s" % (shorten_filenames_encoder(param[0]))
+    return m, [m]
 
 
 #8888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -826,6 +855,20 @@ class _task (node):
         self._action_type_desc = _task.action_names[new_action_type]
 
 
+
+    #_________________________________________________________________________________________
+
+    #   get_job_name
+
+    #_________________________________________________________________________________________
+    def get_job_name(self, descriptive_param, runtime_data):
+        """
+        Use job descriptor to return short name for job, including any parameters
+
+            runtime_data is not (yet) used but may be used to add context in future
+        """
+        return self.job_descriptor(descriptive_param, runtime_data)[0]
+
     #_________________________________________________________________________________________
 
     #   printout
@@ -842,16 +885,11 @@ class _task (node):
         """
 
         def get_job_names (param, indent_str):
-            job_names = (indent_str + self.job_descriptor(param, runtime_data)).split("-> ")
+            job_names = self.job_descriptor(param, runtime_data)[1]
             if len(job_names) > 1:
-                job_names[1] = indent_str + "      ->" + job_names[1]
+                job_names = ([indent_str + job_names[0]]  + 
+                             [indent_str + "      " + jn for jn in job_names[1:]])
             return job_names
-
-            #
-            #   needs update func = None: always needs update
-            #
-            if not self.needs_update_func:
-                messages.append(indent_str + job_name + "")
 
 
 
@@ -928,8 +966,6 @@ class _task (node):
             cnt_jobs = 0
             for param, descriptive_param in self.param_generator_func(runtime_data):
                 cnt_jobs += 1
-                job_name = self.job_descriptor(descriptive_param, runtime_data)
-                job_name = job_name.replace("->", indent_str + " " * 7 +  "\n->")
 
                 #
                 #   needs update func = None: always needs update
@@ -1021,7 +1057,7 @@ class _task (node):
                     needs_update, msg = self.needs_update_func (*param)
                     if needs_update:
                         if verbose >= 4:
-                            job_name = self.job_descriptor(descriptive_param, runtime_data)
+                            job_name = self.get_job_name(descriptive_param, runtime_data)
                             log_at_level (logger, 4, verbose,
                                             "    Needing update:\n      %s" % job_name)
                         return False
@@ -1364,7 +1400,8 @@ class _task (node):
                                                                 *extra_params)
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
-        self.job_descriptor       = io_files_job_descriptor # (orig_args[2], output_runtime_data_names)
+        #self.job_descriptor       = io_files_job_descriptor # (orig_args[2], output_runtime_data_names)
+        self.job_descriptor       = io_files_one_to_many_job_descriptor
 
         # output is a glob
         self.indeterminate_output = 2
@@ -1409,7 +1446,8 @@ class _task (node):
 
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
-        self.job_descriptor       = io_files_job_descriptor# (orig_args[1], output_runtime_data_names)
+        #self.job_descriptor       = io_files_job_descriptor# (orig_args[1], output_runtime_data_names)
+        self.job_descriptor       = io_files_one_to_many_job_descriptor
 
         # output is a glob
         self.indeterminate_output = 1
@@ -2449,7 +2487,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                         if len(param) >= 2:
                             t.output_filenames.append(param[1])
 
-                        job_name = t.job_descriptor(descriptive_param, runtime_data)
+                        job_name = t.get_job_name(descriptive_param, runtime_data)
 
                         #
                         #    don't run if up to date

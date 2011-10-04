@@ -261,10 +261,14 @@ def needs_update_check_modify_time (*params):
         return True, "Missing output file"
 
     # missing input / output file means always build
+    missing_files = []
     for io in (i, o):
         for p in io:
             if not os.path.exists(p):
-                return True, "Missing file %s" % p
+                missing_files.append(p)
+    if len(missing_files):
+        return True, "Missing file%s [%s]" % ("s" if len(missing_files) > 1 else "", 
+                                            ", ".join(missing_files))
 
     #
     #   missing input -> build only if output absent
@@ -347,7 +351,7 @@ def needs_update_check_modify_time (*params):
     #
     #   update if any input file >= (more recent) output fifle
     #
-    if max(file_times[0]) >= min(file_times[1]):
+    if len(file_times[0]) and len (file_times[1]) and max(file_times[0]) >= min(file_times[1]):
         return True, pretty_io_with_date_times(filename_to_times)
     return False, "Up to date"
 
