@@ -50,7 +50,7 @@ class error_task(Exception):
         Exception.__init__(self, *errmsg)
 
         # list of associated tasks
-        self.tasks = []
+        self.tasks = set()
 
         # error message
         self.main_msg = ""
@@ -61,14 +61,7 @@ class error_task(Exception):
         Prefix with new lines for added emphasis
         """
         # turn tasks names into 'def xxx(...): format
-        task_names = []
-        for t in self.tasks:
-            task_name = t._name.replace('__main__.', '')
-            if t.action_names[t._action_type] != "task_mkdir":
-                task_name = "'def %s(...):'" % (task_name)
-            task_names.append(task_name)
-
-        task_names = "\n".join(task_names)
+        task_names = "\n".join(t.get_task_name(True) for t in self.tasks)
         if len(self.main_msg):
             return "\n\n" + self.main_msg + " for\n\n%s\n" % task_names
         else:
@@ -81,7 +74,7 @@ class error_task(Exception):
         return "    " + msg.replace("\n", "\n    ")
 
     def specify_task (self, task, main_msg):
-        self.tasks.append(task)
+        self.tasks.add(task)
         self.main_msg = main_msg
         return self
 
@@ -100,20 +93,41 @@ class RethrownJobError(error_task):
 
         See multiprocessor.Server.handle_request/serve_client for an analogous function
     """
-    def __init__(self, job_exceptions):
+    def __init__(self, job_exceptions=[]):
         error_task.__init__(self)
-        self.args = job_exceptions
+        self.args = list(job_exceptions)
+
+    def __len__(self):
+        return len(self.args)
+
+    def append(self, job_exception):
+        self.args = self.args + (job_exception, )
+
+    def task_to_func_name (self, task_name):
+        if "mkdir " in task_name:
+            return task_name
+        
+        return "def %s(...):" % task_name.replace("__main__.", "")
+
+
+    def get_nth_exception_str (self, nn = -1):
+        if nn == -1:
+            nn = len(self.args) - 1
+        task_name, job_name, exception_name, exception_value, exception_stack = self.args[nn]
+        message = "\nException #%d\n" % (nn + 1)
+        message += "  '%s%s' raised in ...\n" % (exception_name, exception_value)
+        message += "   Task = %s\n   %s\n\n%s\n" % (self.task_to_func_name(task_name), job_name, exception_stack)
+        return message.replace("\n", "\n    ")
+
     def __str__(self):
         message = ["\nOriginal exception%s:\n" % ("s" if len(self.args) > 1 else "")]
+        for ii in range(len(self.args)):
+            message += self.get_nth_exception_str (ii)
         #
         #   For each exception:
         #       turn original exception stack message into an indented string
         #
-        for i, (task_name, job_name, exception_name, exception_value, exception_stack) in enumerate(self.args):
-            message += "\nException #%d\n" % (i + 1)
-            message += "%s%s:\n" % (exception_name, exception_value)
-            message += "for %s.%s\n\n%s\n" % (task_name, job_name, exception_stack)
-        return (self.get_main_msg() + "".join(message)).replace("\n", "\n    ")
+        return (self.get_main_msg()).replace("\n", "\n    ") + "".join(message)
 
 class task_FilesArgumentsError(error_task):
     pass

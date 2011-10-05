@@ -166,14 +166,17 @@ def parallel_task(name, param1):
     time.sleep(2)
     if options.verbose:
         sys.stderr.write("    Parallel task %s: \n\n" % name)
-    raise task.JobSignalledBreak("Oops! I did it again!")
+    #raise task.JobSignalledBreak("Oops! I did it again!")
+    raise Exception("new")
 
 
-
+def nested_func ():
+    raise Exception("new")
 
 
 if __name__ == '__main__':
     try:
+        #nested_func()
         if options.just_print:
             pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
                                 verbose = options.verbose,

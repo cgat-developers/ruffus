@@ -135,11 +135,13 @@ class t_black_hole_logger:
     """
     Does nothing!
     """
-    def info (self, message):
+    def info (self, message, *args, **kwargs):
         pass
-    def debug (self, message):
+    def debug (self, message, *args, **kwargs):
         pass
-    def warning (self, message):
+    def warning (self, message, *args, **kwargs):
+        pass
+    def error (self, message, *args, **kwargs):
         pass
 
 
@@ -157,6 +159,8 @@ class t_stderr_logger:
         sys.stderr.write(self.unique_prefix + message + "\n")
     def warning (self, message):
         sys.stderr.write("\n\n" + self.unique_prefix + "WARNING:\n    " + message + "\n\n")
+    def error (self, message):
+        sys.stderr.write("\n\n" + self.unique_prefix + "ERROR:\n    " + message + "\n\n")
     def debug (self, message):
         sys.stderr.write(self.unique_prefix + message + "\n")
 
@@ -170,6 +174,8 @@ class t_stream_logger:
         self.stream.write(message + "\n")
     def warning (self, message):
         sys.stream.write("\n\nWARNING:\n    " + message + "\n\n")
+    def error (self, message):
+        sys.stream.write("\n\nERROR:\n    " + message + "\n\n")
     def debug (self, message):
         self.stream.write(message + "\n")
 
@@ -399,7 +405,7 @@ def generic_job_descriptor (param, runtime_data):
     if param in ([], None):
         m = "Job"
     else:
-        m = "Job = %s" % ignore_unknown_encoder(param)
+        m = "Job  = %s" % ignore_unknown_encoder(param)
 
     return m, [m]
 
@@ -408,8 +414,8 @@ def io_files_job_descriptor (param, runtime_data):
     out_param   =        shorten_filenames_encoder(param[1])        if len(param) > 1 else "??"
     in_param    =        shorten_filenames_encoder(param[0])        if len(param) > 0 else "??"
 
-    return ("Job = [%s -> %s%s]" % (in_param, out_param, extra_param),
-            ["Job = [%s" % in_param, "-> " + out_param + extra_param + "]"])
+    return ("Job  = [%s -> %s%s]" % (in_param, out_param, extra_param),
+            ["Job  = [%s" % in_param, "-> " + out_param + extra_param + "]"])
 
 
 def io_files_one_to_many_job_descriptor (param, runtime_data):
@@ -419,7 +425,7 @@ def io_files_one_to_many_job_descriptor (param, runtime_data):
     in_param    =        shorten_filenames_encoder(param[0])        if len(param) > 0 else "??"
 
     # start with input parameter
-    ret_params = ["Job = [%s" % in_param]
+    ret_params = ["Job  = [%s" % in_param]
 
     # add output parameter to list,
     #   processing one by one if multiple output parameters
@@ -436,7 +442,7 @@ def io_files_one_to_many_job_descriptor (param, runtime_data):
     # add closing bracket
     ret_params[-1] +="]"
 
-    return ("Job = [%s -> %s%s]" % (in_param, out_param, extra_param), ret_params)
+    return ("Job  = [%s -> %s%s]" % (in_param, out_param, extra_param), ret_params)
 
 
 def mkdir_job_descriptor (param, runtime_data):
@@ -745,7 +751,7 @@ class _task (node):
 
     #_________________________________________________________________________________________
     def get_action_name (self):
-        return _task.action_mkdir[self._action_type]
+        return _task.action_names[self._action_type]
 
     #_________________________________________________________________________________________
 
@@ -869,6 +875,27 @@ class _task (node):
         """
         return self.job_descriptor(descriptive_param, runtime_data)[0]
 
+
+    #_________________________________________________________________________________________
+
+    #   get_job_name
+
+    #_________________________________________________________________________________________
+    def get_task_name(self, in_func_format = False):
+        """
+        Returns name of task function, removing __main__ namespace if necessary
+
+        if in_func_format is true, will return def task_func(...):
+
+        """
+
+        task_name = self._name.replace("__main__.", "")
+        if self._action_type != _task.action_mkdir and in_func_format:
+            return "def %s(...):" % task_name
+        else:
+            return task_name
+
+
     #_________________________________________________________________________________________
 
     #   printout
@@ -900,8 +927,7 @@ class _task (node):
 
         messages = []
 
-        task_name = self._name.replace("__main__.", "")
-        messages.append("Task = " + task_name + ("    >>Forced to rerun<<" if force_rerun else ""))
+        messages.append("Task = " + self.get_task_name() + ("    >>Forced to rerun<<" if force_rerun else ""))
         if verbose ==1:
             return messages
 
@@ -1015,9 +1041,8 @@ class _task (node):
                 logger       = None
                 verbose      = 0
                 runtime_data = {}
-            short_task_name = self._name.replace('__main__.', '')
             log_at_level (logger, 4, verbose,
-                            "  Task = " + short_task_name)
+                            "  Task = " + self.get_task_name())
 
             #
             #   If job is inactive, always consider it up-to-date
@@ -1068,7 +1093,7 @@ class _task (node):
                 if (verbose >= 1 and "ruffus_WARNING" in runtime_data and
                     self.param_generator_func in runtime_data["ruffus_WARNING"]):
                     for msg in runtime_data["ruffus_WARNING"][self.param_generator_func]:
-                        logger.warning("    'In Task def %s(...):' %s " % (short_task_name, msg))
+                        logger.warning("    'In Task %s' %s " % (self.get_task_name(True), msg))
 
 
                 log_at_level (logger, 4, verbose, "    All jobs up to date")
@@ -1252,11 +1277,10 @@ class _task (node):
         """
         for f in self.posttask_functions:
             f()
-        short_task_name = self._name.replace('__main__.', '')
         if jobs_uptodate:
-            logger.info("Uptodate Task = " + short_task_name)
+            logger.info("Uptodate Task = " + self.get_task_name())
         else:
-            logger.info("Completed Task = " + short_task_name)
+            logger.info("Completed Task = " + self.get_task_name())
 
 
         #
@@ -2108,8 +2132,7 @@ def link_task_names_to_functions ():
 
     for n in node._all_nodes:
         if n.user_defined_work_func == None:
-            display_task_name = n._name.replace("__main__.", "")
-            dependent_display_task_name = n._inward[0]._name.replace("__main__.", "")
+            dependent_display_task_name = n._inward[0].get_task_name()
             if n._module_name in sys.modules:
                 module = sys.modules[n._module_name]
                 if hasattr(module, n._func_name):
@@ -2117,11 +2140,11 @@ def link_task_names_to_functions ():
                 else:
                     raise error_decorator_args(("Module '%s' has no function '%s' in " +
                                                 "\n@task_follows('%s')\ndef %s...") %
-                                        (n._module_name, n._func_name, display_task_name, dependent_display_task_name))
+                                        (n._module_name, n._func_name, n.get_task_name(), dependent_display_task_name))
             else:
                 raise error_decorator_args("Module '%s' not found in " +
                                         "\n@task_follows('%s')\ndef %s..." %
-                                (n._module_name, display_task_name, dependent_display_task_name))
+                                (n._module_name, n.get_task_name(), dependent_display_task_name))
 
 
         #
@@ -2161,7 +2184,7 @@ def task_names_to_tasks (task_description, task_names):
                 continue
             else:
                 # blow up for unwrapped function
-                raise error_function_is_not_a_task(("Function %s is not a pipelined task in ruffus." %
+                raise error_function_is_not_a_task(("Function def %s(...): is not a pipelined task in ruffus." %
                                                     task_name.__name__) +
                                                     " To include this, this function needs to have a ruffus "+
                                                     "decoration like '@parallel', '@files', or named as a dependent "+
@@ -2442,8 +2465,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     #
                     # log task
                     #
-                    task_name = t._name.replace("__main__.", "")
-                    log_at_level (logger, 3, verbose, "Task enters queue = " + task_name + (": Forced to rerun" if force_rerun else ""))
+                    log_at_level (logger, 3, verbose, "Task enters queue = " + t.get_task_name() + (": Forced to rerun" if force_rerun else ""))
                     log_at_level (logger, 3, verbose, t._description)
                     inprogress_tasks.add(t)
                     cnt_tasks_processed += 1
@@ -2544,7 +2566,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                         if (verbose >= 1 and "ruffus_WARNING" in runtime_data and
                             t.param_generator_func in runtime_data["ruffus_WARNING"]):
                             for msg in runtime_data["ruffus_WARNING"][t.param_generator_func]:
-                                logger.warning("    'In Task def %s(...):' %s " % (task_name, msg))
+                                logger.warning("    'In Task def %s(...):' %s " % (t.get_task_name(), msg))
 
 
                 #
@@ -2687,7 +2709,8 @@ def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE, logg
 #_________________________________________________________________________________________
 def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, logger = stderr_logger,
                  gnu_make_maximal_rebuild_mode  = True, verbose = 1,
-                 runtime_data = None, one_second_per_job = True, touch_files_only = False):
+                 runtime_data = None, one_second_per_job = True, touch_files_only = False,
+                 exceptions_terminate_immediately = False, log_exceptions = False):
     """
     Run pipelines.
 
@@ -2847,8 +2870,10 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     #
     #   for each result from job
     #
-    job_errors = list()
+    job_errors = RethrownJobError()
     tasks_with_errors = set()
+
+
 
     #
     #   job_result.job_name / job_result.return_value
@@ -2871,13 +2896,24 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
         if job_result.state == JOB_ERROR:
             job_errors.append(job_result.exception)
             tasks_with_errors.add(t)
-            if len(job_errors) >= multiprocess:
+
+            # 
+            # print to logger immediately
+            #
+            if log_exceptions:
+                logger.error(job_errors.get_nth_exception_str())
+
+            # 
+            # break if too many errors
+            #
+            if len(job_errors) >= multiprocess or exceptions_terminate_immediately:
                 break
+
 
         # break immediately if the user says stop
         elif job_result.state == JOB_SIGNALLED_BREAK:
             job_errors.append(job_result.exception)
-            tasks_with_errors.add(t)
+            job_errors.specify_task(t, "Exceptions running jobs")
             break
 
         else:
@@ -2908,10 +2944,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
 
 
     if len(job_errors):
-        errt = RethrownJobError(job_errors)
-        for t in tasks_with_errors:
-            errt.specify_task(t, "Exceptions running jobs")
-        raise errt
+        raise job_errors
 
 
 
