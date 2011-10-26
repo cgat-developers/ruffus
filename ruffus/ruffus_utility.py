@@ -541,10 +541,11 @@ def check_files_io_parameters (enclosing_task, params, error_object):
             if len(job_param) < 2:
                 raise error_object(enclosing_task, "Missing output files for job " +
                                                     ignore_unknown_encoder(job_param))
-            if len(get_strings_in_nested_sequence(job_param[0:2])) == 0:
-                raise error_object(enclosing_task, "Input or output file parameters should "
-                                                    "contain at least one or more file names strings." +
-                                                    ignore_unknown_encoder(job_param))
+            #if len(get_strings_in_nested_sequence(job_param[0:2])) == 0:
+            #    raise error_object(enclosing_task, "Input or output file parameters should "
+            #                                        "contain at least one or more file names strings. "
+            #                                        "Consider using @parallel if you are not using files. " +
+            #                                        ignore_unknown_encoder(job_param))
     except TypeError:
         #
         # job_param was not a list
