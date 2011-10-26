@@ -707,7 +707,7 @@ class _task (node):
     job_single_matches_parent= 2
 
     job_limit_semaphores = {}
-    
+
 
     #_________________________________________________________________________________________
 
@@ -778,7 +778,7 @@ class _task (node):
         self.needs_update_func          = None
         self.job_wrapper                = job_wrapper_generic
 
-        #                               
+        #
         self.job_descriptor             = generic_job_descriptor
 
         # jobs which produce a single output.
@@ -914,7 +914,7 @@ class _task (node):
         def get_job_names (param, indent_str):
             job_names = self.job_descriptor(param, runtime_data)[1]
             if len(job_names) > 1:
-                job_names = ([indent_str + job_names[0]]  + 
+                job_names = ([indent_str + job_names[0]]  +
                              [indent_str + "      " + jn for jn in job_names[1:]])
             return job_names
 
@@ -963,7 +963,7 @@ class _task (node):
                     return messages
                 messages.append(indent_str + "Task is inactive")
                 return messages
-                
+
 
         #
         #   No parameters: just call task function
@@ -1046,7 +1046,7 @@ class _task (node):
 
             #
             #   If job is inactive, always consider it up-to-date
-            #     
+            #
             if (self.active_if_checks != None and
                 any( not arg() if isinstance(arg, collections.Callable) else not arg
                          for arg in self.active_if_checks)):
@@ -1054,7 +1054,7 @@ class _task (node):
                                 "    Inactive task: treat as Up to date")
                 #print 'signaling that the inactive task is up to date'
                 return True
-            
+
             #
             #   Always needs update if no way to check if up to date
             #
@@ -1155,7 +1155,7 @@ class _task (node):
         """
 
         #
-        #   N.B. active_if_checks is called once per task 
+        #   N.B. active_if_checks is called once per task
         #        in make_job_parameter_generator() for consistency
         #
         #   self.is_active can be set using self.active_if_checks in that function,
@@ -1166,7 +1166,7 @@ class _task (node):
         if (not self.is_active):
             #print >>sys.stderr, "    Removing all outputs from " + self._name.replace('__main__.', '')
             return []
-        
+
         #
         #   This looks like the wrong place to flatten
         #
@@ -2897,13 +2897,13 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
             job_errors.append(job_result.exception)
             tasks_with_errors.add(t)
 
-            # 
+            #
             # print to logger immediately
             #
             if log_exceptions:
                 logger.error(job_errors.get_nth_exception_str())
 
-            # 
+            #
             # break if too many errors
             #
             if len(job_errors) >= multiprocess or exceptions_terminate_immediately:
