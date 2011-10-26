@@ -402,34 +402,89 @@ def setup_logging_factory (logger_name, args):
 
 
 
+extra_pipeline_printout_graph_options = [
+                                            "ignore_upstream_of_target"      ,
+                                            "skip_uptodate_tasks"            ,
+                                            "gnu_make_maximal_rebuild_mode"  ,
+                                            "test_all_task_for_update"       ,
+                                            "minimal_key_legend"             ,
+                                            "user_colour_scheme"             ,
+                                            "pipeline_name"                  ,
+                                            "size"                           ,
+                                            "dpi"                            ,
+                                            "runtime_data"                   ,
+                                            "logger"                         ,
+                                         ]
+extra_pipeline_printout_options   = [
+                                            "indent"                        ,
+                                            "gnu_make_maximal_rebuild_mode" ,
+                                            "wrap_width"                    ,
+                                            "logger"                        ,
+                                            "runtime_data"]
+
+extra_pipeline_run_options = [
+                                "gnu_make_maximal_rebuild_mode"     ,
+                                "runtime_data"                      ,
+                                "one_second_per_job"                ,
+                                "touch_files_only"                  ,
+                                "logger"                            ,
+                                "exceptions_terminate_immediately"  ,
+                                "log_exceptions"]
 
 
-def run (options, option_logger = None):
+def get_extra_options_appropriate_for_command (appropriate_option_names, extra_options):
+    """
+    Get extra options which are appropriate for
+        pipeline_printout
+        pipeline_printout_graph
+        pipeline_run
+    """
+
+    appropriate_options = dict()
+    for option_name in appropriate_option_names:
+        if option_name in extra_options:
+            appropriate_options[option_name] = extra_options[option_name]
+    return appropriate_options
+
+
+
+def run (options, **extra_options):
     """
     Take action depending on options
+    extra_options are passed (as appropriate to the underlying functions
+    Returns True if pipeline_run
     """
-    if option_logger == False:
-        option_logger = task.black_hole_logger
-    elif option_logger == None:
-        option_logger = task.stderr_logger
+    if not "logger" in extra_options:
+        extra_options["logger"] = None
+    if extra_options["logger"] == False:
+       extra_options["logger"] = task.black_hole_logger
+    elif extra_options["logger"] == None:
+        extra_options["logger"] = task.stderr_logger
 
 
     if options.just_print:
+        appropriate_options = get_extra_options_appropriate_for_command (extra_pipeline_printout_options, extra_options)
         task.pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
-                                verbose=options.verbose)
+                                verbose=options.verbose, **appropriate_options)
+        return False
 
     elif options.flowchart:
+        appropriate_options = get_extra_options_appropriate_for_command (extra_pipeline_printout_graph_options, extra_options)
         task.pipeline_printout_graph (   open(options.flowchart, "w"),
                                         options.flowchart_format,
                                         options.target_tasks,
                                         options.forced_tasks,
                                         draw_vertically = not options.draw_horizontally,
-                                        no_key_legend   = not options.key_legend_in_graph)
+                                        no_key_legend   = not options.key_legend_in_graph,
+                                        **appropriate_options)
+        return False
     else:
+        appropriate_options = get_extra_options_appropriate_for_command (extra_pipeline_run_options, extra_options)
         task.pipeline_run(  options.target_tasks,
                             options.forced_tasks,
                             multiprocess    = options.jobs,
-                            logger          = option_logger,
-                            verbose         = options.verbose)
+                            verbose         = options.verbose,
+                            **appropriate_options)
+        return True
 
 
