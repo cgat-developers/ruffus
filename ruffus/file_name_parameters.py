@@ -240,6 +240,7 @@ def needs_update_check_modify_time (*params):
     """
     Given input and output files, see if all exist and whether output files are later than input files
     Each can be
+
         #. string: assumed to be a filename "file1"
         #. any other type
         #. arbitrary nested sequence of (1) and (2)
