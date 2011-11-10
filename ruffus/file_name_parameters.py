@@ -268,7 +268,7 @@ def needs_update_check_modify_time (*params):
             if not os.path.exists(p):
                 missing_files.append(p)
     if len(missing_files):
-        return True, "Missing file%s [%s]" % ("s" if len(missing_files) > 1 else "", 
+        return True, "Missing file%s [%s]" % ("s" if len(missing_files) > 1 else "",
                                             ", ".join(missing_files))
 
     #
@@ -327,27 +327,32 @@ def needs_update_check_modify_time (*params):
         return msg
 
 
-    real_file_names = [set(),set()]
-    for index, io in enumerate((i, o)):
-        for f in io:
-            real_file_name = os.path.realpath(f)
-            real_file_names[index].add(real_file_name)
+    #
+    # save "real" file names to get to the bottom of links
+    #
+    real_input_file_names = set()
+    for f in i:
+        real_input_file_names.add(os.path.realpath(f))
+        mtime = os.path.getmtime(f)
+        filename_to_times[0].append((mtime, f))
+        file_times[0].append(mtime)
 
-            mtime = os.path.getmtime(f)
+    for f in o:
+        real_file_name = os.path.realpath(f)
+        mtime = os.path.getmtime(f)
+        # ignore output file if it is found in the list of input files
+        #       by definition they have the same timestamp,
+        #       and the job will otherwise appear to be out of date
+        if real_file_name not in real_input_file_names:
+            file_times[1].append(mtime)
+        filename_to_times[1].append((mtime, f))
 
-            #
-            # ignore if output is a link pointed to the same file as input.
-            #       by definition they have the same time
-            #       N.B. output comes second, so all real paths are already in
-            #       real_file_names[0]
-            #
-            if real_file_name not in real_file_names[(index + 1) % 2]:
-                file_times[index].append(mtime)
-
-            filename_to_times[index].append((mtime, f))
 
     #   debug
-    #print >>sys.stderr, pretty_io_with_date_times(filename_to_times), file_times, (max(file_times[0]) >= min(file_times[1]))
+    #if len(file_times[0]) and len (file_times[1]):
+    #    print >>sys.stderr, pretty_io_with_date_times(filename_to_times), file_times, (max(file_times[0]) >= min(file_times[1]))
+    #else:
+    #    print >>sys.stderr, i, o
 
     #
     #   update if any input file >= (more recent) output fifle
@@ -355,7 +360,6 @@ def needs_update_check_modify_time (*params):
     if len(file_times[0]) and len (file_times[1]) and max(file_times[0]) >= min(file_times[1]):
         return True, pretty_io_with_date_times(filename_to_times)
     return False, "Up to date"
-
 
 
 

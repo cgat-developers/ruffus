@@ -59,6 +59,7 @@ if __name__ == '__main__':
 from ruffus_exceptions import *
 #import task
 import collections
+import multiprocessing.managers
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -150,7 +151,10 @@ def non_str_sequence (arg):
     We treat strings / dicts however as a singleton not as a sequence
 
     """
-    if (isinstance(arg, (basestring, dict))):
+    #will only dive into list and set, everything else is not regarded as a sequence
+    #loss of flexibility but more conservative
+    #if (isinstance(arg, (basestring, dict, multiprocessing.managers.DictProxy))):
+    if (not isinstance(arg, (list, tuple, set))):
         return False
     try:
         test = iter(arg)
@@ -254,8 +258,8 @@ def ignore_unknown_encoder(obj):
         return "[%s]" % ", ".join(map(ignore_unknown_encoder, obj))
     try:
         s= str(obj)
-        if "object at " in s and s[0] == '<' and s[-1] == '>':
-            pos = s.find(" object at ")
+        if " object" in s and s[0] == '<' and s[-1] == '>':
+            pos = s.find(" object")
             s = "<" + s[1:pos].replace("__main__.", "") + ">"
         return s.replace('"', "'")
     except:
