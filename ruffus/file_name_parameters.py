@@ -328,34 +328,36 @@ def needs_update_check_modify_time (*params):
 
 
     #
-    # save "real" file names to get to the bottom of links
+    #   Ignore output file if it is found in the list of input files
+    #       By definition they have the same timestamp,
+    #       and the job will otherwise appear to be out of date
     #
+    #   Symbolic links followed
     real_input_file_names = set()
-    for f in i:
-        real_input_file_names.add(os.path.realpath(f))
-        mtime = os.path.getmtime(f)
-        filename_to_times[0].append((mtime, f))
+    for input_file_name in i:
+        real_input_file_names.add(os.path.realpath(input_file_name))
+        mtime = os.path.getmtime(input_file_name)
+        filename_to_times[0].append((mtime, input_file_name))
         file_times[0].append(mtime)
 
-    for f in o:
-        real_file_name = os.path.realpath(f)
-        mtime = os.path.getmtime(f)
-        # ignore output file if it is found in the list of input files
-        #       by definition they have the same timestamp,
-        #       and the job will otherwise appear to be out of date
+    for output_file_name in o:
+        real_file_name = os.path.realpath(output_file_name)
+        mtime = os.path.getmtime(output_file_name)
         if real_file_name not in real_input_file_names:
             file_times[1].append(mtime)
-        filename_to_times[1].append((mtime, f))
+        filename_to_times[1].append((mtime, output_file_name))
 
 
-    #   debug
+    #
+    #   Debug: Force print modified file names and times
+    #
     #if len(file_times[0]) and len (file_times[1]):
     #    print >>sys.stderr, pretty_io_with_date_times(filename_to_times), file_times, (max(file_times[0]) >= min(file_times[1]))
     #else:
     #    print >>sys.stderr, i, o
 
     #
-    #   update if any input file >= (more recent) output fifle
+    #   update if any input file >= (more recent) output file
     #
     if len(file_times[0]) and len (file_times[1]) and max(file_times[0]) >= min(file_times[1]):
         return True, pretty_io_with_date_times(filename_to_times)
