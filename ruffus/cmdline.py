@@ -413,13 +413,11 @@ extra_pipeline_printout_graph_options = [
                                             "size"                           ,
                                             "dpi"                            ,
                                             "runtime_data"                   ,
-                                            "logger"                         ,
                                          ]
 extra_pipeline_printout_options   = [
                                             "indent"                        ,
                                             "gnu_make_maximal_rebuild_mode" ,
                                             "wrap_width"                    ,
-                                            "logger"                        ,
                                             "runtime_data"]
 
 extra_pipeline_run_options = [
@@ -454,12 +452,6 @@ def run (options, **extra_options):
     extra_options are passed (as appropriate to the underlying functions
     Returns True if pipeline_run
     """
-    if not "logger" in extra_options:
-        extra_options["logger"] = None
-    if extra_options["logger"] == False:
-       extra_options["logger"] = task.black_hole_logger
-    elif extra_options["logger"] == None:
-        extra_options["logger"] = task.stderr_logger
 
 
     if options.just_print:
@@ -479,6 +471,12 @@ def run (options, **extra_options):
                                         **appropriate_options)
         return False
     else:
+        if not "logger" in extra_options:
+            extra_options["logger"] = None
+        if extra_options["logger"] == False:
+           extra_options["logger"] = task.black_hole_logger
+        elif extra_options["logger"] == None:
+            extra_options["logger"] = task.stderr_logger
         appropriate_options = get_extra_options_appropriate_for_command (extra_pipeline_run_options, extra_options)
         task.pipeline_run(  options.target_tasks,
                             options.forced_tasks,
