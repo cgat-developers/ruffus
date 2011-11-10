@@ -152,4 +152,4 @@ for task_name, jobs_count in ({'start_task': 1, 'final_task': 4, 'linked_file_na
 if "same_file_name_task" in executed_tasks_proxy:
     raise Exception("Error: %s should not have run!!" % "same_file_name_task")
 
-
+print "Succeeded"

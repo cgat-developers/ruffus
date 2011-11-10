@@ -42,3 +42,6 @@ echo Running test_files_decorator.py
 python ./test_files_decorator.py
 echo Running test_active_if.py
 python ./test_active_if.py -j2 -v
+echo Running test_softlink_uptodate.py
+python ./test_softlink_uptodate.py -j2 -v
+
