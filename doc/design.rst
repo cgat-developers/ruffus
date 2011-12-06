@@ -48,13 +48,13 @@ Deficiencies of `make` / `gmake`
     and makefiles can quickly become unmaintainable.
     
 .. _design.scons_and_rake:
+
 =================================================
 `Scons`, `Rake` and other `Make` alternatives
 =================================================
     
     Many attempts have been made to produce a more modern version of make, with less of its
-    historical baggage. These include the Java-based `Apache ant <http://ant.apache.org/>`_ which
-    is specified in xml .
+    historical baggage. These include the Java-based `Apache ant <http://ant.apache.org/>`_ which is specified in xml.
 
     More interesting are a new breed of build systems whose scripts are written in modern programming
     languages, rather than a specially-invented "build" specificiation syntax.
@@ -171,17 +171,18 @@ Managing pipelines stage-by-stage using **Ruffus**
              separate python functions. 
            | (These correspond to `gmake pattern rules <http://www.gnu.org/software/make/manual/make.html#Pattern-Rules>`_)
            |
-           
+
         #) | The dependencies between pipeline stages (python functions) are specified up-front.
            | These can be displayed as a flow chart. 
+
            .. image:: images/front_page_flowchart.png
 
         #) **Ruffus** makes sure pipeline stage functions are called in the right order, 
            with the right parameters, running in parallel using multiprocessing if necessary.
-    
+
         #) Data file timestamps can be used to automatically determine if all or any parts
            of the pipeline are out-of-date and need to be rerun.
-           
+
         #) Separate pipeline stages, and operations within each pipeline stage,
            can be run in parallel provided they are not inter-dependent.
            

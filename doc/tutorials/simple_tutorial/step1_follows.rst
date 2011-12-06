@@ -114,8 +114,9 @@ Running the pipeline
             
             >>> pipeline_run([second_task], verbose = 1)
         
-    Ruffus by default prints out the ``verbose`` progress through your pipeline, 
-    interleaved with our ``Hello`` and ``World``.
+    Ruffus by default prints out the ``verbose`` progress through the pipelined code, 
+    interleaved with the **Hello** printed by ``first_task`` and **World** printed
+    by ``second_task``.
     
         .. image:: ../../images/simple_tutorial_hello_world_output.png
 

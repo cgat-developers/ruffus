@@ -16,7 +16,7 @@ Update documentation
         see :ref:`@split syntax <decorators.split_ex>`
     * Update collate to include **add_inputs** 
     * Add Manual Chapter on "best practices" in constructing pipelines
-    * Revise chapter on :ref:`Design and Architecture <design.file_based_pipelines>`
+    * Revise chapter on :ref:`Design and Architecture <design.scons_and_rake>`
 
 
 
@@ -49,20 +49,21 @@ Left to do:
 
     Some of these proposals are well-fleshed-out:
     
-    * :ref:`Clean up <todo-cleanup>` 
-    * :ref:`(Plug-in) File Dependency Checking via MD5 or Databases <file-dependency-checking>`
+    * :ref:`Clean up <todo.cleanup>` 
+    * :ref:`(Plug-in) File Dependency Checking via MD5 or Databases <file.dependency_checking>`
     
     Others require some more user feedback about semantics:
     
-    * :ref:`Harvesting return values from jobs <todo-return-values>`
+    * :ref:`Harvesting return values from jobs <todo.return-values>`
     
     Some issues are do-able but difficult and I don't have the experience:
     
-    * :ref:`Run jobs on remote (clustered) processes via SGE/Hadoop <todo-multiprocessing>`
+    * :ref:`Run jobs on remote (clustered) processes via SGE/Hadoop <todo.hadoop_sge>`
 
 
     
 .. _todo.multiple_exception:
+
 ###################################
 Exceptions
 ###################################
@@ -295,7 +296,7 @@ Return values
     
     What should be the syntax for getting the results back?
 
-.. _todo.hadoop:
+.. _todo.hadoop_sge:
 
 ######################################################################
 Run jobs on remote (clustered) processes via SGE/Hadoop
