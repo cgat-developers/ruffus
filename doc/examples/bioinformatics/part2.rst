@@ -51,6 +51,7 @@ Step 1. Cleaning up any leftover junk from previous pipeline runs
 ===============================================================
 Step 2. Adding a "flag" file to mark successful completion
 ===============================================================
+.. _examples_bioinformatics_part2.step2:
 
     When pipelined tasks are interrupted half way through an operation, the output may
     only contain part of the results in an incomplete or inconsistent state.
