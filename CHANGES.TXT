@@ -1,24 +1,9 @@
 = v. 2.3=
     _03/October/2011_
-    ==Bug fix==
-        * From "Issue 45"
-          @split operations now show the 1->many output
-          {{{
-          Task = split_animals
-               Job = [None
-                     -> cows
-                     -> horses
-                     -> pigs
-                      , any_extra_parameters]
-          }}}
-    ==Improved display from pipeline_printout
-        * File date and time are displayed in human readable form and out of date
-          files are flagged with asterisks. 
-    ==@active_if turns off tasks at runtime==
+    ==`@active_if` turns off tasks at runtime==
         * Issue 36
         * Design and initial implementation from Jacob Biesinger
-        * Takes one or more parameters which can be either booleans or functions / 
-          callable objects which return True / False
+        * Takes one or more parameters which can be either booleans or functions or callable objects which return True / False
         * The expressions inside @active_if are evaluated each time 
           `pipeline_run`, `pipeline_printout` or `pipeline_printout_graph` is called.
         * Dormant tasks behave as if they are up to date and have no output.
@@ -28,59 +13,90 @@
         * Supports both argparse (python 2.7) and optparse (python 2.6):
         * The following options are defined by default:
           {{{
-                    --verbose
-                    --version
-                    --log_file
+    --verbose
+    --version
+    --log_file
 
-                -t, --target_tasks
-                -j, --jobs
-                -n, --just_print
-                    --flowchart
-                    --key_legend_in_graph
-                    --draw_graph_horizontally
-                    --flowchart_format
-                    --forced_tasks
+-t, --target_tasks
+-j, --jobs
+-n, --just_print
+    --flowchart
+    --key_legend_in_graph
+    --draw_graph_horizontally
+    --flowchart_format
+    --forced_tasks
            }}}
         * Usage with argparse (Python > 2.7):
           {{{
-                from ruffus import *
+from ruffus import *
 
-                parser = cmdline.get_argparse(   description='WHAT DOES THIS PIPELINE DO?')
+parser = cmdline.get_argparse(   description='WHAT DOES THIS PIPELINE DO?')
 
-                # for example...
-                parser.add_argument("--input_file")
+# for example...
+parser.add_argument("--input_file")
 
-                options = parser.parse_args()
+options = parser.parse_args()
 
-                #  optional logger which can be passed to ruffus tasks
-                logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
+#  optional logger which can be passed to ruffus tasks
+logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
 
-                #_____________________________________________________________________________________
-                #   pipelined functions go here
-                #_____________________________________________________________________________________
+#_____________________________________________________________________________________
+#   pipelined functions go here
+#_____________________________________________________________________________________
 
-                cmdline.run (options)
+cmdline.run (options)
           }}}
         * Usage with optparse (Python 2.6):
           {{{
-                from ruffus import *
+from ruffus import *
 
-                parser = cmdline.get_optgparse(version="%prog 1.0", usage = "\n\n    %prog [options]")
+parser = cmdline.get_optgparse(version="%prog 1.0", usage = "\n\n    %prog [options]")
 
-                # for example...
-                parser.add_option("-c", "--custom", dest="custom", action="count")
+# for example...
+parser.add_option("-c", "--custom", dest="custom", action="count")
 
-                (options, remaining_args) = parser.parse_args()
+(options, remaining_args) = parser.parse_args()
 
-                #  logger which can be passed to ruffus tasks
-                logger, logger_mutex = cmdline.setup_logging ("this_program", options.log_file, options.verbose)
+#  logger which can be passed to ruffus tasks
+logger, logger_mutex = cmdline.setup_logging ("this_program", options.log_file, options.verbose)
 
-                #_____________________________________________________________________________________
-                #   pipelined functions go here
-                #_____________________________________________________________________________________
+#_____________________________________________________________________________________
+#   pipelined functions go here
+#_____________________________________________________________________________________
 
-                cmdline.run (options)
+cmdline.run (options)
           }}}
+    ==Optionally terminate pipeline after first exception==
+        * To have all exceptions interrupt immediately:
+          {{{
+pipeline_run(..., exceptions_terminate_immediately = True)
+          }}}
+        * From "Issue 43"
+        * By default ruffus accumulates `NN` errors before interrupting the pipeline prematurely. `NN` is the specified parallelism for `pipeline_run(...)`. 
+        * By default, a pipeline will only be interrupted immediately if exceptions of type `ruffus.JobSignalledBreak` are thrown.
+    ==Display exceptions without delay==
+        * To see exceptions as they occur:
+          {{{
+pipeline_run(..., log_exceptions = True)
+          }}}
+        * From "Issue 43"
+        * By default, Ruffus re-throws exceptions in ensemble after pipeline termination.
+        * `logger.error(...)` will be invoked with the string representation of the each exception, and associated stack trace.
+        * The default logger prints to sys.stderr, but this can be changed to any class from the logging module or compatible object via `pipeline_run(..., logger = ???)`
+    ==`@split` operations now show the 1->many output in pipeline_printout==
+        * From "Issue 45"
+        * New output
+          {{{
+Task = split_animals
+     Job = [None
+           -> cows
+           -> horses
+           -> pigs
+            , any_extra_parameters]
+          }}}
+    ==Improved display from `pipeline_printout()`==
+        * File date and time are displayed in human readable form and out of date
+          files are flagged with asterisks. 
 
 
 
@@ -101,18 +117,18 @@
         e.g. matching ``'something.c'`` with ``'something.h'``, is now much easier in Ruffus.<br><br>
         For example:
           {{{
-            source_files = ["something.c", "more_code.c"]
-            @transform(source_files, suffix(".c"), add_inputs(r"\1.h", "common.h"), ".o")
-            def compile(input_files, output_file):
-                ( source_file,
-                  header_file,
-                  common_header) = input_files
-                # call compiler to make object file
+source_files = ["something.c", "more_code.c"]
+@transform(source_files, suffix(".c"), add_inputs(r"\1.h", "common.h"), ".o")
+def compile(input_files, output_file):
+    ( source_file,
+      header_file,
+      common_header) = input_files
+    # call compiler to make object file
           }}}
           This is equivalent to calling:
           {{{
-              compile(["something.c", "something.h", "common.h"], "something.o")
-              compile(["more_code.c", "more_code.h", "common.h"], "more_code.o")
+compile(["something.c", "something.h", "common.h"], "something.o")
+compile(["more_code.c", "more_code.h", "common.h"], "more_code.o")
           }}}
 
         The `\1` matches everything *but* the suffix and will be applied to both `glob`s and file names.<br>
@@ -127,23 +143,23 @@
         In other words, this is a `many->"many more"` operation.<br><br>
         For example, given three starting files:
         {{{
-            original_files = ["original_0.file",
-                              "original_1.file",
-                              "original_2.file"]
+original_files = ["original_0.file",
+                  "original_1.file",
+                  "original_2.file"]
         }}}
         We can split each into its own set of sub-sections:
         {{{
-            @split(original_files,
-               regex(r"starting_(\d+).fa"),                         # match starting files
-                     r"files.split.\1.*.fa"                         # glob pattern
-                     r"\1")                                         # index of original file
-            def split_files(input_file, output_files, original_index):
-                """
-                    Code to split each input_file
-                        "original_0.file" -> "files.split.0.*.fa"
-                        "original_1.file" -> "files.split.1.*.fa"
-                        "original_2.file" -> "files.split.2.*.fa"
-                """
+@split(original_files,
+   regex(r"starting_(\d+).fa"),                         # match starting files
+         r"files.split.\1.*.fa"                         # glob pattern
+         r"\1")                                         # index of original file
+def split_files(input_file, output_files, original_index):
+    """
+        Code to split each input_file
+            "original_0.file" -> "files.split.0.*.fa"
+            "original_1.file" -> "files.split.1.*.fa"
+            "original_2.file" -> "files.split.2.*.fa"
+    """
         }}}
         This is, conceptually, the reverse of the @collate(...) decorator
     ==Ruffus will complain about unescaped regular expression special characters:==
@@ -157,13 +173,13 @@
                 Colours, size and resolution are now fully customisable. An svg bug in firefox has
                 been worked around so that font size are displayed correctly
                 {{{
-                    pipeline_printout_graph( #...
-                                            user_colour_scheme = {
-                                                                  "colour_scheme_index":1
-                                                                  "Task to run"  : {"fillcolor":"blue"},
-                                                                   pipeline_name : "My flowchart",
-                                                                   size          : (11,8),
-                                                                   dpi           : 120)})
+pipeline_printout_graph( #...
+                        user_colour_scheme = {
+                                              "colour_scheme_index":1
+                                              "Task to run"  : {"fillcolor":"blue"},
+                                               pipeline_name : "My flowchart",
+                                               size          : (11,8),
+                                               dpi           : 120)})
                 }}}
     ==Bug Fix:==
         * From "Issue 27"
@@ -180,7 +196,7 @@
             (See `one_second_per_job` in `task.py:make_job_parameter_generator(...)`)<br><br>
             As previously, if you are using a modern file system (e.g. ext4 / JFS / NTFS), you can avoid these unnecessary pauses by setting the `one_second_per_job` flag:
             {{{
-                pipeline_run(one_second_per_job=False)
+pipeline_run(one_second_per_job=False)
             }}}
         * From "Issue 30"
             @split with empty input files crashes Ruffus 
@@ -219,15 +235,15 @@
           just to inject an extra dependency (e.g. a header file).
         * `add_inputs(...)`, as the name suggests, just adds the additional items as the input parameter
           {{{
-          from ruffus import *
-          @transform(["a.input", "b.input"], suffix(".input"), add_inputs("just.1.more","just.2.more"), ".output")
-          def task(i, o):
-            ""
+from ruffus import *
+@transform(["a.input", "b.input"], suffix(".input"), add_inputs("just.1.more","just.2.more"), ".output")
+def task(i, o):
+  ""
           }}}
           produces:
           {{{
-             Job = [[a.input, just.1.more, just.2.more] ->a.output]
-             Job = [[b.input, just.1.more, just.2.more] ->b.output]
+Job = [[a.input, just.1.more, just.2.more] ->a.output]
+Job = [[b.input, just.1.more, just.2.more] ->b.output]
           }}}
         * like `inputs`, `add_inputs` accepts strings, tasks and globs
           This minor syntactic change promises to add much clarity to some of our
@@ -249,10 +265,10 @@
           downloading from FTP sites. 
           Adding 
           {{{
-          @jobs_limit(4)
-          @transform(new_data_list, suffix(".big_data.gz"), ".big_data")
-          def unzip(i, o):
-            "unzip code goes here"
+@jobs_limit(4)
+@transform(new_data_list, suffix(".big_data.gz"), ".big_data")
+def unzip(i, o):
+  "unzip code goes here"
           }}}
           would limit the unzip operation to 4 jobs at a time, even if the rest of the
           pipeline runs highly in parallel.
@@ -306,9 +322,9 @@
           further. I.e. it is like a combination of @split and @transform.
           For example:
           {{{
-           @split(get_files, regex(r"(.+).original"), r"\1.*.split")
-           def split_files(i, o): 
-                pass
+@split(get_files, regex(r"(.+).original"), r"\1.*.split")
+def split_files(i, o): 
+     pass
           }}}
           This experimental feature will be in beta without documentation. Caveat utilitor!
             
@@ -455,11 +471,11 @@
         * Added `combine` syntax to `@files_re` decorators:
         * Documentation to follow...
         * Example from `src/ruffus/test/test_branching_dependencies.py`:
-{{{
-        @files_re('*.*', '(.*/)(.*\.[345]$)', combine(r'\1\2'), r'\1final.6')
-        def test(input_files, output_files):
-          pass`
-}}}     
+        {{{
+@files_re('*.*', '(.*/)(.*\.[345]$)', combine(r'\1\2'), r'\1final.6')
+def test(input_files, output_files):
+  pass`
+        }}}     
         * will take all files in the current directory
         * will identify files which end in `.3`,  `.4` and `.5` as input files
         * will use `final.6` as the output file

@@ -47,7 +47,7 @@ Step 1. Cleaning up any leftover junk from previous pipeline runs
                     
                 # code as before...
                 
-
+.. _examples_bioinformatics_part2.step2:
 ===============================================================
 Step 2. Adding a "flag" file to mark successful completion
 ===============================================================

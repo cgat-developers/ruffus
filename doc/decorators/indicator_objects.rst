@@ -106,6 +106,7 @@ Indicator Objects
 
         | The starting files names are ``1.c`` and ``2.c``.
         | ``suffix(".c")`` matches ".c" so ``\1`` stands for the unmatched prefices  ``"1"`` and ``"2"``
+
         This will result in the following functional calls:
             ::    
             
@@ -133,6 +134,7 @@ Indicator Objects
     **add_inputs(...) preserves original inputs**
 
         ``add_inputs`` nests the the original input parameters in a list before adding additional dependencies.
+
         This can be seen in the following example:
             ::
 
@@ -175,6 +177,7 @@ Indicator Objects
     **inputs(...) replaces original inputs**
 
         ``inputs(...)`` allows the original input parameters to be replaced wholescale.
+
         This can be seen in the following example:
             ::
 

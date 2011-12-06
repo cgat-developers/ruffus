@@ -65,7 +65,7 @@ version 2.0.9
     * Advanced form of **@split**
       This is an experimental feature.
       
-      Hitherto, **@split** only takes 1 set of input (tasks/files/globs) and split these
+      Hitherto, **@split** only takes 1 set of input (tasks/files/``glob`` s) and split these
       into an indeterminate number of output.
       
           This is a one->many operation.
@@ -131,7 +131,7 @@ version 2.0.10
 
     * Parameter substitution for **inputs(...)**
     
-      The **inputs(...)** parameter in **@transform**, **@collate** can now take tasks and globs,
+      The **inputs(...)** parameter in **@transform**, **@collate** can now take tasks and ``glob`` s,
       and these will be expanded appropriately (after regular expression replacement).
       
       For example::
@@ -188,6 +188,7 @@ version 2.1.1
 ********************************************************************
     * **@transform(.., add_inputs(...))**
         ``add_inputs(...)`` allows the addition of extra input dependencies / parameters for each job.
+
         Unlike ``inputs(...)``, the original input parameter is retained:
             ::
 
@@ -203,7 +204,7 @@ version 2.1.1
                 Job = [[b.input, just.1.more, just.2.more] ->b.output]
 
 
-        Like ``inputs``, ``add_inputs`` accepts strings, tasks and globs
+        Like ``inputs``, ``add_inputs`` accepts strings, tasks and ``glob`` s
         This minor syntactic change promises add much clarity to Ruffus code.
         ``add_inputs()`` is available for ``@transform``, ``@collate`` and ``@split``
 
@@ -219,7 +220,7 @@ version 2.2
         However, using consistent file extensions and
         ``@transform(..., suffix(...))`` makes the code much simpler and easier to read. 
 
-        Previously, ``suffix(...)`` did not cooperately well with ``inputs(...)``.
+        Previously, ``suffix(...)`` did not cooperate well with ``inputs(...)``.
         For example, finding the corresponding header file (".h") for the matching input
         required a complicated ``regex(...)`` regular expression and ``input(...)``. This simple case,
         e.g. matching "something.c" with "something.h", is now much easier in Ruffus.
@@ -243,15 +244,15 @@ version 2.2
               compile(["something.c", "something.h", "common.h"], "something.o")
               compile(["more_code.c", "more_code.h", "common.h"], "more_code.o")
 
-        The ``\1`` matches everything *but* the suffix and will be applied to both ``glob``s and file names.
+        The ``\1`` matches everything *but* the suffix and will be applied to both ``glob``\ s and file names.
 
     For simplicity and compatibility with previous versions, there is always an implied r"\1" before
     the output parameters. I.e. output parameters strings are *always* substituted.
 
         
-    * Tasks and glob in **inputs(...)** / **add_inputs(...)**
+    * Tasks and glob in **inputs(...)** and **add_inputs(...)**
 
-        ``glob``s and tasks can be added as the prerequisites / input files using
+        ``glob``\ s and tasks can be added as the prerequisites / input files using
         ``inputs(...)`` and ``add_inputs(...)``. ``glob`` expansions will take place when the task
         is run.
 
@@ -296,6 +297,7 @@ version 2.2
         Ruffus uses "\1" and "\2" in regular expression substitutions. Even seasoned python
         users may not remember that these have to be 'escaped' in strings. The best option is
         to use 'raw' python strings e.g. 
+
             ::
 
                 r"\1_substitutes\2correctly\3four\4times"
@@ -318,6 +320,121 @@ version 2.2
                                                              dpi           : 120)})
 
         An SVG bug in firefox has been worked around so that font size are displayed correctly.
+
+
+
+********************************************************************
+version 2.3
+********************************************************************
+    * ``@active_if`` turns off tasks at runtime
+        The Design and initial implementation were contributed by Jacob Biesinger
+
+        Takes one or more parameters which can be either booleans or functions or callable objects which return True / False::
+
+                run_if_true_1 = True
+                run_if_true_2 = False
+
+                @active_if(run_if_true, lambda: return run_if_true_2)
+                def this_task_might_be_inactive():
+                    pass
+
+        The expressions inside @active_if are evaluated each time 
+        ``pipeline_run``, ``pipeline_printout`` or ``pipeline_printout_graph`` is called.
+
+        Dormant tasks behave as if they are up to date and have no output.
+
+    * Command line parsing
+        Supports both argparse (python 2.7) and optparse (python 2.6):
+        The following options are defined by default::
+
+                    --verbose
+                    --version
+                    --log_file
+
+                -t, --target_tasks
+                -j, --jobs
+                -n, --just_print
+                    --flowchart
+                    --key_legend_in_graph
+                    --draw_graph_horizontally
+                    --flowchart_format
+                    --forced_tasks
+
+        Usage with argparse (Python > 2.7)::
+
+                from ruffus import *
+
+                parser = cmdline.get_argparse(   description='WHAT DOES THIS PIPELINE DO?')
+
+                # for example...
+                parser.add_argument("--input_file")
+
+                options = parser.parse_args()
+
+                #  optional logger which can be passed to ruffus tasks
+                logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
+
+                #_____________________________________________________________________________________
+                #   pipelined functions go here
+                #_____________________________________________________________________________________
+
+                cmdline.run (options)
+
+        Usage with optparse (Python 2.6)::
+
+                from ruffus import *
+
+                parser = cmdline.get_optgparse(version="%prog 1.0", usage = "\n\n    %prog [options]")
+
+                # for example...
+                parser.add_option("-c", "--custom", dest="custom", action="count")
+
+                (options, remaining_args) = parser.parse_args()
+
+                #  logger which can be passed to ruffus tasks
+                logger, logger_mutex = cmdline.setup_logging ("this_program", options.log_file, options.verbose)
+
+                #_____________________________________________________________________________________
+                #   pipelined functions go here
+                #_____________________________________________________________________________________
+
+                cmdline.run (options)
+    * Optionally terminate pipeline after first exception
+        To have all exceptions interrupt immediately::
+
+                pipeline_run(..., exceptions_terminate_immediately = True)
+
+        By default ruffus accumulates ``NN`` errors before interrupting the pipeline prematurely. ``NN`` is the specified parallelism for ``pipeline_run(..., multiprocess = NN)``. 
+
+        Otherwise, a pipeline will only be interrupted immediately if exceptions of type ``ruffus.JobSignalledBreak`` are thrown.
+
+    * Display exceptions without delay
+
+        By default, Ruffus re-throws exceptions in ensemble after pipeline termination.
+
+        To see exceptions as they occur::
+
+                pipeline_run(..., log_exceptions = True)
+
+        ``logger.error(...)`` will be invoked with the string representation of the each exception, and associated stack trace.
+
+        The default logger prints to sys.stderr, but this can be changed to any class from the logging module or compatible object via ``pipeline_run(..., logger = ???)``
+
+    * Improved ``pipeline_printout()``
+
+            * `@split` operations now show the 1->many output in pipeline_printout
+                
+                This make it clearer that ``@split`` is creating multiple output parameters (rather than a single output parameter consisting of a list)::
+
+                        Task = split_animals
+                             Job = [None
+                                   -> cows
+                                   -> horses
+                                   -> pigs
+                                    , any_extra_parameters]
+            * File date and time are displayed in human readable form and out of date files are flagged with asterisks. 
+
+
 
 
 ########################################

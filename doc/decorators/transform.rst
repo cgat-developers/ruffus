@@ -21,7 +21,7 @@ See :ref:`Decorators <decorators>` for more decorators
 .. _suffix_string: `decorators.transform.suffix_string`_
 
 *********************************************************************************************************************************************************************************************************************
-*@transform* ( |tasks_or_file_names|_, :ref:`suffix<decorators.suffix`\ *(*\ |suffix_string|_\ *)*\ | :ref:`regex<decorators.regex`\ *(*\ |matching_regex|_\ *)*\ , |output_pattern|_, [|extra_parameters|_,...] )
+*@transform* ( |tasks_or_file_names|_, :ref:`suffix<decorators.suffix>`\ *(*\ |suffix_string|_\ *)*\ | :ref:`regex<decorators.regex`\ *(*\ |matching_regex|_\ *)*\ , |output_pattern|_, [|extra_parameters|_,...] )
 *********************************************************************************************************************************************************************************************************************
     **Purpose:**
         Applies the task function to transform data from input to output files.
@@ -81,7 +81,7 @@ See :ref:`Decorators <decorators>` for more decorators
 .. _decorators.transform.suffix_string:
 
     * *suffix_string*
-       must be wrapped in a :ref:`suffix<decorators.suffix` indicator object.
+       must be wrapped in a :ref:`suffix<decorators.suffix>` indicator object.
        The end of each input file name which matches ``suffix_string`` will be replaced by ``output_pattern``.
 
        Input file names which do not match suffix_string will be ignored
@@ -105,7 +105,7 @@ See :ref:`Decorators <decorators>` for more decorators
                 compile("2.c", "my_path/2.o")
 
        For convenience and visual clarity, the  ``"\1"`` can be omitted from the output parameter.
-       However, the ``"\1"`` is mandatory for string substitutions in additional parameters, .
+       However, the ``"\1"`` is mandatory for string substitutions in additional parameters, ::
     
             
             @transform(["1.c", "2.c"], suffix(".c"), [r"\1.o", ".o"], "Compiling \1", "verbatim")
@@ -130,7 +130,7 @@ See :ref:`Decorators <decorators>` for more decorators
 
     * *matching_regex*
        is a python regular expression string, which must be wrapped in
-       a :ref:`regex<decorators.regex`\  indicator object
+       a :ref:`regex<decorators.regex>`\  indicator object
        See python `regular expression (re) <http://docs.python.org/library/re.html>`_ 
        documentation for details of regular expression syntax
        Each output file name is created using regular expression substitution with ``output_pattern``
