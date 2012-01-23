@@ -722,7 +722,7 @@ class _task (node):
         This allows us to create tasks and dependencies out of order
         """
         func_name   = func.__name__
-        module_name = func.__module__
+        module_name = str(func.__module__)
         task_name   = module_name + "." + func_name
 
         # Link to existing dependency if task name has previously been specified

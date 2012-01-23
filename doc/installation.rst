@@ -33,14 +33,11 @@ The most up-to-date code:
       * download the latest sources from 
         `here <http://code.google.com/p/ruffus/downloads/list>`_ 
 
-        or check out the latest code from svn::
+        or check out the latest code from mercurial::
 
-            svn checkout http://ruffus.googlecode.com/svn/trunk/ ruffus-read-only
+            hg clone https://bunbun68@code.google.com/p/ruffus/ 
+
     
-        or ask to be a project member and enter your google name::
-
-            svn checkout https://ruffus.googlecode.com/svn/trunk/ ruffus --username yourname
-
       * To install, type::
         
            python setup.py install
