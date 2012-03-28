@@ -113,6 +113,7 @@ import random
 
 sys.path.append(os.path.abspath(os.path.join(exe_path,"..", "..")))
 from ruffus import *
+import ruffus
 
 # use simplejson in place of json for python < 2.6
 try:
@@ -240,9 +241,10 @@ def task3(infiles, outfiles, *extra_params):
 @posttask(lambda: open(tempdir + "task.done", "a").write("Task 4 Done\n"))
 def task4(infiles, outfiles, *extra_params):
     """
-    Fourth task
+    Fourth task is extra slow
     """
     open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    time.sleep(3)
     test_job_io(infiles, outfiles, extra_params)
     open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
 
@@ -359,6 +361,8 @@ def check_final_output_correct(after_touch_files = False):
 #       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 #
 if __name__ == '__main__':
+    print >>sys.stderr, "Python version %s" % sys.version
+    print >>sys.stderr, "Ruffus version %s" % ruffus.__version__
     if options.just_print:
         pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks, 
                             verbose=options.verbose)
