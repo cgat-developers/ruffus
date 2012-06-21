@@ -136,7 +136,7 @@ def append_to_argparse (parser):
     #
     pipline_options.add_argument("--key_legend_in_graph",     action="store_true",
                                 help="Print out legend and key for dependency graph.")
-    pipline_options.add_argument("--draw_graph_horizontally", action="store_true",
+    pipline_options.add_argument("--draw_graph_horizontally", action="store_true", dest= "draw_horizontally",
                                 help="Draw horizontal dependency graph.")
     pipline_options.add_argument("--flowchart_format", metavar="FORMAT",
                                 type=str, choices = ["svg", "svgz", "png", "jpg", "pdf", "dot"],
