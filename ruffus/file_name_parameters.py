@@ -231,14 +231,15 @@ def check_input_files_exist (*params):
                 raise MissingInputFileError("No way to run job: "+
                                             "Input file ['%s'] does not exist" % f)
 
-#_________________________________________________________________________________________
-
-#   needs_update_check_modify_time
 
 #_________________________________________________________________________________________
-def needs_update_check_modify_time (*params):
+
+#   needs_update_check_exist
+
+#_________________________________________________________________________________________
+def needs_update_check_exist (*params):
     """
-    Given input and output files, see if all exist and whether output files are later than input files
+    Given input and output files, see if all exist
     Each can be
 
         #. string: assumed to be a filename "file1"
@@ -248,7 +249,7 @@ def needs_update_check_modify_time (*params):
     """
     # missing output means build
     if len(params) < 2:
-        return True
+        return True, "i/o files not specified"
 
 
     i, o = params[0:2]
@@ -277,6 +278,33 @@ def needs_update_check_modify_time (*params):
     if len(i) == 0:
         return False, "Missing input files"
 
+
+    return False, "Up to date"
+
+
+#_________________________________________________________________________________________
+
+#   needs_update_check_modify_time
+
+#_________________________________________________________________________________________
+def needs_update_check_modify_time (*params):
+    """
+    Given input and output files, see if all exist and whether output files are later than input files
+    Each can be
+
+        #. string: assumed to be a filename "file1"
+        #. any other type
+        #. arbitrary nested sequence of (1) and (2)
+
+    """
+
+    needs_update, err_msg = needs_update_check_exist (*params)
+    if (needs_update, err_msg) != (False, "Up to date"):
+        return needs_update, err_msg
+
+    i, o = params[0:2]
+    i = get_strings_in_nested_sequence(i)
+    o = get_strings_in_nested_sequence(o)
 
     #
     #   get sorted modified times for all input and output files
@@ -362,7 +390,6 @@ def needs_update_check_modify_time (*params):
     if len(file_times[0]) and len (file_times[1]) and max(file_times[0]) >= min(file_times[1]):
         return True, pretty_io_with_date_times(filename_to_times)
     return False, "Up to date"
-
 
 
 #_________________________________________________________________________________________
