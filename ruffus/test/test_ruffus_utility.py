@@ -5,17 +5,17 @@
 #
 #
 #   Copyright (c) 2009 Leo Goodstadt
-#   
+#
 #   Permission is hereby granted, free of charge, to any person obtaining a copy
 #   of this software and associated documentation files (the "Software"), to deal
 #   in the Software without restriction, including without limitation the rights
 #   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 #   copies of the Software, and to permit persons to whom the Software is
 #   furnished to do so, subject to the following conditions:
-#   
+#
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
-#   
+#
 #   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -45,7 +45,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(exe_path,"..", "..")))
 from ruffus import *
 from ruffus.ruffus_utility import *
 
-       
+
 os.chdir(exe_path)
 
 import unittest, time
@@ -66,42 +66,42 @@ class Test_get_nested_tasks_or_globs(unittest.TestCase):
 
     def check_equal (self, a,b):
         self.assertEqual(get_nested_tasks_or_globs(a), b)
-        
+
     def test_get_nested_tasks_or_globs(self):
 
-        # 
+        #
         # test strings
-        # 
+        #
         self.check_equal("test", (set(), set(), set()))
         self.check_equal([("test1",), "test2", 3], (set(), set(), set()))
-        
+
         #
         # test missing
-        # 
+        #
         self.check_equal((1,3, [5]), (set(), set(), set()))
         self.check_equal(None, (set(), set(), set()))
 
         #
         # test glob
-        # 
+        #
         self.check_equal([("test1.*",), "test?2", 3], (set(), set(['test1.*', 'test?2']), set()))
 
         #
         # test glob and string
-        # 
+        #
         self.check_equal([("test*1",), (("test3",),),"test2", 3], (set(), set(['test*1']), set()))
-        
+
         #
         # test task function
-        # 
+        #
         self.check_equal(is_glob, (set([is_glob]), set([]), set()))
         self.check_equal([is_glob, [1, "this", ["that*", 5]], [(get_strings_in_nested_sequence,)]], (
                         set([is_glob, get_strings_in_nested_sequence]), set(["that*"]), set()))
         #
         # test wrapper
-        # 
+        #
         self.check_equal(output_from(is_glob, ["what", 7], 5), (set([is_glob, "what"]), set([]), set()))
-        
+
 #_________________________________________________________________________________________
 
 #   replace_func_names_with_tasks
@@ -122,48 +122,48 @@ class Test_replace_func_names_with_tasks(unittest.TestCase):
     def test_replace_func_names_with_tasks(self):
         func_or_name_to_task = {is_glob: "FF is_glob", "what" : "FF what", get_strings_in_nested_sequence: "FF get_strings_in_nested_sequence"}
 
-        
-        # 
+
+        #
         # test strings
-        # 
+        #
         self.check_equal("test", "test", func_or_name_to_task)
-        self.check_equal(   [("test1",), "test2", 3], 
+        self.check_equal(   [("test1",), "test2", 3],
                             [("test1",), "test2", 3],
                             func_or_name_to_task)
 
         #
         # test missing
-        # 
+        #
         self.check_equal((1,3, [5]), (1,3, [5]), func_or_name_to_task)
         self.check_equal(None, None, func_or_name_to_task)
 
-        
-            
+
+
         #
         # test task function
-        # 
+        #
         self.check_equal(is_glob, "FF is_glob", func_or_name_to_task)
         self.check_equal([is_glob, [1, "this", ["that*", 5]], [(get_strings_in_nested_sequence,)]],
-                        ["FF is_glob", [1, "this", ["that*", 5]], [("FF get_strings_in_nested_sequence",)]], 
+                        ["FF is_glob", [1, "this", ["that*", 5]], [("FF get_strings_in_nested_sequence",)]],
                         func_or_name_to_task)
         #
         # test wrapper
-        # 
-        self.check_equal(output_from(is_glob, ["what", 7], 5), 
-                        ["FF is_glob", ["FF what", 7], 5], 
+        #
+        self.check_equal(output_from(is_glob, ["what", 7], 5),
+                        ["FF is_glob", ["FF what", 7], 5],
                         func_or_name_to_task)
         self.check_equal(output_from(is_glob),
-                        "FF is_glob", 
+                        "FF is_glob",
                         func_or_name_to_task)
 
-        self.check_equal([1, output_from(is_glob, ["what", 7], 5)], 
-                        [1, "FF is_glob", ["FF what", 7], 5], 
+        self.check_equal([1, output_from(is_glob, ["what", 7], 5)],
+                        [1, "FF is_glob", ["FF what", 7], 5],
                         func_or_name_to_task)
 
-        self.check_equal([1, output_from(is_glob), ["what", 7], 5], 
-                        [1, "FF is_glob", ["what", 7], 5], 
+        self.check_equal([1, output_from(is_glob), ["what", 7], 5],
+                        [1, "FF is_glob", ["what", 7], 5],
                         func_or_name_to_task)
-                            
+
 
 
 #_________________________________________________________________________________________
@@ -182,9 +182,9 @@ class Test_non_str_sequence(unittest.TestCase):
             #
             # use __new__ instead of init because str is immutable
             #
-            def __new__( cls, a):               
+            def __new__( cls, a):
                 obj = super( inherited_str, cls).__new__( inherited_str, a )
-                return obj                          
+                return obj
 
         test_str2 = inherited_str("test")
         class inherited_list (list):
@@ -212,20 +212,20 @@ class Test_get_strings_in_nested_sequence(unittest.TestCase):
             #
             # use __new__ instead of init because str is immutable
             #
-            def __new__( cls, a):               
+            def __new__( cls, a):
                 obj = super( inherited_str, cls).__new__( inherited_str, a )
-                return obj                          
+                return obj
 
         class inherited_list (list):
             def __init__ (self, *param):
                 list.__init__(self, *param)
-                
+
         self.assertEqual(get_strings_in_nested_sequence("one"), ["one"])
         self.assertEqual(get_strings_in_nested_sequence(["one", "two"]), ["one", "two"])
         self.assertEqual(get_strings_in_nested_sequence(["one", 1, "two"]), ["one", "two"])
         self.assertEqual(get_strings_in_nested_sequence(["one", [1, ["two"]]]), ["one", "two"])
         self.assertEqual(get_strings_in_nested_sequence([inherited_str("one"), [1, ["two"]]]), [inherited_str("one"), "two"])
-        self.assertEqual(get_strings_in_nested_sequence(inherited_list([inherited_str("one"), [1, ["two"]]])), 
+        self.assertEqual(get_strings_in_nested_sequence(inherited_list([inherited_str("one"), [1, ["two"]]])),
                                                     inherited_list([inherited_str("one"), "two"]))
 
 
@@ -244,9 +244,9 @@ class Test_get_first_strings_in_nested_sequence(unittest.TestCase):
             #
             # use __new__ instead of init because str is immutable
             #
-            def __new__( cls, a):               
+            def __new__( cls, a):
                 obj = super( inherited_str, cls).__new__( inherited_str, a )
-                return obj                          
+                return obj
 
         class inherited_list (list):
             def __init__ (self, *param):
@@ -257,7 +257,7 @@ class Test_get_first_strings_in_nested_sequence(unittest.TestCase):
         self.assertEqual(get_strings_in_nested_sequence(["one", 1, "two"], True), ["one", "two"])
         self.assertEqual(get_strings_in_nested_sequence(["one", [1, ["two"]]], True), ["one", "two"])
         self.assertEqual(get_strings_in_nested_sequence([inherited_str("one"), [1, ["two"]]], True), [inherited_str("one"), "two"])
-        self.assertEqual(get_strings_in_nested_sequence(inherited_list([inherited_str("one"), [1, ["two"]]]), True), 
+        self.assertEqual(get_strings_in_nested_sequence(inherited_list([inherited_str("one"), [1, ["two"]]]), True),
                                                           inherited_list([inherited_str("one"), "two"]))
         self.assertEqual(get_strings_in_nested_sequence(["one", [1, ["two"], "three"]], True), ["one", "two"])
         d = {"four" :4}
@@ -265,7 +265,7 @@ class Test_get_first_strings_in_nested_sequence(unittest.TestCase):
         self.assertEqual(get_strings_in_nested_sequence(None, True), [])
         self.assertEqual(get_strings_in_nested_sequence([], True), [])
         self.assertEqual(get_strings_in_nested_sequence([1,2,3, d], True), [])
-        
+
 
 #_________________________________________________________________________________________
 
@@ -282,7 +282,7 @@ class Test_compile_regex (unittest.TestCase):
             compile_regex("Dummy Task", regex(".*)"), Exception, "test1")
         except Exception, e:
             self.assertEqual(e.args, ('Dummy Task', "test1: regular expression regex('.*)') is malformed\n[sre_constants.error: (unbalanced parenthesis)]"))
-        
+
         # bad number of items regex
         self.assertRaises(Exception, compile_regex, "Dummy Task", regex(".*", "o"), Exception, "test1")
         try:
@@ -318,17 +318,17 @@ class Test_compile_regex (unittest.TestCase):
 #_________________________________________________________________________________________
 class Test_check_files_io_parameters (unittest.TestCase):
     def test_check_files_io_parameters(self):
-        
-        
+
+
         class t_fake_task(object):
             def __init__ (self):
                 self._action_type = None
                 self._name = "fake task"
         fake_task = t_fake_task()
-        
+
         single_job_params = [["input", "output"]]
         multiple_job_params = [["input1", "output1"], ["input2", "output2"]]
-        
+
         check_files_io_parameters (fake_task, single_job_params, error_task_files)
         check_files_io_parameters (fake_task, multiple_job_params, error_task_files)
 
@@ -336,8 +336,8 @@ class Test_check_files_io_parameters (unittest.TestCase):
         #Bad format
         bad_single_job_params   = ["input", "output"]
         self.assertRaises(error_task_files, check_files_io_parameters, fake_task, bad_single_job_params, error_task_files)
-        
-        #Missing output files for job            
+
+        #Missing output files for job
         bad_multiple_job_params = [["input1", "output1"], ["input2"]]
         self.assertRaises(error_task_files, check_files_io_parameters, fake_task, bad_multiple_job_params, error_task_files)
 
@@ -346,9 +346,9 @@ class Test_check_files_io_parameters (unittest.TestCase):
         self.assertRaises(error_task_files, check_files_io_parameters, fake_task, bad_multiple_job_params, error_task_files)
 
         #Input or output file parameters should contain at least one or more file names strings
-        bad_multiple_job_params = [[1, 2]]
-        self.assertRaises(error_task_files, check_files_io_parameters, fake_task, bad_multiple_job_params, error_task_files)
-        
+        #bad_multiple_job_params = [[1, 2]]
+        #self.assertRaises(error_task_files, check_files_io_parameters, fake_task, bad_multiple_job_params, error_task_files)
+
 #_________________________________________________________________________________________
 
 #   Test_get_first_string_in_nested_sequence
@@ -401,9 +401,9 @@ class Test_expand_nested_tasks_or_globs(unittest.TestCase):
     def setUp(self):
         exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
         os.chdir(exe_path)
-        t1 = task._task("module", "func1"); 
-        t2 = task._task("module", "func2"); 
-        t3 = task._task("module", "func3"); 
+        t1 = task._task("module", "func1");
+        t2 = task._task("module", "func2");
+        t3 = task._task("module", "func3");
         self.tasks = [t1, t2, t3]
 
     #       self.assertEqual(self.seq, range(10))
@@ -433,43 +433,43 @@ class Test_expand_nested_tasks_or_globs(unittest.TestCase):
 
     def test_expand_nested_tasks_or_globs(self):
 
-        # 
+        #
         # test strings
-        # 
+        #
         self.check_equal("test", "test")
         self.check_equal([("test1",), "test2", 3], [("test1",), "test2", 3])
 
         #
         # test missing
-        # 
+        #
         self.check_equal(None, None)
 
         #
         # test glob
-        # 
-        self.check_equal([("test1.*",), "test?2", 3], 
+        #
+        self.check_equal([("test1.*",), "test?2", 3],
                          [("test1.1","test1.2"), "test12", 3])
-        self.check_equal(["test1.*", "test?2", 3], 
+        self.check_equal(["test1.*", "test?2", 3],
                          ["test1.1","test1.2", "test12", 3])
 
         #
         # test glob and string
-        # 
-        self.check_equal([("test*1",), (("test3",),),"test2", 3], 
+        #
+        self.check_equal([("test*1",), (("test3",),),"test2", 3],
                         [("test11","test21"), (("test3",),),"test2", 3])
 
         #
         # test task function
-        # 
+        #
         self.check_equal(non_str_sequence, ["t1a", "t1b"])
         self.check_equal(get_strings_in_nested_sequence, ["t2"])
         self.check_equal([get_strings_in_nested_sequence, non_str_sequence], ["t2", "t1a", "t1b"])
-        self.check_equal([non_str_sequence, [1, "this", ["that*", 5]], [(get_strings_in_nested_sequence,)]], 
+        self.check_equal([non_str_sequence, [1, "this", ["that*", 5]], [(get_strings_in_nested_sequence,)]],
                          ['t1a', 't1b', [1, 'this', ['that1', 'that2', 5]], [('t2',)]])
         #
         # test wrapper
-        # 
-        self.check_equal(output_from(non_str_sequence, ["what", 7], 5), 
+        #
+        self.check_equal(output_from(non_str_sequence, ["what", 7], 5),
                         ['t1a', 't1b', ['t3', 7], 5])
 #
 #
@@ -480,9 +480,9 @@ class Test_expand_nested_tasks_or_globs(unittest.TestCase):
 #_________________________________________________________________________________________
 class Test_regex_replace (unittest.TestCase):
     def helper (self, data, result):
-        try_result = regex_replace("aaa.bbb.ccc.aaa", 
-                                                                  re.compile("([a-z]+)\.([a-z]+)\.([a-z]+)\.([a-z]+)"), 
-                                                                  data) 
+        try_result = regex_replace("aaa.bbb.ccc.aaa",
+                                                                  re.compile("([a-z]+)\.([a-z]+)\.([a-z]+)\.([a-z]+)"),
+                                                                  data)
         self.assertEqual(try_result ,  result)
 
     def test_regex_replace(self):
@@ -491,19 +491,19 @@ class Test_regex_replace (unittest.TestCase):
         self.helper(1, 1)
         self.helper([r"\3.\2.\1", 1], ["ccc.bbb.aaa", 1])
         # note set is constructed with substituted results!
-        self.helper([r"\3.\2.\1", 1, (set([r"\1\2", r"\4\2", "aaabbb"]), "whatever", {1:2, 3:4})], 
+        self.helper([r"\3.\2.\1", 1, (set([r"\1\2", r"\4\2", "aaabbb"]), "whatever", {1:2, 3:4})],
                     ['ccc.bbb.aaa', 1, (set(['aaabbb']), 'whatever', {1: 2, 3: 4})])
 
 
-        
-        
+
+
 #
 #   debug parameter ignored if called as a module
-#     
+#
 if sys.argv.count("--debug"):
     sys.argv.remove("--debug")
 #sys.argv.append("Test_regex_replace")
 unittest.main()
 
 
-                       
+
