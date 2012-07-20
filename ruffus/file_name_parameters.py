@@ -650,9 +650,11 @@ def split_param_factory (input_files_task_globs, output_files_task_globs, *extra
 def split_ex_param_factory (input_files_task_globs,
                             flatten_input,
                             regex,
+                            regex_or_suffix,
                             extra_input_files_task_globs,
                             replace_inputs,
-                            output_files_task_globs, *extra_specs):
+                            output_files_task_globs,
+                            *extra_specs):
     """
     Factory for task_split (advanced form)
     """
