@@ -1374,7 +1374,15 @@ class _task (node):
 
 
         # regular expression match
-        matching_regex = compile_regex(self, orig_args[1], error_task_split, "@split")
+        if isinstance(orig_args[1], regex):
+            matching_regex = compile_regex(self, orig_args[1], error_task_split, "@split")
+            regex_or_suffix = True
+
+        # simulate end of string (suffix) match
+        elif isinstance(orig_args[1], suffix):
+            matching_regex = compile_suffix(self, orig_args[1], error_task_split, "@split")
+            regex_or_suffix = False
+
 
         #
         #   inputs can also be defined by pattern match
@@ -1418,6 +1426,7 @@ class _task (node):
         self.param_generator_func = split_ex_param_factory (   input_files_task_globs,
                                                                 False, # flatten input
                                                                 matching_regex,
+                                                                regex_or_suffix,
                                                                 extra_inputs,
                                                                 replace_inputs,
                                                                 output_files_task_globs,
@@ -1566,7 +1575,7 @@ class _task (node):
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
         self.job_descriptor       = io_files_job_descriptor
-        self.single_multi_io       = self.many_to_many
+        self.single_multi_io      = self.many_to_many
 
     #_________________________________________________________________________________________
 
