@@ -81,7 +81,42 @@ Step 1: An introduction to Ruffus pipelines
 
         They start with a ``@`` prefix and take a number of parameters in parenthesis.
 
-        .. image:: ../../images/simple_tutorial_decorator_syntax.png
+        .. :: .. image:: ../../images/simple_tutorial_decorator_syntax.png
+
+        .. raw:: html
+
+            <svg version="1.0" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0"
+            	 width="249.5pt" height="67.5pt" viewBox="0 0 249.5 67.5">
+            <g transform="scale(1)">
+                <rect x="4.5" y="14.667" fill="#eeffcc" stroke="#016735" stroke-width="0.25" stroke-miterlimit="10" width="157" height="52.833"/>
+                <rect x="3.25" y="14.667" fill="#eeffcc" width="159.5" height="52.833"/>
+                <text transform="matrix(1 0 0 1 14.5 33.6177)"><tspan x="0" y="0" font-family="'Courier'" font-weight="bold"  font-size="12">@follows</tspan><tspan x="57.609" y="0" font-family="'Courier'" font-size="12">(first_task)</tspan><tspan x="0" y="14.4" fill="#006838" font-family="'Courier'" font-weight="bold"  font-size="12">def</tspan><tspan x="21.604" y="14.4" font-family="'Courier'" font-size="12"> second_task():</tspan><tspan x="0" y="28.8" font-family="'Courier'" font-size="12">    &quot;&quot;</tspan><tspan x="0" y="43.2" font-family="'Courier'" font-size="12" letter-spacing="28">	</tspan></text>
+                <path fill="none" stroke="#ED1C24" stroke-miterlimit="10" d="M73.25,29.762c0,4.688-3.731,8.488-8.333,8.488H18.083
+                	c-4.602,0-8.333-3.8-8.333-8.488l0,0c0-4.688,3.731-8.488,8.333-8.488h46.834C69.519,21.274,73.25,25.075,73.25,29.762L73.25,29.762
+                	z"/>
+                <g>
+                	<g>
+                		<line fill="none" stroke="#FF0000" stroke-miterlimit="10" x1="74.775" y1="20.142" x2="106" y2="7.5"/>
+                		<g>
+                			<path fill="#ED1C24" d="M71.978,21.274c1.514-0.044,3.484,0.127,4.854,0.6l-1.689-1.881l-0.095-2.526
+                				C74.392,18.759,73.097,20.253,71.978,21.274z"/>
+                		</g>
+                	</g>
+                </g>
+                <text transform="matrix(1 0 0 1 107.75 11.5)" fill="#FF0000" " font-size="12">Decorator</text>
+                <text transform="matrix(1 0 0 1 170.75 50.75)"><tspan x="0" y="0" fill="#0000FF" font-size="12">Normal Python </tspan><tspan x="0" y="14.4" fill="#0000FF" font-size="12">Function</tspan></text>
+                <g>
+                	<line fill="#0000FF" x1="166.5" y1="46.5" x2="147" y2="46.5"/>
+                	<g>
+                		<line fill="none" stroke="#0000FF" stroke-miterlimit="10" x1="166.5" y1="46.5" x2="150.018" y2="46.5"/>
+                		<g>
+                			<path fill="#0000FF" d="M147,46.5c1.42-0.527,3.182-1.426,4.273-2.378l-0.86,2.378l0.86,2.377
+                				C150.182,47.925,148.42,47.026,147,46.5z"/>
+                		</g>
+                	</g>
+                </g>
+            </g>
+            </svg>
                 
     The **ruffus** decorator :ref:`@follows <decorators.follows>` makes sure that
     ``second_task`` follows ``first_task``.
