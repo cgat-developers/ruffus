@@ -2,3 +2,4 @@
 ^nested_dict.egg-info/.+
 ^dist
 _build$
+doc/hosted_site.cmd

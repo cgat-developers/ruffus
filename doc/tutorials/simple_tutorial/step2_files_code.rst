@@ -12,21 +12,58 @@ Code for Step 2: Passing parameters to the pipeline
 Code
 ************************************
     ::
+
+        from ruffus import *
+        import sys
+
+        #---------------------------------------------------------------
+        #   Create input file
+        #
+        input_file = 'job1.input'
+        open(input_file, "w")
+
+        #---------------------------------------------------------------
+        #
+        #   task function
+        #
+        @transform(input_file, suffix(".input"), ".output1")
+        def first_task(input_file, output_file):
+            open(output_file, "w")
+
+        #---------------------------------------------------------------
+        #
+        #       Run
+        #
+        pipeline_run([second_task])
+
+    ::
+
+        >>> pipeline_run([first_task])
+            Job  = [job1.input -> job1.output1] completed
+        Completed Task = first_task
+
+
+    ::
         
         from ruffus import *
         import time
-        
+        import sys
+
+        #---------------------------------------------------------------
+        #   Create input files
+        #
+        task1_params = ['job1.input', 'job2.input']
+
+        for input_file in task1_params:
+            open(input_file, "w")
+
+
         #---------------------------------------------------------------
         #
         #   first task
         #
-        task1_param = [
-                            [ None, 'job1.stage1'], # 1st job
-                            [ None, 'job2.stage1'], # 2nd job
-                      ]
-                                            
-        @files(task1_param)
-        def first_task(no_input_file, output_file):
+        @transform(task1_params, suffix(".input"), ".output1")
+        def first_task(input_file, output_file):
             open(output_file, "w")
 
 
@@ -34,36 +71,39 @@ Code
         #
         #   second task
         #
-        task2_param = [
-                            [ 'job1.stage1', "job1.stage2", "    1st_job"], # 1st job
-                            [ 'job2.stage1', "job2.stage2", "    2nd_job"], # 2nd job
-                      ]
-        
-        @follows(first_task)
-        @files(task2_param)
-        def second_task(input_file, output_file, extra_parameter):
+        #@follows(first_task)
+        @transform(first_task, suffix(".output1"), ".output2",
+                               "some_extra.string.for_example", 14)
+        def second_task(input_file, output_file,
+                        extra_parameter_str, extra_parameter_num):
             open(output_file, "w")
-            print extra_parameter
-        
+            print
+            print "\t1st Extra Parameter = %s" % extra_parameter_str
+            print "\t2nd Extra Parameter = %d" % extra_parameter_num
+
         #---------------------------------------------------------------
         #
         #       Run
         #
-        pipeline_run([second_task], multiprocess = 5)
-       
+        pipeline_run([second_task])
+
 
 ************************************
 Resulting Output
 ************************************
     ::
-        
-        Start Task = first_task
-            Job = [None -> job1.stage1] completed
-            Job = [None -> job2.stage1] completed
+
+        >>> pipeline_run([second_task])
+            Job  = [job1.input -> job1.output1] completed
+            Job  = [job2.input -> job2.output1] completed
         Completed Task = first_task
-        Start Task = second_task
-            1st_job
-            Job = [job1.stage1 -> job1.stage2,     1st_job] completed
-            2nd_job
-            Job = [job2.stage1 -> job2.stage2,     2nd_job] completed
+
+                1st Extra Parameter = some_extra.string.for_example
+                2nd Extra Parameter = 14
+            Job  = [job1.output1 -> job1.output2, some_extra.string.for_example, 14] completed
+
+                1st Extra Parameter = some_extra.string.for_example
+                2nd Extra Parameter = 14
+            Job  = [job2.output1 -> job2.output2, some_extra.string.for_example, 14] completed
         Completed Task = second_task
+
