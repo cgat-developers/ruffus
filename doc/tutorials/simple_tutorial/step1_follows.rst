@@ -69,7 +69,7 @@ Step 1: An introduction to Ruffus pipelines
     
 
 ****************************
-"Decorating" functions
+"Decorators"
 ****************************
 
     You need to tag or :term:`decorator` existing code to tell **Ruffus** that they are part
@@ -77,7 +77,7 @@ Step 1: An introduction to Ruffus pipelines
     
     .. note::
         
-        :term:`decorator`\ s are ways to tag or mark out functions. 
+        python :term:`decorator`\ s are ways to tag or mark out functions. 
 
         They start with a ``@`` prefix and take a number of parameters in parenthesis.
 
@@ -90,7 +90,7 @@ Step 1: An introduction to Ruffus pipelines
             <g transform="scale(1)">
                 <rect x="4.5" y="14.667" fill="#eeffcc" stroke="#016735" stroke-width="0.25" stroke-miterlimit="10" width="157" height="52.833"/>
                 <rect x="3.25" y="14.667" fill="#eeffcc" width="159.5" height="52.833"/>
-                <text transform="matrix(1 0 0 1 14.5 33.6177)"><tspan x="0" y="0" font-family="'Courier'" font-weight="bold"  font-size="12">@follows</tspan><tspan x="57.609" y="0" font-family="'Courier'" font-size="12">(first_task)</tspan><tspan x="0" y="14.4" fill="#006838" font-family="'Courier'" font-weight="bold"  font-size="12">def</tspan><tspan x="21.604" y="14.4" font-family="'Courier'" font-size="12"> second_task():</tspan><tspan x="0" y="28.8" font-family="'Courier'" font-size="12">    &quot;&quot;</tspan><tspan x="0" y="43.2" font-family="'Courier'" font-size="12" letter-spacing="28">	</tspan></text>
+                <text transform="matrix(1 0 0 1 14.5 33.6177)"><tspan x="0" y="0" font-family="'Courier'" font-weight="bold"  font-size="12">@transform</tspan><tspan x="57.609" y="0" font-family="'Courier'" font-size="12">(first_task)</tspan><tspan x="0" y="14.4" fill="#006838" font-family="'Courier'" font-weight="bold"  font-size="12">def</tspan><tspan x="21.604" y="14.4" font-family="'Courier'" font-size="12"> second_task():</tspan><tspan x="0" y="28.8" font-family="'Courier'" font-size="12">    &quot;&quot;</tspan><tspan x="0" y="43.2" font-family="'Courier'" font-size="12" letter-spacing="28">	</tspan></text>
                 <path fill="none" stroke="#ED1C24" stroke-miterlimit="10" d="M73.25,29.762c0,4.688-3.731,8.488-8.333,8.488H18.083
                 	c-4.602,0-8.333-3.8-8.333-8.488l0,0c0-4.688,3.731-8.488,8.333-8.488h46.834C69.519,21.274,73.25,25.075,73.25,29.762L73.25,29.762
                 	z"/>
