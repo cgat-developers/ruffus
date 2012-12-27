@@ -1,4 +1,7 @@
 .. include:: global.inc
+
+.. image:: images/logo.jpg
+
 ******************************************************
 Hall of Fame: User contributed flowcharts
 ******************************************************
