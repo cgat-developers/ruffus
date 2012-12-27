@@ -38,18 +38,29 @@ Overview
     
 
 ************************************
-*@files*
+*@transform*
 ************************************
-    The :ref:`@files <decorators.files>` decorator provides parameters to a task.        
+    The :ref:`@transform <decorators.transform>` decorator tells Ruffus that the decorated task **transforms** each input into a new output.
+
+        In other words, inputs and outputs have a **1 to 1** relationship.
+
+    In the second part of the tutorial, we will encounter more decorators which can split up, or join together or group inputs. 
+
+        In other words, inputs and output can have **many to one**, **many to many** etc. relationships.
                                                                                                
                                                                                                
     .. note::
     
-        All strings in the first two parameters are treatd as *input* and *output* files (respectively). 
+        All strings in the first two parameters are treated as *input* and *output* files (respectively). 
             
     Let us provide `input` and `outputs` to our new pipeline:                                 
            
         .. image:: ../../images/simple_tutorial_files1.png
+
+        ::
+
+            from ruffus import *
+
 
         
     This is exactly equivalent to the following function call:
