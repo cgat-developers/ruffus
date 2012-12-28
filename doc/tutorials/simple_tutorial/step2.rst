@@ -2,14 +2,14 @@
 .. _Simple_Tutorial_2nd_step:
 
 .. index:: 
-    pair: @files; Tutorial
+    pair: @transform; Tutorial
 
 ###################################################################
 Step 2: Passing parameters to the pipeline
 ###################################################################
 
    * :ref:`Simple tutorial overview <Simple_Tutorial>` 
-   * :ref:`@files syntax in detail <decorators.files>`
+   * :ref:`@transform syntax in detail <decorators.transform>`
 
 .. note::
     Remember to look at the example code:
@@ -19,6 +19,57 @@ Step 2: Passing parameters to the pipeline
 ***************************************
 Overview
 ***************************************
+    .. raw:: html
+
+        <svg version="1.0" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0"
+            width="731.3pt"
+            height="83pt"
+            viewBox="0 0 731.3 83">
+          <defs id="defs3287">
+            <marker refX="0" refY="0" orient="auto" id="Arrow2Mend" style="overflow:visible">
+              <path d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z" transform="scale(-0.6,-0.6)" id="path4124" style="fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round" />
+            </marker>
+            <marker refX="0" refY="0" orient="auto" id="Arrow2Lend" style="overflow:visible">
+              <path d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z" transform="matrix(-1.1,0,0,-1.1,-1.1,0)" id="path4118" style="fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round" />
+            </marker>
+            <marker refX="0" refY="0" orient="auto" id="Arrow1Lend" style="overflow:visible">
+              <path d="M 0,0 5,-5 -12.5,0 5,5 0,0 z" transform="matrix(-0.8,0,0,-0.8,-10,0)" id="path4100" style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt" />
+            </marker>
+            <marker refX="0" refY="0" orient="auto" id="Arrow2Mend-4" style="overflow:visible">
+              <path d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z" transform="scale(-0.6,-0.6)" id="path4124-8" style="fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round" />
+            </marker>
+            <marker refX="0" refY="0" orient="auto" id="Arrow2Mend-1" style="overflow:visible">
+              <path d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z" transform="scale(-0.6,-0.6)" id="path4124-1" style="fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round" />
+            </marker>
+            <marker refX="0" refY="0" orient="auto" id="Arrow2Mend-1-1" style="overflow:visible">
+              <path d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z" transform="scale(-0.6,-0.6)" id="path4124-1-8" style="fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round" />
+            </marker>
+            <marker refX="0" refY="0" orient="auto" id="Arrow2Mend-1-2" style="overflow:visible">
+              <path d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z" transform="scale(-0.6,-0.6)" id="path4124-1-7" style="fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round" />
+            </marker>
+            <marker refX="0" refY="0" orient="auto" id="Arrow2Mend-1-23" style="overflow:visible">
+              <path d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z" transform="scale(-0.6,-0.6)" id="path4124-1-3" style="fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round" />
+            </marker>
+          </defs>
+          <g transform="translate(-14.608261,-32.693481)" id="layer1">
+            <rect width="89.826035" height="65.392792" x="21.063463" y="39.148708" id="rect3309" style="fill:#ffff00;fill-opacity:1;stroke:#ff0000;stroke-width:0.41040453" />
+            <text x="64.540756" y="62.738293" id="text3311" xml:space="preserve" style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Monospace;-inkscape-font-specification:Monospace"><tspan x="67.314194" y="62.738293" id="tspan3313" style="font-size:20px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;text-anchor:middle;font-family:Arial;-inkscape-font-specification:Arial Bold">Starting </tspan><tspan x="64.540756" y="87.738297" id="tspan3315" style="font-size:20px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;text-anchor:middle;font-family:Arial;-inkscape-font-specification:Arial Bold">Data</tspan></text>
+            <text x="118.47811" y="104.62877" id="text4956" xml:space="preserve" style="font-size:21.02927971px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ff0000;fill-opacity:1;stroke:none;font-family:Monospace;-inkscape-font-specification:Monospace"><tspan x="118.47811" y="104.62877" id="tspan4958" style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#ff0000;font-family:Arial;-inkscape-font-specification:Arial Bold">task_1()</tspan></text>
+            <text x="345.62097" y="104.98591" id="text4956-1" xml:space="preserve" style="font-size:21.02927971px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ff0000;fill-opacity:1;stroke:none;font-family:Monospace;-inkscape-font-specification:Monospace"><tspan x="345.62097" y="104.98591" id="tspan4958-7" style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#ff0000;font-family:Arial;-inkscape-font-specification:Arial Bold">task_2()</tspan></text>
+            <text x="575.62097" y="103.03347" id="text4956-2" xml:space="preserve" style="font-size:21.02927971px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ff0000;fill-opacity:1;stroke:none;font-family:Monospace;-inkscape-font-specification:Monospace"><tspan x="575.62097" y="103.03347" id="tspan4958-3" style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#ff0000;font-family:Arial;-inkscape-font-specification:Arial Bold">task_3()</tspan></text>
+            <path d="m 110.71429,72.362182 87.14285,0" id="path5080" style="fill:#ff0000;stroke:#ff0000;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-end:url(#Arrow2Mend-1)" />
+            <rect width="131.88234" height="65.306244" x="206.10674" y="39.191959" id="rect3309-6" style="fill:#ffff00;fill-opacity:1;stroke:#ff0000;stroke-width:0.49695465" />
+            <text x="273.11218" y="65.772057" id="text3311-2-2" xml:space="preserve" style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Monospace;-inkscape-font-specification:Monospace"><tspan x="273.11218" y="65.772057" id="tspan3313-4-2" style="font-size:20px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;text-anchor:middle;font-family:Arial;-inkscape-font-specification:Arial Bold">Intermediate</tspan><tspan x="273.11218" y="90.772057" id="tspan3315-5-1" style="font-size:20px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;text-anchor:middle;font-family:Arial;-inkscape-font-specification:Arial Bold">Data 1</tspan></text>
+            <path d="m 338.57143,72.362177 87.14285,0" id="path5080-9" style="fill:#ff0000;stroke:#ff0000;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-end:url(#Arrow2Mend-1)" />
+            <rect width="131.88234" height="65.306244" x="433.96387" y="39.191959" id="rect3309-6-4" style="fill:#ffff00;fill-opacity:1;stroke:#ff0000;stroke-width:0.49695465" />
+            <text x="500.96933" y="65.772057" id="text3311-2-2-1" xml:space="preserve" style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Monospace;-inkscape-font-specification:Monospace"><tspan x="500.96933" y="65.772057" id="tspan3313-4-2-1" style="font-size:20px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;text-anchor:middle;font-family:Arial;-inkscape-font-specification:Arial Bold">Intermediate</tspan><tspan x="500.96933" y="90.772057" id="tspan3315-5-1-3" style="font-size:20px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;text-anchor:middle;font-family:Arial;-inkscape-font-specification:Arial Bold">Data 2</tspan></text>
+            <path d="m 566.42857,72.362178 87.14285,0" id="path5080-9-8" style="fill:#ff0000;stroke:#ff0000;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-end:url(#Arrow2Mend-1)" />
+            <flowRoot id="flowRoot5373" xml:space="preserve" style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Monospace;-inkscape-font-specification:Monospace"><flowRegion id="flowRegion5375"><rect width="56.42857" height="339.28571" x="214.28572" y="123.07647" id="rect5377" /></flowRegion><flowPara id="flowPara5379"></flowPara></flowRoot>    <rect width="74.861671" height="65.428436" x="664.61707" y="39.130863" id="rect3309-6-4-7" style="fill:#ffff00;fill-opacity:1;stroke:#ff0000;stroke-width:0.37476507" />
+            <text x="700.25507" y="65.071579" id="text3311-2-8" xml:space="preserve" style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Monospace;-inkscape-font-specification:Monospace"><tspan x="700.25507" y="65.071579" id="tspan3315-5-7" style="font-size:20px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;text-anchor:middle;font-family:Arial;-inkscape-font-specification:Arial Bold">Final</tspan><tspan x="700.25507" y="90.071579" id="tspan5078" style="font-size:20px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;text-anchor:middle;font-family:Arial;-inkscape-font-specification:Arial Bold">Result</tspan></text>
+          </g>
+        </svg>
+
+
     | The python functions which do the actual work of each stage  or
       :term:`task` of a **Ruffus** pipeline are written by you.
     | The role of **Ruffus** is to make sure these functions are called in the right order, 
@@ -32,48 +83,158 @@ Overview
         #. multiple jobs can be run in parallel (on different processors if possible)
         #. pipeline stages can be chained together automatically
     
+    Computational pipelines transform your data in stages until the final result is produced. One easy way to understand pipelines is by imagining your data flowing across a series of pipes until it reaches its final destination. Even quite complicated processes can be simplified if we broke things down into simple stages. Of course, it helps if we can visualise the whole process.
 
-    Let us start with the simplest case where a pipeline stage consists of a single
-    job with one *input*, one *output*, and an optional number of extra parameters:
+    Ruffus is a way of automating the plumbing in your pipeline: You supply the python functions which perform the data transformation, and tell Ruffus how these pipeline ``task`` functions are connected up. Ruffus will make sure that the right data flows down your pipeline in the right way at the right time.
+
+    The best way to design a pipeline is to write down the file names of the data as it flows across your pipeline.
+
     
 
 ************************************
 *@transform*
 ************************************
+    Let us start with the simplest case where a pipeline stage consists of a single
+    job with one *input*, one *output*, and an optional number of extra parameters:
+
     The :ref:`@transform <decorators.transform>` decorator tells Ruffus that the decorated task **transforms** each input into a new output.
 
         In other words, inputs and outputs have a **1 to 1** relationship.
 
-    In the second part of the tutorial, we will encounter more decorators which can split up, or join together or group inputs. 
-
-        In other words, inputs and output can have **many to one**, **many to many** etc. relationships.
-                                                                                               
-                                                                                               
     .. note::
-    
-        All strings in the first two parameters are treated as *input* and *output* files (respectively). 
-            
+
+        In the second part of the tutorial, we will encounter more decorators which can split up, or join together or group inputs. 
+
+            In other words, inputs and output can have **many to one**, **many to many** etc. relationships.
+                                                                                               
+                                                                                               
+           
     Let us provide `input` and `outputs` to our new pipeline:                                 
            
-        .. image:: ../../images/simple_tutorial_files1.png
+        .. raw:: html
 
-        ::
+            <svg version="1.0" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0"
+                width="370.333pt"
+                height="207.672pt"
+                viewBox="0 0 370.333 207.672">
+                <g id="g3519">
+                		<rect x="6.244" y="27.667" stroke-miterlimit="10" width="359.146" height="174.006" id="rect3521" stroke-width="0.25" stroke="#016735" fill="none" />
+                	<rect x="3.385" y="27.667" width="364.865" height="174.006" id="rect3523" fill="#EEFFCC" />
+                </g>
+                <text transform="matrix(1 0 0 1 19.249 12.167)" fill="#FF0000" font-family="'ArialMT'" font-size="12" id="text3629">Decorator</text>
+                <g id="g3631">
+                	<g id="g3633">
+                		<line fill="none" stroke="#ED1C24" stroke-miterlimit="10" x1="41.333" y1="49.028" x2="41.333" y2="15.667" id="line3635" />
+                		<g id="g3637">
+                			<polygon fill="#ED1C24" points="44.324,48.153 41.333,53.333 38.341,48.153    " id="polygon3639" />
+                		</g>
+                	</g>
+                </g>
+                <path opacity="0.2" fill="#ED1C24" d="M77.838,64.945c0,3.583-3.942,6.488-8.804,6.488H19.553c-4.862,0-8.804-2.905-8.804-6.488l0,0  c0-3.583,3.942-6.488,8.804-6.488h49.481C73.896,58.457,77.838,61.362,77.838,64.945L77.838,64.945z" id="path3641" />
+                <text transform="matrix(1 0 0 1 107.813 12.167)" fill="#00A14B" font-family="'ArialMT'" font-size="12" id="text3643">Inputs</text>
+                <g id="g3645">
+                	<line fill="#00FF00" x1="125.896" y1="53.333" x2="125.896" y2="15.667" id="line3647" />
+                	<g id="g3649">
+                		<line fill="none" stroke="#00A651" stroke-miterlimit="10" x1="125.896" y1="49.028" x2="125.896" y2="15.667" id="line3651" />
+                		<g id="g3653">
+                			<polygon fill="#00A651" points="128.888,48.153 125.897,53.333 122.905,48.153    " id="polygon3655" />
+                		</g>
+                	</g>
+                </g>
+                <text font-size="12" id="text3657" x="195.70584" y="12.167" style="font-size:12px;fill:#00a14b;font-family:ArialMT">Extra parameters</text>
+                <g id="g3659">
+                	<line fill="#00FF00" x1="267.23" y1="70.667" x2="267.23" y2="15.667" id="line3661" />
+                	<g id="g3663">
+                		<line fill="none" stroke="#00A651" stroke-miterlimit="10" x1="267.23" y1="66.361" x2="267.23" y2="15.667" id="line3665" />
+                		<g id="g3667">
+                			<polygon fill="#00A651" points="270.222,65.486 267.23,70.667 264.238,65.486    " id="polygon3669" />
+                		</g>
+                	</g>
+                </g>
+                <path opacity="0.2" fill="#00A14B" d="M155.333,64.945c0,3.583-4.388,6.488-9.801,6.488H90.448c-5.413,0-9.801-2.905-9.801-6.488  l0,0c0-3.583,4.388-6.488,9.801-6.488h55.083C150.944,58.457,155.333,61.362,155.333,64.945L155.333,64.945z" id="path3671" />
+                <text transform="matrix(1 0 0 1 295.48 12.167)" fill="#00A14B" font-family="'ArialMT'" font-size="12" id="text3673">Outputs</text>
+                <g id="g3675">
+                	<line fill="#00FF00" x1="313.563" y1="53.333" x2="313.563" y2="15.667" id="line3677" />
+                	<g id="g3679">
+                		<line fill="none" stroke="#00A651" stroke-miterlimit="10" x1="313.563" y1="49.028" x2="313.563" y2="15.667" id="line3681" />
+                		<g id="g3683">
+                			<polygon fill="#00A651" points="316.556,48.153 313.564,53.333 310.572,48.153    " id="polygon3685" />
+                		</g>
+                	</g>
+                </g>
+                <path opacity="0.2" fill="#00A14B" d="M342.999,64.945c0,3.583-4.212,6.488-9.407,6.488h-52.871c-5.196,0-9.408-2.905-9.408-6.488  l0,0c0-3.583,4.212-6.488,9.408-6.488h52.871C338.787,58.457,342.999,61.362,342.999,64.945L342.999,64.945z" id="path3687" />
+                <path opacity="0.2" fill="#00A14B" d="M293.999,79.833c0,3.406-2.537,6.167-5.667,6.167H83.666c-3.129,0-5.667-2.761-5.667-6.167  l0,0c0-3.406,2.537-6.167,5.667-6.167h204.667C291.462,73.667,293.999,76.428,293.999,79.833L293.999,79.833z" id="path3689" />
+                <g transform="matrix(0.70990052,0,0,0.70390927,15.867474,31.2092)" style="font-size:14px;font-family:monospace" font-size="14px" id="g3283"><text x="0" y="14" xml:space="preserve" id="text3285"><tspan style="font-weight:bold;fill:#008000" font-weight="bold" id="tspan3287">from</tspan> <tspan style="font-weight:bold;fill:#0e84b5" font-weight="bold" id="tspan3289">ruffus</tspan> <tspan style="font-weight:bold;fill:#008000" font-weight="bold" id="tspan3291">import</tspan> <tspan style="fill:#303030" id="tspan3293">*</tspan></text>
+                <text x="0" y="33" xml:space="preserve" id="text3295" />
+                <text x="0" y="52" xml:space="preserve" id="text3297"><tspan style="font-weight:bold;fill:#505050" font-weight="bold" id="tspan3299">@transform</tspan>('job1.input', <tspan style="font-weight:bold;fill:#FF0000">suffix</tspan>(&quot;.input&quot;), &quot;.output1&quot;, </text>
+                <text x="0" y="71" xml:space="preserve" id="text3301">           &quot;some_extra.string.for_example&quot;, <tspan style="font-weight:bold;fill:#0000d0" font-weight="bold" id="tspan3303">14</tspan>)</text>
+                <text x="0" y="90" xml:space="preserve" id="text3305"><tspan style="font-weight:bold;fill:#008000" font-weight="bold" id="tspan3307">def</tspan> <tspan style="font-weight:bold;fill:#0060b0" font-weight="bold" id="tspan3309">first_task</tspan>(input_file, output_file,</text>
+                <text x="0" y="109" xml:space="preserve" id="text3311">               extra_parameter_str, extra_parameter_num):</text>
+                <text x="0" y="128" xml:space="preserve" id="text3313">    <tspan style="font-weight:bold;fill:#008000" font-weight="bold" id="tspan3315">pass</tspan></text>
+                <text x="0" y="147" xml:space="preserve" id="text3317" />
+                <text x="0" y="166" xml:space="preserve" id="text3319">
+                    <tspan style="fill:#808080" id="tspan3321">#   make sure the input file is there</tspan></text>
+                <text x="0" y="185" xml:space="preserve" id="text3323">
+                    <tspan style="fill:#007020" id="tspan3325">open</tspan>('job1.input', &quot;w&quot;)</text>
+                <text x="0" y="204" xml:space="preserve" id="text3327" />
+                <text x="0" y="223" xml:space="preserve" id="text3329">pipeline_run([first_task])</text>
+                <text x="0" y="242" xml:space="preserve" id="text3331" />
+                </g></svg>
 
-            from ruffus import *
+
+        The ``@transform`` decorator tells Ruffus to take the input file ``job1.input``, remove its **suffix** of ``.input`` and replace it with ``.output1``.
+
+        This is exactly equivalent to the following function call:
+
+            ::
+
+                first_task('job1.input', 'job1.output1', "some_extra.string.for_example", 14)
 
 
-        
-    This is exactly equivalent to the following function call:
+        and the output from **Ruffus** will thus be:
 
-        ::
-                
-            pipeline_task('task1.input', 'task1.output', 'optional_1.extra', 'optional_2.extra')
+            .. raw:: html
 
-        
-        
-    and the output from **Ruffus** will thus be:
-    
-        .. image:: ../../images/simple_tutorial_files2.png
+                <svg version="1.0" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0" width="374.86499pt" height="92.02504pt" viewBox="0 0 374.86498 92.025041">
+                    <rect width="359.146" height="58.154449" x="7.8589935" y="28.798326" id="rect3521" style="fill:none;stroke:#016735;stroke-width:0.14452712;stroke-miterlimit:10" /><rect width="364.86499" height="58.154449" x="4.9999938" y="28.798326" id="rect3523" style="fill:#eeffcc" />
+                    <g transform="matrix(1,0,0,0.72872639,-16.352384,4.6212592)" id="g3645">
+                    	<line x1="125.896" y1="53.333" x2="125.896" y2="15.667" id="line3647" style="fill:#00ff00" />
+                    	<g id="g3649">
+                    		<line stroke-miterlimit="10" x1="125.896" y1="49.028" x2="125.896" y2="15.667" id="line3651" style="fill:none;stroke:#00a651;stroke-miterlimit:10" />
+                    		<g id="g3653">
+                    			<polygon points="128.888,48.153 125.897,53.333 122.905,48.153 " id="polygon3655" style="fill:#00a651" />
+                    		</g>
+                    	</g>
+                    </g>
+                    <g transform="matrix(1,0,0,0.73146564,-0.38500643,4.5843285)" id="g3659">
+                    	<line x1="267.23001" y1="70.667" x2="267.23001" y2="15.667" id="line3661" style="fill:#00ff00" />
+                    	<g id="g3663">
+                    		<line stroke-miterlimit="10" x1="267.23001" y1="66.361" x2="267.23001" y2="15.667" id="line3665" style="fill:none;stroke:#00a651;stroke-miterlimit:10" />
+                    		<g id="g3667">
+                    			<polygon points="267.23,70.667 264.238,65.486 270.222,65.486 " id="polygon3669" style="fill:#00a651" />
+                    		</g>
+                    	</g>
+                    </g>
+                    <path d="m 153.04485,51.262472 c 0,3.583 -4.15868,6.488 -9.28879,6.488 H 91.550787 c -5.130114,0 -9.288794,-2.905 -9.288794,-6.488 l 0,0 c 0,-3.583 4.15868,-6.488 9.288794,-6.488 h 52.204323 c 5.13012,0 9.28974,2.905 9.28974,6.488 l 0,0 z" id="path3671" style="opacity:0.2;fill:#00a14b" />
+                    <g transform="matrix(1,0,0,0.72872639,-103.64072,4.6212592)" id="g3675">
+                    	<line x1="313.56299" y1="53.333" x2="313.56299" y2="15.667" id="line3677" style="fill:#00ff00" />
+                    	<g id="g3679">
+                    		<line stroke-miterlimit="10" x1="313.56299" y1="49.028" x2="313.56299" y2="15.667" id="line3681" style="fill:none;stroke:#00a651;stroke-miterlimit:10" />
+                    		<g id="g3683">
+                    			<polygon points="316.556,48.153 313.564,53.333 310.572,48.153 " id="polygon3685" style="fill:#00a651" />
+                    		</g>
+                    	</g>
+                    </g>
+                    <path d="m 250.58388,51.262472 c 0,3.583 -4.83746,6.488 -10.80388,6.488 h -60.72201 c -5.96757,0 -10.80503,-2.905 -10.80503,-6.488 l 0,0 c 0,-3.583 4.83746,-6.488 10.80503,-6.488 H 239.78 c 5.96642,0 10.80388,2.905 10.80388,6.488 l 0,0 z" id="path3687" style="opacity:0.2;fill:#00a14b" />
+                    <path d="m 295.61399,65.440811 c 0,3.406 -2.537,6.167 -5.667,6.167 H 85.280993 c -3.129,0 -5.667,-2.761 -5.667,-6.167 l 0,0 c 0,-3.406 2.537,-6.167 5.667,-6.167 H 289.94799 c 3.129,10e-4 5.666,2.762 5.666,6.167 l 0,0 z" id="path3689" style="opacity:0.2;fill:#00a14b" />
+                    <text x="92.396126" y="13.742188" id="text3643" style="font-size:12px;fill:#00a14b;font-family:ArialMT">Inputs</text>
+                    <text x="193.83928" y="13.742188" id="text3673" style="font-size:12px;fill:#00a14b;font-family:ArialMT">Outputs</text>
+                    <text x="256.93237" y="13.742188" id="text3657" style="font-size:12px;fill:#00a14b;font-family:ArialMT">Extra parameters</text>
+                    <text x="9.3237839" y="40.037392" id="text3040" xml:space="preserve" style="font-size:10.32079887px;font-family:monospace"><tspan id="tspan3042" style="font-weight:bold;fill:#ff0000">&gt;&gt;&gt;</tspan> pipeline_run([first_task])</text>
+                    <text x="9.3237839" y="54.044189" id="text3046" xml:space="preserve" style="font-size:10.32079887px;font-family:monospace">    Job  <tspan id="tspan3048" style="fill:#666666">=</tspan> [job1<tspan id="tspan3050" style="fill:#666666">.</tspan>input <tspan id="tspan3052" style="fill:#666666">-&gt;</tspan> job1<tspan id="tspan3056" style="fill:#666666">.</tspan>output1,</text>
+                    <text x="58.633194" y="67.193367" id="text3160" xml:space="preserve" style="font-size:10.32079887px;font-family:monospace">    some_extra.string.for_example, 14] completed</text>
+                    <text x="9.3237839" y="82.432899" id="text3058" xml:space="preserve" style="font-size:10.32079887px;font-family:monospace">Completed Task <tspan id="tspan3060" style="fill:#666666">=</tspan> first_task</text>
+                    </svg>
 
 .. ::
             >>> pipeline_run([pipeline_task])
@@ -83,16 +244,22 @@ Overview
         
         
 ************************************
-Specifying jobs in parallel
+Task functions as recipes
 ************************************
-    | Each :term:`task` function of the pipeline can also be a recipe or 
+    This seems a lot of effort to do what we can accomplish in a single line of python code by simply calling the task function.
+
+    However, now that we have annotated this as a ruffus task function, we can start using it as part of a computational pipeline.
+
+
+    | Each :term:`task` function of the pipeline is best viewed as a recipe or 
       `rule <http://www.gnu.org/software/make/manual/make.html#Rule-Introduction>`_  
-      which can be applied at the same time to many different parameters.
+      which can be applied to many different parameters.
+
     | For example, one can have a *compile task* which will compile any source code, or
       a *count_lines task* which will count the number of lines in any file.
       
     | In the example above, we have made a single output by supplying a single input parameter.
-     You can use much the same syntax to apply the same recipe to *multiple* inputs at 
+     You can use much the same syntax to apply the same recipe to *multiple* input files at 
      the same time. 
 
     .. note ::

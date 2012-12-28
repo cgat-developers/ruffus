@@ -41,7 +41,7 @@ The first steps (1-4)
         :maxdepth: 1
     
         1. Chain tasks (functions) together into a pipeline <step1_follows>
-        2. Provide parameters to run jobs in parallel <step2_files>
+        2. Provide parameters to run jobs in parallel <step2>
         3. Tracing through your new pipeline <step3_run_pipeline>
         4. Using flowcharts  <step4_run_pipeline_graphically>
     
