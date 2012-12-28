@@ -69,12 +69,19 @@ Overview
           </g>
         </svg>
 
+    Computational pipelines transform your data in stages until the final result is produced. 
+    Ruffus is a way of automating the plumbing in your pipeline: You supply the python functions which perform the data transformation, and tell Ruffus how these pipeline ``task`` functions are connected up. Ruffus will make sure that the right data flows down your pipeline in the right way at the right time.
 
-    | The python functions which do the actual work of each stage  or
-      :term:`task` of a **Ruffus** pipeline are written by you.
-    | The role of **Ruffus** is to make sure these functions are called in the right order, 
-      with the right parameters, running in parallel using multiprocessing if desired.
-    | This step of the tutorial explains how these pipeline parameters are specified.
+    .. note::
+
+        **The best way to design a pipeline is to:**
+
+            * **write down the file names of the data as it flows across your pipeline**
+            * **write down the names of each stage along the pipeline as your data is transformed.**
+
+    Each stage or :term:`task` of the pipeline is a normal python function which you have to write.
+
+    The role of **Ruffus** is to call these functions in the right order with the right parameters (usually the data file names).
 
     By letting **Ruffus** manage your pipeline parameters, you will get the following features
     for free: 
@@ -83,27 +90,22 @@ Overview
         #. multiple jobs can be run in parallel (on different processors if possible)
         #. pipeline stages can be chained together automatically
     
-    Computational pipelines transform your data in stages until the final result is produced. One easy way to understand pipelines is by imagining your data flowing across a series of pipes until it reaches its final destination. Even quite complicated processes can be simplified if we broke things down into simple stages. Of course, it helps if we can visualise the whole process.
-
-    Ruffus is a way of automating the plumbing in your pipeline: You supply the python functions which perform the data transformation, and tell Ruffus how these pipeline ``task`` functions are connected up. Ruffus will make sure that the right data flows down your pipeline in the right way at the right time.
-
-    The best way to design a pipeline is to write down the file names of the data as it flows across your pipeline.
 
     
 
 ************************************
-*@transform*
+@transform
 ************************************
     Let us start with the simplest case where a pipeline stage consists of a single
     job with one *input*, one *output*, and an optional number of extra parameters:
 
-    The :ref:`@transform <decorators.transform>` decorator tells Ruffus that the decorated task **transforms** each input into a new output.
+    The :ref:`@transform <decorators.transform>` decorator tells Ruffus that the decorated task **transforms** each and every input into a new output.
 
         In other words, inputs and outputs have a **1 to 1** relationship.
 
     .. note::
 
-        In the second part of the tutorial, we will encounter more decorators which can split up, or join together or group inputs. 
+        In the second part of the tutorial, we will encounter more decorators which can *split up*, or *join together* or *group* inputs. 
 
             In other words, inputs and output can have **many to one**, **many to many** etc. relationships.
                                                                                                
