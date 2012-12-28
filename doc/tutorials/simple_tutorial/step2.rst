@@ -99,7 +99,7 @@ Overview
     Let us start with the simplest case where a pipeline stage consists of a single
     job with one *input*, one *output*, and an optional number of extra parameters:
 
-    The :ref:`@transform <decorators.transform>` decorator tells Ruffus that the decorated task **transforms** each and every input into a new output.
+    The :ref:`@transform <decorators.transform>` decorator tells Ruffus that the decorated task **transforms** each and every piece of input data into a new output.
 
         In other words, inputs and outputs have a **1 to 1** relationship.
 
