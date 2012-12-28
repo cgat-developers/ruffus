@@ -6,7 +6,7 @@ Code for Step 2: Passing parameters to the pipeline
 ###################################################################
 * :ref:`Up <Simple_Tutorial>` 
 * :ref:`Back <Simple_Tutorial_2nd_step>` 
-* :ref:`@files syntax <decorators.files>` in detail
+* :ref:`@transform syntax <decorators.transform>` in detail
 
 ************************************
 Code
@@ -14,40 +14,28 @@ Code
     ::
 
         from ruffus import *
-        import sys
 
-        #---------------------------------------------------------------
-        #   Create input file
-        #
-        input_file = 'job1.input'
-        open(input_file, "w")
+        #   make sure the input file is there
+        open('job1.input', "w")
 
-        #---------------------------------------------------------------
-        #
-        #   task function
-        #
-        @transform(input_file, suffix(".input"), ".output1")
-        def first_task(input_file, output_file):
-            open(output_file, "w")
+        @transform('job1.input', suffix(".input"), ".output1", 
+                   "some_extra.string.for_example", 14)
+        def first_task(input_file, output_file,
+                       extra_parameter_str, extra_parameter_num):
+            pass
 
-        #---------------------------------------------------------------
-        #
-        #       Run
-        #
-        pipeline_run([second_task])
+        pipeline_run([first_task])
 
     ::
 
         >>> pipeline_run([first_task])
-            Job  = [job1.input -> job1.output1] completed
+            Job  = [job1.input -> job1.output1, some_extra.string.for_example, 14] completed
         Completed Task = first_task
 
 
     ::
         
         from ruffus import *
-        import time
-        import sys
 
         #---------------------------------------------------------------
         #   Create input files
