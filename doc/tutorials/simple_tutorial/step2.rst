@@ -99,7 +99,7 @@ Overview
     Let us start with the simplest case where a pipeline stage consists of a single
     job with one *input*, one *output*, and an optional number of extra parameters:
 
-    The :ref:`@transform <decorators.transform>` decorator tells Ruffus that the decorated task **transforms** each and every piece of input data into a new output.
+    The :ref:`@transform <decorators.transform>` decorator tells Ruffus that task function **transforms** each and every piece of input data into a new output.
 
         In other words, inputs and outputs have a **1 to 1** relationship.
 
@@ -111,80 +111,81 @@ Overview
                                                                                                
                                                                                                
            
-    Let us provide `input` and `outputs` to our new pipeline:                                 
+    Let us provide `input`s and `output`s to our new pipeline:                                 
            
         .. raw:: html
 
             <svg version="1.0" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0"
-                width="370.333pt"
-                height="207.672pt"
-                viewBox="0 0 370.333 207.672">
-                <g id="g3519">
-                		<rect x="6.244" y="27.667" stroke-miterlimit="10" width="359.146" height="174.006" id="rect3521" stroke-width="0.25" stroke="#016735" fill="none" />
-                	<rect x="3.385" y="27.667" width="364.865" height="174.006" id="rect3523" fill="#EEFFCC" />
+                width="470pt"
+                height="258pt"
+                viewBox="0 0 470 258">
+                <defs id="defs3568" />
+                <g transform="matrix(1.0077068,0,0,1,0.58890562,0.57518776)" id="g3519">
+                <rect width="359.146" height="174.006" x="6.244" y="27.667" id="rect3521" style="fill:none;stroke:#016735;stroke-width:0.25;stroke-miterlimit:10" />
+                <rect width="364.86499" height="174.006" x="3.385" y="27.667" id="rect3523" style="fill:#eeffcc" />
                 </g>
-                <text transform="matrix(1 0 0 1 19.249 12.167)" fill="#FF0000" font-family="'ArialMT'" font-size="12" id="text3629">Decorator</text>
-                <g id="g3631">
-                	<g id="g3633">
-                		<line fill="none" stroke="#ED1C24" stroke-miterlimit="10" x1="41.333" y1="49.028" x2="41.333" y2="15.667" id="line3635" />
-                		<g id="g3637">
-                			<polygon fill="#ED1C24" points="44.324,48.153 41.333,53.333 38.341,48.153    " id="polygon3639" />
-                		</g>
-                	</g>
+                <path d="m 74.950549,79.920188 c 0,3.583 -3.942,6.488 -8.804,6.488 h -49.481 c -4.862,0 -8.8040001,-2.905 -8.8040001,-6.488 l 0,0 c 0,-3.583 3.9420001,-6.488 8.8040001,-6.488 h 49.481 c 4.862,0 8.804,2.905 8.804,6.488 l 0,0 z" id="path3641" style="opacity:0.2;fill:#ed1c24" />
+                <path d="m 181.50237,79.920188 c 0,3.583 -6.09517,6.488 -13.61411,6.488 H 91.373658 c -7.518944,0 -13.614109,-2.905 -13.614109,-6.488 l 0,0 c 0,-3.583 6.095165,-6.488 13.614109,-6.488 h 76.513212 c 7.51894,0 13.6155,2.905 13.6155,6.488 l 0,0 z" id="path3671" style="opacity:0.2;fill:#00a14b" />
+                <path d="m 358.85788,79.920188 c 0,3.583 -3.66127,6.488 -8.17701,6.488 h -45.95795 c -4.5166,0 -8.17787,-2.905 -8.17787,-6.488 l 0,0 c 0,-3.583 3.66127,-6.488 8.17787,-6.488 h 45.95795 c 4.51574,0 8.17701,2.905 8.17701,6.488 l 0,0 z" id="path3687" style="opacity:0.2;fill:#00a14b" />
+                <path d="m 291.11155,94.808188 c 0,3.406 -2.537,6.167002 -5.667,6.167002 H 80.778549 c -3.129,0 -5.667,-2.761002 -5.667,-6.167002 l 0,0 c 0,-3.406 2.537,-6.167 5.667,-6.167 H 285.44555 c 3.129,0.001 5.666,2.762 5.666,6.167 l 0,0 z" id="path3689" style="opacity:0.2;fill:#00a14b" />
+                <text x="12.925135" y="55.247021" transform="scale(1.0042467,0.99577126)" id="text3295" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace" />
+                <text x="12.925135" y="135.83345" transform="scale(1.0042467,0.99577126)" id="text3317" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace" />
+                <text x="12.925135" y="176.12666" transform="scale(1.0042467,0.99577126)" id="text3327" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace" />
+                <text x="12.925135" y="202.9888" transform="scale(1.0042467,0.99577126)" id="text3331" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace" />
+                <text x="12.925135" y="51.456726" transform="scale(1.0042467,0.99577126)" id="text3285-5" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace" />
+                <g transform="translate(-2.8874511,0.57518776)" id="g3631">
+                <g id="g3633">
+                  <line stroke-miterlimit="10" x1="41.333" y1="49.028" x2="41.333" y2="15.667" id="line3635" style="fill:none;stroke:#ed1c24;stroke-miterlimit:10" />
+                  <g id="g3637">
+                    <polygon points="41.333,53.333 38.341,48.153 44.324,48.153 " id="polygon3639" style="fill:#ed1c24" />
+                  </g>
                 </g>
-                <path opacity="0.2" fill="#ED1C24" d="M77.838,64.945c0,3.583-3.942,6.488-8.804,6.488H19.553c-4.862,0-8.804-2.905-8.804-6.488l0,0  c0-3.583,3.942-6.488,8.804-6.488h49.481C73.896,58.457,77.838,61.362,77.838,64.945L77.838,64.945z" id="path3641" />
-                <text transform="matrix(1 0 0 1 107.813 12.167)" fill="#00A14B" font-family="'ArialMT'" font-size="12" id="text3643">Inputs</text>
-                <g id="g3645">
-                	<line fill="#00FF00" x1="125.896" y1="53.333" x2="125.896" y2="15.667" id="line3647" />
-                	<g id="g3649">
-                		<line fill="none" stroke="#00A651" stroke-miterlimit="10" x1="125.896" y1="49.028" x2="125.896" y2="15.667" id="line3651" />
-                		<g id="g3653">
-                			<polygon fill="#00A651" points="128.888,48.153 125.897,53.333 122.905,48.153    " id="polygon3655" />
-                		</g>
-                	</g>
                 </g>
-                <text font-size="12" id="text3657" x="195.70584" y="12.167" style="font-size:12px;fill:#00a14b;font-family:ArialMT">Extra parameters</text>
-                <g id="g3659">
-                	<line fill="#00FF00" x1="267.23" y1="70.667" x2="267.23" y2="15.667" id="line3661" />
-                	<g id="g3663">
-                		<line fill="none" stroke="#00A651" stroke-miterlimit="10" x1="267.23" y1="66.361" x2="267.23" y2="15.667" id="line3665" />
-                		<g id="g3667">
-                			<polygon fill="#00A651" points="270.222,65.486 267.23,70.667 264.238,65.486    " id="polygon3669" />
-                		</g>
-                	</g>
+                <g transform="matrix(1,0,0,1.442061,7.1105935,-4.5673568)" id="g3645">
+                <line x1="125.896" y1="53.333" x2="125.896" y2="15.667" id="line3647" style="fill:#00ff00" />
+                <g id="g3649">
+                  <line stroke-miterlimit="10" x1="125.896" y1="49.028" x2="125.896" y2="15.667" id="line3651" style="fill:none;stroke:#00a651;stroke-miterlimit:10" />
+                  <g id="g3653">
+                    <polygon points="128.888,48.153 125.897,53.333 122.905,48.153 " id="polygon3655" style="fill:#00a651" />
+                  </g>
                 </g>
-                <path opacity="0.2" fill="#00A14B" d="M155.333,64.945c0,3.583-4.388,6.488-9.801,6.488H90.448c-5.413,0-9.801-2.905-9.801-6.488  l0,0c0-3.583,4.388-6.488,9.801-6.488h55.083C150.944,58.457,155.333,61.362,155.333,64.945L155.333,64.945z" id="path3671" />
-                <text transform="matrix(1 0 0 1 295.48 12.167)" fill="#00A14B" font-family="'ArialMT'" font-size="12" id="text3673">Outputs</text>
-                <g id="g3675">
-                	<line fill="#00FF00" x1="313.563" y1="53.333" x2="313.563" y2="15.667" id="line3677" />
-                	<g id="g3679">
-                		<line fill="none" stroke="#00A651" stroke-miterlimit="10" x1="313.563" y1="49.028" x2="313.563" y2="15.667" id="line3681" />
-                		<g id="g3683">
-                			<polygon fill="#00A651" points="316.556,48.153 313.564,53.333 310.572,48.153    " id="polygon3685" />
-                		</g>
-                	</g>
                 </g>
-                <path opacity="0.2" fill="#00A14B" d="M342.999,64.945c0,3.583-4.212,6.488-9.407,6.488h-52.871c-5.196,0-9.408-2.905-9.408-6.488  l0,0c0-3.583,4.212-6.488,9.408-6.488h52.871C338.787,58.457,342.999,61.362,342.999,64.945L342.999,64.945z" id="path3687" />
-                <path opacity="0.2" fill="#00A14B" d="M293.999,79.833c0,3.406-2.537,6.167-5.667,6.167H83.666c-3.129,0-5.667-2.761-5.667-6.167  l0,0c0-3.406,2.537-6.167,5.667-6.167h204.667C291.462,73.667,293.999,76.428,293.999,79.833L293.999,79.833z" id="path3689" />
-                <g transform="matrix(0.70990052,0,0,0.70390927,15.867474,31.2092)" style="font-size:14px;font-family:monospace" font-size="14px" id="g3283"><text x="0" y="14" xml:space="preserve" id="text3285"><tspan style="font-weight:bold;fill:#008000" font-weight="bold" id="tspan3287">from</tspan> <tspan style="font-weight:bold;fill:#0e84b5" font-weight="bold" id="tspan3289">ruffus</tspan> <tspan style="font-weight:bold;fill:#008000" font-weight="bold" id="tspan3291">import</tspan> <tspan style="fill:#303030" id="tspan3293">*</tspan></text>
-                <text x="0" y="33" xml:space="preserve" id="text3295" />
-                <text x="0" y="52" xml:space="preserve" id="text3297"><tspan style="font-weight:bold;fill:#505050" font-weight="bold" id="tspan3299">@transform</tspan>('job1.input', <tspan style="font-weight:bold;fill:#FF0000">suffix</tspan>(&quot;.input&quot;), &quot;.output1&quot;, </text>
-                <text x="0" y="71" xml:space="preserve" id="text3301">           &quot;some_extra.string.for_example&quot;, <tspan style="font-weight:bold;fill:#0000d0" font-weight="bold" id="tspan3303">14</tspan>)</text>
-                <text x="0" y="90" xml:space="preserve" id="text3305"><tspan style="font-weight:bold;fill:#008000" font-weight="bold" id="tspan3307">def</tspan> <tspan style="font-weight:bold;fill:#0060b0" font-weight="bold" id="tspan3309">first_task</tspan>(input_file, output_file,</text>
-                <text x="0" y="109" xml:space="preserve" id="text3311">               extra_parameter_str, extra_parameter_num):</text>
-                <text x="0" y="128" xml:space="preserve" id="text3313">    <tspan style="font-weight:bold;fill:#008000" font-weight="bold" id="tspan3315">pass</tspan></text>
-                <text x="0" y="147" xml:space="preserve" id="text3317" />
-                <text x="0" y="166" xml:space="preserve" id="text3319">
-                    <tspan style="fill:#808080" id="tspan3321">#   make sure the input file is there</tspan></text>
-                <text x="0" y="185" xml:space="preserve" id="text3323">
-                    <tspan style="fill:#007020" id="tspan3325">open</tspan>('job1.input', &quot;w&quot;)</text>
-                <text x="0" y="204" xml:space="preserve" id="text3327" />
-                <text x="0" y="223" xml:space="preserve" id="text3329">pipeline_run([first_task])</text>
-                <text x="0" y="242" xml:space="preserve" id="text3331" />
-                </g></svg>
+                <g transform="matrix(1,0,0,1.3096241,18.670833,-4.1208813)" id="g3659">
+                <line x1="267.23001" y1="70.667" x2="267.23001" y2="15.667" id="line3661" style="fill:#00ff00" />
+                <g id="g3663">
+                  <line stroke-miterlimit="10" x1="267.23001" y1="66.361" x2="267.23001" y2="15.667" id="line3665" style="fill:none;stroke:#00a651;stroke-miterlimit:10" />
+                  <g id="g3667">
+                    <polygon points="270.222,65.486 267.23,70.667 264.238,65.486 " id="polygon3669" style="fill:#00a651" />
+                  </g>
+                </g>
+                </g>
+                <g transform="matrix(1,0,0,1.4502473,10.234982,-6.2537129)" id="g3675">
+                <line x1="313.56299" y1="53.333" x2="313.56299" y2="15.667" id="line3677" style="fill:#00ff00" />
+                <g id="g3679">
+                  <line stroke-miterlimit="10" x1="313.56299" y1="49.028" x2="313.56299" y2="15.667" id="line3681" style="fill:none;stroke:#00a651;stroke-miterlimit:10" />
+                  <g id="g3683">
+                    <polygon points="316.556,48.153 313.564,53.333 310.572,48.153 " id="polygon3685" style="fill:#00a651" />
+                  </g>
+                </g>
+                </g>
+                <text x="16.361549" y="12.742188" id="text3629" style="font-size:12px;fill:#ff0000;font-family:ArialMT">Decorator</text>
+                <text x="104.92555" y="12.742188" id="text3643" style="font-size:12px;fill:#00a14b;font-family:ArialMT">Inputs</text>
+                <text x="197.81741" y="12.742188" id="text3657" style="font-size:12px;fill:#00a14b;font-family:ArialMT">Extra parameters</text>
+                <text x="304.1528" y="12.742188" id="text3673" style="font-size:12px;fill:#00a14b;font-family:ArialMT">Outputs</text>
+                <text x="12.925135" y="41.815945" transform="scale(1.0042467,0.99577126)" id="text3285" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace"><tspan id="tspan3287" style="font-weight:bold;fill:#008000">from</tspan> <tspan id="tspan3289" style="font-weight:bold;fill:#0e84b5">ruffus</tspan> <tspan id="tspan3291" style="font-weight:bold;fill:#008000">import</tspan> <tspan id="tspan3293" style="fill:#303030">*</tspan></text>
+                <text x="12.925135" y="61.06567" transform="scale(1.0042467,0.99577126)" id="text3329-1" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace">first_task_params = 'job1.input'</text>
+                <text x="12.925135" y="83.139259" transform="scale(1.0042467,0.99577126)" id="text3297" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace"><tspan id="tspan3299" style="font-weight:bold;fill:#505050">@transform</tspan>(first_task_params, <tspan id="tspan3548" style="font-weight:bold;fill:#ff0000">suffix</tspan>(&quot;.input&quot;), &quot;.output1&quot;, </text>
+                <text x="12.925135" y="96.570335" transform="scale(1.0042467,0.99577126)" id="text3301" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace">           &quot;some_extra.string.for_example&quot;, <tspan id="tspan3303" style="font-weight:bold;fill:#0000d0">14</tspan>)</text>
+                <text x="12.925135" y="110.00143" transform="scale(1.0042467,0.99577126)" id="text3305" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace"><tspan id="tspan3307" style="font-weight:bold;fill:#008000">def</tspan> <tspan id="tspan3309" style="font-weight:bold;fill:#0060b0">first_task</tspan>(input_file, output_file,</text>
+                <text x="12.925135" y="123.43251" transform="scale(1.0042467,0.99577126)" id="text3311" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace">               extra_parameter_str, extra_parameter_num):</text>
+                <text x="12.925135" y="136.86354" transform="scale(1.0042467,0.99577126)" id="text3313" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace">    <tspan id="tspan3315" style="font-weight:bold;fill:#008000">pass</tspan></text>
+                <text x="12.925135" y="163.72568" transform="scale(1.0042467,0.99577126)" id="text3319" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace"><tspan id="tspan3321" style="fill:#808080">#   make sure the input file is there</tspan></text>
+                <text x="12.925135" y="177.15675" transform="scale(1.0042467,0.99577126)" id="text3323" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace"><tspan id="tspan3325" style="fill:#007020">open</tspan>('job1.input', &quot;w&quot;)</text>
+                <text x="12.925135" y="196.1368" transform="scale(1.0042467,0.99577126)" id="text3329" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace">pipeline_run([first_task])</text>
+                </svg>
 
 
-        The ``@transform`` decorator tells Ruffus to take the input file ``job1.input``, remove its **suffix** of ``.input`` and replace it with ``.output1``.
+        The ``@transform`` decorator tells Ruffus to take the input file ``job1.input``, remove its **suffix** of ``.input`` and replace it with ``.output1``. We are also passing the task two extra parameters, a string and a number.
 
         This is exactly equivalent to the following function call:
 
@@ -193,7 +194,7 @@ Overview
                 first_task('job1.input', 'job1.output1', "some_extra.string.for_example", 14)
 
 
-        and the output from **Ruffus** will thus be:
+        Even though this (empty) function doesn't do anything just yet, the output from **Ruffus** ``pipeline_run`` will show that that this part of the pipeline completed successfully:
 
             .. raw:: html
 
@@ -248,28 +249,30 @@ Overview
 ************************************
 Task functions as recipes
 ************************************
-    This seems a lot of effort to do what we can accomplish in a single line of python code by simply calling the task function.
+    This may seem like a lot of effort to do what we can accomplish in python by calling the function directly.
+    However, now that we have annotated a task, we can start using it as part of our computational pipeline:
 
-    However, now that we have annotated this as a ruffus task function, we can start using it as part of a computational pipeline.
 
-
-    | Each :term:`task` function of the pipeline is best viewed as a recipe or 
-      `rule <http://www.gnu.org/software/make/manual/make.html#Rule-Introduction>`_  
-      which can be applied to many different parameters.
-
-    | For example, one can have a *compile task* which will compile any source code, or
-      a *count_lines task* which will count the number of lines in any file.
+    Each :term:`task` function of the pipeline is a recipe or 
+    `rule <http://www.gnu.org/software/make/manual/make.html#Rule-Introduction>`_  
+    which can be applied repeatedly to the data.
+    For example, one can have 
+        * a ``compile()`` *task* which will compile any number of source code files, or
+        * a ``count_lines()`` *task* which will count the number of lines in any file or 
+        * an ``align_dna()`` *task* which will align the DNA of many chromosomes.
       
-    | In the example above, we have made a single output by supplying a single input parameter.
-     You can use much the same syntax to apply the same recipe to *multiple* input files at 
-     the same time. 
-
     .. note ::
     
-        Each time a separate set of parameters is forwarded to your task function,
-        Ruffus calls this a :term:`job`. Each task can thus have many jobs which 
-        can be run in parallel.
+        **Key Ruffus Terminology**:
+
+        A  :term:`task` is an annotated python function which represents a recipe or stage of your pipeline.
+
+        A  :term:`job` is each application of your recipe, i.e. each time Ruffus calls your function.
+
+        Each **task** or pipeline recipe can thus have many **jobs** each of which can work in parallel on different data.
     
+    In the original example, we have made a single output file by supplying a single input parameter.
+    We shall use much the same syntax to apply the same recipe to *multiple* input files. 
     Instead of providing a single *input*, and a single *output*, we are going to specify
     the parameters for *two* jobs at once:
     
@@ -297,6 +300,7 @@ Task functions as recipes
                 2nd_job
                 Job = [job2.stage1 -> job2.stage2,     2nd_job] completed
             Completed Task = second_task
+
 
 ************************************
 Multi-tasking
