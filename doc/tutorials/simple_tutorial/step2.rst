@@ -116,10 +116,10 @@ Overview
         .. raw:: html
 
             <svg version="1.0" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0"
-                width="377pt"
-                height="184pt"
-                viewBox="0 0 377 184">
-                  <defs id="defs3568">
+                width="385pt"
+                height="210pt"
+                viewBox="0 0 385 210">
+                    <defs id="defs3568">
                 <marker refX="0" refY="0" orient="auto" id="Arrow2Mend" style="overflow:visible">
                   <path d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z" transform="scale(-0.6,-0.6)" id="path4497" style="fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round" />
                 </marker>
@@ -139,20 +139,20 @@ Overview
                   <path d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z" transform="matrix(-1.1,0,0,-1.1,-1.1,0)" id="path4491" style="fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round" />
                 </marker>
               </defs>
-              <g transform="matrix(1.0077068,0,0,1,1.5889081,-22.53125)" id="g3519">
+              <g transform="matrix(1.0077068,0,0,1,9.8598546,3.6099157)" id="g3519">
                 <rect width="359.146" height="174.006" x="6.244" y="27.667" id="rect3521" style="fill:none;stroke:#016735;stroke-width:0.25;stroke-miterlimit:10" />
                 <rect width="364.86499" height="174.006" x="3.385" y="27.667" id="rect3523" style="fill:#eeffcc" />
               </g>
-              <path d="m 75.950551,56.813748 c 0,3.583 -3.942,6.488 -8.804,6.488 h -49.481 c -4.862,0 -8.8039999,-2.905 -8.8039999,-6.488 l 0,0 c 0,-3.582998 3.9419999,-6.487998 8.8039999,-6.487998 h 49.481 c 4.862,0 8.804,2.905 8.804,6.487998 l 0,0 z" id="path3641" style="opacity:0.2;fill:#ed1c24" />
-              <path d="m 182.50238,56.813748 c 0,3.583 -6.09517,6.488 -13.61411,6.488 H 92.37366 c -7.518944,0 -13.614109,-2.905 -13.614109,-6.488 l 0,0 c 0,-3.582998 6.095165,-6.487998 13.614109,-6.487998 h 76.51322 c 7.51894,0 13.6155,2.905 13.6155,6.487998 l 0,0 z" id="path3671" style="opacity:0.2;fill:#00a14b" />
-              <path d="m 359.85789,56.813748 c 0,3.583 -3.66127,6.488 -8.17701,6.488 h -45.95795 c -4.5166,0 -8.17787,-2.905 -8.17787,-6.488 l 0,0 c 0,-3.582998 3.66127,-6.487998 8.17787,-6.487998 h 45.95795 c 4.51574,0 8.17701,2.905 8.17701,6.487998 l 0,0 z" id="path3687" style="opacity:0.2;fill:#00a14b" />
-              <path d="m 292.11156,71.701748 c 0,3.40601 -2.537,6.16701 -5.667,6.16701 H 81.778551 c -3.129,0 -5.667,-2.761 -5.667,-6.16701 l 0,0 c 0,-3.406 2.537,-6.167 5.667,-6.167 H 286.44556 c 3.129,0.001 5.666,2.762 5.666,6.167 l 0,0 z" id="path3689" style="opacity:0.2;fill:#00a14b" />
-              <text x="13.92091" y="32.042458" transform="scale(1.0042467,0.99577126)" id="text3295" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace" />
-              <text x="13.92091" y="112.62889" transform="scale(1.0042467,0.99577126)" id="text3317" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace" />
-              <text x="13.92091" y="152.92209" transform="scale(1.0042467,0.99577126)" id="text3327" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace" />
-              <text x="13.92091" y="179.78423" transform="scale(1.0042467,0.99577126)" id="text3331" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace" />
-              <text x="13.92091" y="28.252159" transform="scale(1.0042467,0.99577126)" id="text3285-5" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace" />
-              <g transform="matrix(1,0,0,1.442061,8.1105961,-27.673794)" id="g3645">
+              <path d="m 84.221497,82.954914 c 0,3.583 -3.942,6.488 -8.804,6.488 h -49.481 c -4.862,0 -8.803999,-2.905 -8.803999,-6.488 l 0,0 c 0,-3.582998 3.941999,-6.487998 8.803999,-6.487998 h 49.481 c 4.862,0 8.804,2.905 8.804,6.487998 l 0,0 z" id="path3641" style="opacity:0.2;fill:#ed1c24" />
+              <path d="m 190.77333,82.954914 c 0,3.583 -6.09517,6.488 -13.61411,6.488 h -76.51461 c -7.518948,0 -13.614113,-2.905 -13.614113,-6.488 l 0,0 c 0,-3.582998 6.095165,-6.487998 13.614113,-6.487998 h 76.51322 c 7.51894,0 13.6155,2.905 13.6155,6.487998 l 0,0 z" id="path3671" style="opacity:0.2;fill:#00a14b" />
+              <path d="m 368.12884,82.954914 c 0,3.583 -3.66127,6.488 -8.17701,6.488 h -45.95795 c -4.5166,0 -8.17787,-2.905 -8.17787,-6.488 l 0,0 c 0,-3.582998 3.66127,-6.487998 8.17787,-6.487998 h 45.95795 c 4.51574,0 8.17701,2.905 8.17701,6.487998 l 0,0 z" id="path3687" style="opacity:0.2;fill:#00a14b" />
+              <path d="m 300.38251,97.842914 c 0,3.406006 -2.537,6.167006 -5.667,6.167006 H 90.049497 c -3.129,0 -5.667,-2.761 -5.667,-6.167006 l 0,0 c 0,-3.406 2.537,-6.167 5.667,-6.167 H 294.71651 c 3.129,10e-4 5.666,2.762 5.666,6.167 l 0,0 z" id="path3689" style="opacity:0.2;fill:#00a14b" />
+              <text x="22.156881" y="58.294636" transform="scale(1.0042467,0.99577126)" id="text3295" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace" />
+              <text x="22.156881" y="138.88107" transform="scale(1.0042467,0.99577126)" id="text3317" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace" />
+              <text x="22.156881" y="179.17427" transform="scale(1.0042467,0.99577126)" id="text3327" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace" />
+              <text x="22.156881" y="206.03641" transform="scale(1.0042467,0.99577126)" id="text3331" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace" />
+              <text x="22.156881" y="54.504337" transform="scale(1.0042467,0.99577126)" id="text3285-5" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace" />
+              <g transform="matrix(1,0,0,1.442061,16.381543,-1.5326283)" id="g3645">
                 <line x1="125.896" y1="53.333" x2="125.896" y2="15.667" id="line3647" style="fill:#00ff00" />
                 <g id="g3649">
                   <line stroke-miterlimit="10" x1="125.896" y1="49.028" x2="125.896" y2="15.667" id="line3651" style="fill:none;stroke:#00a651;stroke-miterlimit:10" />
@@ -161,7 +161,7 @@ Overview
                   </g>
                 </g>
               </g>
-              <g transform="matrix(1,0,0,1.3096241,19.670835,-27.227318)" id="g3659">
+              <g transform="matrix(1,0,0,1.3096241,27.941781,-1.0861523)" id="g3659">
                 <line x1="267.23001" y1="70.667" x2="267.23001" y2="15.667" id="line3661" style="fill:#00ff00" />
                 <g id="g3663">
                   <line stroke-miterlimit="10" x1="267.23001" y1="66.361" x2="267.23001" y2="15.667" id="line3665" style="fill:none;stroke:#00a651;stroke-miterlimit:10" />
@@ -170,7 +170,7 @@ Overview
                   </g>
                 </g>
               </g>
-              <g transform="matrix(1,0,0,1.4502473,11.234984,-29.360151)" id="g3675">
+              <g transform="matrix(1,0,0,1.4502473,19.50593,-3.2189853)" id="g3675">
                 <line x1="313.56299" y1="53.333" x2="313.56299" y2="15.667" id="line3677" style="fill:#00ff00" />
                 <g id="g3679">
                   <line stroke-miterlimit="10" x1="313.56299" y1="49.028" x2="313.56299" y2="15.667" id="line3681" style="fill:none;stroke:#00a651;stroke-miterlimit:10" />
@@ -179,21 +179,21 @@ Overview
                   </g>
                 </g>
               </g>
-              <text x="-4.196732" y="-12.551322" id="text3629" style="font-size:12px;fill:#ff0000;font-family:ArialMT">Decorator</text>
-              <text x="105.92556" y="-10.364249" id="text3643" style="font-size:12px;fill:#00a14b;font-family:ArialMT">Inputs</text>
-              <text x="198.81741" y="-10.364249" id="text3657" style="font-size:12px;fill:#00a14b;font-family:ArialMT">Extra parameters</text>
-              <text x="305.1528" y="-10.364249" id="text3673" style="font-size:12px;fill:#00a14b;font-family:ArialMT">Outputs</text>
-              <text x="13.92091" y="18.611382" transform="scale(1.0042467,0.99577126)" id="text3285" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace"><tspan id="tspan3287" style="font-weight:bold;fill:#008000">from</tspan> <tspan id="tspan3289" style="font-weight:bold;fill:#0e84b5">ruffus</tspan> <tspan id="tspan3291" style="font-weight:bold;fill:#008000">import</tspan> <tspan id="tspan3293" style="fill:#303030">*</tspan></text>
-              <text x="13.92091" y="37.861107" transform="scale(1.0042467,0.99577126)" id="text3329-1" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace">first_task_params = 'job1.input'</text>
-              <text x="13.92091" y="59.934692" transform="scale(1.0042467,0.99577126)" id="text3297" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace"><tspan id="tspan3299" style="font-weight:bold;fill:#505050">@transform</tspan>(first_task_params, <tspan id="tspan3548" style="font-weight:bold;fill:#ff0000">suffix</tspan>(&quot;.input&quot;), &quot;.output1&quot;, </text>
-              <text x="13.92091" y="73.365768" transform="scale(1.0042467,0.99577126)" id="text3301" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace">           &quot;some_extra.string.for_example&quot;, <tspan id="tspan3303" style="font-weight:bold;fill:#0000d0">14</tspan>)</text>
-              <text x="13.92091" y="86.79686" transform="scale(1.0042467,0.99577126)" id="text3305" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace"><tspan id="tspan3307" style="font-weight:bold;fill:#008000">def</tspan> <tspan id="tspan3309" style="font-weight:bold;fill:#0060b0">first_task</tspan>(input_file, output_file,</text>
-              <text x="13.92091" y="100.22795" transform="scale(1.0042467,0.99577126)" id="text3311" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace">               extra_parameter_str, extra_parameter_num):</text>
-              <text x="13.92091" y="113.65897" transform="scale(1.0042467,0.99577126)" id="text3313" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace">    <tspan id="tspan3315" style="font-weight:bold;fill:#008000">pass</tspan></text>
-              <text x="13.92091" y="140.5211" transform="scale(1.0042467,0.99577126)" id="text3319" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace"><tspan id="tspan3321" style="fill:#808080">#   make sure the input file is there</tspan></text>
-              <text x="13.92091" y="153.95218" transform="scale(1.0042467,0.99577126)" id="text3323" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace"><tspan id="tspan3325" style="fill:#007020">open</tspan>('job1.input', &quot;w&quot;)</text>
-              <text x="13.92091" y="172.93222" transform="scale(1.0042467,0.99577126)" id="text3329" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace">pipeline_run([first_task])</text>
-              <path d="m 3.5271871,-8.386986 0,40.879392 11.5066369,16.489166" id="path3696" style="fill:none;stroke:#ff0000;stroke-width:1.25536001;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-end:url(#Arrow2Mend)" />
+              <text x="4.0742145" y="13.589844" id="text3629" style="font-size:12px;fill:#ff0000;font-family:ArialMT">Decorator</text>
+              <text x="114.1965" y="15.776917" id="text3643" style="font-size:12px;fill:#00a14b;font-family:ArialMT">Inputs</text>
+              <text x="207.08836" y="15.776917" id="text3657" style="font-size:12px;fill:#00a14b;font-family:ArialMT">Extra parameters</text>
+              <text x="313.42374" y="15.776917" id="text3673" style="font-size:12px;fill:#00a14b;font-family:ArialMT">Outputs</text>
+              <text x="22.156881" y="44.86356" transform="scale(1.0042467,0.99577126)" id="text3285" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace"><tspan id="tspan3287" style="font-weight:bold;fill:#008000">from</tspan> <tspan id="tspan3289" style="font-weight:bold;fill:#0e84b5">ruffus</tspan> <tspan id="tspan3291" style="font-weight:bold;fill:#008000">import</tspan> <tspan id="tspan3293" style="fill:#303030">*</tspan></text>
+              <text x="22.156881" y="64.113289" transform="scale(1.0042467,0.99577126)" id="text3329-1" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace">first_task_params = 'job1.input'</text>
+              <text x="22.156881" y="86.186874" transform="scale(1.0042467,0.99577126)" id="text3297" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace"><tspan id="tspan3299" style="font-weight:bold;fill:#505050">@transform</tspan>(first_task_params, <tspan id="tspan3548" style="font-weight:bold;fill:#ff0000">suffix</tspan>(&quot;.input&quot;), &quot;.output1&quot;, </text>
+              <text x="22.156881" y="99.61795" transform="scale(1.0042467,0.99577126)" id="text3301" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace">           &quot;some_extra.string.for_example&quot;, <tspan id="tspan3303" style="font-weight:bold;fill:#0000d0">14</tspan>)</text>
+              <text x="22.156881" y="113.04904" transform="scale(1.0042467,0.99577126)" id="text3305" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace"><tspan id="tspan3307" style="font-weight:bold;fill:#008000">def</tspan> <tspan id="tspan3309" style="font-weight:bold;fill:#0060b0">first_task</tspan>(input_file, output_file,</text>
+              <text x="22.156881" y="126.48013" transform="scale(1.0042467,0.99577126)" id="text3311" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace">               extra_parameter_str, extra_parameter_num):</text>
+              <text x="22.156881" y="139.91115" transform="scale(1.0042467,0.99577126)" id="text3313" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace">    <tspan id="tspan3315" style="font-weight:bold;fill:#008000">pass</tspan></text>
+              <text x="22.156881" y="166.77328" transform="scale(1.0042467,0.99577126)" id="text3319" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace"><tspan id="tspan3321" style="fill:#808080">#   make sure the input file is there</tspan></text>
+              <text x="22.156881" y="180.20436" transform="scale(1.0042467,0.99577126)" id="text3323" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace"><tspan id="tspan3325" style="fill:#007020">open</tspan>('job1.input', &quot;w&quot;)</text>
+              <text x="22.156881" y="199.1844" transform="scale(1.0042467,0.99577126)" id="text3329" xml:space="preserve" style="font-size:9.89657974px;font-family:monospace">pipeline_run([first_task])</text>
+              <path d="m 11.798134,17.75418 0,40.879392 11.506636,16.489166" id="path3696" style="fill:none;stroke:#ff0000;stroke-width:1.25536001;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-end:url(#Arrow2Mend)" />
             </svg>
 
 
