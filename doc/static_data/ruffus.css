@@ -20,6 +20,15 @@ div.document {
     background-color: #1c4e63;
 }
 
+div.documentwrapper {
+    float: left;
+    width: 100%;
+}
+
+div.bodywrapper {
+    margin: 0 0 0 230px;
+}
+
 div.body {
     background-color: #ffffff;
     color: #000000;
@@ -46,9 +55,32 @@ div.related {
 }
 
 div.related a {
-    font-size: 120%;
-    color: #c0c0FF;
+    font-size: 120%;    /* new */
+    color: #c0c0FF;     /* new */
+    /*color: #ffffff;     /* orig */
 }
+
+div.sphinxsidebar {
+}
+
+div.sphinxsidebar h3 {
+    font-family: 'Trebuchet MS', sans-serif;
+    color: #ffffff;
+    font-size: 1.4em;
+    font-weight: normal;
+    margin: 0;
+    padding: 0;
+}
+
+div.sphinxsidebar h3 a {
+    color: #98dbcc;
+    margin: 0;
+    padding: 0;
+/*    margin: 0px 0px 0px 0px;
+    padding: 0px 0px 0px 0px;*/
+}
+
+
 
 div.sphinxsidebar h4 {
     font-family: 'Trebuchet MS', sans-serif;
@@ -68,7 +100,7 @@ div.sphinxsidebar p.topless {
 }
 
 div.sphinxsidebar ul {
-    font-size: 100%;
+    font-size: 100%;    /* NEW */
     margin: 10px;
     padding: 0;
     color: #ffffff;
@@ -252,6 +284,7 @@ tt {
 }
 
 
+/*
 div.sphinxsidebar h3 {
     font-family: 'Trebuchet MS', sans-serif;
     color: #ffffff;
@@ -261,14 +294,11 @@ div.sphinxsidebar h3 {
     padding: 0 0 0 0;
 }
 
-/*div.sphinxsidebar h3 a {
-    color: #ffffff;
-}
-  */
 div.sphinxsidebar h3 a{
     color: #98dbcc;
     margin: 0px 0px 0px 0px;
     padding: 0px 0px 0px 0px;
 }
 
+*/
 

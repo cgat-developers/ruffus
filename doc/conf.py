@@ -100,7 +100,8 @@ pygments_style = 'sphinx'
 import os
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 if not on_rtd:
-        html_style = 'ruffus.css'
+    html_style = 'ruffus.css'
+#html_style = 'ruffus.css'
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
@@ -134,6 +135,7 @@ html_theme = 'default'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['static_data']
+#html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
