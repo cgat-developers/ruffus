@@ -111,7 +111,7 @@ Overview
                                                                                                
                                                                                                
            
-    Let us provide `input`s and `output`s to our new pipeline:                                 
+    Let us provide **input**\s and **output**\s to our new pipeline:                                 
            
         .. raw:: html
 
@@ -261,13 +261,13 @@ Overview
 ************************************
 Task functions as recipes
 ************************************
-    This may seem like a lot of effort to do what we can accomplish in python by calling the function directly.
+    This may seem like a lot of effort and complication for something so simple: a normal python function call.
     However, now that we have annotated a task, we can start using it as part of our computational pipeline:
 
 
     Each :term:`task` function of the pipeline is a recipe or 
     `rule <http://www.gnu.org/software/make/manual/make.html#Rule-Introduction>`_  
-    which can be applied repeatedly to the data.
+    which can be applied repeatedly to our data.
     For example, one can have 
         * a ``compile()`` *task* which will compile any number of source code files, or
         * a ``count_lines()`` *task* which will count the number of lines in any file or 
@@ -286,33 +286,42 @@ Task functions as recipes
     In the original example, we have made a single output file by supplying a single input parameter.
     We shall use much the same syntax to apply the same recipe to *multiple* input files. 
     Instead of providing a single *input*, and a single *output*, we are going to specify
-    the parameters for *two* jobs at once:
+    the parameters for *three* jobs at once:
     
-
-    .. image:: ../../images/simple_tutorial_files3.png
-    
-
-    To run this example, copy and paste the code :ref:`here<Simple_Tutorial_2nd_step_code>` into your python interpreter.
-
-    
-            
-    This is exactly equivalent to the following function calls:
-
         ::
-                
-            second_task('job1.stage1', "job1.stage2", "    1st_job")
-            second_task('job2.stage1', "job2.stage2", "    2nd_job")
+
+            # previously,
+            # first_task_params = 'job1.input'            
+            first_task_params = [
+                                'job1.input', 
+                                'job2.input'
+                                'job3.input'
+                                ]
+
+            # make sure the input files are there
+            open('job1.input', "w")
+            open('job2.input', "w")
+            open('job3.input', "w")
+            
+            pipeline_run([first_task])
+
+
+    .. :: .. image:: ../../images/simple_tutorial_files3.png
     
-    The result of running this should look familiar:
+
+            
+    Just by changing the inputs from a single file to a list of three files, we now have a pipeline which runs independently on three pieces of data. 
+    The results should look familiar:
         ::
             
-            Start Task = second_task
-                1st_job
-                Job = [job1.stage1 -> job1.stage2,     1st_job] completed
-                2nd_job
-                Job = [job2.stage1 -> job2.stage2,     2nd_job] completed
-            Completed Task = second_task
-
+            >>> pipeline_run([first_task])
+                Job  = [job1.input -> job1.output1,
+                        some_extra.string.for_example, 14] completed
+                Job  = [job2.input -> job2.output1,
+                        some_extra.string.for_example, 14] completed
+                Job  = [job3.input -> job3.output1,
+                        some_extra.string.for_example, 14] completed
+            Completed Task = first_task
 
 ************************************
 Multi-tasking
