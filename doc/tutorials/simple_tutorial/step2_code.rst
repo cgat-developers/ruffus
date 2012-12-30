@@ -18,12 +18,12 @@ from ruffus import *
 #---------------------------------------------------------------
 #   Create input files
 #
-task1_params = [
-                'job1.input', 
-                'job2.input'
-                ]
+first_task_params = [
+                    'job1.input', 
+                    'job2.input'
+                    ]
 
-for input_file in task1_params:
+for input_file in first_task_params:
     open(input_file, "w")
 
 
@@ -31,7 +31,7 @@ for input_file in task1_params:
 #
 #   first task
 #
-@transform(task1_params, suffix(".input"), ".output1",
+@transform(first_task_params, suffix(".input"), ".output1",
                        "some_extra.string.for_example", 14)
 def first_task(input_file, output_file,
                 extra_parameter_str, extra_parameter_num):
@@ -90,9 +90,9 @@ from ruffus import *
 #---------------------------------------------------------------
 #   Create input files
 #
-task1_params = [    'job1.input', 
-                    'job2.input'    ]
-for input_file in task1_params:
+first_task_params = [   'job1.input', 
+                        'job2.input'    ]
+for input_file in first_task_params:
     open(input_file, "w")
 
 
@@ -100,7 +100,7 @@ for input_file in task1_params:
 #
 #   first task
 #
-@transform(task1_params, suffix(".input"), ".output1", 
+@transform(first_task_params, suffix(".input"), ".output1", 
            "some_extra.string.for_example", 14)
 def first_task(input_file, output_file):
     # make output file
