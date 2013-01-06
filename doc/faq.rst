@@ -271,6 +271,10 @@ for checking if jobs are up to date or not (:ref:`@check_if_uptodate <decorators
 Q. Does *Ruffus* allow checkpointing: to distinguish interrupted and completed results?
 =========================================================================================================
 
+_____________________________________________________
+A. Use a flag file
+_____________________________________________________
+
 (Thanks to Bernie Pope for sorting this out.)
 
 A. When gmake is interrupted, it will delete the target file it is updating so that the target is
@@ -341,6 +345,56 @@ downstream task, which should accordingly look like this:
 
 
 The :ref:`Bioinformatics example<examples_bioinformatics_part2.step2>` contains :ref:`code <examples_bioinformatics_part2_code>` for checkpointing.
+
+
+_____________________________________________________
+A. Use a temp file
+_____________________________________________________
+
+(Thanks to Martin Goodson for suggesting this and providing an example.)
+
+I normally use a decorator to create a temporary file which is only renamed after the task has completed without any problems. This seems a more elegant solution to the problem::
+
+
+    def usetemp(task_func):                                                                                                                                                                              
+        """ Decorate a function to write to a tmp file and then rename it. So half finished tasks cannot create up to date targets.                                                                      
+        """                                                                                                                                                                                              
+        @wraps(task_func)                                                                                                                                                                                
+        def wrapper_function(*args, **kwargs):                                                                                                                                                           
+            args=list(args)                                                                                                                                                                              
+            outnames=args[1]                                                                                                                                                                             
+            if not isinstance(outnames, basestring) and  hasattr(outnames, '__getitem__'):                                                                                                               
+                tmpnames=[str(x)+".tmp" for x in outnames]                                                                                                                                               
+                args[1]=tmpnames                                                                                                                                                                         
+                task_func(*args, **kwargs)
+                try:
+                    for tmp, name in zip(tmpnames, outnames):
+                        if os.path.exists(tmp):
+                            os.rename(tmp, str(name))
+                except BaseException as e:
+                    for name in outnames:
+                        if os.path.exists(name):
+                            os.remove(name)
+                    raise (e)
+            else:
+                tmp=str(outnames)+'.tmp'
+                args[1]=tmp
+                task_func(*args, **kwargs)
+                os.rename(tmp, str(outnames))
+        return wrapper_function
+
+
+
+
+    use like this:
+
+    @files(None, 'client1.price')                                                                                                                                                              
+    @usetemp                                                                                                                                                                                             
+    def getusers(inputfile, outputname):                                                                                                                                              
+        #**************************************************
+        # code goes here
+        # outputname now refers to temporary file
+
 
 
 
@@ -415,5 +469,34 @@ introduce a random time delay at the beginining of your jobs::
     
         # Wake up and do work
 
+
+
+=====================================================================
+Q. Keeping Large intermediate files
+=====================================================================
+
+Sometimes pipelines create a large number of intermediate files which might not be needed later.
+
+Unfortunately, the current design of Ruffus requires these files to hang around otherwise the pipeline
+will not know that it ran successfully.
+
+We have some tentative plans to get around this but in the meantime, Bernie Pope suggests 
+truncating intermediate files in place, preserving timestamps::
+
+
+    # truncate a file to zero bytes, and preserve its original modification time
+    def zeroFile(file):
+        if os.path.exists(file):
+            # save the current time of the file
+            timeInfo = os.stat(file)
+            try:
+                f = open(file,'w')
+            except IOError:
+                pass
+            else:
+                f.truncate(0)
+                f.close()
+                # change the time of the file back to what it was
+                os.utime(file,(timeInfo.st_atime, timeInfo.st_mtime))
 
 
