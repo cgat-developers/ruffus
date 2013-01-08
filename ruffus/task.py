@@ -126,19 +126,6 @@ import Queue
 Queue = Queue.Queue
 
 
-#
-# load previous job history if it exists, otherwise create an empty history
-# 
-job_history = dbdict.open('.ruffus_history.sqlite')
-
-# needs_update_check_modify_time can't see any attributes set here,
-# so this hack attaches job_history to the function itself when the
-# pipeline is run. We could instead do this outside this function,
-# which would give pipeline_print* the same information.
-needs_update_check_modify_time._job_history = job_history
-
-
-
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #
@@ -496,6 +483,7 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
     assert(user_defined_work_func)
 
     i,o = param[0:2]
+    job_history = dbdict.open(RUFFUS_HISTORY_FILE)
 
     if not touch_files_only:
         ret_val = user_defined_work_func(*param)
@@ -503,8 +491,11 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
         for f in get_strings_in_nested_sequence(o):
             if not os.path.exists(f):
                 open(f, 'w')
+                mtime = os.path.getmtime(f)
             else:
                 os.utime(f, None)
+                mtime = os.path.getmtime(f)
+            job_history[f] = mtime  # update file times in history
 
 
 
@@ -624,7 +615,7 @@ def run_pooled_job_without_exceptions (process_parameters):
             job_limit_semaphore, one_second_per_job, touch_files_only) = process_parameters
 
     outfile = param[1]
-    job_history = dbdict.open('.ruffus_history.sqlite')
+    job_history = dbdict.open(RUFFUS_HISTORY_FILE)
     job_history.pop(outfile, None)  # remove outfile from history if it exists
     
     if job_limit_semaphore == None:
@@ -2900,6 +2891,11 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     #
     job_errors = RethrownJobError()
     tasks_with_errors = set()
+
+    #
+    # load previous job history if it exists, otherwise create an empty history
+    # 
+    job_history = dbdict.open(RUFFUS_HISTORY_FILE)
 
 
 
