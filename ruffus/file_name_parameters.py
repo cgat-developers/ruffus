@@ -306,7 +306,9 @@ def needs_update_check_modify_time (*params):
     #   4. internal completion time for that file is out of date   # incomplete runs will be rerun automatically
     #   5. checksum of code that ran the file is out of date       # changes to function body result in rerun
     #   6. checksum of the args that ran the file are out of date  # appropriate config file changes result in rerun
-    
+
+    job_history = dbdict.open(RUFFUS_HISTORY_FILE)
+
     needs_update, err_msg = needs_update_check_exist (*params)
     if (needs_update, err_msg) != (False, "Up to date"):
         return needs_update, err_msg
@@ -320,8 +322,18 @@ def needs_update_check_modify_time (*params):
     #
     filename_to_times = [[], []]
     file_times = [[], []]
-    
-    job_history = dbdict.open(RUFFUS_HISTORY_FILE)
+
+    # existing files, but from previous interrupted runs
+    incomplete_files = []
+    for io in (i, o):
+        for p in io:
+            if p not in job_history:
+                incomplete_files.append(p)
+    if len(incomplete_files):
+        return True, "Previous incomplete run leftover%s: [%s]" % ("s" if len(incomplete_files) > 1 else "",
+                                            ", ".join(incomplete_files))
+
+
 
 
     #_____________________________________________________________________________________
@@ -342,10 +354,10 @@ def needs_update_check_modify_time (*params):
         file_name_to_asterisk = dict()
         oldest_output_mtime = filename_to_times[1][0][0]
         for mtime, file_name in filename_to_times[0]:
-            file_name_to_asterisk[file_name] = "*" if mtime >= oldest_output_mtime or mtime in [float('inf'), float('-inf')] else " "
+            file_name_to_asterisk[file_name] = "*" if mtime >= oldest_output_mtime else " "
         newest_output_mtime = filename_to_times[0][-1][0]
         for mtime, file_name  in filename_to_times[1]:
-            file_name_to_asterisk[file_name] = "*" if mtime <= newest_output_mtime or mtime in [float('inf'), float('-inf')] else " "
+            file_name_to_asterisk[file_name] = "*" if mtime <= newest_output_mtime else " "
             
 
 
@@ -386,25 +398,13 @@ def needs_update_check_modify_time (*params):
         #   job is submitted (handles 1st case above), and use the later of
         #   the two timestamps. If user modifies the file, we'll handle outofdate
         #   properly for downstream jobs.
-        try:
-            mtime = job_history[input_file_name]
-        except KeyError:
-            # job didn't complete successfully-- force a rerun
-            mtime = float('inf')
-        else:
-            mtime = max(os.path.getmtime(input_file_name), mtime)
+        mtime = max(os.path.getmtime(input_file_name), job_history[input_file_name])
         filename_to_times[0].append((mtime, input_file_name))
         file_times[0].append(mtime)
 
     for output_file_name in o:
         real_file_name = os.path.realpath(output_file_name)
-        try:
-            mtime = job_history[output_file_name]
-        except KeyError:
-            # job didn't complete successfully-- force a rerun
-            mtime = float('-inf')
-        else:
-            mtime = min(os.path.getmtime(output_file_name), mtime)
+        mtime = min(os.path.getmtime(output_file_name), job_history[output_file_name])
         if real_file_name not in real_input_file_names:
             file_times[1].append(mtime)
         filename_to_times[1].append((mtime, output_file_name))

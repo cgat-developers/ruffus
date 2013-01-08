@@ -78,6 +78,10 @@ Some things to note:
     required. Changes are written on key-value assignment to the dictionary.
     The file stays open until the object is destroyed or the close() method is
     called.
+
+
+    Original code by Jacob Sondergaard
+        hg clone ssh://hg@bitbucket.org/nephics/dbdict
 '''
 
 __version__ = '1.3.1'
