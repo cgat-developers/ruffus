@@ -614,7 +614,7 @@ def run_pooled_job_without_exceptions (process_parameters):
     (param, task_name, job_name, job_wrapper, user_defined_work_func,
             job_limit_semaphore, one_second_per_job, touch_files_only) = process_parameters
 
-    outfile = param[1]
+    outfile = param[1]  # will this always be the case?
     job_history = dbdict.open(RUFFUS_HISTORY_FILE)
     job_history.pop(outfile, None)  # remove outfile from history if it exists
     
