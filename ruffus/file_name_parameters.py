@@ -105,8 +105,6 @@ def epoch_seconds_to_str (epoch_seconds):
     Converts seconds since epoch into nice string with date and time to 2 significant
         digits for seconds
     """
-    if epoch_seconds in [float('inf'), float('-inf')]:
-        return 'Missing/incomplete run '
     #   returns 24 char long  25 May 2011 23:37:40.12
     time_str = strftime("%d %b %Y %H:%M:%S", gmtime(epoch_seconds))
 
@@ -289,7 +287,7 @@ def needs_update_check_exist (*params):
 #   needs_update_check_modify_time
 
 #_________________________________________________________________________________________
-def needs_update_check_modify_time (*params):
+def needs_update_check_modify_time (*params, **kwargs):
     """
     Given input and output files, see if all exist and whether output files are later than input files
     Each can be
@@ -306,8 +304,8 @@ def needs_update_check_modify_time (*params):
     #   4. internal completion time for that file is out of date   # incomplete runs will be rerun automatically
     #   5. checksum of code that ran the file is out of date       # changes to function body result in rerun
     #   6. checksum of the args that ran the file are out of date  # appropriate config file changes result in rerun
-
-    job_history = dbdict.open(RUFFUS_HISTORY_FILE)
+    task = kwargs['task']
+    job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
 
     needs_update, err_msg = needs_update_check_exist (*params)
     if (needs_update, err_msg) != (False, "Up to date"):
@@ -324,15 +322,45 @@ def needs_update_check_modify_time (*params):
     file_times = [[], []]
 
     # existing files, but from previous interrupted runs
-    incomplete_files = []
-    for io in (i, o):
-        for p in io:
-            if p not in job_history:
-                incomplete_files.append(p)
-    if len(incomplete_files):
-        return True, "Previous incomplete run leftover%s: [%s]" % ("s" if len(incomplete_files) > 1 else "",
-                                            ", ".join(incomplete_files))
+    if task.checksum_level >= CHECKSUM_HISTORY_TIMESTAMPS:
+        incomplete_files = []
+        func_changed_files = []
+        param_changed_files = []
+        for io in (i, o):
+            for p in io:
+                if p not in job_history:
+                    incomplete_files.append(p)
+        if len(incomplete_files):
+            return True, "Previous incomplete run leftover%s: [%s]" % ("s" if len(incomplete_files) > 1 else "",
+                                                ", ".join(incomplete_files))
+        # check if function that generated our output file has changed
+        for p in o:
+            old_chksum = job_history[p]
+            new_chksum = JobHistoryChecksum(p, None, params[2:], task)
+            if task.checksum_level >= CHECKSUM_FUNCTIONS_AND_PARAMS and \
+                            new_chksum.chksum_params != old_chksum.chksum_params:
+                param_changed_files.append(p)
+            elif task.checksum_level >= CHECKSUM_FUNCTIONS and \
+                            new_chksum.chksum_func != old_chksum.chksum_func:
+                func_changed_files.append(p)
 
+        if len(func_changed_files):
+            return True, "Pipeline function has changed: [%s]" % (", ".join(func_changed_files))
+        if len(param_changed_files):
+            return True, "Pipeline parameters have changed: [%s]" % (", ".join(param_changed_files))
+
+    #
+    #   missing input -> build only if output absent or function is out of date
+    #
+    if len(i) == 0:
+        return False, "Missing input files"
+
+
+    #
+    #   get sorted modified times for all input and output files
+    #
+    filename_to_times = [[], []]
+    file_times = [[], []]
 
 
 
@@ -387,24 +415,22 @@ def needs_update_check_modify_time (*params):
     real_input_file_names = set()
     for input_file_name in i:
         real_input_file_names.add(os.path.realpath(input_file_name))
-        # Are there cases when we *should* be looking at the real mtime?
-        #   if the job died, we shouldn't look at mtime
-        #       but what if the job ran successfully previously, then died on a
-        #       rerun? we would have an outofdate history!
-        #   if the job finished, but user changed the output, how would we know?
-        #       what if a later job would be out of date if we used mtime, but
-        #       uptodate if using our job completion time?
-        # Seems like the answer is to remove the file from history when its
-        #   job is submitted (handles 1st case above), and use the later of
-        #   the two timestamps. If user modifies the file, we'll handle outofdate
-        #   properly for downstream jobs.
-        mtime = max(os.path.getmtime(input_file_name), job_history[input_file_name])
+        if task.checksum_level >= CHECKSUM_HISTORY_TIMESTAMPS:
+            mtime = max(os.path.getmtime(input_file_name), job_history[input_file_name].mtime)
+        else:
+            mtime = os.path.getmtime(input_file_name)
         filename_to_times[0].append((mtime, input_file_name))
         file_times[0].append(mtime)
 
+            
+    # for output files, we need to check modification time *in addition* to
+    # function and argument checksums...
     for output_file_name in o:
         real_file_name = os.path.realpath(output_file_name)
-        mtime = min(os.path.getmtime(output_file_name), job_history[output_file_name])
+        if task.checksum_level >= CHECKSUM_HISTORY_TIMESTAMPS:
+            mtime = min(os.path.getmtime(output_file_name), old_chksum.mtime)
+        else:
+            mtime = os.path.getmtime(output_file_name)
         if real_file_name not in real_input_file_names:
             file_times[1].append(mtime)
         filename_to_times[1].append((mtime, output_file_name))

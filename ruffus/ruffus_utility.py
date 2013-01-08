@@ -60,7 +60,10 @@ from ruffus_exceptions import *
 #import task
 import collections
 import multiprocessing.managers
-
+import md5
+import marshal
+import cPickle as pickle
+import operator
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -81,6 +84,26 @@ RUFFUS_HISTORY_FILE = '.ruffus_history.sqlite'
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
+class JobHistoryChecksum:
+    """Class to remember exactly how an output file was created and when."""
+    def __init__(self, outfile, mtime, params, task):
+        # filename and modification time
+        self.outfile = outfile
+        self.mtime = mtime
+        # checksum exact params used to generate this output file
+        self.chksum_params = md5.md5(pickle.dumps(params)).hexdigest()
+        # checksum the function bytecode as well as the function context
+        # Don't use func_code alone-- changing the line number of the function,
+        # what global variables are available, etc would all change the checksum
+        func_code = marshal.dumps(task.user_defined_work_func.func_code.co_code)
+        func_extras = reduce(operator.add, map(pickle.dumps, [
+                            task.user_defined_work_func.func_defaults,
+                            task.user_defined_work_func.func_code.co_argcount,
+                            task.user_defined_work_func.func_code.co_consts,
+                            task.user_defined_work_func.func_code.co_names,
+                            task.user_defined_work_func.func_code.co_nlocals,
+                            task.user_defined_work_func.func_code.co_varnames]))
+        self.chksum_func = md5.md5(func_code + func_extras).hexdigest()
 
 
 #_________________________________________________________________________________________
