@@ -618,7 +618,10 @@ def run_pooled_job_without_exceptions (process_parameters):
 
     outfile = param[1]  # will this always be the case?
     job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
-    job_history.pop(outfile, None)  # remove outfile from history if it exists
+    if not isinstance(outfile, list):
+        outfile = [outfile]
+    for o in outfile:
+        job_history.pop(o, None)  # remove outfile from history if it exists
     
     if job_limit_semaphore == None:
         job_limit_semaphore = do_nothing_semaphore()
@@ -3015,9 +3018,12 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                 #                   marshal.dumps(t.args))
                 for output_file_name in t.output_filenames:
                     # could use current time instead...
-                    mtime = os.path.getmtime(output_file_name)
-                    chksum = JobHistoryChecksum(output_file_name, mtime, job_result.params[2:], t)
-                    job_history[output_file_name] = chksum
+                    if not isinstance(output_file_name, list):
+                        output_file_name = [output_file_name]
+                    for o_f_n in output_file_name:
+                        mtime = os.path.getmtime(o_f_n)
+                        chksum = JobHistoryChecksum(o_f_n, mtime, job_result.params[2:], t)
+                        job_history[o_f_n] = chksum
 
 
         #
