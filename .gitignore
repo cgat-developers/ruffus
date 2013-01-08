@@ -1,0 +1,7 @@
+*.pyc
+*.egg-info
+.tox
+dist
+build
+_build
+doc/hosted_site.cmd

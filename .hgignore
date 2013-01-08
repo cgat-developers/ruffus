@@ -3,3 +3,4 @@
 ^dist
 _build$
 doc/hosted_site.cmd
+^.tox
