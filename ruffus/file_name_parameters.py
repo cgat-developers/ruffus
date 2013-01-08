@@ -105,6 +105,8 @@ def epoch_seconds_to_str (epoch_seconds):
     Converts seconds since epoch into nice string with date and time to 2 significant
         digits for seconds
     """
+    if epoch_seconds in [float('inf'), float('-inf')]:
+        return 'Missing/incomplete run '
     #   returns 24 char long  25 May 2011 23:37:40.12
     time_str = strftime("%d %b %Y %H:%M:%S", gmtime(epoch_seconds))
 
@@ -297,7 +299,14 @@ def needs_update_check_modify_time (*params):
         #. arbitrary nested sequence of (1) and (2)
 
     """
-
+    # conditions for rerunning a job:
+    #   1. forced to rerun entire taskset
+    #   2. 1+ Output files don't exist
+    #   3. 1+ of input files is newer than 1+ output files  -- ruffus does this level right now...
+    #   4. internal completion time for that file is out of date   # incomplete runs will be rerun automatically
+    #   5. checksum of code that ran the file is out of date       # changes to function body result in rerun
+    #   6. checksum of the args that ran the file are out of date  # appropriate config file changes result in rerun
+    
     needs_update, err_msg = needs_update_check_exist (*params)
     if (needs_update, err_msg) != (False, "Up to date"):
         return needs_update, err_msg
@@ -332,10 +341,11 @@ def needs_update_check_modify_time (*params):
         file_name_to_asterisk = dict()
         oldest_output_mtime = filename_to_times[1][0][0]
         for mtime, file_name in filename_to_times[0]:
-            file_name_to_asterisk[file_name] = "*" if mtime >= oldest_output_mtime else " "
+            file_name_to_asterisk[file_name] = "*" if mtime >= oldest_output_mtime or mtime is None else " "
         newest_output_mtime = filename_to_times[0][-1][0]
         for mtime, file_name  in filename_to_times[1]:
-            file_name_to_asterisk[file_name] = "*" if mtime <= newest_output_mtime else " "
+            file_name_to_asterisk[file_name] = "*" if mtime <= newest_output_mtime or mtime is None else " "
+            
 
 
         #
@@ -364,13 +374,36 @@ def needs_update_check_modify_time (*params):
     real_input_file_names = set()
     for input_file_name in i:
         real_input_file_names.add(os.path.realpath(input_file_name))
-        mtime = os.path.getmtime(input_file_name)
+        # Are there cases when we *should* be looking at the real mtime?
+        #   if the job died, we shouldn't look at mtime
+        #       but what if the job ran successfully previously, then died on a
+        #       rerun? we would have an outofdate history!
+        #   if the job finished, but user changed the output, how would we know?
+        #       what if a later job would be out of date if we used mtime, but
+        #       uptodate if using our job completion time?
+        # Seems like the answer is to remove the file from history when its
+        #   job is submitted (handles 1st case above), and use the later of
+        #   the two timestamps. If user modifies the file, we'll handle outofdate
+        #   properly for downstream jobs.
+        try:
+            mtime = needs_update_check_modify_time._job_history[input_file_name]
+        except KeyError:
+            # job didn't complete successfully-- force a rerun
+            mtime = float('inf')
+        else:
+            mtime = max(os.path.getmtime(input_file_name), mtime)
         filename_to_times[0].append((mtime, input_file_name))
         file_times[0].append(mtime)
 
     for output_file_name in o:
         real_file_name = os.path.realpath(output_file_name)
-        mtime = os.path.getmtime(output_file_name)
+        try:
+            mtime = needs_update_check_modify_time._job_history[output_file_name]
+        except KeyError:
+            # job didn't complete successfully-- force a rerun
+            mtime = float('-inf')
+        else:
+            mtime = min(os.path.getmtime(output_file_name), mtime)
         if real_file_name not in real_input_file_names:
             file_times[1].append(mtime)
         filename_to_times[1].append((mtime, output_file_name))

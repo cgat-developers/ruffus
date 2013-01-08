@@ -97,6 +97,8 @@ import textwrap
 import time
 from multiprocessing.managers import SyncManager
 from contextlib import contextmanager
+import cPickle as pickle
+import dbdict
 
 
 if __name__ == '__main__':
@@ -122,6 +124,19 @@ dumps = json.dumps
 
 import Queue
 Queue = Queue.Queue
+
+
+#
+# load previous job history if it exists, otherwise create an empty history
+# 
+job_history = dbdict.open('.ruffus_history.sqlite')
+
+# needs_update_check_modify_time can't see any attributes set here,
+# so this hack attaches job_history to the function itself when the
+# pipeline is run. We could instead do this outside this function,
+# which would give pipeline_print* the same information.
+needs_update_check_modify_time._job_history = job_history
+
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -608,6 +623,10 @@ def run_pooled_job_without_exceptions (process_parameters):
     (param, task_name, job_name, job_wrapper, user_defined_work_func,
             job_limit_semaphore, one_second_per_job, touch_files_only) = process_parameters
 
+    outfile = param[1]
+    job_history = dbdict.open('.ruffus_history.sqlite')
+    job_history.pop(outfile, None)  # remove outfile from history if it exists
+    
     if job_limit_semaphore == None:
         job_limit_semaphore = do_nothing_semaphore()
 
@@ -2929,8 +2948,22 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
             if job_result.state == JOB_UP_TO_DATE:
                 if verbose > 1:
                     logger.info("    %s unnecessary: already up to date" % job_result.job_name)
-            elif verbose:
-                logger.info("    %s completed" % job_result.job_name)
+            else:
+                if verbose:
+                    logger.info("    %s completed" % job_result.job_name)
+                # save this task name and the job (input and output files)
+                # alternatively, we could just save the output file and its
+                # completion time, or on the other end of the spectrum,
+                # we could save a checksum of the function that generated
+                # this file, something akin to:
+                # chksum = md5.md5(marshal.dumps(t.user_defined_work_func.func_code.co_code))
+                # we could even checksum the arguments to the function that
+                # generated this file:
+                # chksum2 = md5.md5(marshal.dumps(t.user_defined_work_func.func_defaults) +
+                #                   marshal.dumps(t.args))
+                for output_file_name in t.output_filenames:
+                    # could use current time instead...
+                    job_history[output_file_name] = os.path.getmtime(output_file_name)
 
         #
         # Current Task completed
