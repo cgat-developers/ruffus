@@ -64,7 +64,7 @@ from ruffus_exceptions import *
 #from file_name_parameters import *
 from ruffus_utility import *
 
-
+import dbdict
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -320,7 +320,8 @@ def needs_update_check_modify_time (*params):
     #
     filename_to_times = [[], []]
     file_times = [[], []]
-
+    
+    job_history = dbdict.open(RUFFUS_HISTORY_FILE)
 
 
     #_____________________________________________________________________________________
@@ -341,10 +342,10 @@ def needs_update_check_modify_time (*params):
         file_name_to_asterisk = dict()
         oldest_output_mtime = filename_to_times[1][0][0]
         for mtime, file_name in filename_to_times[0]:
-            file_name_to_asterisk[file_name] = "*" if mtime >= oldest_output_mtime or mtime is None else " "
+            file_name_to_asterisk[file_name] = "*" if mtime >= oldest_output_mtime or mtime in [float('inf'), float('-inf')] else " "
         newest_output_mtime = filename_to_times[0][-1][0]
         for mtime, file_name  in filename_to_times[1]:
-            file_name_to_asterisk[file_name] = "*" if mtime <= newest_output_mtime or mtime is None else " "
+            file_name_to_asterisk[file_name] = "*" if mtime <= newest_output_mtime or mtime in [float('inf'), float('-inf')] else " "
             
 
 
@@ -386,7 +387,7 @@ def needs_update_check_modify_time (*params):
         #   the two timestamps. If user modifies the file, we'll handle outofdate
         #   properly for downstream jobs.
         try:
-            mtime = needs_update_check_modify_time._job_history[input_file_name]
+            mtime = job_history[input_file_name]
         except KeyError:
             # job didn't complete successfully-- force a rerun
             mtime = float('inf')
@@ -398,7 +399,7 @@ def needs_update_check_modify_time (*params):
     for output_file_name in o:
         real_file_name = os.path.realpath(output_file_name)
         try:
-            mtime = needs_update_check_modify_time._job_history[output_file_name]
+            mtime = job_history[output_file_name]
         except KeyError:
             # job didn't complete successfully-- force a rerun
             mtime = float('-inf')
