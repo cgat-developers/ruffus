@@ -94,11 +94,17 @@ except ImportError:
     # DictMixin will be (or is?) deprecated in the Python 3.x series
     from UserDict import DictMixin as MutableMapping
 from os import path
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+import itertools
 
 class DbDict(MutableMapping):
     ''' DbDict, a dictionary-like object with SQLite back-end '''
     
-    def __init__(self, filename):
+    def __init__(self, filename, picklevalues=False):
+        self.picklevalues = picklevalues
         if filename == ':memory:' or not path.isfile(filename):
             self.con = sqlite3.connect(filename)
             self._create_table()
@@ -122,11 +128,13 @@ class DbDict(MutableMapping):
         row = self.con.execute('select value from data where key=?',
                                (key, )).fetchone()
         if not row:
-            raise KeyError
-        return row[0]
+            raise KeyError(key)
+        return pickle.loads(str(row[0])) if self.picklevalues else row[0]
     
     def __setitem__(self, key, value):
         '''Set value at specified key'''
+        if self.picklevalues:
+            value = buffer(pickle.dumps(value, protocol=-1))
         self.con.execute('insert or replace into data (key, value) '
                          'values (?,?)', (key, value))
         self.con.commit()
@@ -168,12 +176,17 @@ class DbDict(MutableMapping):
 
     def itervalues(self):
         '''Return iterator of all values in the database'''
-        return self._iterquery(self.con.execute('select value from data'),
+        it = self._iterquery(self.con.execute('select value from data'),
                                single_value=True)
+        return itertools.imap(lambda x: pickle.loads(str(x)), it) if self.picklevalues else it
 
     def iteritems(self):
         '''Return iterator of all key-value pairs in the database'''
-        return self._iterquery(self.con.execute('select key, value from data'))
+        it = self._iterquery(self.con.execute('select key, value from data'))
+        if not self.picklevalues:
+            return it
+        else:
+            return itertools.imap(lambda x: (x[0], pickle.loads(str(x[1]))), it)
     
     def keys(self):
         '''Return all keys in the database'''
@@ -182,7 +195,11 @@ class DbDict(MutableMapping):
 
     def items(self):
         '''Return all key-value pairs in the database'''
-        return self.con.execute('select key, value from data').fetchall()
+        if not self.picklevalues:
+            return self.con.execute('select key, value from data').fetchall()
+        else:
+            return [(x[0], pickle.loads(str(x[1]))) for x in 
+                self.con.execute('select key, value from data').fetchall()]
 
     def clear(self):
         '''Clear the database for all key-value pairs, and free up unsused
@@ -194,6 +211,8 @@ class DbDict(MutableMapping):
     
     def _update(self, items):
         '''Perform the SQL query of updating items (list of key-value pairs)'''
+        if self.picklevalues:
+            items = [(k, pickle.dumps(v)) for k,v in items]
         self.con.executemany('insert or replace into data (key, value)'
                              ' values (?, ?)', items)
         self.con.commit()
@@ -227,6 +246,8 @@ class DbDict(MutableMapping):
         else:
             raise StopIteration
         del self[key]
+        if self.picklevalues:
+            value = pickle.loads(str(value))
         return key, value
 
     def close(self):
@@ -257,8 +278,12 @@ class DbDict(MutableMapping):
         except TypeError:
             # probably a single key (ie not an iterable)
             keys = (keys,)
-        return self.con.execute('select key, value from data where key in '
-                    '%s' % (keys,)).fetchall()
+        values = self.con.execute('select key, value from data where key in '
+                                                '%s' % (keys,)).fetchall()
+        if not self.picklevalues:
+            return values
+        else:
+            return [(k, pickle.loads(str(v))) for k,v in values]
 
     def remove(self, keys):
         '''Removes item(s) for the specified key or list of keys.
@@ -282,7 +307,7 @@ class DbDict(MutableMapping):
         self.con.execute('reindex sqlite_autoindex_data_1')
         self.con.commit()
 
-def dbdict(filename):
+def dbdict(filename, picklevalues=False):
     '''Open a persistent dictionary for reading and writing.
     
     The filename parameter is the base filename for the underlying
@@ -291,9 +316,9 @@ def dbdict(filename):
 
     See the module's __doc__ string for an overview of the interface.
     '''
-    return DbDict(filename)
+    return DbDict(filename, picklevalues)
 
-def open(filename):
+def open(filename, picklevalues=False):
     '''Open a persistent dictionary for reading and writing.
 
     The filename parameter is the base filename for the underlying
@@ -302,7 +327,7 @@ def open(filename):
 
     See the module's __doc__ string for an overview of the interface.
     '''
-    return DbDict(filename)
+    return DbDict(filename, picklevalues)
    
 if __name__ == '__main__':
     
