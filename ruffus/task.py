@@ -616,13 +616,13 @@ def run_pooled_job_without_exceptions (process_parameters):
     (param, task_name, job_name, job_wrapper, user_defined_work_func,
             job_limit_semaphore, one_second_per_job, touch_files_only) = process_parameters
 
-    outfile = param[1]  # will this always be the case?
-    job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
-    if not isinstance(outfile, list):
-        outfile = [outfile]
-    for o in outfile:
-        job_history.pop(o, None)  # remove outfile from history if it exists
-    
+    ##job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
+    ##outfile = param[1] if len(param) > 1 else None   # mkdir has no output
+    ##if not isinstance(outfile, list):
+    ##    outfile = [outfile]
+    ##for o in outfile:
+    ##    job_history.pop(o, None)  # remove outfile from history if it exists
+
     if job_limit_semaphore == None:
         job_limit_semaphore = do_nothing_semaphore()
 
@@ -722,8 +722,8 @@ class _task (node):
     job_single_matches_parent= 2
 
     job_limit_semaphores = {}
-    
-    checksum_level = CHECKSUM_FUNCTIONS_AND_PARAMS
+
+    checksum_level = CHECKSUM_FILE_TIMESTAMPS
 
 
     #_________________________________________________________________________________________
@@ -2300,7 +2300,7 @@ def pipeline_printout_graph (stream,
 
     link_task_names_to_functions ()
     update_checksum_level_on_tasks (checksum_level)
-    
+
     #
     #   run time data
     #
@@ -2953,10 +2953,8 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
 
     #
     # load previous job history if it exists, otherwise create an empty history
-    # 
+    #
     job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
-
-
 
     #
     #   job_result.job_name / job_result.return_value
@@ -2974,6 +2972,14 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
 
         elif count_remaining_jobs[t] < 0:
             raise Exception("Task [%s] job count < 0" % t._name)
+
+        # remove failed jobs from history-- their output is bogus now!
+        if job_result.state in (JOB_ERROR, JOB_SIGNALLED_BREAK):
+            if len(job_result.params) > 1:  # mkdir has no output
+                if not isinstance(outfile, list):
+                    outfile = [outfile]
+                for o in outfile:
+                    job_history.pop(o, None)  # remove outfile from history if it exists
 
         # only save poolsize number of errors
         if job_result.state == JOB_ERROR:
@@ -3016,14 +3022,24 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                 # generated this file:
                 # chksum2 = md5.md5(marshal.dumps(t.user_defined_work_func.func_defaults) +
                 #                   marshal.dumps(t.args))
-                for output_file_name in t.output_filenames:
-                    # could use current time instead...
-                    if not isinstance(output_file_name, list):
+
+                if len(job_result.params) > 1:  # some jobs have no outputs
+                    output_file_name = job_result.params[1]
+                    if not isinstance(output_file_name, list): # some have multiple outputs from one job
                         output_file_name = [output_file_name]
                     for o_f_n in output_file_name:
                         mtime = os.path.getmtime(o_f_n)
                         chksum = JobHistoryChecksum(o_f_n, mtime, job_result.params[2:], t)
                         job_history[o_f_n] = chksum
+
+                ##for output_file_name in t.output_filenames:
+                ##    # could use current time instead...
+                ##    if not isinstance(output_file_name, list):
+                ##        output_file_name = [output_file_name]
+                ##    for o_f_n in output_file_name:
+                ##        mtime = os.path.getmtime(o_f_n)
+                ##        chksum = JobHistoryChecksum(o_f_n, mtime, job_result.params[2:], t)
+                ##        job_history[o_f_n] = chksum
 
 
         #
@@ -3071,7 +3087,3 @@ if __name__ == '__main__':
     if sys.argv.count("--debug"):
         sys.argv.remove("--debug")
     unittest.main()
-
-
-
-

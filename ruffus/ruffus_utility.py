@@ -72,9 +72,11 @@ import operator
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-RUFFUS_HISTORY_FILE = '.ruffus_history.sqlite'
-
-
+RUFFUS_HISTORY_FILE = '.ruffus_history.sqlite'  # file to store history out to
+CHECKSUM_FILE_TIMESTAMPS      = 0     # only rerun when the file timestamps are out of date (classic mode)
+CHECKSUM_HISTORY_TIMESTAMPS   = 1     # also rerun when the history shows a job as being out of date
+CHECKSUM_FUNCTIONS            = 2     # also rerun when function body has changed
+CHECKSUM_FUNCTIONS_AND_PARAMS = 3     # also rerun when function parameters or function body change
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -104,6 +106,7 @@ class JobHistoryChecksum:
                             task.user_defined_work_func.func_code.co_nlocals,
                             task.user_defined_work_func.func_code.co_varnames]))
         self.chksum_func = md5.md5(func_code + func_extras).hexdigest()
+
 
 
 #_________________________________________________________________________________________

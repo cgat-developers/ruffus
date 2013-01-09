@@ -234,12 +234,12 @@ def check_input_files_exist (*params):
 
 #_________________________________________________________________________________________
 
-#   needs_update_check_exist
+#   needs_update_check_modify_time
 
 #_________________________________________________________________________________________
-def needs_update_check_exist (*params):
+def needs_update_check_modify_time (*params, **kwargs):
     """
-    Given input and output files, see if all exist
+    Given input and output files, see if all exist and whether output files are later than input files
     Each can be
 
         #. string: assumed to be a filename "file1"
@@ -247,9 +247,29 @@ def needs_update_check_exist (*params):
         #. arbitrary nested sequence of (1) and (2)
 
     """
+    # conditions for rerunning a job:
+    #   1. forced to rerun entire taskset
+    #   2. 1+ Output files don't exist
+    #   3. 1+ of input files is newer than 1+ output files  -- ruffus does this level right now...
+    #   4. internal completion time for that file is out of date   # incomplete runs will be rerun automatically
+    #   5. checksum of code that ran the file is out of date       # changes to function body result in rerun
+    #   6. checksum of the args that ran the file are out of date  # appropriate config file changes result in rerun
+    try:
+        task = kwargs['task']
+    except KeyError:
+        # allow the task not to be specified and fall back to classic
+        # file timestamp behavior (either this or fix all the test cases,
+        # which often don't have proper tasks)
+        class Namespace:
+            pass
+        task = Namespace()
+        task.checksum_level = CHECKSUM_FILE_TIMESTAMPS
+
+    job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
+
     # missing output means build
     if len(params) < 2:
-        return True, "i/o files not specified"
+        return True
 
 
     i, o = params[0:2]
@@ -271,55 +291,6 @@ def needs_update_check_exist (*params):
     if len(missing_files):
         return True, "Missing file%s [%s]" % ("s" if len(missing_files) > 1 else "",
                                             ", ".join(missing_files))
-
-    #
-    #   missing input -> build only if output absent
-    #
-    if len(i) == 0:
-        return False, "Missing input files"
-
-
-    return False, "Up to date"
-
-
-#_________________________________________________________________________________________
-
-#   needs_update_check_modify_time
-
-#_________________________________________________________________________________________
-def needs_update_check_modify_time (*params, **kwargs):
-    """
-    Given input and output files, see if all exist and whether output files are later than input files
-    Each can be
-
-        #. string: assumed to be a filename "file1"
-        #. any other type
-        #. arbitrary nested sequence of (1) and (2)
-
-    """
-    # conditions for rerunning a job:
-    #   1. forced to rerun entire taskset
-    #   2. 1+ Output files don't exist
-    #   3. 1+ of input files is newer than 1+ output files  -- ruffus does this level right now...
-    #   4. internal completion time for that file is out of date   # incomplete runs will be rerun automatically
-    #   5. checksum of code that ran the file is out of date       # changes to function body result in rerun
-    #   6. checksum of the args that ran the file are out of date  # appropriate config file changes result in rerun
-    task = kwargs['task']
-    job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
-
-    needs_update, err_msg = needs_update_check_exist (*params)
-    if (needs_update, err_msg) != (False, "Up to date"):
-        return needs_update, err_msg
-
-    i, o = params[0:2]
-    i = get_strings_in_nested_sequence(i)
-    o = get_strings_in_nested_sequence(o)
-
-    #
-    #   get sorted modified times for all input and output files
-    #
-    filename_to_times = [[], []]
-    file_times = [[], []]
 
     # existing files, but from previous interrupted runs
     if task.checksum_level >= CHECKSUM_HISTORY_TIMESTAMPS:
@@ -386,7 +357,7 @@ def needs_update_check_modify_time (*params, **kwargs):
         newest_output_mtime = filename_to_times[0][-1][0]
         for mtime, file_name  in filename_to_times[1]:
             file_name_to_asterisk[file_name] = "*" if mtime <= newest_output_mtime else " "
-            
+
 
 
         #
@@ -422,7 +393,7 @@ def needs_update_check_modify_time (*params, **kwargs):
         filename_to_times[0].append((mtime, input_file_name))
         file_times[0].append(mtime)
 
-            
+
     # for output files, we need to check modification time *in addition* to
     # function and argument checksums...
     for output_file_name in o:
@@ -710,7 +681,6 @@ def split_param_factory (input_files_task_globs, output_files_task_globs, *extra
 def split_ex_param_factory (input_files_task_globs,
                             flatten_input,
                             regex,
-                            regex_or_suffix,
                             extra_input_files_task_globs,
                             replace_inputs,
                             output_files_task_globs,
@@ -1066,4 +1036,3 @@ def files_re_param_factory( input_files_task_globs, combining_all_jobs,
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-

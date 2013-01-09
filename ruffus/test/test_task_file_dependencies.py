@@ -5,17 +5,17 @@
 #
 #
 #   Copyright (c) 2009 Leo Goodstadt
-#   
+#
 #   Permission is hereby granted, free of charge, to any person obtaining a copy
 #   of this software and associated documentation files (the "Software"), to deal
 #   in the Software without restriction, including without limitation the rights
 #   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 #   copies of the Software, and to permit persons to whom the Software is
 #   furnished to do so, subject to the following conditions:
-#   
+#
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
-#   
+#
 #   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -55,78 +55,78 @@ class Test_needs_update_check_modify_time(unittest.TestCase):
             #test_file =tempfile.NamedTemporaryFile(delete=False, prefix='testing_tmp')
             #self.files.append (test_file.name)
             #test_file.close()
-            
+
             fh, temp_file_name = tempfile.mkstemp(suffix='.dot')
             self.files.append (temp_file_name)
             os.fdopen(fh, "w").close()
             time.sleep(1.1)
-        
+
     def tearDown (self):
         """
         delete files
         """
         for f in self.files:
             os.unlink(f)
-        
-        
+
+
     def test_up_to_date (self):
         #
         #   lists of files
-        # 
-        self.assert_(not task.needs_update_check_modify_time (self.files[0:2], 
+        #
+        self.assert_(not task.needs_update_check_modify_time (self.files[0:2],
                                                               self.files[2:6])[0])
-        self.assert_(    task.needs_update_check_modify_time (self.files[2:6], 
+        self.assert_(    task.needs_update_check_modify_time (self.files[2:6],
                                                               self.files[0:2])[0])
         #
         #   singletons and lists of files
-        # 
-        self.assert_(not task.needs_update_check_modify_time (self.files[0], 
+        #
+        self.assert_(not task.needs_update_check_modify_time (self.files[0],
                                                               self.files[2:6])[0])
-        self.assert_(    task.needs_update_check_modify_time (self.files[2:6], 
+        self.assert_(    task.needs_update_check_modify_time (self.files[2:6],
                                                               self.files[0])[0])
         #
         #   singletons
-        # 
-        self.assert_(    task.needs_update_check_modify_time (self.files[3], 
+        #
+        self.assert_(    task.needs_update_check_modify_time (self.files[3],
                                                               self.files[0])[0])
         # self -self = no update
-        self.assert_(not task.needs_update_check_modify_time (self.files[0], 
+        self.assert_(not task.needs_update_check_modify_time (self.files[0],
                                                               self.files[0])[0])
-        
+
         #
         #   missing files means need update
-        # 
-        self.assert_(    task.needs_update_check_modify_time (self.files[0:2] + 
-                                                                        ["uncreated"], 
+        #
+        self.assert_(    task.needs_update_check_modify_time (self.files[0:2] +
+                                                                        ["uncreated"],
                                                               self.files[3:6])[0])
-        self.assert_(    task.needs_update_check_modify_time (self.files[0:2], 
+        self.assert_(    task.needs_update_check_modify_time (self.files[0:2],
                                                               self.files[3:6] +
                                                                         ["uncreated"])[0])
         #
         #   None means need update
-        # 
-        self.assert_(    task.needs_update_check_modify_time (self.files[0:2], 
+        #
+        self.assert_(    task.needs_update_check_modify_time (self.files[0:2],
                                                               None)[0])
         #
         #   None input means need update only if do not exist
-        # 
-        self.assert_( not task.needs_update_check_modify_time (None, 
+        #
+        self.assert_( not task.needs_update_check_modify_time (None,
                                                               self.files[3:6])[0])
 
 
         #
         #   None + missing file means need update
-        # 
-        self.assert_(    task.needs_update_check_modify_time (self.files[0:2] + 
-                                                                        ["uncreated"], 
+        #
+        self.assert_(    task.needs_update_check_modify_time (self.files[0:2] +
+                                                                        ["uncreated"],
                                                               None)[0])
-        self.assert_(    task.needs_update_check_modify_time (None, 
-                                                              self.files[3:6] + 
+        self.assert_(    task.needs_update_check_modify_time (None,
+                                                              self.files[3:6] +
                                                                         ["uncreated"])[0])
 
-        
-        
-       
-                       
+
+
+
+
 unittest.main()
 
