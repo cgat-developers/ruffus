@@ -97,6 +97,8 @@ import textwrap
 import time
 from multiprocessing.managers import SyncManager
 from contextlib import contextmanager
+import cPickle as pickle
+import dbdict
 
 
 if __name__ == '__main__':
@@ -481,6 +483,7 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
     assert(user_defined_work_func)
 
     i,o = param[0:2]
+    job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
 
     if not touch_files_only:
         ret_val = user_defined_work_func(*param)
@@ -488,8 +491,12 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
         for f in get_strings_in_nested_sequence(o):
             if not os.path.exists(f):
                 open(f, 'w')
+                mtime = os.path.getmtime(f)
             else:
                 os.utime(f, None)
+                mtime = os.path.getmtime(f)
+            chksum = JobHistoryChecksum(f, mtime, param[2:], user_defined_work_func.pipeline_task)
+            job_history[f] = chksum  # update file times and job details in history
 
 
 
@@ -549,33 +556,33 @@ JOB_COMPLETED       = 3
 
 #_________________________________________________________________________________________
 class t_job_result(tuple):
-        't_job_result(task_name, state, job_name, return_value, exception)'
+        't_job_result(task_name, state, job_name, return_value, exception, params)'
 
         __slots__ = ()
 
-        fields = ('task_name', 'state', 'job_name', 'return_value', 'exception')
+        fields = ('task_name', 'state', 'job_name', 'return_value', 'exception', 'params')
 
-        def __new__(cls, task_name, state, job_name, return_value, exception):
-            return tuple.__new__(cls, (task_name, state, job_name, return_value, exception))
+        def __new__(cls, task_name, state, job_name, return_value, exception, params):
+            return tuple.__new__(cls, (task_name, state, job_name, return_value, exception, params))
 
         @classmethod
         def make(cls, iterable, new=tuple.__new__, len=len):
             'Make a new t_job_result object from a sequence or iterable'
             result = new(cls, iterable)
-            if len(result) != 5:
-                raise TypeError('Expected 5 arguments, got %d' % len(result))
+            if len(result) != 6:
+                raise TypeError('Expected 6 arguments, got %d' % len(result))
             return result
 
         def __repr__(self):
-            return 't_job_result(task_name=%r, state=%r, job_name=%r, return_value=%r, exception=%r)' % self
+            return 't_job_result(task_name=%r, state=%r, job_name=%r, return_value=%r, exception=%r, params=%r)' % self
 
         def asdict(t):
             'Return a new dict which maps field names to their values'
-            return {'task_name': t[0], 'state': t[1], 'job_name': t[2], 'return_value': t[3], 'exception': t[4]}
+            return {'task_name': t[0], 'state': t[1], 'job_name': t[2], 'return_value': t[3], 'exception': t[4], 'params':t[5]}
 
         def replace(self, **kwds):
             'Return a new t_job_result object replacing specified fields with new values'
-            result = self.make(map(kwds.pop, ('task_name', 'state', 'job_name', 'return_value', 'exception'), self))
+            result = self.make(map(kwds.pop, ('task_name', 'state', 'job_name', 'return_value', 'exception', 'params'), self))
             if kwds:
                 raise ValueError('Got unexpected field names: %r' % kwds.keys())
             return result
@@ -588,6 +595,7 @@ class t_job_result(tuple):
         job_name    = property(itemgetter(2))
         return_value= property(itemgetter(3))
         exception   = property(itemgetter(4))
+        params      = property(itemgetter(5))
 
 
 
@@ -608,6 +616,13 @@ def run_pooled_job_without_exceptions (process_parameters):
     (param, task_name, job_name, job_wrapper, user_defined_work_func,
             job_limit_semaphore, one_second_per_job, touch_files_only) = process_parameters
 
+    ##job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
+    ##outfile = param[1] if len(param) > 1 else None   # mkdir has no output
+    ##if not isinstance(outfile, list):
+    ##    outfile = [outfile]
+    ##for o in outfile:
+    ##    job_history.pop(o, None)  # remove outfile from history if it exists
+
     if job_limit_semaphore == None:
         job_limit_semaphore = do_nothing_semaphore()
 
@@ -620,7 +635,7 @@ def run_pooled_job_without_exceptions (process_parameters):
             #
             #if one_second_per_job:
             #    time.sleep(1.01)
-            return t_job_result(task_name, JOB_COMPLETED, job_name, return_value, None)
+            return t_job_result(task_name, JOB_COMPLETED, job_name, return_value, None, param)
     except:
         #   Wrap up one or more exceptions rethrown across process boundaries
         #
@@ -641,7 +656,7 @@ def run_pooled_job_without_exceptions (process_parameters):
                              job_name,
                              exception_name,
                              exception_value,
-                             exception_stack])
+                             exception_stack], param)
 
 
 
@@ -707,6 +722,8 @@ class _task (node):
     job_single_matches_parent= 2
 
     job_limit_semaphores = {}
+
+    checksum_level = CHECKSUM_FILE_TIMESTAMPS
 
 
     #_________________________________________________________________________________________
@@ -979,7 +996,11 @@ class _task (node):
                 messages.append(indent_str + "Task needs update: No function to check if up-to-date or not")
                 return messages
 
-            needs_update, msg = self.needs_update_func ()
+            if self.needs_update_func == needs_update_check_modify_time:
+                needs_update, msg = self.needs_update_func (task=self)
+            else:
+                needs_update, msg = self.needs_update_func ()
+
             if needs_update:
                 messages.append(indent_str + "Task needs update: %s" % msg)
             else:
@@ -1001,7 +1022,11 @@ class _task (node):
                     messages.append(indent_str + "  Jobs needs update: No function to check if up-to-date or not")
                     continue
 
-                needs_update, msg = self.needs_update_func (*param)
+                if self.needs_update_func == needs_update_check_modify_time:
+                    needs_update, msg = self.needs_update_func (*param, task=self)
+                else:
+                    needs_update, msg = self.needs_update_func (*param)
+
                 if needs_update:
                     messages.extend(get_job_names (descriptive_param, indent_str))
                     per_job_messages = [(indent_str + s) for s in ("  Job needs update: %s" % msg).split("\n")]
@@ -1068,7 +1093,10 @@ class _task (node):
             #
             if self.param_generator_func == None:
                 if self.needs_update_func:
-                    needs_update, msg = self.needs_update_func ()
+                    if self.needs_update_func == needs_update_check_modify_time:
+                        needs_update, msg = self.needs_update_func (task=self)
+                    else:
+                        needs_update, msg = self.needs_update_func ()
                     log_at_level (logger, 4, verbose,
                                     "    Needs update = %s" % needs_update)
                     return not needs_update
@@ -1079,7 +1107,10 @@ class _task (node):
                 #   return not up to date if ANY jobs needs update
                 #
                 for param, descriptive_param in self.param_generator_func(runtime_data):
-                    needs_update, msg = self.needs_update_func (*param)
+                    if self.needs_update_func == needs_update_check_modify_time:
+                        needs_update, msg = self.needs_update_func (*param, task=self)
+                    else:
+                        needs_update, msg = self.needs_update_func (*param)
                     if needs_update:
                         if verbose >= 4:
                             job_name = self.get_job_name(descriptive_param, runtime_data)
@@ -2165,6 +2196,16 @@ def link_task_names_to_functions ():
 
 #_________________________________________________________________________________________
 
+#   link_task_names_to_functions
+
+#_________________________________________________________________________________________
+def update_checksum_level_on_tasks (checksum_level):
+    """Reset the checksum level for all tasks"""
+    for n in node._all_nodes:
+        n.checksum_level = checksum_level
+
+#_________________________________________________________________________________________
+
 #   task_names_to_tasks
 
 #_________________________________________________________________________________________
@@ -2231,7 +2272,8 @@ def pipeline_printout_graph (stream,
                              pipeline_name                  = "Pipeline:",
                              size                           = (11,8),
                              dpi                            = 120,
-                             runtime_data                   =  None):
+                             runtime_data                   = None,
+                             checksum_level                 = 1):
     """
     print out pipeline dependencies in various formats
 
@@ -2247,11 +2289,17 @@ def pipeline_printout_graph (stream,
                                           set to build targets if set to ``True``. Use with caution.
     :param test_all_task_for_update: Ask all task functions if they are up-to-date.
     :param no_key_legend: Don't draw key/legend for graph.
-
+    :param checksum_level: Several options for checking up-to-dateness are available: Default is level 1.
+                    level 0 : Use only file timestamps
+                    level 1 : above, plus timestamp of successful job completion
+                    level 2 : above, plus a checksum of the pipeline function body
+                    level 3 : above, plus a checksum of the pipeline function default arguments
+                                and the additional arguments passed in by task decorators
     """
 
 
     link_task_names_to_functions ()
+    update_checksum_level_on_tasks (checksum_level)
 
     #
     #   run time data
@@ -2299,7 +2347,7 @@ def pipeline_printout_graph (stream,
 #_________________________________________________________________________________________
 def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbose=1, indent = 4,
                                     gnu_make_maximal_rebuild_mode  = True, wrap_width = 100,
-                                    runtime_data= None):
+                                    runtime_data= None, checksum_level=1):
     """
     Printouts the parts of the pipeline which will be run
 
@@ -2332,6 +2380,12 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
                                           set to build targets if set to ``True``. Use with caution.
     :param wrap_width: The maximum length of each line
     :param runtime_data: Experimental feature for passing data to tasks at run time
+    :param checksum_level: Several options for checking up-to-dateness are available: Default is level 1.
+                    level 0 : Use only file timestamps
+                    level 1 : above, plus timestamp of successful job completion
+                    level 2 : above, plus a checksum of the pipeline function body
+                    level 3 : above, plus a checksum of the pipeline function default arguments
+                                and the additional arguments passed in by task decorators
     """
     if verbose == 0:
         return
@@ -2346,6 +2400,7 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
                         "values passes to jobs at run time.")
 
     link_task_names_to_functions ()
+    update_checksum_level_on_tasks(checksum_level)
 
     #
     #   target jobs
@@ -2529,7 +2584,13 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                             if not t.needs_update_func:
                                 log_at_level (logger, 3, verbose, "    %s no function to check if up-to-date " % job_name)
                             else:
-                                needs_update, msg = t.needs_update_func (*param)
+                                # extra clunky hack to also pass task info--
+                                # makes sure that there haven't been code or arg changes
+                                if t.needs_update_func == needs_update_check_modify_time:
+                                    needs_update, msg = t.needs_update_func (*param, task=t)
+                                else:
+                                    needs_update, msg = t.needs_update_func (*param)
+
                                 if not needs_update:
                                     log_at_level (logger, 2, verbose, "    %s unnecessary: already up to date " % job_name)
                                     continue
@@ -2719,7 +2780,8 @@ def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE, logg
 def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, logger = stderr_logger,
                  gnu_make_maximal_rebuild_mode  = True, verbose = 1,
                  runtime_data = None, one_second_per_job = True, touch_files_only = False,
-                 exceptions_terminate_immediately = False, log_exceptions = False):
+                 exceptions_terminate_immediately = False, log_exceptions = False,
+                 checksum_level=1):
     """
     Run pipelines.
 
@@ -2740,6 +2802,12 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     :param runtime_data: Experimental feature for passing data to tasks at run time
     :param one_second_per_job: Defaults to (true) forcing jobs to take a minimum of 1 second to complete
     :param touch_file_only: Create or update input/output files only to simulate running the pipeline. Do not run jobs
+    :param checksum_level: Several options for checking up-to-dateness are available: Default is level 1.
+                    level 0 : Use only file timestamps
+                    level 1 : above, plus timestamp of successful job completion
+                    level 2 : above, plus a checksum of the pipeline function body
+                    level 3 : above, plus a checksum of the pipeline function default arguments
+                                and the additional arguments passed in by task decorators
 
     """
     syncmanager = multiprocessing.Manager()
@@ -2760,6 +2828,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
         logger.info("Touch output files instead of remaking them.")
 
     link_task_names_to_functions ()
+    update_checksum_level_on_tasks (checksum_level)
     #
     #   target jobs
     #
@@ -2882,7 +2951,10 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     job_errors = RethrownJobError()
     tasks_with_errors = set()
 
-
+    #
+    # load previous job history if it exists, otherwise create an empty history
+    #
+    job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
 
     #
     #   job_result.job_name / job_result.return_value
@@ -2900,6 +2972,15 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
 
         elif count_remaining_jobs[t] < 0:
             raise Exception("Task [%s] job count < 0" % t._name)
+
+        # remove failed jobs from history-- their output is bogus now!
+        if job_result.state in (JOB_ERROR, JOB_SIGNALLED_BREAK):
+            if len(job_result.params) > 1:  # mkdir has no output
+                outfile = job_result.params[1]
+                if not isinstance(outfile, list):
+                    outfile = [outfile]
+                for o in outfile:
+                    job_history.pop(o, None)  # remove outfile from history if it exists
 
         # only save poolsize number of errors
         if job_result.state == JOB_ERROR:
@@ -2929,8 +3010,38 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
             if job_result.state == JOB_UP_TO_DATE:
                 if verbose > 1:
                     logger.info("    %s unnecessary: already up to date" % job_result.job_name)
-            elif verbose:
-                logger.info("    %s completed" % job_result.job_name)
+            else:
+                if verbose:
+                    logger.info("    %s completed" % job_result.job_name)
+                # save this task name and the job (input and output files)
+                # alternatively, we could just save the output file and its
+                # completion time, or on the other end of the spectrum,
+                # we could save a checksum of the function that generated
+                # this file, something akin to:
+                # chksum = md5.md5(marshal.dumps(t.user_defined_work_func.func_code.co_code))
+                # we could even checksum the arguments to the function that
+                # generated this file:
+                # chksum2 = md5.md5(marshal.dumps(t.user_defined_work_func.func_defaults) +
+                #                   marshal.dumps(t.args))
+
+                if len(job_result.params) > 1:  # some jobs have no outputs
+                    output_file_name = job_result.params[1]
+                    if not isinstance(output_file_name, list): # some have multiple outputs from one job
+                        output_file_name = [output_file_name]
+                    for o_f_n in output_file_name:
+                        mtime = os.path.getmtime(o_f_n)
+                        chksum = JobHistoryChecksum(o_f_n, mtime, job_result.params[2:], t)
+                        job_history[o_f_n] = chksum
+
+                ##for output_file_name in t.output_filenames:
+                ##    # could use current time instead...
+                ##    if not isinstance(output_file_name, list):
+                ##        output_file_name = [output_file_name]
+                ##    for o_f_n in output_file_name:
+                ##        mtime = os.path.getmtime(o_f_n)
+                ##        chksum = JobHistoryChecksum(o_f_n, mtime, job_result.params[2:], t)
+                ##        job_history[o_f_n] = chksum
+
 
         #
         # Current Task completed
@@ -2977,7 +3088,3 @@ if __name__ == '__main__':
     if sys.argv.count("--debug"):
         sys.argv.remove("--debug")
     unittest.main()
-
-
-
-
