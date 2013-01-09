@@ -2976,6 +2976,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
         # remove failed jobs from history-- their output is bogus now!
         if job_result.state in (JOB_ERROR, JOB_SIGNALLED_BREAK):
             if len(job_result.params) > 1:  # mkdir has no output
+                outfile = job_result.params[1]
                 if not isinstance(outfile, list):
                     outfile = [outfile]
                 for o in outfile:

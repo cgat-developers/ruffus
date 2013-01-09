@@ -271,7 +271,6 @@ def needs_update_check_modify_time (*params, **kwargs):
     if len(params) < 2:
         return True
 
-
     i, o = params[0:2]
     i = get_strings_in_nested_sequence(i)
     o = get_strings_in_nested_sequence(o)
@@ -297,10 +296,13 @@ def needs_update_check_modify_time (*params, **kwargs):
         incomplete_files = []
         func_changed_files = []
         param_changed_files = []
-        for io in (i, o):
-            for p in io:
-                if p not in job_history:
-                    incomplete_files.append(p)
+        #for io in (i, o):
+        #    for p in io:
+        #        if p not in job_history:
+        #            incomplete_files.append(p)
+        for p in o:
+            if p not in job_history:
+                incomplete_files.append(p)
         if len(incomplete_files):
             return True, "Previous incomplete run leftover%s: [%s]" % ("s" if len(incomplete_files) > 1 else "",
                                                 ", ".join(incomplete_files))
@@ -386,7 +388,7 @@ def needs_update_check_modify_time (*params, **kwargs):
     real_input_file_names = set()
     for input_file_name in i:
         real_input_file_names.add(os.path.realpath(input_file_name))
-        if task.checksum_level >= CHECKSUM_HISTORY_TIMESTAMPS:
+        if task.checksum_level >= CHECKSUM_HISTORY_TIMESTAMPS and input_file_name in job_history:
             mtime = max(os.path.getmtime(input_file_name), job_history[input_file_name].mtime)
         else:
             mtime = os.path.getmtime(input_file_name)
@@ -399,6 +401,7 @@ def needs_update_check_modify_time (*params, **kwargs):
     for output_file_name in o:
         real_file_name = os.path.realpath(output_file_name)
         if task.checksum_level >= CHECKSUM_HISTORY_TIMESTAMPS:
+            old_chksum = job_history[output_file_name]
             mtime = min(os.path.getmtime(output_file_name), old_chksum.mtime)
         else:
             mtime = os.path.getmtime(output_file_name)
