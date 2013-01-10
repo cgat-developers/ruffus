@@ -241,14 +241,14 @@ class Test_files_re_param_factory(unittest.TestCase):
         # fake virgin task
         fake_task = task._task("module", "func_fake%d" % randint(1, 1000000))
         fake_task.task_files_re(orig_args)
-        return fake_task.param_generator_func
+        return fake_task.param_generator_func, fake_task
 
     def files_re (self, *old_args):
         """
         This extra function is to simulate the forwarding from the decorator to
             the task creation function
         """
-        return list(p1 for (p1, ps) in self.get_param_iterator (*old_args)(None))
+        return list(p1 for (p1, ps) in self.get_param_iterator(*old_args)[0](None))
         #return list(self.get_param_iterator (*old_args)(None))
 
     def check_input_files_exist(self, *old_args):
@@ -256,7 +256,7 @@ class Test_files_re_param_factory(unittest.TestCase):
         This extra function is to simulate the forwarding from the decorator to
             the task creation function
         """
-        it = self.get_param_iterator (*old_args)
+        it = self.get_param_iterator(*old_args)[0]
         for param, param2 in it(None):
             check_input_files_exist (*param)
         return True
@@ -266,9 +266,9 @@ class Test_files_re_param_factory(unittest.TestCase):
         This extra function is to simulate the forwarding from the decorator to
             the task creation function
         """
-        it = self.get_param_iterator (*old_args)
+        it, task = self.get_param_iterator(*old_args)
         #print >> sys.stderr, [p for (p, param2) in it(None)], "??"
-        return [needs_update_check_modify_time (*p) for (p, param2) in it(None)]
+        return [needs_update_check_modify_time (*p, task=task) for (p, param2) in it(None)]
 
 
     def test_combine(self):
@@ -1358,9 +1358,3 @@ if sys.argv.count("--debug"):
 #sys.argv.append("Test_transform_param_factory")
 #sys.argv.append("Test_files_param_factory")
 unittest.main()
-
-
-
-
-
-
