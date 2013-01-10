@@ -4,3 +4,4 @@
 _build$
 doc/hosted_site.cmd
 ^.tox
+^.ruffus_history.sqlite$
