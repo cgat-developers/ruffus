@@ -826,6 +826,8 @@ class _task (node):
 
         # extra flag for outputfiles
         self.is_active                  = True
+        
+        self.follows_wait_list          = []
 
 
 
@@ -1174,7 +1176,7 @@ class _task (node):
     #
     #
     #_____________________________________________________________________________________
-    def get_output_files (self, do_not_expand_single_job_tasks, runtime_data):
+    def get_output_files(self, do_not_expand_single_job_tasks, runtime_data, reset_cache=False):
         """
         Cache output files
 
@@ -1201,8 +1203,9 @@ class _task (node):
         #
         #   This looks like the wrong place to flatten
         #
+
         flattened = False
-        if self.output_filenames == None:
+        if self.output_filenames == None or reset_cache:
 
             self.output_filenames = []
 
@@ -1905,6 +1908,11 @@ class _task (node):
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
         self.job_descriptor       = io_files_job_descriptor
+        
+        # any job with globb'ed inputs needs to wait for all parent tasks
+        # to complete entirely
+        if len(input_files_task_globs.globs) > 0:
+            self.follows_wait_list.append('WAIT_ALL')
 
 
 
@@ -2041,6 +2049,9 @@ class _task (node):
                     arg.pipeline_task = _task.create_task(arg)
                 self.add_child(arg.pipeline_task)
                 new_tasks.append(arg.pipeline_task)
+        
+        # have to explicitly wait for @follows tasks
+        self.follows_wait_list.extend(new_tasks)
 
         return new_tasks
 
@@ -2495,7 +2506,7 @@ def flatten_list(lst):
 
     """
     if isinstance(lst, (list, tuple)):
-        return reduce(operator.add, map(flatten_list, lst))
+        return reduce(operator.add, map(flatten_list, lst), [])
     else:
         return [lst]
 
@@ -2533,15 +2544,20 @@ def make_job_parameter_generator (incomplete_tasks, complete_jobs, task_parents,
     job_limit_semaphores = dict()
 
     # set of all determined outputs of all jobs in all tasks
+    # this set helps determine root tasks with input files files that are not
+    # outputs for other tasks
     determined_outputs = set(out_file for t in incomplete_tasks
-                                      for out_file in t.get_output_files(False,
-                                                                  runtime_data))
+                                      for out_file in flatten_list(
+                                       t.get_output_files(False, runtime_data)))
     
     # set of (<task>, <param>) for jobs that have been submitted already.
     # NOTE: with all the different ways tasks and jobs can be submitted,
     #   I'm not convinced the above tuple uniquely identifies a job...
     #   If that' the case, this schema will lead to bugs :-/
     submitted_jobs = set()
+    
+    # the set of tasks for which all jobs have been submitted
+    submitted_tasks = set()
     
     def get_parameters(task):
         #   If no parameters: just call task function (empty list)
@@ -2564,8 +2580,14 @@ def make_job_parameter_generator (incomplete_tasks, complete_jobs, task_parents,
             cnt_jobs_created_for_all_tasks = 0
             cnt_tasks_processed = 0
             for t in list(incomplete_tasks):
+                
+                # if a tasks jobs have all been submitted, we won't consider
+                # any other job submissions from the task
+                if t in submitted_tasks:
+                    continue
+
                 #
-                #   wrap in execption handler so that we know which task exception
+                #   wrap in exception handler so that we know which task exception
                 #       came from
                 #
                 try:
@@ -2576,7 +2598,10 @@ def make_job_parameter_generator (incomplete_tasks, complete_jobs, task_parents,
                     for parent in task_parents[t]:
                         # wait for splits, etc but all other tasks should be considered
                         # eventually run any tasks, all of whose inputs are in completed_jobs
-                        if parent in incomplete_tasks and parent.indeterminate_output:
+                        if parent in incomplete_tasks and (
+                                parent.indeterminate_output or  # parent has * in output
+                                parent in t.follows_wait_list or  # explicitly wait for these tasks
+                                'WAIT_ALL' in t.follows_wait_list):  # this task has * in input
                             incomplete_parent = True
                             break
                     if incomplete_parent:
@@ -2646,7 +2671,6 @@ def make_job_parameter_generator (incomplete_tasks, complete_jobs, task_parents,
                                     if not needs_update:
                                         log_at_level (logger, 2, verbose, "    %s unnecessary: already up to date " % job_name)
                                         for out_file in get_outputs_from_param(param):
-                                            print out_file
                                             complete_jobs.add(out_file)
                                         continue
                                     else:
@@ -2679,8 +2703,13 @@ def make_job_parameter_generator (incomplete_tasks, complete_jobs, task_parents,
                                     touch_files_only)
 
                     if all(previously_submitted):
-                        incomplete_tasks.discard(t)
-                        t.completed (logger, True)
+                        submitted_tasks.add(t)
+                        
+                        if len(t.get_output_files(False, runtime_data, reset_cache=True)) == 0 and \
+                                cnt_jobs_created == 0 and len(previously_submitted) == 0:
+                            # there are no outputs, though the job looks submitted...
+                            incomplete_tasks.discard(t)
+                            t.completed (logger, True)
                         #
                         #   Add extra warning if no regular expressions match:
                         #   This is a common class of frustrating errors

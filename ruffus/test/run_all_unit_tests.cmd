@@ -44,5 +44,5 @@ echo Running test_active_if.py                                                  
 python ./test_active_if.py -j2 -v                                                   && \
 echo Running test_softlink_uptodate.py                                              && \
 python ./test_softlink_uptodate.py -j2 -v                                           && \
-echo Running test_job_completion_transform.py                                       && \
+echo Running test_job_completion_checksums.py                                       && \
 python -m unittest test_job_completion_checksums

@@ -478,7 +478,7 @@ def file_names_from_tasks_globs(files_task_globs,
     for g in files_task_globs.globs:
         task_or_glob_to_files[g] = sorted(glob.glob(g))
     for t in files_task_globs.tasks:
-        of = t.get_output_files(False, runtime_data)
+        of = t.get_output_files(False, runtime_data, reset_cache=True) # reset cache since this is being called after parent tasks are run
         task_or_glob_to_files[t] = of
     for n in files_task_globs.runtime_data_names:
         data_name = n.args[0]
