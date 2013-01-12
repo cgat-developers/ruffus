@@ -98,7 +98,7 @@ import time
 from multiprocessing.managers import SyncManager
 from contextlib import contextmanager
 import cPickle as pickle
-import dbdict
+import operator
 
 
 if __name__ == '__main__':
@@ -110,7 +110,7 @@ from print_dependencies import *
 from ruffus_exceptions import  *
 from ruffus_utility import *
 from file_name_parameters import  *
-
+import dbdict
 
 #
 # use simplejson in place of json for python < 2.6
@@ -2485,17 +2485,78 @@ def get_semaphore (t, job_limit_semaphores, syncmanager):
     return job_limit_semaphores[t.semaphore_name]
 
 #_________________________________________________________________________________________
+#   Helper functions for dealing with jobs
+#_________________________________________________________________________________________
+def flatten_list(lst):
+    """recursively flatten lst, returning a list even if a single item is given
+
+    >>> flatten_list([('jerk', 'face'), 'hello', [('test', ('yep', ('thingy',),), ), 'another']])
+    ['jerk', 'face', 'hello', 'test', 'yep', 'thingy', 'another']
+
+    """
+    if isinstance(lst, (list, tuple)):
+        return reduce(operator.add, map(flatten_list, lst))
+    else:
+        return [lst]
+
+def freeze_list(lst):
+    """recursively convert any lists in lst to tuples. Useful for creating sets.
+    
+    >>> freeze_list(['1', 2, (3,4), [5,6, [7,8, (9,10)]]])
+    ('1', 2, (3, 4), (5, 6, (7, 8, (9, 10))))
+    
+    """
+    if isinstance(lst, (list, tuple)):
+        return tuple(freeze_list(e) for e in lst)
+    else:
+        return lst
+
+def get_outputs_from_param(param):
+    "get list of outputs, even when there's only one"
+    return flatten_list(param[1]) if len(param) >= 2 else []
+
+def get_inputs_from_param(param):
+    "get list of inputs, even when there's only one"
+    return flatten_list(param[0]) if len(param) >= 1 else []
+
+
+#_________________________________________________________________________________________
 #
 #   Parameter generator for all jobs / tasks
 #
 #________________________________________________________________________________________
-def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forcedtorun_tasks,
+def make_job_parameter_generator (incomplete_tasks, complete_jobs, task_parents, logger, forcedtorun_tasks,
                                     count_remaining_jobs, runtime_data, verbose,
                                     syncmanager,
                                     one_second_per_job, touch_files_only):
-
     inprogress_tasks = set()
     job_limit_semaphores = dict()
+
+    # set of all determined outputs of all jobs in all tasks
+    determined_outputs = set(out_file for t in incomplete_tasks
+                                      for out_file in t.get_output_files(False,
+                                                                  runtime_data))
+    
+    # set of (<task>, <param>) for jobs that have been submitted already.
+    # NOTE: with all the different ways tasks and jobs can be submitted,
+    #   I'm not convinced the above tuple uniquely identifies a job...
+    #   If that' the case, this schema will lead to bugs :-/
+    submitted_jobs = set()
+    
+    def get_parameters(task):
+        #   If no parameters: just call task function (empty list)
+        if (task.active_if_checks != None):
+            task.is_active = all(arg() if isinstance(arg, collections.Callable) else arg
+                                for arg in task.active_if_checks)
+        if not task.is_active:
+            parameters = []
+    
+        #   If no parameters: just call task function (empty list)
+        elif task.param_generator_func == None:
+            parameters = ([[], []],)
+        else:
+            parameters = list(task.param_generator_func(runtime_data))
+        return parameters
 
     def parameter_generator():
         log_at_level (logger, 10, verbose, "   job_parameter_generator BEGIN")
@@ -2510,15 +2571,12 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                 try:
                     log_at_level (logger, 10, verbose, "   job_parameter_generator consider task = %s" % t._name)
 
-                    # ignore tasks in progress
-                    if t in inprogress_tasks:
-                        continue
-                    log_at_level (logger, 10, verbose, "   job_parameter_generator task %s not in progress" % t._name)
-
                     # ignore tasks with incomplete dependencies
                     incomplete_parent = False
                     for parent in task_parents[t]:
-                        if parent in incomplete_tasks:
+                        # wait for splits, etc but all other tasks should be considered
+                        # eventually run any tasks, all of whose inputs are in completed_jobs
+                        if parent in incomplete_tasks and parent.indeterminate_output:
                             incomplete_parent = True
                             break
                     if incomplete_parent:
@@ -2531,104 +2589,98 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     #
                     log_at_level (logger, 3, verbose, "Task enters queue = " + t.get_task_name() + (": Forced to rerun" if force_rerun else ""))
                     log_at_level (logger, 3, verbose, t._description)
-                    inprogress_tasks.add(t)
-                    cnt_tasks_processed += 1
 
+                    cnt_tasks_processed += 1
 
                     #
                     #   Use output parameters actually generated by running task
                     #
                     t.output_filenames = []
 
-
-
-                    #
-                    #   If no parameters: just call task function (empty list)
-                    #
-                    if (t.active_if_checks != None):
-                        t.is_active = all(arg() if isinstance(arg, collections.Callable) else arg
-                                            for arg in t.active_if_checks)
-                    if not t.is_active:
-                        parameters = []
-
-
-
-                    #
-                    #   If no parameters: just call task function (empty list)
-                    #
-                    elif t.param_generator_func == None:
-                        parameters = ([[], []],)
-                    else:
-                        parameters = t.param_generator_func(runtime_data)
+                    parameters = get_parameters(t)
 
                     #
                     #   iterate through parameters
                     #
                     cnt_jobs_created = 0
+                    previously_submitted = []
                     for param, descriptive_param in parameters:
-
-                        #
-                        #   save output even if uptodate
-                        #
-                        if len(param) >= 2:
-                            t.output_filenames.append(param[1])
-
-                        job_name = t.get_job_name(descriptive_param, runtime_data)
-
-                        #
-                        #    don't run if up to date
-                        #
-                        if force_rerun:
-                            log_at_level (logger, 3, verbose, "    force task %s to rerun " % job_name)
+                        # skip any jobs we've already submitted
+                        if (t, freeze_list(param)) in submitted_jobs:
+                            previously_submitted.append(True)
+                            continue
                         else:
-                            if not t.needs_update_func:
-                                log_at_level (logger, 3, verbose, "    %s no function to check if up-to-date " % job_name)
+                            previously_submitted.append(False)
+                        
+                        # task is either in progress or incomplete.
+                        # run any jobs whose inputs are in complete_jobs
+                        inputs_complete = all(in_file in complete_jobs or
+                                              in_file not in determined_outputs
+                                              for in_file in get_inputs_from_param(param))
+
+
+                        if inputs_complete:
+                            #
+                            #   save output even if uptodate
+                            #
+                            if len(param) >= 2:
+                                t.output_filenames.append(param[1])
+
+                            job_name = t.get_job_name(descriptive_param, runtime_data)
+                            #
+                            #    don't run if up to date
+                            #
+                            if force_rerun:
+                                log_at_level (logger, 3, verbose, "    force task %s to rerun " % job_name)
                             else:
-                                # extra clunky hack to also pass task info--
-                                # makes sure that there haven't been code or arg changes
-                                if t.needs_update_func == needs_update_check_modify_time:
-                                    needs_update, msg = t.needs_update_func (*param, task=t)
+                                if not t.needs_update_func:
+                                    log_at_level (logger, 3, verbose, "    %s no function to check if up-to-date " % job_name)
                                 else:
-                                    needs_update, msg = t.needs_update_func (*param)
+                                    # extra clunky hack to also pass task info--
+                                    # makes sure that there haven't been code or arg changes
+                                    if t.needs_update_func == needs_update_check_modify_time:
+                                        needs_update, msg = t.needs_update_func (*param, task=t)
+                                    else:
+                                        needs_update, msg = t.needs_update_func (*param)
 
-                                if not needs_update:
-                                    log_at_level (logger, 2, verbose, "    %s unnecessary: already up to date " % job_name)
-                                    continue
-                                else:
-                                    log_at_level (logger, 3, verbose, "    %s %s " % (job_name, msg))
+                                    if not needs_update:
+                                        log_at_level (logger, 2, verbose, "    %s unnecessary: already up to date " % job_name)
+                                        for out_file in get_outputs_from_param(param):
+                                            print out_file
+                                            complete_jobs.add(out_file)
+                                        continue
+                                    else:
+                                        log_at_level (logger, 3, verbose, "    %s %s " % (job_name, msg))
+                            #
+                            #   Clunky hack to make sure input files exists right before
+                            #        job is called for better error messages
+                            #
+                            if t.needs_update_func == needs_update_check_modify_time:
+                                check_input_files_exist (*param)
 
-                        #
-                        #   Clunky hack to make sure input files exists right before
-                        #        job is called for better error messages
-                        #
-                        if t.needs_update_func == needs_update_check_modify_time:
-                            check_input_files_exist (*param)
+                            # pause for one second before first job of each tasks
+                            if one_second_per_job and cnt_jobs_created == 0:
+                                log_at_level (logger, 10, verbose, "   1 second PAUSE in job_parameter_generator\n\n\n")
+                                time.sleep(1.01)
+                            
+                            # make sure we don't resubmit this job later
+                            submitted_jobs.add((t, freeze_list(param)))
+                            
+                            count_remaining_jobs[t] += 1
+                            cnt_jobs_created += 1
+                            cnt_jobs_created_for_all_tasks += 1
+                            yield (param,
+                                    t._name,
+                                    job_name,
+                                    t.job_wrapper,
+                                    t.user_defined_work_func,
+                                    get_semaphore (t, job_limit_semaphores, syncmanager),
+                                    one_second_per_job,
+                                    touch_files_only)
 
-                        # pause for one second before first job of each tasks
-                        if one_second_per_job and cnt_jobs_created == 0:
-                            log_at_level (logger, 10, verbose, "   1 second PAUSE in job_parameter_generator\n\n\n")
-                            time.sleep(1.01)
-
-
-                        count_remaining_jobs[t] += 1
-                        cnt_jobs_created += 1
-                        cnt_jobs_created_for_all_tasks += 1
-                        yield (param,
-                                t._name,
-                                job_name,
-                                t.job_wrapper,
-                                t.user_defined_work_func,
-                                get_semaphore (t, job_limit_semaphores, syncmanager),
-                                one_second_per_job,
-                                touch_files_only)
-
-                    # if no job came from this task, this task is complete
-                    #   we need to retire it here instead of normal completion at end of job tasks
-                    #   precisely because it created no jobs
-                    if cnt_jobs_created == 0:
-                        incomplete_tasks.remove(t)
+                    if all(previously_submitted):
+                        incomplete_tasks.discard(t)
                         t.completed (logger, True)
-
                         #
                         #   Add extra warning if no regular expressions match:
                         #   This is a common class of frustrating errors
@@ -2637,6 +2689,22 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                             t.param_generator_func in runtime_data["ruffus_WARNING"]):
                             for msg in runtime_data["ruffus_WARNING"][t.param_generator_func]:
                                 logger.warning("    'In Task def %s(...):' %s " % (t.get_task_name(), msg))
+                            
+                        ## if no job came from this task, this task is complete
+                        ##   we need to retire it here instead of normal completion at end of job tasks
+                        ##   precisely because it created no jobs
+                        #if cnt_jobs_created == 0:
+                        #    incomplete_tasks.remove(t)
+                        #    t.completed (logger, True)
+                        #
+                        #    #
+                        #    #   Add extra warning if no regular expressions match:
+                        #    #   This is a common class of frustrating errors
+                        #    #
+                        #    if (verbose >= 1 and "ruffus_WARNING" in runtime_data and
+                        #        t.param_generator_func in runtime_data["ruffus_WARNING"]):
+                        #        for msg in runtime_data["ruffus_WARNING"][t.param_generator_func]:
+                        #            logger.warning("    'In Task def %s(...):' %s " % (t.get_task_name(), msg))
 
 
                 #
@@ -2673,7 +2741,14 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
 
 
             # extra tests incase final tasks do not result in jobs
-            if len(incomplete_tasks) and (not cnt_tasks_processed or cnt_jobs_created_for_all_tasks):
+            #if len(incomplete_tasks) and (not cnt_tasks_processed or cnt_jobs_created_for_all_tasks):
+            #    log_at_level (logger, 10, verbose, "    incomplete tasks = " +
+            #                           ",".join([t._name for t in incomplete_tasks] ))
+            #    yield waiting_for_more_tasks_to_complete()
+            
+            # the jobs in incomplete_tasks are waiting on their parents;
+            # no new jobs were submitted this round
+            if len(incomplete_tasks) > 0 and cnt_jobs_created_for_all_tasks == 0:
                 log_at_level (logger, 10, verbose, "    incomplete tasks = " +
                                        ",".join([t._name for t in incomplete_tasks] ))
                 yield waiting_for_more_tasks_to_complete()
@@ -2704,7 +2779,7 @@ def feed_job_params_to_process_pool_factory (parameter_q, logger, verbose):
                                                         parameter_q.qsize())
             if not parameter_q.qsize():
                 time.sleep(0.1)
-            param = parameter_q.get()
+            param = parameter_q.get()  # blocking call
             log_at_level (logger, 10, verbose, "   Get next parameter done")
 
             # all tasks done
@@ -2885,7 +2960,9 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     parameter_q = Queue()
 
     count_remaining_jobs = defaultdict(int)
-    parameter_generator = make_job_parameter_generator (incomplete_tasks, task_parents,
+    complete_jobs = set()
+    parameter_generator = make_job_parameter_generator (incomplete_tasks, complete_jobs,
+                                                        task_parents,
                                                         logger, forcedtorun_tasks,
                                                         count_remaining_jobs,
                                                         runtime_data, verbose,
@@ -2967,7 +3044,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
 
         last_job_in_task = False
         if count_remaining_jobs[t] == 0:
-            incomplete_tasks.remove(t)
+            incomplete_tasks.discard(t)
             last_job_in_task = True
 
         elif count_remaining_jobs[t] < 0:
@@ -3032,6 +3109,8 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                         mtime = os.path.getmtime(o_f_n)
                         chksum = JobHistoryChecksum(o_f_n, mtime, job_result.params[2:], t)
                         job_history[o_f_n] = chksum
+
+                        complete_jobs.add(o_f_n)
 
                 ##for output_file_name in t.output_filenames:
                 ##    # could use current time instead...
