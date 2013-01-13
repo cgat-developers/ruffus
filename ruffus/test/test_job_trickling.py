@@ -29,7 +29,7 @@ input_file = os.path.join(workdir, 'input.txt')
 split1_outputs = [os.path.join(workdir, 'split.%s.txt' % i) for i in range(5)]
 transform2_outputs = [f.replace('.txt', '.output1') for f in split1_outputs]
 transform3_outputs = [f.replace('.output1', '.output2') for f in transform2_outputs]
-merge3_output =  os.path.join(workdir, 'merged.out')
+merge4_output =  os.path.join(workdir, 'merged.out')
 
 @split(input_file, split1_outputs)
 def split1(in_name, out_names):
@@ -41,7 +41,7 @@ def split1(in_name, out_names):
 def transform2_variable_wait(in_name, out_name):
     if 'split.0.txt' in in_name:
         print 'waiting'
-        time.sleep(10)  # simulate a long-running job
+        time.sleep(5)  # simulate a long-running job
     with open(out_name, 'w') as outfile:
         outfile.write(open(in_name).read())
 
@@ -50,7 +50,7 @@ def transform3(in_name, out_name):
     with open(out_name, 'w') as outfile:
         outfile.write(open(in_name).read())
 
-@merge(transform3, merge3_output)
+@merge(transform3, merge4_output)
 def merge4(in_names, out_name):
     with open(out_name, 'w') as outfile:
         for n in in_names:
@@ -76,17 +76,18 @@ class TestJobCompletion(unittest.TestCase):
         def step2_output_when_step1_was_running():
             """assert that there was a time when step 3 was running, but step 2 hadn't finished"""
             found = False
-            for i in range(5):
+            for i in range(15):
                 time.sleep(1)
                 num_step2 = sum(map(os.path.exists, transform2_outputs))
                 num_step3 = sum(map(os.path.exists, transform3_outputs))
+                #print 'found %s step2 and %s step3'% (num_step2, num_step3)
                 if num_step3 > 0 and num_step2 < len(transform2_outputs):
-                    found = True
+                    return True
             return found
         
         p = ThreadPool(processes=1)
         r = p.apply_async(step2_output_when_step1_was_running)
-        pipeline_run([merge4], verbose=3)
+        pipeline_run([merge4], verbose=10, multiprocess=len(transform2_outputs))
         self.assertTrue(r.get())
 
     def tearDown(self):
