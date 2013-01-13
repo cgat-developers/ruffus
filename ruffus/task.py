@@ -2679,7 +2679,7 @@ def make_job_parameter_generator (incomplete_tasks, complete_jobs, task_parents,
                         log_at_level (logger, 10, verbose, "   task %s blocked upstream" % t._name)
                         continue
 
-                    log_at_level (logger, 10, verbose, "   job_parameter_generator start task %s (parents completed)" % t._name)
+                    log_at_level (logger, 10, verbose, "   job_parameter_generator start task %s (parents complete or running)" % t._name)
                     force_rerun = t in forcedtorun_tasks
                     #
                     # log task
