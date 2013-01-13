@@ -1176,7 +1176,7 @@ class _task (node):
     #
     #
     #_____________________________________________________________________________________
-    def get_output_files(self, do_not_expand_single_job_tasks, runtime_data, reset_cache=False):
+    def get_output_files(self, do_not_expand_single_job_tasks, runtime_data, reset_cache=True):
         """
         Cache output files
 
@@ -1352,7 +1352,7 @@ class _task (node):
         #
         # replace function / function names with tasks
         #
-        tasks = self.task_follows(function_or_func_names)
+        tasks = self.task_follows(function_or_func_names, explicit_follows=False)
         functions_to_tasks = dict(zip(function_or_func_names, tasks))
         input_params = replace_func_names_with_tasks(input_params, functions_to_tasks)
 
@@ -1402,6 +1402,12 @@ class _task (node):
         # replace function / function names with tasks
         #
         input_files_task_globs = self.handle_tasks_globs_in_inputs(orig_args[0])
+        
+        # any job with globb'ed inputs needs to wait for all parent tasks
+        # to complete entirely
+        if len(input_files_task_globs.globs) > 0:
+            self.follows_wait_list.append('WAIT_ALL')
+        
 
         #   allows split to take a single file or task
         input_files_task_globs.single_file_to_list()
@@ -1498,6 +1504,11 @@ class _task (node):
         # replace function / function names with tasks
         #
         input_files_task_globs = self.handle_tasks_globs_in_inputs(orig_args[0])
+        
+        # any job with globb'ed inputs needs to wait for all parent tasks
+        # to complete entirely
+        if len(input_files_task_globs.globs) > 0:
+            self.follows_wait_list.append('WAIT_ALL')
 
         #
         #   replace output globs with files
@@ -1546,6 +1557,10 @@ class _task (node):
         # replace function / function names with tasks
         #
         input_files_task_globs = self.handle_tasks_globs_in_inputs(orig_args[0])
+        # any job with globb'ed inputs needs to wait for all parent tasks
+        # to complete entirely
+        if len(input_files_task_globs.globs) > 0:
+            self.follows_wait_list.append('WAIT_ALL')
 
 
         # regular expression match
@@ -1633,6 +1648,11 @@ class _task (node):
         #
         input_files_task_globs = self.handle_tasks_globs_in_inputs(orig_args[0])
 
+        # any job with globb'ed inputs needs to wait for all parent tasks
+        # to complete entirely
+        if len(input_files_task_globs.globs) > 0:
+            self.follows_wait_list.append('WAIT_ALL')
+
 
         # regular expression match
         if isinstance(orig_args[1], regex):
@@ -1700,6 +1720,11 @@ class _task (node):
         # replace function / function names with tasks
         #
         input_files_task_globs = self.handle_tasks_globs_in_inputs(orig_args[0])
+        
+        # any job with globb'ed inputs needs to wait for all parent tasks
+        # to complete entirely
+        if len(input_files_task_globs.globs) > 0:
+            self.follows_wait_list.append('WAIT_ALL')
 
         extra_params = orig_args[1:]
         self.param_generator_func = merge_param_factory (input_files_task_globs,
@@ -1822,6 +1847,11 @@ class _task (node):
             #
             input_patterns = [j[0] for j in params]
             input_files_task_globs = self.handle_tasks_globs_in_inputs(input_patterns)
+            
+            # any job with globb'ed inputs needs to wait for all parent tasks
+            # to complete entirely
+            if len(input_files_task_globs.globs) > 0:
+                self.follows_wait_list.append('WAIT_ALL')
 
 
             #
@@ -1872,6 +1902,11 @@ class _task (node):
         # replace function / function names with tasks
         #
         input_files_task_globs = self.handle_tasks_globs_in_inputs(orig_args[0])
+        
+        # any job with globb'ed inputs needs to wait for all parent tasks
+        # to complete entirely
+        if len(input_files_task_globs.globs) > 0:
+            self.follows_wait_list.append('WAIT_ALL')
 
         matching_regex = compile_regex(self, regex(orig_args[1]), error_task_files_re, "@files_re")
 
@@ -1908,12 +1943,6 @@ class _task (node):
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
         self.job_descriptor       = io_files_job_descriptor
-        
-        # any job with globb'ed inputs needs to wait for all parent tasks
-        # to complete entirely
-        if len(input_files_task_globs.globs) > 0:
-            self.follows_wait_list.append('WAIT_ALL')
-
 
 
     #_________________________________________________________________________________________
@@ -1978,10 +2007,15 @@ class _task (node):
     #   task_follows
 
     #_________________________________________________________________________________________
-    def task_follows (self, args):
+    def task_follows (self, args, explicit_follows=True):
         """
         Saved decorator arguments should be:
                 (string/task,...)
+        
+        explicit_follows indicates if this task is labelling a function with
+        an explicit @follows. In this case, no jobs will be run until the
+        parent task is complete (rather than trickling jobs, the default)
+        
         """
         new_tasks = []
         for arg in args:
@@ -2051,7 +2085,9 @@ class _task (node):
                 new_tasks.append(arg.pipeline_task)
         
         # have to explicitly wait for @follows tasks
-        self.follows_wait_list.extend(new_tasks)
+        if explicit_follows:
+            #print 'task %s has to wait for %s' % (self._name, [tsk._name for tsk in new_tasks])
+            self.follows_wait_list.extend(new_tasks)
 
         return new_tasks
 
@@ -2537,7 +2573,8 @@ def get_inputs_from_param(param):
 #
 #________________________________________________________________________________________
 def make_job_parameter_generator (incomplete_tasks, complete_jobs, task_parents, logger, forcedtorun_tasks,
-                                    count_remaining_jobs, runtime_data, verbose,
+                                    count_total_jobs, count_completed_jobs, determined_outputs,
+                                    runtime_data, verbose,
                                     syncmanager,
                                     one_second_per_job, touch_files_only):
     inprogress_tasks = set()
@@ -2546,7 +2583,7 @@ def make_job_parameter_generator (incomplete_tasks, complete_jobs, task_parents,
     # set of all determined outputs of all jobs in all tasks
     # this set helps determine root tasks with input files files that are not
     # outputs for other tasks
-    determined_outputs = set(out_file for t in incomplete_tasks
+    determined_outputs |= set(out_file for t in incomplete_tasks
                                       for out_file in flatten_list(
                                        t.get_output_files(False, runtime_data)))
     
@@ -2554,7 +2591,7 @@ def make_job_parameter_generator (incomplete_tasks, complete_jobs, task_parents,
     # NOTE: with all the different ways tasks and jobs can be submitted,
     #   I'm not convinced the above tuple uniquely identifies a job...
     #   If that' the case, this schema will lead to bugs :-/
-    submitted_jobs = set()
+    submitted_jobs = {}
     
     # the set of tasks for which all jobs have been submitted
     submitted_tasks = set()
@@ -2573,6 +2610,35 @@ def make_job_parameter_generator (incomplete_tasks, complete_jobs, task_parents,
         else:
             parameters = list(task.param_generator_func(runtime_data))
         return parameters
+    
+    def get_ancestors(task):
+        """return all ancestor of task that aren't incomplete"""
+        # whee! functional programming...
+        return task_parents[task] | reduce(operator.or_, map(get_ancestors,
+                                                    task_parents[task]), set())
+    
+    def is_task_blocked(task):
+        """check if this task is blocked"""
+        # get the set of ancestor nodes that are also incomplete
+        incomplete_ancestors = get_ancestors(task) & incomplete_tasks
+        # have to wait for all my ancestors to finish?
+        blk_wait_all = lambda: len(incomplete_ancestors) > 0 and 'WAIT_ALL' in task.follows_wait_list
+        # ancestors explicitly in task's @follows?
+        blk_follows = lambda: len(incomplete_ancestors & set(task.follows_wait_list)) > 0
+        # don't know the ancestor's output?
+        blk_ancest_indet_output = lambda: any(inc_ancest.indeterminate_output
+                                              for inc_ancest in incomplete_ancestors)
+        # WAIT_ALL => ancestor must be marked complete before proceeding
+        blk_ancest_wait_all = lambda: any('WAIT_ALL' in inc_ancest.follows_wait_list
+                                          for inc_ancest in incomplete_ancestors)
+        blk_ancest_blocked = lambda: any(is_task_blocked(inc_ancest)
+                                         for inc_ancest in incomplete_ancestors)
+        blk_anc_not_attempted = lambda: any(inc_ancest not in submitted_jobs
+                                            for inc_ancest in incomplete_ancestors)
+        
+        #log_at_level(logger, 15, verbose, 'is_blocked? %s %s %s %s %s %s %s %s'  % (task._name, [inc_ancest._name for inc_ancest in incomplete_ancestors], blk_wait_all(), blk_follows(), blk_ancest_indet_output(), blk_ancest_wait_all(), blk_ancest_blocked(), blk_anc_not_attempted()))
+        
+        return blk_wait_all() or blk_follows() or blk_ancest_indet_output() or blk_ancest_wait_all() or blk_ancest_blocked() or blk_anc_not_attempted()
 
     def parameter_generator():
         log_at_level (logger, 10, verbose, "   job_parameter_generator BEGIN")
@@ -2594,17 +2660,23 @@ def make_job_parameter_generator (incomplete_tasks, complete_jobs, task_parents,
                     log_at_level (logger, 10, verbose, "   job_parameter_generator consider task = %s" % t._name)
 
                     # ignore tasks with incomplete dependencies
-                    incomplete_parent = False
-                    for parent in task_parents[t]:
-                        # wait for splits, etc but all other tasks should be considered
-                        # eventually run any tasks, all of whose inputs are in completed_jobs
-                        if parent in incomplete_tasks and (
-                                parent.indeterminate_output or  # parent has * in output
-                                parent in t.follows_wait_list or  # explicitly wait for these tasks
-                                'WAIT_ALL' in t.follows_wait_list):  # this task has * in input
-                            incomplete_parent = True
-                            break
-                    if incomplete_parent:
+                    #incomplete_parent = False
+                    #for parent in task_parents[t]:
+                    #    # wait for splits, etc but all other tasks should be considered
+                    #    # eventually run any tasks, all of whose inputs are in completed_jobs
+                    #    if parent in incomplete_tasks and (
+                    #            parent.indeterminate_output or  # parent has * in output
+                    #            parent in t.follows_wait_list or  # explicitly wait for these tasks
+                    #            'WAIT_ALL' in t.follows_wait_list or  # this task has * in input
+                    #            task_has_blocked_parents(t)):  # parent has * or explicit follows
+                    #        incomplete_parent = True
+                    #        break
+                    #if incomplete_parent:
+                    #    continue
+                    
+                    # are we or our ancestors blocked by unknown output etc?
+                    if is_task_blocked(t):
+                        log_at_level (logger, 10, verbose, "   task %s blocked upstream" % t._name)
                         continue
 
                     log_at_level (logger, 10, verbose, "   job_parameter_generator start task %s (parents completed)" % t._name)
@@ -2621,8 +2693,9 @@ def make_job_parameter_generator (incomplete_tasks, complete_jobs, task_parents,
                     #   Use output parameters actually generated by running task
                     #
                     t.output_filenames = []
-
                     parameters = get_parameters(t)
+                    count_total_jobs[t] = len(parameters)
+                    #log_at_level(logger, 15, verbose, 'total number of jobs for %s is %s' % (t._name, len(parameters)))
 
                     #
                     #   iterate through parameters
@@ -2631,20 +2704,22 @@ def make_job_parameter_generator (incomplete_tasks, complete_jobs, task_parents,
                     previously_submitted = []
                     for param, descriptive_param in parameters:
                         # skip any jobs we've already submitted
-                        if (t, freeze_list(param)) in submitted_jobs:
+                        if freeze_list(param) in submitted_jobs.get(t, []):
                             previously_submitted.append(True)
                             continue
                         else:
+                            determined_outputs.update(flatten_list(get_outputs_from_param(param)))
                             previously_submitted.append(False)
                         
                         # task is either in progress or incomplete.
                         # run any jobs whose inputs are in complete_jobs
-                        inputs_complete = all(in_file in complete_jobs or
+                        inputs_complete = [in_file in complete_jobs or
                                               in_file not in determined_outputs
-                                              for in_file in get_inputs_from_param(param))
+                                              for in_file in get_inputs_from_param(param)]
+                        #log_at_level(logger, 15, verbose, 'task %s has inputs: %s, inputs_complete: %s' % (t._name, get_inputs_from_param(param), inputs_complete))
+                        #log_at_level(logger, 15, verbose, 'complete_jobs: %s, determined outputs: %s' %(complete_jobs, determined_outputs))
 
-
-                        if inputs_complete:
+                        if all(inputs_complete):
                             #
                             #   save output even if uptodate
                             #
@@ -2683,14 +2758,13 @@ def make_job_parameter_generator (incomplete_tasks, complete_jobs, task_parents,
                                 check_input_files_exist (*param)
 
                             # pause for one second before first job of each tasks
-                            if one_second_per_job and cnt_jobs_created == 0:
+                            if one_second_per_job and t not in submitted_jobs:
                                 log_at_level (logger, 10, verbose, "   1 second PAUSE in job_parameter_generator\n\n\n")
                                 time.sleep(1.01)
                             
-                            # make sure we don't resubmit this job later
-                            submitted_jobs.add((t, freeze_list(param)))
+                            # make sure we don't resubmit this particular job later
+                            submitted_jobs.setdefault(t, set()).add(freeze_list(param))
                             
-                            count_remaining_jobs[t] += 1
                             cnt_jobs_created += 1
                             cnt_jobs_created_for_all_tasks += 1
                             yield (param,
@@ -2702,10 +2776,11 @@ def make_job_parameter_generator (incomplete_tasks, complete_jobs, task_parents,
                                     one_second_per_job,
                                     touch_files_only)
 
-                    if all(previously_submitted):
+                    if all(previously_submitted) and count_total_jobs[t] == count_completed_jobs[t]:
                         submitted_tasks.add(t)
                         
-                        if len(t.get_output_files(False, runtime_data, reset_cache=True)) == 0 and \
+                        #if len(t.get_output_files(False, runtime_data, reset_cache=True)) == 0 and \
+                        if len(t.get_output_files(False, runtime_data)) == 0 and \
                                 cnt_jobs_created == 0 and len(previously_submitted) == 0:
                             # there are no outputs, though the job looks submitted...
                             incomplete_tasks.discard(t)
@@ -2833,6 +2908,7 @@ def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE, logg
     Ensures queue is filled with number of parameters > jobs / slots (POOL_SIZE)
     """
     log_at_level (logger, 10, verbose, "    fill_queue_with_job_parameters START")
+    
     for param in job_parameters:
 
         # stop if no more jobs available
@@ -2988,12 +3064,15 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     #
     parameter_q = Queue()
 
-    count_remaining_jobs = defaultdict(int)
+    count_total_jobs = {}
+    count_completed_jobs = defaultdict(int)
     complete_jobs = set()
+    determined_outputs = set()
     parameter_generator = make_job_parameter_generator (incomplete_tasks, complete_jobs,
                                                         task_parents,
                                                         logger, forcedtorun_tasks,
-                                                        count_remaining_jobs,
+                                                        count_total_jobs, count_completed_jobs,
+                                                        determined_outputs,
                                                         runtime_data, verbose,
                                                         syncmanager,
                                                         one_second_per_job,
@@ -3042,10 +3121,16 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     #   whether using multiprocessing
     #
     pool = Pool(multiprocess) if multiprocess > 1 else None
+    #
+    #def imap_unordered_async_(func_to_map, data_iter):
+    
     if pool:
         pool_func = pool.imap_unordered
+        #pool_kwargs = {'chunksize':1}
+        pool_kwargs = {}
     else:
         pool_func = imap
+        pool_kwargs = {}
 
 
 
@@ -3067,17 +3152,15 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     #       Reserved for returning result from job...
     #       How?
     #
-    for job_result in pool_func(run_pooled_job_without_exceptions, feed_job_params_to_process_pool()):
+    for job_result in pool_func(run_pooled_job_without_exceptions, feed_job_params_to_process_pool(), **pool_kwargs):
         t = node.lookup_node_from_name(job_result.task_name)
-        count_remaining_jobs[t] = count_remaining_jobs[t] - 1
+        count_completed_jobs[t] += 1
 
         last_job_in_task = False
-        if count_remaining_jobs[t] == 0:
+        if count_completed_jobs[t] == count_total_jobs[t]:
             incomplete_tasks.discard(t)
             last_job_in_task = True
 
-        elif count_remaining_jobs[t] < 0:
-            raise Exception("Task [%s] job count < 0" % t._name)
 
         # remove failed jobs from history-- their output is bogus now!
         if job_result.state in (JOB_ERROR, JOB_SIGNALLED_BREAK):
@@ -3140,6 +3223,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                         job_history[o_f_n] = chksum
 
                         complete_jobs.add(o_f_n)
+                        determined_outputs.add(o_f_n)
 
                 ##for output_file_name in t.output_filenames:
                 ##    # could use current time instead...
@@ -3155,7 +3239,6 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
         # Current Task completed
         #
         if last_job_in_task:
-
             t.completed (logger)
 
 
