@@ -2,5 +2,7 @@ language: python
 python:
   - "2.7"
   - "2.6"
-install:  pip install tox
-script:  tox
+install:  pip install argparse --use-mirrors
+script:
+  - cd ruffus/test
+  - sh run_all_unit_tests.cmd
