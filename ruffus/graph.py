@@ -748,7 +748,8 @@ def topologically_sorted_nodes( to_leaves,
                                 force_start_from = [],
                                 gather_all_non_signalled = True,
                                 test_all_signals = False,
-                                extra_data_for_signal = None):
+                                extra_data_for_signal = None,
+                                checksum_level = None):
     """
     Get all nodes which are children of to_leaves
         in topological sorted order
