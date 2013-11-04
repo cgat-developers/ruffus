@@ -90,6 +90,7 @@ import logging
 import re
 from collections import defaultdict
 from multiprocessing import Pool
+from multiprocessing.pool import ThreadPool
 import traceback
 import types
 from itertools import imap
@@ -713,8 +714,6 @@ class _task (node):
     action_parallel           = 10
     action_active_if          = 11
 
-    add_to_inputs             =  False
-    replace_inputs            =  True
 
 
     multiple_jobs_outputs    = 0
@@ -1418,7 +1417,6 @@ class _task (node):
         #
         #   inputs can also be defined by pattern match
         #
-        replace_inputs = _task.add_to_inputs
         if isinstance(orig_args[2], inputs):
             if len(orig_args[2].args) != 1:
                 raise error_task_transform_inputs_multiple_args(self,
@@ -1429,15 +1427,17 @@ class _task (node):
                                     "specify a tuple as the input parameter, "
                                     "please wrap the elements of the tuple "
                                     "in brackets in the decorator\n\n@transform(..., inputs(...), ...)\n")
+            replace_inputs = t_extra_inputs.REPLACE_INPUTS
             extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[2].args[0])
             output_pattern = orig_args[3]
-            replace_inputs = _task.replace_inputs
             extra_params = orig_args[4:]
         elif isinstance(orig_args[2], add_inputs):
+            replace_inputs = t_extra_inputs.ADD_TO_INPUTS
             extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[2].args)
             output_pattern = orig_args[3]
             extra_params = orig_args[4:]
         else:
+            replace_inputs = t_extra_inputs.KEEP_INPUTS
             extra_inputs = None
             output_pattern = orig_args[2]
             extra_params = orig_args[3:]
@@ -1564,7 +1564,6 @@ class _task (node):
         #
         #   inputs can also be defined by pattern match
         #
-        replace_inputs = _task.add_to_inputs
         if isinstance(orig_args[2], inputs):
             if len(orig_args[2].args) != 1:
                 raise error_task_transform_inputs_multiple_args(self,
@@ -1575,13 +1574,15 @@ class _task (node):
                                     "specify a tuple as the input parameter, "
                                     "please wrap the elements of the tuple "
                                     "in brackets in the decorator\n\n@transform(..., inputs(...), ...)\n")
+            replace_inputs = t_extra_inputs.REPLACE_INPUTS
             extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[2].args[0])
             output_pattern_extras = orig_args[3:]
-            replace_inputs = _task.replace_inputs
         elif isinstance(orig_args[2], add_inputs):
+            replace_inputs = t_extra_inputs.ADD_TO_INPUTS
             extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[2].args)
             output_pattern_extras = orig_args[3:]
         else:
+            replace_inputs = t_extra_inputs.KEEP_INPUTS
             extra_inputs = None
             output_pattern_extras = orig_args[2:]
 
@@ -1640,7 +1641,6 @@ class _task (node):
         #
         #   inputs also defined by pattern match
         #
-        replace_inputs = _task.add_to_inputs
         if isinstance(orig_args[2], inputs):
             if len(orig_args[2].args) != 1:
                 raise error_task_collate_inputs_multiple_args(self,
@@ -1651,13 +1651,15 @@ class _task (node):
                                     "specify a tuple as the input parameter, "
                                     "please wrap the elements of the tuple "
                                     "in brackets in the decorator\n\n@collate(..., inputs(...), ...)\n")
+            replace_inputs = t_extra_inputs.REPLACE_INPUTS
             extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[2].args[0])
             output_pattern_extras = orig_args[3:]
-            replace_inputs = _task.replace_inputs
         elif isinstance(orig_args[2], add_inputs):
+            replace_inputs = t_extra_inputs.ADD_TO_INPUTS
             extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[2].args)
             output_pattern_extras = orig_args[3:]
         else:
+            replace_inputs = t_extra_inputs.KEEP_INPUTS
             extra_inputs = None
             output_pattern_extras = orig_args[2:]
 
@@ -1887,7 +1889,7 @@ class _task (node):
                                                                 False,                  # flatten
                                                                 matching_regex,
                                                                 extra_input_files_task_globs,
-                                                                _task.replace_inputs,
+                                                                t_extra_inputs.REPLACE_INPUTS,
                                                                 *output_and_extras)
         else:
 
@@ -1898,7 +1900,7 @@ class _task (node):
                                                                     #regex_or_suffix
                                                                     True,               # substitute all parameters
                                                                     extra_input_files_task_globs,
-                                                                    _task.replace_inputs,
+                                                                    t_extra_inputs.REPLACE_INPUTS,
                                                                     *output_and_extras)
 
 
@@ -2196,7 +2198,7 @@ def link_task_names_to_functions ():
 
 #_________________________________________________________________________________________
 
-#   link_task_names_to_functions
+#   update_checksum_level_on_tasks
 
 #_________________________________________________________________________________________
 def update_checksum_level_on_tasks (checksum_level):
@@ -2274,6 +2276,8 @@ def pipeline_printout_graph (stream,
                              dpi                            = 120,
                              runtime_data                   = None,
                              checksum_level                 = 1):
+                             # Remember to add further extra parameters here to "extra_pipeline_printout_graph_options" inside cmdline.py
+                             # This will forward extra parameters from the command line to pipeline_printout_graph
     """
     print out pipeline dependencies in various formats
 
@@ -2348,6 +2352,8 @@ def pipeline_printout_graph (stream,
 def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbose=1, indent = 4,
                                     gnu_make_maximal_rebuild_mode  = True, wrap_width = 100,
                                     runtime_data= None, checksum_level=1):
+                      # Remember to add further extra parameters here to "extra_pipeline_printout_options" inside cmdline.py
+                      # This will forward extra parameters from the command line to pipeline_printout
     """
     Printouts the parts of the pipeline which will be run
 
@@ -2781,7 +2787,10 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                  gnu_make_maximal_rebuild_mode  = True, verbose = 1,
                  runtime_data = None, one_second_per_job = True, touch_files_only = False,
                  exceptions_terminate_immediately = False, log_exceptions = False,
-                 checksum_level=1):
+                 checksum_level=1, use_multi_threading = False):
+                 # Remember to add further extra parameters here to "extra_pipeline_run_options" inside cmdline.py
+                 # This will forward extra parameters from the command line to pipeline_run
+                 ):
     """
     Run pipelines.
 
@@ -2802,6 +2811,11 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     :param runtime_data: Experimental feature for passing data to tasks at run time
     :param one_second_per_job: Defaults to (true) forcing jobs to take a minimum of 1 second to complete
     :param touch_file_only: Create or update input/output files only to simulate running the pipeline. Do not run jobs
+    :param exceptions_terminate_immediately: Exceptions cause immediate termination
+                        rather than waiting for N jobs to finish where N = multiprocess
+    :param use_multi_threading: Using multi threading is particularly useful to manage high performance clusters
+                        which are to "processor storms" when multiple cluster cores finish jobs at the same time.
+                        Thanks to Andreas Heger.
     :param checksum_level: Several options for checking up-to-dateness are available: Default is level 1.
                     level 0 : Use only file timestamps
                     level 1 : above, plus timestamp of successful job completion
@@ -2935,7 +2949,14 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     #
     #   whether using multiprocessing
     #
-    pool = Pool(multiprocess) if multiprocess > 1 else None
+    if multiprocess > 1:
+        if use_multi_threading:
+            pool = ThreadPool(multiprocess)
+        else:
+            pool = Pool(multiprocess)
+    else:
+        pool = None
+
     if pool:
         pool_func = pool.imap_unordered
     else:
@@ -3065,6 +3086,13 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
 
     if len(job_errors):
         raise job_errors
+
+
+    syncmanager.shutdown()
+    if pool:
+        pool.close()
+        pool.join()
+
 
 
 

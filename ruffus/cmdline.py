@@ -427,7 +427,8 @@ extra_pipeline_run_options = [
                                 "touch_files_only"                  ,
                                 "logger"                            ,
                                 "exceptions_terminate_immediately"  ,
-                                "log_exceptions"]
+                                "log_exceptions"                    ,
+                                "use_multi_threading"]
 
 
 def get_extra_options_appropriate_for_command (appropriate_option_names, extra_options):

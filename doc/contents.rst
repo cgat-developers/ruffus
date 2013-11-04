@@ -13,6 +13,7 @@ Start Here:
    installation.rst
    tutorials/simple_tutorial/simple_tutorial.rst
    Manual <tutorials/manual/manual_contents.rst>
+   recipes.rst
 
 
 =====================
@@ -23,7 +24,7 @@ Overview:
 
    cheatsheet.rst
    pipeline_functions.rst
-   installation.rst   
+   installation.rst
    design.rst
    Bugs and Updates <history>
    Future plans <todo>
@@ -110,12 +111,12 @@ Decorators
         decorators/check_if_uptodate.rst
         decorators/files_re.rst
 
-   
-   
+
+
 ######################
 Modules:
 ######################
-   
+
 .. toctree::
    :maxdepth: 2
 

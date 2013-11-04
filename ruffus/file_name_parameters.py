@@ -66,6 +66,10 @@ from ruffus_utility import *
 
 import dbdict
 
+class t_extra_inputs:
+    (ADD_TO_INPUTS, REPLACE_INPUTS, KEEP_INPUTS) = range(0, 3)
+
+
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -230,6 +234,57 @@ def check_input_files_exist (*params):
             if not os.path.exists(f):
                 raise MissingInputFileError("No way to run job: "+
                                             "Input file ['%s'] does not exist" % f)
+
+
+#_________________________________________________________________________________________
+
+#   needs_update_check_exist
+
+#_________________________________________________________________________________________
+def needs_update_check_exist (*params, **kwargs):
+    """
+    Given input and output files, see if all exist
+    Each can be
+
+        #. string: assumed to be a filename "file1"
+        #. any other type
+        #. arbitrary nested sequence of (1) and (2)
+
+    """
+    # missing output means build
+    if len(params) < 2:
+        return True, "i/o files not specified"
+
+
+    i, o = params[0:2]
+    i = get_strings_in_nested_sequence(i)
+    o = get_strings_in_nested_sequence(o)
+
+    #
+    # build: missing output file
+    #
+    if len(o) == 0:
+        return True, "Missing output file"
+
+    # missing input / output file means always build
+    missing_files = []
+    for io in (i, o):
+        for p in io:
+            if not os.path.exists(p):
+                missing_files.append(p)
+    if len(missing_files):
+        return True, "Missing file%s [%s]" % ("s" if len(missing_files) > 1 else "",
+                                            ", ".join(missing_files))
+
+    #
+    #   missing input -> build only if output absent
+    #
+    if len(i) == 0:
+        return False, "Missing input files"
+
+
+    return False, "Up to date"
+
 
 
 #_________________________________________________________________________________________
@@ -684,6 +739,7 @@ def split_param_factory (input_files_task_globs, output_files_task_globs, *extra
 def split_ex_param_factory (input_files_task_globs,
                             flatten_input,
                             regex,
+                            regex_or_suffix,
                             extra_input_files_task_globs,
                             replace_inputs,
                             output_files_task_globs,
@@ -727,9 +783,9 @@ def split_ex_param_factory (input_files_task_globs,
             if extra_input_files_task_globs != None:
                 # extras
                 extra_inputs = extra_input_files_task_globs.regex_replaced (filename, regex)
-                if replace_inputs:
+                if replace_inputs == t_extra_inputs.REPLACE_INPUTS:
                     input_param = file_names_from_tasks_globs(extra_inputs, runtime_data)
-                else:
+                elif replace_inputs == t_extra_inputs.ADD_TO_INPUTS:
                     input_param = (orig_input_param,) + file_names_from_tasks_globs(extra_inputs, runtime_data)
             else:
                 input_param = orig_input_param
@@ -825,11 +881,10 @@ def transform_param_factory (input_files_task_globs,
                 extra_inputs = extra_input_files_task_globs.regex_replaced (filename, regex, regex_or_suffix_extras)
 
 
-                # inputs()
-                if replace_inputs:
+                # add or replace existing input parameters
+                if replace_inputs == t_extra_inputs.REPLACE_INPUTS:
                     input_param = file_names_from_tasks_globs(extra_inputs, runtime_data)
-                # add_inputs()
-                else:
+                elif replace_inputs == t_extra_inputs.ADD_TO_INPUTS:
                     input_param = (orig_input_param,) + file_names_from_tasks_globs(extra_inputs, runtime_data)
             else:
                 input_param = orig_input_param
@@ -928,9 +983,9 @@ def collate_param_factory (input_files_task_globs,
             #
             if extra_input_files_task_globs != None:
                 extra_inputs = extra_input_files_task_globs.regex_replaced (filename, regex)
-                if replace_inputs:
+                if replace_inputs == t_extra_inputs.REPLACE_INPUTS:
                     input_param = file_names_from_tasks_globs(extra_inputs, runtime_data)
-                else:
+                elif replace_inputs == t_extra_inputs.ADD_TO_INPUTS:
                     input_param = (orig_input_param,) + file_names_from_tasks_globs(extra_inputs, runtime_data)
             else:
                 input_param = orig_input_param
@@ -1039,3 +1094,4 @@ def files_re_param_factory( input_files_task_globs, combining_all_jobs,
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+

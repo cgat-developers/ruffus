@@ -1,3 +1,10 @@
+= v. 2.4=
+    _08/October/2013_
+    ==Naive support for drmaa / running Ruffus on a cluster submission node
+        * Needs multithreading instead of multiprocessing added `pipeline_run(..., use_multi_threading = True)`
+		  Multithreading allows a drmaa session to be shared and prevents the submission node from being overloaded by completion notifications from the cluster.
+		* ruffus.drmaa_wrapper.run_job() is a convenience function much like `qrsh` which can be used as a drop in replacement for `os.system()` or `subprocess.check_output()` etc. 
+		* Takes drmaa queue name, priority, job name, session etc., creates a temp script file and runs specified command on the cluster, returns stdout and stderr lines only when the command is finished
 = v. 2.3=
     _03/October/2011_
     ==`@active_if` turns off tasks at runtime==
