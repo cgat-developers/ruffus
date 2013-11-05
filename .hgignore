@@ -1,0 +1,7 @@
+.*\.pyc$
+^nested_dict.egg-info/.+
+^dist
+_build$
+doc/hosted_site.cmd
+^.tox
+^.ruffus_history.sqlite$
