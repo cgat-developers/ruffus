@@ -2297,8 +2297,7 @@ def pipeline_printout_graph (stream,
                     level 0 : Use only file timestamps
                     level 1 : above, plus timestamp of successful job completion
                     level 2 : above, plus a checksum of the pipeline function body
-                    level 3 : above, plus a checksum of the pipeline function default arguments
-                              and the additional arguments passed in by task decorators
+                    level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
     """
 
 
@@ -2390,8 +2389,7 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
                     level 0 : Use only file timestamps
                     level 1 : above, plus timestamp of successful job completion
                     level 2 : above, plus a checksum of the pipeline function body
-                    level 3 : above, plus a checksum of the pipeline function default arguments
-                              and the additional arguments passed in by task decorators
+                    level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
     """
     if verbose == 0:
         return
@@ -2819,8 +2817,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                            level 0 : Use only file timestamps
                            level 1 : above, plus timestamp of successful job completion
                            level 2 : above, plus a checksum of the pipeline function body
-                           level 3 : above, plus a checksum of the pipeline function default arguments
-                                     and the additional arguments passed in by task decorators
+                           level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
 
     """
     syncmanager = multiprocessing.Manager()
