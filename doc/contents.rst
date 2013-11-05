@@ -28,6 +28,7 @@ Overview:
    design.rst
    Bugs and Updates <history>
    Future plans <todo>
+   Pending changes <refactoring_ruffus_notes>
    faq.rst
    glossary.rst
    gallery.rst
