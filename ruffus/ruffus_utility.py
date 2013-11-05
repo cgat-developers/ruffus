@@ -60,7 +60,7 @@ from ruffus_exceptions import *
 #import task
 import collections
 import multiprocessing.managers
-import md5
+import hashlib
 import marshal
 import cPickle as pickle
 import operator
@@ -93,7 +93,7 @@ class JobHistoryChecksum:
         self.outfile = outfile
         self.mtime = mtime
         # checksum exact params used to generate this output file
-        self.chksum_params = md5.md5(pickle.dumps(params)).hexdigest()
+        self.chksum_params = hashlib.md5(pickle.dumps(params)).hexdigest()
         # checksum the function bytecode as well as the function context
         # Don't use func_code alone-- changing the line number of the function,
         # what global variables are available, etc would all change the checksum
@@ -105,7 +105,7 @@ class JobHistoryChecksum:
                             task.user_defined_work_func.func_code.co_names,
                             task.user_defined_work_func.func_code.co_nlocals,
                             task.user_defined_work_func.func_code.co_varnames]))
-        self.chksum_func = md5.md5(func_code + func_extras).hexdigest()
+        self.chksum_func = hashlib.md5(func_code + func_extras).hexdigest()
 
 
 
