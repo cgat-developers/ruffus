@@ -1,0 +1,27 @@
+digraph graphname
+{
+        root=task5;
+        size="5,6";
+
+       
+        // The whole pipeline starts from a single task 
+        // 2 tasks depend on it
+        task1->task2->task3->task4->task5->finaltask;
+        task2->task4;
+
+		# format: @name::@decorator
+
+		# task1 depends on None so generates "*.1" files only if they do not already exist
+        #@task1::@files(None, ['a.1', 'b.1', 'c.1', 'd.1'], "extra param")::First task
+
+		# task2 runs a glob, and makes "*.2" corresponding to any "*.1"
+        #@task2::@files_re('*.1', '(.*).1', r'\1.2')::Second task
+
+	
+        #@task3::@files([['a.2', 'a.3', 1], ['b.2', ['b.3', 'b.3b'], 2]])::Third task
+		#@task4::@files_re(['a.1', 'b.1', 'c.1', 'd.1'], '(.*).1', r'\1.4')@posttask(test_post_task_function)::Fourth task
+		#@task5::@parallel(create_custom_file_func([['a.1', ['a.cust5', 'a.cust5a'], 2, 3], ['b.1', 'b.cust5']]))@check_if_uptodate(is_job_uptodate)::Fifth task
+		##@task5::@files(create_custom_file_func([['a.1', ['a.cust5', 'a.cust5a'], 2, 3], ['b.1', 'b.cust5']]))@posttask(touch_file('5.completed'))::Fifth task
+        #@finaltask::@parallel(['a.4', 'b.4', 'c.4', 'd.4'], 'both.5', 4, 5)@check_if_uptodate(is_job_uptodate)@posttask(touch_file('hooray.final'))::Final task
+}
+

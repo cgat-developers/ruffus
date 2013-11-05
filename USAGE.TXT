@@ -1,0 +1,81 @@
+Each stage or task in a computational pipeline is represented by a python function
+Each python function can be called in parallel to run multiple jobs.
+
+1. Import module::
+
+	from ruffus import *
+
+
+2. Annotate functions with python decorators
+
+	e.g.::
+
+		from ruffus import *
+		import sys
+
+		def first_task():
+			print "First task"
+
+		@follows(first_task)
+		def second_task():
+			print "Second task"
+
+		@follows(second_task)
+		def final_task():
+			print "Final task"
+
+	Examples of decorators:
+
+	 +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+
+	 | Decorator              | Purpose                             |    Example                                                                                          |
+	 +========================+=====================================+=====================================================================================================+
+	 |**@follows**            | - Indicate task dependency          | ``@follows(task1, "task2")``                                                                        |
+	 |                        |                                     |                                                                                                     |
+	 |                        | - mkdir prerequisite shorthand      | ``@follows(task1, mkdir("my/directory/for/results"))``                                              |
+	 +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+
+	 |**@files**              | - I/O parameters                    | ``@files(parameter_list)``                                                                          |
+	 |                        |                                     |                                                                                                     |
+	 |                        | - skips up-to-date jobs             | ``@files(parameter_generating_function)``                                                           |
+	 |                        |                                     |                                                                                                     |
+	 |                        |                                     | ``@files(input, output, other_params_for_a_single_job)``                                            |
+	 +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+
+	 |**@split**              | - Splits a single input into        | ``@split ( tasks_or_file_names, output_files, [extra_parameters,...] )``                            | 
+	 |                        |   multiple output                   |                                                                                                     | 
+	 |                        | - Globs in output can specify an    |                                                                                                     |
+	 |                        |   indeterminate number of files.    |                                                                                                     | 
+	 +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+ 
+	 |**@transform**          | - Applies the task function to      | ``@transform ( tasks_or_file_names, suffix(suffix_string), output_pattern, [extra_parameters,..] )``|
+	 |                        |   transform input data to output.   |                                                                                                     |
+	 |                        |                                     | ``@transform ( tasks_or_file_names, regex(regex_pattern), output_pattern, [extra_parameters,...] )``|
+	 +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+ 
+	 |**@merge**              | - Merges multiple input             | ``@merge (tasks_or_file_names, output, [extra_parameters,...] )``									  |
+	 |                        |   into a single output.             |                                                                                                     | 
+	 +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+ 
+	 |**@collate**            | - Groups together sets of input     | ``@collate ( tasks_or_file_names, regex(matching_regex), output_pattern, [extra_parameters,...] )`` |
+	 |                        |   into a few outputs                |                                                                                                     | 
+	 +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+ 
+	 |**@posttask**           | - Call function after task          | ``@posttask(signal_task_completion_function)``                                                      | 
+	 |                        |                                     |                                                                                                     | 
+	 |                        | - touch file shorthand              | ``@posttask(touch_file("task1.completed")``                                                         | 
+	 +------------------------+-------------------------------------+-----------------------------------------------------------------------------------------------------+ 
+
+3. Print dependency graph if you necessary                                                                                                                                
+
+	- For a graphical flowchart in ``jpg``, ``svg``, ``dot``, ``png``, ``ps``, ``gif`` formats::                                                                          
+
+		graph_printout ( open("flowchart.svg", "w"),                                                                                                                      
+						 "svg",                                                                                                                                           
+						 list_of_target_tasks)                                                                                                                            
+
+	This requires ``dot`` to be installed                                                                                                                                 
+
+	- For a text printout of all jobs ::                                                                                                                                  
+
+		pipeline_printout(sys.stdout, list_of_target_tasks)                                                                                                               
+
+
+4. Run the pipeline::                                                                                                                                                     
+
+	pipeline_run(list_of_target_tasks, [list_of_tasks_forced_to_rerun, multiprocess = N_PARALLEL_JOBS])                                                                   
+
+

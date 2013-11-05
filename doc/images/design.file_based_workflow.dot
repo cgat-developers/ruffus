@@ -1,0 +1,59 @@
+digraph tree
+{
+size="8,11!";
+splines=true;
+mindist = 0.001;
+nodesep = 0.001;
+fontsize=50;
+#rankdir="LR";
+ranksep = 0.3;
+sep = 0.001;
+esep = 0.001;
+width = 0.001;
+packmode="node";
+subgraph clusterkey
+{
+fontsize=30;
+label = "File-based\nPipeline\nManagement:";
+node[fontsize=30];
+ss[color=blue, fontcolor=blue, shape=tripleoctagon, fontsize=13, label="starting_files"];
+a1[color=blue, fontcolor=blue, shape=none, fontsize=10, label="a.analysis1"];
+a2[color=blue, fontcolor=blue, shape=none, fontsize=10, label="a.analysis2"];
+a3[color=blue, fontcolor=blue, shape=none, fontsize=10, label="a.analysis3"];
+b1[color=blue, fontcolor=blue, shape=none, fontsize=10, label="b.analysis1"];
+b2[color=blue, fontcolor=blue, shape=none, fontsize=10, label="b.analysis2"];
+b3[color=blue, fontcolor=blue, shape=none, fontsize=10, label="b.analysis3"];
+c1[color=blue, fontcolor=blue, shape=none, fontsize=10, label="c.analysis1"];
+c2[color=blue, fontcolor=blue, shape=none, fontsize=10, label="c.analysis2"];
+c3[color=blue, fontcolor=blue, shape=none, fontsize=10, label="c.analysis3"];
+d1[color=blue, fontcolor=blue, shape=none, fontsize=10, label="d.analysis1"];
+d2[color=blue, fontcolor=blue, shape=none, fontsize=10, label="d.analysis2"];
+d3[color=blue, fontcolor=blue, shape=none, fontsize=10, label="d.analysis3"];
+e1[color=blue, fontcolor=blue, shape=none, fontsize=10, label="e.analysis1"];
+e2[color=blue, fontcolor=blue, shape=none, fontsize=10, label="e.analysis2"];
+e3[color=blue, fontcolor=blue, shape=none, fontsize=10, label="e.analysis3"];
+rr[color=red, fontcolor=red, shape=tripleoctagon, fontsize=13, label="results.summary"];
+
+ss->a1[color=blue];
+ss->b1[color=blue];
+ss->c1[color=blue];
+ss->d1[color=blue];
+ss->e1[color=blue];
+a1->a2[color=blue];
+b1->b2[color=blue];
+c1->c2[color=blue];
+d1->d2[color=blue];
+e1->e2[color=blue];
+a2->a3[color=blue];
+b2->b3[color=blue];
+c2->c3[color=blue];
+d2->d3[color=blue];
+e2->e3[color=blue];
+a3->rr[color=red];
+b3->rr[color=red];
+c3->rr[color=red];
+d3->rr[color=red];
+e3->rr[color=red];
+
+}
+}

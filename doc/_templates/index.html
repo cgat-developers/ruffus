@@ -1,0 +1,152 @@
+{% extends "layout.html" %}
+{% set title = 'Ruffus' %}
+
+{% block body %}
+
+<p> <img src="_images/logo.jpg" alt="logo"></p>
+
+<I>Ruffus</I> is a lightweight python module to run computational pipelines.
+
+<h1>Welcome</h1>
+
+<table class="Introduction" align="center" style="margin-left: 30px">
+<tr>
+  <td width="50%">
+    <p><I>Ruffus</I> is designed to allow scientific and other analyses to 
+    be automated with the minimum of fuss and the least effort.</p>
+    
+    These are <I>Ruffus</I>'s strengths:
+    <ul>
+      <li>Lightweight: Suitable for the simplest of tasks</li>
+
+      <li>Handles even fiendishly complicated pipelines</a> 
+    which would cause <i>make</i> or <i>scons</i> to go cross-eyed and recursive.</li>
+
+    <li>Standard python syntax. No "clever magic" to code around.  </li>
+    <li>Unintrusive and unambitiously lightweight syntax which tries to do this 
+        one small thing well.  </li>
+  </ul>
+    
+    <p>Please join me (email: ruffus_lib at llew.org.uk) in setting the direction of 
+    this project if you are interested.
+    </p>
+    
+  </td>
+  
+  <td width="50%">
+        
+    <img src="_images/front_page_flowchart.png" alt="flowchart">
+    
+  </td>
+                                                                          
+</tr>
+</table>
+
+
+
+                                                            
+
+
+<h1> Documentation</h1>
+
+<table class="contentstable" align="center" style="margin-left: 30px">
+<tr>
+  <td width="50%">
+    
+    <p class="biglink"><a class="biglink" 
+        href="installation.html">Download</a><br/>
+    <span class="linkdescr">to install <I>Ruffus</I></span></p>
+
+    <p class="biglink"><a class="biglink" 
+        href="tutorials/simple_tutorial/simple_tutorial.html">Simple Tutorial</a><br/>
+    <span class="linkdescr">Start here for a quick introduction to <i>Ruffus</i></span></p>
+
+    <p class="biglink"><a class="biglink" 
+        href="tutorials/manual/manual_introduction.html">Full Manual</a><br/>
+        <span class="linkdescr">for an-depth demonstration of all 
+        <I>Ruffus</I> features</span></p>
+
+  </td>
+  
+  <td width="50%">
+        
+
+    <p class="biglink"><a class="biglink" 
+        href="contents.html">Table of contents</a><br/>
+    <span class="linkdescr">for an complete listing of all the documentation</span></p>
+    
+    <p class="biglink"><a class="biglink" 
+        href="faq.html">Frequently Answered Questions</a><br/>
+    <span class="linkdescr">for any common problems, clever solutions from the community</span></p>
+
+    <p class="biglink"><a class="biglink" 
+        href="design.html">Design</a><br/>
+    <span class="linkdescr">to understand the design of <I>Ruffus</I></span></p>
+
+    <p class="biglink"><a class="biglink" 
+        href="cheatsheet.html">Cheat Sheet</a><br/>
+    <span class="linkdescr">for Ruffus syntax</span></p>
+    </td>
+                                                                          
+</tr>
+</table>
+
+
+
+
+<h2>Get <I>Ruffus</I></h2>
+
+<p>
+    <i>Ruffus</i> is available as an <a 
+    href="http://peak.telecommunity.com/DevCenter/EasyInstall">easy-install</a>able package on the <a href="http://pypi.python.org/pypi/ruffus">Python Package
+    Index</a>.
+  </p>
+Just run:
+
+
+<div style="margin-left: 30px" class="highlight-python"><pre>easy_install -U ruffus</pre>
+</div>
+  
+<br>  
+<p>
+The very latest (unstable / under-development) code can be obtained via svn:
+  <div style="color: #ff0000" >
+   <pre>svn checkout http://ruffus.googlecode.com/svn/trunk/ ruffus-read-only</pre>
+</div>
+</p>
+
+<h1>Feedback and Getting Involved:</h1>
+<ul>
+  <li>
+    The <I>Ruffus</I> project is hosted with <b><a 
+        href="http://code.google.com/p/ruffus">Google 
+      Code here.</a></b><br><br>
+  </li>
+  
+  <li>
+    <img src="http://groups.google.com/intl/en/images/logos/groups_logo_sm.gif"
+             height=30 width=140 alt="Google Groups"> <b>Subscribe to the <i>ruffus_discuss</i> mailing list here:</b>
+    <br>    
+    <form action="http://groups.google.com/group/ruffus_discuss/boxsubscribe">
+    Email: <input type=text name=email>
+    <input type=submit name="sub" value="Subscribe">
+    </form><br>
+  </li>
+
+
+  <li>
+    <a href="http://groups.google.com/group/ruffus_discuss">Check out the mailing list without subscribing here.</a>
+    <br>
+  </li>
+  
+  <li>
+    <a href="http://code.google.com/p/ruffus/issues/list">Bugs or feature requests can be posted here.</a>
+    <br>
+  </li>
+  
+  
+</ul>
+
+
+{% endblock %}
+

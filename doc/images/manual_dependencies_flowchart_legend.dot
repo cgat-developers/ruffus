@@ -1,0 +1,30 @@
+digraph tree
+{
+size="8,11!";
+splines=true;
+fontsize=50;
+#rankdir="LR";
+ranksep = 0.2;
+sep = 0.001;
+esep = 0.001;
+width = 0.001;
+#rankdir="LR";
+subgraph clusterkey
+{
+style=filled;
+fontsize=20;
+color=gray97;
+label = "Key:";
+rft[color=orange, fontcolor=orange, shape=tripleoctagon, fontsize=13, label="Final target"];
+uft[color=gray, fontcolor=gray, shape=tripleoctagon, fontsize=13, label="Up-to-date Final target"];
+run[fontcolor=blue, shape=plaintext, fontsize=13, label="Task to run"];
+ufr[color=olivedrab, fontcolor=blue, shape=tripleoctagon, fontsize=13, label="Up-to-date\nforced to rerun"];
+utd[style=filled, color=olivedrab, label="Up-to-date", shape=octagon, fontsize=13, fillcolor=olivedrab, fontcolor=black];
+run->ufr->rft[color=blue];
+rft->uft[color=gray];
+utd->run[color=gray];
+
+
+}
+
+}
