@@ -2790,7 +2790,6 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                  checksum_level=1, use_multi_threading = False):
                  # Remember to add further extra parameters here to "extra_pipeline_run_options" inside cmdline.py
                  # This will forward extra parameters from the command line to pipeline_run
-                 ):
     """
     Run pipelines.
 
