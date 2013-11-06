@@ -122,6 +122,48 @@ err_msg_no_regex_match = ("No jobs were run because no files names matched. "
                         "Please make sure that the regular expression is correctly specified.")
 err_msg_empty_files_parameter= ("@files() was empty, i.e. no files were specified. "
                         "Please make sure this is by design.")
+
+
+#_________________________________________________________________________________________
+
+#   t_filename_transform
+
+#_________________________________________________________________________________________
+class t_filename_transform(object):
+    """
+    Does the work for generating output / "extra input" / "extra" filenames
+        input
+            - a set of file names (derived from tasks, globs, hard coded file names)
+            - a specification (e.g. a new suffix, a regular expression substitution pattern)
+        output
+            - a new file name
+
+    N.B. Is this level of abstraction adequate?
+        1) On one hand, this is a simple extension of the current working design
+        2) On the other, we throw away the nested structure of tasks / globs on one hand
+           and the nested structure of the outputs on the other hand.
+    """
+    pass
+
+
+class t_suffix_filename_transform(t_filename_transform):
+    """
+    Does the work for generating output / "extra input" / "extra" filenames
+        replacing a specified suffix
+    """
+    def __init__ (self, enclosing_task, suffix_object, error_object, descriptor_string):
+        self.matching_regex = compile_suffix(enclosing_task, suffix_object, error_object, descriptor_string)
+
+
+class t_regex_filename_transform(t_filename_transform):
+    """
+    Does the work for generating output / "extra input" / "extra" filenames
+        replacing a specified regular expression
+    """
+    def __init__ (self, enclosing_task, suffix_object, error_object, descriptor_string):
+        self.matching_regex = compile_regex(enclosing_task, suffix_object, error_object, descriptor_string)
+
+
 #_________________________________________________________________________________________
 
 #   t_params_tasks_globs_run_time_data

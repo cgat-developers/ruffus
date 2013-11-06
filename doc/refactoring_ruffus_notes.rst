@@ -47,64 +47,54 @@ git hub docs
 ##########################################
 In progress: Refactoring Ruffus
 ##########################################
+******************************************************************************
+file_name_parameters.py
+******************************************************************************
+
+    t_params_tasks_globs_run_time_data.regex_replaced()
+        only does a regex replacement of the globs and raw strings, not tasks
+    Used in:
+
+    @split_ex
+        extra_input, then file_names_from_tasks_globs()
+        output_param, file_names_from_tasks_globs , unexpanded_globs()
+    @transform
+        extra_input, then file_names_from_tasks_globs()
+    @collate
+        extra_input, then file_names_from_tasks_globs()
+
+            
 
 ******************************************************************************
 New flexible "format" alternative to regex suffix
 ******************************************************************************
 
+    ``get_all_paths_components(paths, regex_str)`` in ``ruffus_utility.py``
+
+    If ``regex_str`` is not None, then regular expression match failures will return an empty dictionary.
+
+    .. code-block:: python
+
+        results = get_all_paths_components(paths, regex_str)
+        string.format(results[2])
+
+    will fail (raise and Exception)
+
+    The idea is that all file names which throw exceptions will be skipped, and we can continue
+    to use regular expression matches as a filter, even if they are not used to construct the result.
+
+
     .. code-block:: python
 
 
-        matches = [re.search('(.*)(?P<id>\d+).bam', 'sample1.bam'),
-           re.search('(.*).vcf', 'dbsnp.vcf')]
-        outputstr = '{0[0]}{0[id]}.vs.{1[0]}.filtered'
-        matchdicts = [{i : m.group(i) for i in range(m.lastindex) +
-                                              m.groupdict().keys()}
-                                      for m in matches]
-        final_str = outputstr.format(*matchdicts)
-        # final_str is sample1.vs.dbsnp.filtered
+        class t_suffix_filename_transform(t_filename_transform):
+        class t_regex_filename_transform(t_filename_transform):
+        class t_format_filename_transform(t_filename_transform):
 
-        input_file_name  ="/a/bbbb/cccc/dddd/eee.whatever"
-
-        import os
-
-        def recursive_split (a_path):
-            sub_path_part, sub_dir_part = os.path.split(a_path)
-            if sub_path_part and sub_path_part != "/":
-                sub_path_parts, sub_dir_parts = recursive_split (sub_path_part)
-                return [ [sub_path_part] + sub_path_parts,
-                          [sub_dir_part] + sub_dir_parts]
-            else:
-                return [[], [a_path]]
-
-        def split (a_path):
-            path_part, file_part = os.path.split(a_path)
-            file_part, ext_part = os.path.splitext(file_part)
-            subpaths, dirs = recursive_split (path_part)
-            return {'path':     path_part,
-                    'basename': file_part,
-                    'ext':      ext_part,
-                    'subpath':  subpaths,
-                    'dir':      dirs}
+        contains both the regular expression string and the code to construct
 
 
 
-
-
-
-
-
-
-        all_mappers = [bwa, bowtie, ssaha2]  # list of read mapper tasks
-        all_snps = ['dbSNP.vcf', '1kgenome.vcf']
-
-        @product(all_mappers, regex('(.*).bam'), all_snps, regex('(.*).vcf'), r'\1.vs.\2.filtered')
-        def filter_snps((in_bam, in_vcf), out_filtered):  # tuples in the arg list are helpful in ruffus!
-            passe_parse.expand_template(template, match)
-
-        @permutation(all_mappers, regex('(.*).bam'), all_snps, regex('(.*).vcf'), r'\1.vs.\2.filtered')
-        def filter_snps((in_bam, in_vcf), out_filtered):  # tuples in the arg list are helpful in ruffus!
-            passe_parse.expand_template(template, match)
 
 ***************************************
 New decorators
