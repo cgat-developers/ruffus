@@ -63,6 +63,7 @@ import multiprocessing.managers
 import hashlib
 import marshal
 import cPickle as pickle
+from itertools import izip
 import operator
 
 
@@ -109,46 +110,292 @@ class JobHistoryChecksum:
 
 
 
+
+
 #_________________________________________________________________________________________
 #
-#   construct_filename_parameters_with_regex
+#   path_decomposition
 #
 #_________________________________________________________________________________________
-REGEX_SUBSTITUTE               = 0
-SUFFIX_SUBSTITUTE_IF_SPECIFIED = 1
-SUFFIX_SUBSTITUTE_ALWAYS       = 2
-def regex_replace(filename, regex, p, regex_or_suffix = REGEX_SUBSTITUTE):
+def path_decomposition (orig_path):
     """
-    recursively replaces file name specifications using regular expressions
-    Non-strings are left alone
+    returns a dictionary identifying the components of a file path:
+        This has the following keys
+            basename: (any) base (file) name of the path not including the extension. No slash included
+            ext:      (any) extension of the path including the "."
+            path:     a list of subpaths created by removing subdirectory names
+            subdir:   a list of subdirectory names from the most nested to the root
+        For example
+            apath = "/a/b/c/d/filename.txt"
+            {   'basename': 'filename',
+                'ext':      '.txt'
+                'path':     ['/a/b/c/d', '/a/b/c', '/a/b', '/a', '/'], ,
+                'subdir': ['d', 'c', 'b', 'a', '/']
+            }
+            "{path[2]}/changed/{subdir[0]}".format(**res) = '/a/b/changed/d'
+            "{path[3]}/changed/{subdir[1]}".format(**res) = '/a/changed/c'
     """
-    if isinstance(p, basestring):
+    def recursive_split (a_path):
+        """
+        split the path into its subdirectories recursively
+        """
+        if not len(a_path):
+            return [[],[]]
+        if a_path == "/" or a_path == "//":
+            return [ [a_path] , [a_path]]
+        sub_path_part, sub_dir_part = os.path.split(a_path)
+        if sub_dir_part:
+            sub_path_parts, sub_dir_parts = recursive_split (sub_path_part)
+            return [ [a_path] + sub_path_parts,
+                      [sub_dir_part] + sub_dir_parts]
+        else:
+            return [ [] , ["/"]]
+    #
+    if not len(orig_path):
+        return {'path': [], 'basename': '', 'ext': '', 'subdir': []}
+    a_path = os.path.normpath(orig_path)
+    # stop normpath from removing terminal slash, turning paths into filenames
+    if orig_path[-1] == "/":
+        a_path += "/"
+    path_part, file_part = os.path.split(a_path)
+    file_part, ext_part = os.path.splitext(file_part)
+    subpaths, subdirs = recursive_split (path_part)
+    return {'basename': file_part,
+            'ext':      ext_part,
+            'path':     subpaths,
+            'subdir':   subdirs}
+
+
+
+#_________________________________________________________________________________________
+#
+#   get_all_paths_components
+#
+#_________________________________________________________________________________________
+def get_all_paths_components(paths, regex_str):
+    """
+        For each path in a list,
+            returns a dictionary identifying the components of a file path.
+            This includes both the components of a path:
+                basename: (any) base (file) name of the path not including the extension. No slash included
+                ext:      (any) extension of the path including the "."
+                path:     a list of subpaths created by removing subdirectory names
+                subdir:   a list of subdirectory names from the most nested to the root
+            and regular expression matches
+                The keys are the index or name of the capturing group.
+
+            If regex_str is specified, and the regular expression does not match, an empty
+            dictionary is returned.
+
+        For example, the following three paths give:
+            get_all_paths_components(["/a/b/c/sample1.bam",
+                                      "dbsnp15.vcf",
+                                      "/test.txt"],
+                                     r"(.*)(?P<id>\d+)\..+")
+            [   {
+                    0:          '/a/b/c/sample1.bam',           // captured by index
+                    1:          '/a/b/c/sample',                // captured by index
+                    'id':       '1'                             // captured by name
+                    'ext':      '.bam',
+                    'subdir':   ['c', 'b', 'a', '/'],
+                    'path':     ['/a/b/c', '/a/b', '/a', '/'],
+                    'basename': 'sample1',
+                },
+                {
+                    0: 'dbsnp15.vcf',                           // captured by index
+                    1: 'dbsnp1',                                // captured by index
+                    'id': '5'                                   // captured by name
+                    'ext': '.vcf',
+                    'subdir': [],
+                    'path': [],
+                    'basename': 'dbsnp15',
+                },
+
+                // no regular expression match
+                // everything fails!
+                {
+                }
+            ]
+    """
+    def regex_match_str_list(test_str_list, regex_str):
+        compiled_str = re.compile(regex_str)
+        matches = [compiled_str.search(ss) for ss in test_str_list]
+        matchdicts = []
+        for mm in matches:
+            if not mm:
+                matchdicts.append({})
+            else:
+                matchdicts.append({i : mm.group(i) for i in (range(mm.lastindex) +
+                                                             mm.groupdict().keys())})
+        return matchdicts
+    #
+    #   merge regular expression matches and path decomposition
+    #
+    path_components = [path_decomposition(pp) for pp in paths]
+    if regex_str == None:
+        return path_components
+    else:
+        regex_match_components = regex_match_str_list(paths, regex_str)
+        both_components = []
+        for rr, pp in izip(regex_match_components, path_components):
+            if not len(rr):
+                both_components.append({})
+            else:
+                #
+                #   regular expression matches override file decomposition values in
+                #       case of clashes between predefined keys such as "basename" and
+                #       regular expression named capture groups
+                #
+                pp.update(rr)
+                both_components.append(pp)
+        return both_components
+
+
+
+#_________________________________________________________________________________________
+#
+#   apply_func_to_sequence
+#
+#_________________________________________________________________________________________
+def apply_func_to_sequence(seq, func, tuple_of_conforming_types = (basestring,), tuple_of_sequences_types = (list, tuple,set)):
+    """
+    Recurses into list/tuple/set sequences to apply func to conforming types
+    Non-conforming types are left alone
+    """
+    if isinstance(seq, tuple_of_conforming_types):
+        try:
+            return func(seq)
+        except:
+            return seq
+    elif isinstance(seq, tuple_of_sequences_types):
+        return type(seq)(apply_func_to_sequence(pp, func, tuple_of_conforming_types, tuple_of_sequences_types) for pp in seq)
+    else:
+        return seq
+
+
+#_________________________________________________________________________________________
+#
+#   t_regex_replace
+#
+#_________________________________________________________________________________________
+class t_regex_replace(object):
+    def __init__ (self, filename, regex, regex_or_suffix):
+        self.regex_or_suffix = regex_or_suffix
+        self.regex = regex
+        self.filename = filename
+    def __call__(self, p):
+        #
+        #   check if substitution pattern is mis-specified
+        #
         if "\1"in p or "\2" in p :
             raise error_unescaped_regular_expression_forms("['%s'] "  % (p.replace("\1", r"\1").replace("\2", r"\2")) +
                                                            "The special regular expression characters "
                                                            r"\1 and \2 need to be 'escaped' in python. "
                                                            r"The easiest option is to use python 'raw' strings "
                                                            r"e.g. r'\1_in_a string\2'. See http://docs.python.org/library/re.html.")
-
-        if regex_or_suffix == REGEX_SUBSTITUTE:
-            return regex.sub(p, filename)
-
-        # only subsitute if \1 is specified
-        elif regex_or_suffix == SUFFIX_SUBSTITUTE_IF_SPECIFIED and (r"\g<1>" in p or r"\1" in p):
-            return regex.sub(p, filename)
-
-        # implicit assumes leading \1 if missing
-        elif regex_or_suffix == SUFFIX_SUBSTITUTE_ALWAYS:
-            if r"\1" not in p and r"\g<1>" not in p:
-                return regex.sub(r"\g<1>" + p, filename)
+        #
+        #   Normal substitution
+        #
+        if self.regex_or_suffix == REGEX_SUBSTITUTE:
+            return self.regex.sub(p, self.filename)
+        #
+        #   complete replacement by the specified pattern text
+        #   only subsitute if r"\1" or r"\g<1>" is specified
+        #
+        elif self.regex_or_suffix == SUFFIX_SUBSTITUTE_IF_SPECIFIED:
+            if r"\g<1>" in p or r"\1" in p:
+                return self.regex.sub(p, self.filename)
             else:
-                return regex.sub(p, filename)
+                return p
+        #
+        #   Replaces the suffix part by adding leading r"\1" to the substitution pattern
+        #
+        #   If r"\1" is specified, then we presume you know what you are doing...
+        #
+        elif self.regex_or_suffix == SUFFIX_SUBSTITUTE_ALWAYS:
+            if r"\1" not in p and r"\g<1>" not in p:
+                return self.regex.sub(r"\g<1>" + p, self.filename)
+            else:
+                return self.regex.sub(p, self.filename)
 
-        return p
-    elif non_str_sequence (p):
-        return type(p)(regex_replace(filename, regex, pp, regex_or_suffix) for pp in p)
-    else:
-        return p
+
+#_________________________________________________________________________________________
+#
+#   regex_replace
+#
+#_________________________________________________________________________________________
+
+#
+#   Perform normal regular expression substitution
+#
+REGEX_SUBSTITUTE               = 0
+#
+#   Two extra peculiar modes to help suffix along:
+#   Suffix regular expression have an implicit capture for everything up to the specified
+#       suffix text
+
+#
+#   A) By default, replaces the suffix part by adding leading r"\1" to the substitution pattern
+#       If r"\1" is already specified in the pattern, then we presume you know what
+#       you are doing, and will let you get along with it
+#
+SUFFIX_SUBSTITUTE_ALWAYS       = 2
+
+#
+#   B) By default, complete replacement happens. If you wish to retain the prefix text
+#       before the suffix, you can do so by adding r"\1"
+#
+SUFFIX_SUBSTITUTE_IF_SPECIFIED = 1
+
+def regex_replace(filename, regex, p, regex_or_suffix = REGEX_SUBSTITUTE):
+    return apply_func_to_sequence(p, t_regex_replace(filename, regex, regex_or_suffix))
+
+#def regex_replace(filename, regex, p, regex_or_suffix = REGEX_SUBSTITUTE):
+#    """
+#    recursively replaces file name specifications using regular expressions
+#    Non-strings are left alone
+#    """
+#    if isinstance(p, basestring):
+#        if "\1"in p or "\2" in p :
+#            raise error_unescaped_regular_expression_forms("['%s'] "  % (p.replace("\1", r"\1").replace("\2", r"\2")) +
+#                                                           "The special regular expression characters "
+#                                                           r"\1 and \2 need to be 'escaped' in python. "
+#                                                           r"The easiest option is to use python 'raw' strings "
+#                                                           r"e.g. r'\1_in_a string\2'. See http://docs.python.org/library/re.html.")
+#
+#        # normal substitution
+#        if regex_or_suffix == REGEX_SUBSTITUTE:
+#            return regex.sub(p, filename)
+#
+#        #
+#        #   complete replacement by the specified text
+#        #   only subsitute if r"\1" or r"\g<1>" is specified
+#        #
+#        elif regex_or_suffix == SUFFIX_SUBSTITUTE_IF_SPECIFIED:
+#            if (r"\g<1>" in p or r"\1" in p):
+#                return regex.sub(p, filename)
+#            else:
+#                return p
+#
+#        #
+#        #   Replaces the suffix part by adding leading r"\1" to the substitution pattern
+#        #
+#        #   If r"\1" is specified, then we presume you know what you are doing...
+#        #
+#        elif regex_or_suffix == SUFFIX_SUBSTITUTE_ALWAYS:
+#            if r"\1" not in p and r"\g<1>" not in p:
+#                return regex.sub(r"\g<1>" + p, filename)
+#            else:
+#                return regex.sub(p, filename)
+#
+#        return p
+#    elif non_str_sequence (p):
+#        return type(p)(regex_replace(filename, regex, pp, regex_or_suffix) for pp in p)
+#    else:
+#        return p
+
+
+
 
 #_________________________________________________________________________________________
 #

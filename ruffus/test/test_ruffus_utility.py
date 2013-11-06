@@ -481,8 +481,8 @@ class Test_expand_nested_tasks_or_globs(unittest.TestCase):
 class Test_regex_replace (unittest.TestCase):
     def helper (self, data, result):
         try_result = regex_replace("aaa.bbb.ccc.aaa",
-                                                                  re.compile("([a-z]+)\.([a-z]+)\.([a-z]+)\.([a-z]+)"),
-                                                                  data)
+                                  re.compile("([a-z]+)\.([a-z]+)\.([a-z]+)\.([a-z]+)"),
+                                  data)
         self.assertEqual(try_result ,  result)
 
     def test_regex_replace(self):
@@ -494,6 +494,201 @@ class Test_regex_replace (unittest.TestCase):
         self.helper([r"\3.\2.\1", 1, (set([r"\1\2", r"\4\2", "aaabbb"]), "whatever", {1:2, 3:4})],
                     ['ccc.bbb.aaa', 1, (set(['aaabbb']), 'whatever', {1: 2, 3: 4})])
 
+
+
+
+#_________________________________________________________________________________________
+
+#   Test_path_decomposition
+
+#_________________________________________________________________________________________
+class Test_path_decomposition (unittest.TestCase):
+    def helper (self, test_path, expected_result):
+        try_result = path_decomposition(test_path)
+        self.assertEqual(try_result ,  expected_result)
+
+    def test_path_decomposition(self):
+        # normal path
+        self.helper("/a/b/c/d/filename.txt",
+                    {   'basename': 'filename',
+                        'ext':      '.txt',
+                        'path':     ['/a/b/c/d', '/a/b/c', '/a/b', '/a', '/'],
+                        'subdir': ['d', 'c', 'b', 'a', '/']
+                    })
+        # double slash
+        self.helper("//a/filename.txt",
+                    {   'basename': 'filename',
+                        'ext':      '.txt',
+                        'path':     ['//a', '//'],
+                        'subdir': ['a', '//']
+                    })
+        # test no path
+        self.helper("filename.txt",
+                    {   'basename': 'filename',
+                        'ext':      '.txt',
+                        'path':     [],
+                        'subdir': []
+                    })
+        # root
+        self.helper("/filename.txt",
+                    {   'basename': 'filename',
+                        'ext':      '.txt',
+                        'path':     ['/'],
+                        'subdir':   ['/']
+                    })
+        # unrooted
+        self.helper("a/b/filename.txt",
+                    {   'basename': 'filename',
+                        'ext':      '.txt',
+                        'path':     ['a/b', 'a'],
+                        'subdir':   ['b', 'a']
+                    })
+        # glob
+        self.helper("/a/b/*.txt",
+                    {   'basename': '*',
+                        'ext':      '.txt',
+                        'path':     ['/a/b', '/a', '/'],
+                        'subdir':   ['b', 'a', '/']
+                    })
+        # no basename
+        # extention becomes basename
+        self.helper("/a/b/.txt",
+                    {   'basename': '.txt',
+                        'ext':      '',
+                        'path':     ['/a/b', '/a', '/'],
+                        'subdir':   ['b', 'a', '/']
+                    })
+        # no ext
+        self.helper("/a/b/filename",
+                    {   'basename': 'filename',
+                        'ext':      '',
+                        'path':     ['/a/b', '/a', '/'],
+                        'subdir':   ['b', 'a', '/']
+                    })
+        # empty ext
+        self.helper("/a/b/filename.",
+                    {   'basename': 'filename',
+                        'ext':      '.',
+                        'path':     ['/a/b', '/a', '/'],
+                        'subdir':   ['b', 'a', '/']
+                    })
+        # only path
+        self.helper("/a/b/",
+                    {   'basename': '',
+                        'ext':      '',
+                        'path':     ['/a/b', '/a', '/'],
+                        'subdir':   ['b', 'a', '/']
+                    })
+
+class Test_apply_func_to_sequence (unittest.TestCase):
+    def helper (self, test_seq, func, tuple_of_conforming_types, expected_result):
+        try_result = apply_func_to_sequence(test_seq, func, tuple_of_conforming_types)
+        self.assertEqual(try_result, expected_result)
+
+    def test_apply_func_to_sequence(self):
+
+        self.helper([
+                        ["saf", "sdfasf",1],
+                        2,
+                        set([2,"odd"]),
+                        {1:2},
+                        [
+                            ["sadf",3]
+                        ]
+                    ],
+                    len, (str,),
+                    [
+                        [3, 6, 1],
+                        2,
+                        set([2, 3]),
+                        {1: 2},
+                        [
+                            [4, 3]
+                        ]
+                    ])
+
+
+
+#_________________________________________________________________________________________
+
+#   Test_path_decomposition
+
+#_________________________________________________________________________________________
+class Test_get_all_paths_components (unittest.TestCase):
+    def helper (self, test_paths, regex_str, expected_result):
+        try_result = get_all_paths_components(test_paths, regex_str)
+        self.assertEqual(try_result,  expected_result)
+
+    def test_get_all_paths_components(self):
+        # no regex
+        self.helper(["/a/b/c/sample1.bam"], None,
+                    [
+                        {'basename': 'sample1',
+                         'ext': '.bam',
+                         'path': ['/a/b/c', '/a/b', '/a', '/'],
+                         'subdir': ['c', 'b', 'a', '/']
+                         }
+                    ])
+
+        # regex
+        self.helper(["/a/b/c/sample1.bam"],r"(.*)(?P<id>\d+)\..+",
+                    [
+                        {
+                            0: '/a/b/c/sample1.bam',
+                            1: '/a/b/c/sample',
+                            'id': '1',
+                            'basename': 'sample1',
+                            'ext': '.bam',
+                            'path': ['/a/b/c', '/a/b', '/a', '/'],
+                            'subdir': ['c', 'b', 'a', '/']
+                            }
+                    ])
+        # nameclash
+        # "basename" overridden by named regular expression capture group
+        self.helper(["/a/b/c/sample1.bam"],r"(.*)(?P<basename>\d+)\..+",
+                    [
+                        {
+                            0: '/a/b/c/sample1.bam',
+                            1: '/a/b/c/sample',
+                            'basename': '1',
+                            'ext': '.bam',
+                            'path': ['/a/b/c', '/a/b', '/a', '/'],
+                            'subdir': ['c', 'b', 'a', '/']
+                            }
+                    ])
+
+        # empty path
+        self.helper([""],r"(.*)(?P<basename>\d+)\..+", [{}])
+        # not matching regular expression
+        self.helper(["/a/b/c/nonumber.txt"],r"(.*)(?P<id>\d+)\..+", [{}])
+        # multiple paths
+        self.helper(["/a/b/c/sample1.bam",
+                     "dbsnp15.vcf",
+                     "/test.txt"] ,r"(.*)(?P<id>\d+)\..+",
+                    [   {
+                            0:          '/a/b/c/sample1.bam',           # captured by index
+                            1:          '/a/b/c/sample',                # captured by index
+                            'id':       '1',                            # captured by name
+                            'ext':      '.bam',
+                            'subdir':   ['c', 'b', 'a', '/'],
+                            'path':     ['/a/b/c', '/a/b', '/a', '/'],
+                            'basename': 'sample1',
+                        },
+                        {
+                            0: 'dbsnp15.vcf',                           # captured by index
+                            1: 'dbsnp1',                                # captured by index
+                            'id': '5',                                  # captured by name
+                            'ext': '.vcf',
+                            'subdir': [],
+                            'path': [],
+                            'basename': 'dbsnp15',
+                        },
+
+                        # no regular expression match
+                        # everything fails!
+                        {
+                        }
+                    ])
 
 
 
