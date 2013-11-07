@@ -154,14 +154,45 @@ class t_suffix_filename_transform(t_filename_transform):
     def __init__ (self, enclosing_task, suffix_object, error_object, descriptor_string):
         self.matching_regex = compile_suffix(enclosing_task, suffix_object, error_object, descriptor_string)
 
+    def substitute (self, starting_file_names, pattern):
+        return regex_replace(starting_file_names[0], self.matching_regex, pattern)
+
+    def substitute_output_files (self, starting_file_names, pattern):
+        return regex_replace(starting_file_names[0], self.matching_regex, pattern, SUFFIX_SUBSTITUTE)
+
 
 class t_regex_filename_transform(t_filename_transform):
     """
     Does the work for generating output / "extra input" / "extra" filenames
         replacing a specified regular expression
     """
-    def __init__ (self, enclosing_task, suffix_object, error_object, descriptor_string):
-        self.matching_regex = compile_regex(enclosing_task, suffix_object, error_object, descriptor_string)
+    def __init__ (self, enclosing_task, regex_object, error_object, descriptor_string):
+        self.matching_regex = compile_regex(enclosing_task, regex_object, error_object, descriptor_string)
+
+    def substitute (self, starting_file_names, pattern):
+        # note: uses first file name
+        return regex_replace(starting_file_names[0], self.matching_regex, pattern)
+
+    def substitute_output_files (self, starting_file_names, pattern):
+        # note: uses first file name
+        return regex_replace(starting_file_names[0], self.matching_regex, pattern)
+
+
+class t_format_filename_transform(t_filename_transform):
+    """
+    Does the work for generating output / "extra input" / "extra" filenames
+        replacing a specified regular expression
+    """
+    def __init__ (self):
+        pass
+
+    def substitute (self, starting_file_names, pattern):
+        # note: uses all file names
+        return format_replace (starting_file_names, pattern)
+
+    def substitute_output_files (self, starting_file_names, pattern):
+        # note: uses all file names
+        return format_replace (starting_file_names, pattern)
 
 
 #_________________________________________________________________________________________
@@ -896,13 +927,11 @@ def transform_param_factory (input_files_task_globs,
 
         # for regex, always substitute whether output or extra inputs or extras
         if regex_or_suffix:
-            regex_or_suffix_extras  = REGEX_SUBSTITUTE
             regex_or_suffix_outputs = REGEX_SUBSTITUTE
 
         # for suffix, outputs there is an implicit "\1", otherwise only substitute when there is a "\1"
         else:
-            regex_or_suffix_extras  = SUFFIX_SUBSTITUTE_IF_SPECIFIED
-            regex_or_suffix_outputs = SUFFIX_SUBSTITUTE_ALWAYS
+            regex_or_suffix_outputs = SUFFIX_SUBSTITUTE
 
         for orig_input_param in sorted(input_params):
 
@@ -920,7 +949,7 @@ def transform_param_factory (input_files_task_globs,
             #
             if extra_input_files_task_globs != None:
                 # extras
-                extra_inputs = extra_input_files_task_globs.regex_replaced (filename, regex, regex_or_suffix_extras)
+                extra_inputs = extra_input_files_task_globs.regex_replaced (filename, regex)
 
 
                 # add or replace existing input parameters
@@ -935,7 +964,7 @@ def transform_param_factory (input_files_task_globs,
             output_param = regex_replace(filename, regex, output_pattern, regex_or_suffix_outputs)
 
             # extras
-            extra_params = tuple(regex_replace(filename, regex, p, regex_or_suffix_extras) for p in extra_specs)
+            extra_params = tuple(regex_replace(filename, regex, p) for p in extra_specs)
 
             yield_param = (input_param, output_param) + extra_params
             yield yield_param, yield_param

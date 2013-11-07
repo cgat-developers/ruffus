@@ -225,8 +225,9 @@ def get_all_paths_components(paths, regex_str):
             if not mm:
                 matchdicts.append({})
             else:
-                matchdicts.append({i : mm.group(i) for i in (range(mm.lastindex) +
-                                                             mm.groupdict().keys())})
+                # no dictionary comprehensions in python 2.6 :-(
+                #matchdicts.append({i : mm.group(i) for i in (range(mm.lastindex) + mm.groupdict().keys())})
+                matchdicts.append(dict((i, mm.group(i)) for i in (range(mm.lastindex) + mm.groupdict().keys())))
         return matchdicts
     #
     #   merge regular expression matches and path decomposition
@@ -294,29 +295,35 @@ class t_regex_replace(object):
                                                            r"The easiest option is to use python 'raw' strings "
                                                            r"e.g. r'\1_in_a string\2'. See http://docs.python.org/library/re.html.")
         #
-        #   Normal substitution
-        #
-        if self.regex_or_suffix == REGEX_SUBSTITUTE:
-            return self.regex.sub(p, self.filename)
-        #
         #   complete replacement by the specified pattern text
         #   only subsitute if r"\1" or r"\g<1>" is specified
         #
-        elif self.regex_or_suffix == SUFFIX_SUBSTITUTE_IF_SPECIFIED:
-            if r"\g<1>" in p or r"\1" in p:
-                return self.regex.sub(p, self.filename)
-            else:
-                return p
-        #
-        #   Replaces the suffix part by adding leading r"\1" to the substitution pattern
-        #
-        #   If r"\1" is specified, then we presume you know what you are doing...
-        #
-        elif self.regex_or_suffix == SUFFIX_SUBSTITUTE_ALWAYS:
+        if self.regex_or_suffix == SUFFIX_SUBSTITUTE:
             if r"\1" not in p and r"\g<1>" not in p:
                 return self.regex.sub(r"\g<1>" + p, self.filename)
             else:
                 return self.regex.sub(p, self.filename)
+        #
+        #   Normal substitution
+        #
+        #
+        #   For suffix(), replaces the suffix part by adding leading r"\1" to the substitution pattern
+        #
+        #   If r"\1" is specified, then we presume you know what you are doing...
+        #
+        return self.regex.sub(p, self.filename)
+
+#_________________________________________________________________________________________
+#
+#   t_regex_replace
+#
+#_________________________________________________________________________________________
+class t_format_replace(object):
+    def __init__ (self, filenames):
+        self.path_regex_components = get_all_paths_components(filenames)
+
+    def __call__(self, p):
+        return p.format(*self.path_regex_components)
 
 
 #_________________________________________________________________________________________
@@ -330,100 +337,31 @@ class t_regex_replace(object):
 #
 REGEX_SUBSTITUTE               = 0
 #
-#   Two extra peculiar modes to help suffix along:
+#   An extra peculiar mode to help suffix along:
 #   Suffix regular expression have an implicit capture for everything up to the specified
 #       suffix text
 
 #
-#   A) By default, replaces the suffix part by adding leading r"\1" to the substitution pattern
+#   By default, replaces the suffix part by adding leading r"\1" to the substitution pattern
 #       If r"\1" is already specified in the pattern, then we presume you know what
 #       you are doing, and will let you get along with it
 #
-SUFFIX_SUBSTITUTE_ALWAYS       = 2
+SUFFIX_SUBSTITUTE              = 1
 
 #
-#   B) By default, complete replacement happens. If you wish to retain the prefix text
+#   REGEX_SUBSTITUTE is used for suffix() matches in 'extra' arguments (additional to output)
+#   which are strings
+#
+#   Complete replacement happens. If you wish to retain the prefix text
 #       before the suffix, you can do so by adding r"\1"
 #
-SUFFIX_SUBSTITUTE_IF_SPECIFIED = 1
 
-def regex_replace(filename, regex, p, regex_or_suffix = REGEX_SUBSTITUTE):
-    return apply_func_to_sequence(p, t_regex_replace(filename, regex, regex_or_suffix))
+def regex_replace(filename, regex, substitution_patterns, regex_or_suffix = REGEX_SUBSTITUTE):
+    return apply_func_to_sequence(substitution_patterns, t_regex_replace(filename, regex, regex_or_suffix))
 
-#def regex_replace(filename, regex, p, regex_or_suffix = REGEX_SUBSTITUTE):
-#    """
-#    recursively replaces file name specifications using regular expressions
-#    Non-strings are left alone
-#    """
-#    if isinstance(p, basestring):
-#        if "\1"in p or "\2" in p :
-#            raise error_unescaped_regular_expression_forms("['%s'] "  % (p.replace("\1", r"\1").replace("\2", r"\2")) +
-#                                                           "The special regular expression characters "
-#                                                           r"\1 and \2 need to be 'escaped' in python. "
-#                                                           r"The easiest option is to use python 'raw' strings "
-#                                                           r"e.g. r'\1_in_a string\2'. See http://docs.python.org/library/re.html.")
-#
-#        # normal substitution
-#        if regex_or_suffix == REGEX_SUBSTITUTE:
-#            return regex.sub(p, filename)
-#
-#        #
-#        #   complete replacement by the specified text
-#        #   only subsitute if r"\1" or r"\g<1>" is specified
-#        #
-#        elif regex_or_suffix == SUFFIX_SUBSTITUTE_IF_SPECIFIED:
-#            if (r"\g<1>" in p or r"\1" in p):
-#                return regex.sub(p, filename)
-#            else:
-#                return p
-#
-#        #
-#        #   Replaces the suffix part by adding leading r"\1" to the substitution pattern
-#        #
-#        #   If r"\1" is specified, then we presume you know what you are doing...
-#        #
-#        elif regex_or_suffix == SUFFIX_SUBSTITUTE_ALWAYS:
-#            if r"\1" not in p and r"\g<1>" not in p:
-#                return regex.sub(r"\g<1>" + p, filename)
-#            else:
-#                return regex.sub(p, filename)
-#
-#        return p
-#    elif non_str_sequence (p):
-#        return type(p)(regex_replace(filename, regex, pp, regex_or_suffix) for pp in p)
-#    else:
-#        return p
+def format_replace (filenames, substitution_patterns):
+    return apply_func_to_sequence(substitution_patterns, t_format_replace(filenames))
 
-
-
-
-#_________________________________________________________________________________________
-#
-#   regex_replace
-#
-#_________________________________________________________________________________________
-#def regex_replace(filename, regex, p):
-#    """
-#    recursively replaces file name specifications using regular expressions
-#    Non-strings are left alone
-#    """
-#    if isinstance(p, str):
-#        return regex.sub(p, filename)
-#    elif non_str_sequence (p):
-#        return tuple(regex_replace(filename, regex, pp) for pp in p)
-#    else:
-#        return p
-
-#_________________________________________________________________________________________
-
-
-##_________________________________________________________________________________________
-#
-##   deprecated _is_str
-#
-##_________________________________________________________________________________________
-#def _is_str(arg):
-#    return isinstance(arg, str)
 
 #_________________________________________________________________________________________
 
