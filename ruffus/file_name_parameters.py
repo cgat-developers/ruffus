@@ -1093,64 +1093,6 @@ def collate_param_factory (input_files_task_globs,
 
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   Legacy code
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#_________________________________________________________________________________________
-
-
-#   files_re_param_factory
-
-#      iterable list of input / output files from
-
-#                1) glob/filelist
-#                2) regex
-#                3) input_filename_str (optional)
-#                4) output_filename_str
-#_________________________________________________________________________________________
-def files_re_param_factory( input_files_task_globs, combining_all_jobs,
-                            regex, extra_input_files_task_globs, *output_and_extras):
-    """
-    Factory for functions which in turn
-        yield tuples of input_file_name, output_file_name
-
-    Usage:
-
-
-        for i, o in param_func():
-            print " input file name = " , i
-            print "output file name = " , o
-
-
-    ..Note::
-        1. `param_func` has to be called each time
-        2. `glob` is called each time.
-           So do not expect the file lists in `param_func()` to be the same for each invocation
-        3. A "copy" of the file list is saved
-           So do not expect to modify your copy of the original list and expect changes
-           to the input/export files
-
-
-    """
-    if combining_all_jobs:
-        return collate_param_factory (input_files_task_globs,
-                                        False,
-                                        regex,
-                                        extra_input_files_task_globs,
-                                        True,
-                                        *output_and_extras)
-    else:
-        return transform_param_factory (input_files_task_globs,
-                                        False, regex,
-                                        True,
-                                        extra_input_files_task_globs,
-                                        True,
-                                        *output_and_extras)
-
-
 
 
 
