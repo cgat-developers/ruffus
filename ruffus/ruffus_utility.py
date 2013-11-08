@@ -264,10 +264,7 @@ def apply_func_to_sequence(seq, func, tuple_of_conforming_types = (basestring,),
     Non-conforming types are left alone
     """
     if isinstance(seq, tuple_of_conforming_types):
-        try:
-            return func(seq)
-        except:
-            return seq
+        return func(seq)
     elif isinstance(seq, tuple_of_sequences_types):
         return type(seq)(apply_func_to_sequence(pp, func, tuple_of_conforming_types, tuple_of_sequences_types) for pp in seq)
     else:
@@ -280,9 +277,10 @@ def apply_func_to_sequence(seq, func, tuple_of_conforming_types = (basestring,),
 #
 #_________________________________________________________________________________________
 class t_regex_replace(object):
-    def __init__ (self, filename, regex, regex_or_suffix):
+    def __init__ (self, filename, regex_str, compiled_regex, regex_or_suffix):
         self.regex_or_suffix = regex_or_suffix
-        self.regex = regex
+        self.compiled_regex = compiled_regex
+        self.regex_str = regex_str
         self.filename = filename
     def __call__(self, p):
         #
@@ -295,32 +293,43 @@ class t_regex_replace(object):
                                                            r"The easiest option is to use python 'raw' strings "
                                                            r"e.g. r'\1_in_a string\2'. See http://docs.python.org/library/re.html.")
         #
-        #   complete replacement by the specified pattern text
-        #   only subsitute if r"\1" or r"\g<1>" is specified
-        #
-        if self.regex_or_suffix == SUFFIX_SUBSTITUTE:
-            if r"\1" not in p and r"\g<1>" not in p:
-                return self.regex.sub(r"\g<1>" + p, self.filename)
-            else:
-                return self.regex.sub(p, self.filename)
-        #
-        #   Normal substitution
-        #
-        #
         #   For suffix(), replaces the suffix part by adding leading r"\1" to the substitution pattern
         #
         #   If r"\1" is specified, then we presume you know what you are doing...
         #
-        return self.regex.sub(p, self.filename)
+        if self.regex_or_suffix == SUFFIX_SUBSTITUTE:
+            if r"\1" not in p and r"\g<1>" not in p:
+                match_p = r"\g<1>" + p
+            else:
+                match_p = p
+
+            # throw exception if doesn't match regular expression at all
+            (res_str, cnt_replacements) = self.compiled_regex.subn(match_p, self.filename)
+            if cnt_replacements == 0:
+                raise error_input_file_does_not_match("File '%s' does not match '%s' / '%s'" % (p, self.filename, self.regex_str))
+            return res_str
+
+        #
+        #   Normal substitution
+        #
+        #   For suffix(), complete replacement by the specified pattern text
+        #           only substitute if r"\1" or r"\g<1>" is specified
+        #
+        #
+        (res_str, cnt_replacements) = self.compiled_regex.subn(p, self.filename)
+        if cnt_replacements == 0:
+            raise error_input_file_does_not_match("File '%s' does not match '%s' / '%s'" % (p, self.filename, self.regex_str))
+        return res_str
 
 #_________________________________________________________________________________________
 #
-#   t_regex_replace
+#   t_format_replace
 #
 #_________________________________________________________________________________________
 class t_format_replace(object):
-    def __init__ (self, filenames):
-        self.path_regex_components = get_all_paths_components(filenames)
+    def __init__ (self, filenames, regex_str, compiled_regex = None):
+        self.path_regex_components = get_all_paths_components(filenames, compiled_regex)
+        self.regex_str = regex_str if regex_str else ""
 
     def __call__(self, p):
         return p.format(*self.path_regex_components)
@@ -356,11 +365,11 @@ SUFFIX_SUBSTITUTE              = 1
 #       before the suffix, you can do so by adding r"\1"
 #
 
-def regex_replace(filename, regex, substitution_patterns, regex_or_suffix = REGEX_SUBSTITUTE):
-    return apply_func_to_sequence(substitution_patterns, t_regex_replace(filename, regex, regex_or_suffix))
+def regex_replace(filename, regex_str, compiled_regex, substitution_patterns, regex_or_suffix = REGEX_SUBSTITUTE):
+    return apply_func_to_sequence(substitution_patterns, t_regex_replace(filename, regex_str, compiled_regex, regex_or_suffix))
 
-def format_replace (filenames, substitution_patterns):
-    return apply_func_to_sequence(substitution_patterns, t_format_replace(filenames))
+def format_replace (filenames, regex_str, compiled_regex, substitution_patterns):
+    return apply_func_to_sequence(substitution_patterns, t_format_replace(filenames, regex_str, compiled_regex))
 
 
 #_________________________________________________________________________________________
