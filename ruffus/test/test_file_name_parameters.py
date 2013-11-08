@@ -68,7 +68,7 @@ except ImportError:
 dumps = json.dumps
 
 exe_path = os.path.join(os.path.split(os.path.abspath(sys.argv[0]))[0], "..")
-test_path = os.path.join(exe_path, "test", "file_name_parameters")
+test_path = os.path.normpath(os.path.join(exe_path, "test", "file_name_parameters"))
 
 
 
@@ -767,6 +767,25 @@ class Test_transform_param_factory(unittest.TestCase):
                             ('DIR/f0.test', ['DIR/f0.output1', 'DIR/f0.output2'], ".output3"),
                             ('DIR/f1.test', ['DIR/f1.output1', 'DIR/f1.output2'], ".output3"),
                             ('DIR/f2.test', ['DIR/f2.output1', 'DIR/f2.output2'], ".output3"),
+                                           ])
+    def test_formatter(self):
+        """
+        test suffix transform with globs
+        """
+        #
+        # simple 1 input, 1 output
+        #
+        paths = self.do_task_transform(test_path + "/*.test", 
+                                            task.formatter("/(?P<name>\w+).test$"),
+                                            ["{path[0]}/{name[0]}.output1{ext[0]}", "{path[0]}/{name[0]}.output2"], "{path[0]}/{name[0]}.output3")
+                                            #["{0[path][0]}"], ".txt")
+
+        paths = recursive_replace(paths, test_path, "DIR")
+        self.assertEqual(paths,
+                        [
+                            ('DIR/f0.test', ['DIR/f0.output1.test', 'DIR/f0.output2'], "DIR/f0.output3"),
+                            ('DIR/f1.test', ['DIR/f1.output1.test', 'DIR/f1.output2'], "DIR/f1.output3"),
+                            ('DIR/f2.test', ['DIR/f2.output1.test', 'DIR/f2.output2'], "DIR/f2.output3"),
                                            ])
     def test_regex(self):
         """
