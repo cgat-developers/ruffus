@@ -701,6 +701,7 @@ class Test_transform_param_factory(unittest.TestCase):
         open("%s/f%d.output" % (test_path, 2), "w")
 
         self.tasks = [t1, t2, t3, t4, t5]
+        self.maxDiff = None
 
 
     def tearDown(self):

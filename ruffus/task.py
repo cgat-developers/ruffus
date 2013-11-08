@@ -1405,13 +1405,13 @@ class _task (node):
 
         # regular expression match
         if isinstance(orig_args[1], regex):
-            matching_regex = compile_regex(self, orig_args[1], error_task_split, "@split")
-            regex_or_suffix = True
+            file_names_transform = t_regex_file_names_transform(self, orig_args[1], error_task_split, "@split")
 
         # simulate end of string (suffix) match
         elif isinstance(orig_args[1], suffix):
-            matching_regex = compile_suffix(self, orig_args[1], error_task_split, "@split")
-            regex_or_suffix = False
+            file_names_transform = t_suffix_file_names_transform(self, orig_args[1], error_task_split, "@split")
+        else:
+            raise error_task_split(self, "@split expects suffix() or regex() as the second argument")
 
 
         #
@@ -1445,7 +1445,7 @@ class _task (node):
 
 
         #
-        #   replace output globs with files
+        #   output globs will be replaced with files. But there should not be tasks here!
         #
         output_files_task_globs = self.handle_tasks_globs_in_inputs(output_pattern)
         if len(output_files_task_globs.tasks):
@@ -1456,8 +1456,7 @@ class _task (node):
 
         self.param_generator_func = split_ex_param_factory (   input_files_task_globs,
                                                                 False, # flatten input
-                                                                matching_regex,
-                                                                regex_or_suffix,
+                                                                file_names_transform,
                                                                 extra_inputs,
                                                                 replace_inputs,
                                                                 output_files_task_globs,
@@ -1545,15 +1544,32 @@ class _task (node):
         input_files_task_globs = self.handle_tasks_globs_in_inputs(orig_args[0])
 
 
+        #_________________________________________________________________________________
+        #
+        #       single_job_single_output is bad policy. Can we remove it?
+        #       What does this actually mean in Ruffus semantics?
+        #
+        #
+        #   allows transform to take a single file or task
+        if input_files_task_globs.single_file_to_list():
+            self._single_job_single_output = self.single_job_single_output
+
+        #
+        #   whether transform generates a list of jobs or not will depend on the parent task
+        #
+        elif isinstance(input_files_task_globs.params, _task):
+            self._single_job_single_output = input_files_task_globs.params
+
+        #_________________________________________________________________________________
+
         # regular expression match
         if isinstance(orig_args[1], regex):
-            matching_regex = compile_regex(self, orig_args[1], error_task_transform, "@transform")
-            regex_or_suffix = True
+            file_names_transform = t_regex_file_names_transform(self, orig_args[1], error_task_transform, "@transform")
+
 
         # simulate end of string (suffix) match
         elif isinstance(orig_args[1], suffix):
-            matching_regex = compile_suffix(self, orig_args[1], error_task_transform, "@transform")
-            regex_or_suffix = False
+            file_names_transform = t_suffix_file_names_transform(self, orig_args[1], error_task_transform, "@transform")
 
         else:
             raise error_task_transform(self, "@transform expects suffix() or "
@@ -1576,34 +1592,28 @@ class _task (node):
                                     "in brackets in the decorator\n\n@transform(..., inputs(...), ...)\n")
             replace_inputs = t_extra_inputs.REPLACE_INPUTS
             extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[2].args[0])
-            output_pattern_extras = orig_args[3:]
+            output_pattern = orig_args[3]
+            extra_params = orig_args[4:]
         elif isinstance(orig_args[2], add_inputs):
             replace_inputs = t_extra_inputs.ADD_TO_INPUTS
             extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[2].args)
-            output_pattern_extras = orig_args[3:]
+            output_pattern = orig_args[3]
+            extra_params = orig_args[4:]
         else:
             replace_inputs = t_extra_inputs.KEEP_INPUTS
             extra_inputs = None
-            output_pattern_extras = orig_args[2:]
+            output_pattern = orig_args[2]
+            extra_params = orig_args[3:]
 
-        #
-        #   allows transform to take a single file or task
-        if input_files_task_globs.single_file_to_list():
-            self._single_job_single_output = self.single_job_single_output
 
-        #
-        #   whether transform generates a list of jobs or not will depend on the parent task
-        #
-        elif isinstance(input_files_task_globs.params, _task):
-            self._single_job_single_output = input_files_task_globs.params
 
         self.param_generator_func = transform_param_factory (   input_files_task_globs,
                                                                 False, # flatten input
-                                                                matching_regex,
-                                                                regex_or_suffix,
+                                                                file_names_transform,
                                                                 extra_inputs,
                                                                 replace_inputs,
-                                                                *output_pattern_extras)
+                                                                output_pattern,
+                                                                *extra_params)
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
         self.job_descriptor       = io_files_job_descriptor
@@ -1635,6 +1645,7 @@ class _task (node):
         # regular expression match
         if isinstance(orig_args[1], regex):
             matching_regex = compile_regex(self, orig_args[1], error_task_collate, "@collate")
+            file_names_transform = t_regex_file_names_transform(self, orig_args[1], error_task_transform, "@transform")
         else:
             raise error_task_collate(self, "@collate expects regex() as the second argument")
 
@@ -1668,7 +1679,7 @@ class _task (node):
 
         self.param_generator_func = collate_param_factory (input_files_task_globs,
                                                             False, # flatten input
-                                                            matching_regex,
+                                                            file_names_transform,
                                                             extra_inputs,
                                                             replace_inputs,
                                                             *output_pattern_extras)
@@ -1872,7 +1883,9 @@ class _task (node):
         #
         input_files_task_globs = self.handle_tasks_globs_in_inputs(orig_args[0])
 
-        matching_regex = compile_regex(self, regex(orig_args[1]), error_task_files_re, "@files_re")
+        #matching_regex = compile_regex(self, regex(orig_args[1]), error_task_files_re, "@files_re")
+        file_names_transform = t_regex_file_names_transform(self, regex(orig_args[1]), error_task_files_re, "@files_re")
+
 
         # if the input file term is missing, just use the original
         if len(orig_args) == 3:
@@ -1887,7 +1900,7 @@ class _task (node):
             self.single_multi_io           = self.many_to_many
             self.param_generator_func = collate_param_factory (input_files_task_globs,
                                                                 False,                  # flatten
-                                                                matching_regex,
+                                                                file_names_transform,
                                                                 extra_input_files_task_globs,
                                                                 t_extra_inputs.REPLACE_INPUTS,
                                                                 *output_and_extras)
@@ -1896,9 +1909,7 @@ class _task (node):
             self.single_multi_io           = self.many_to_many
             self.param_generator_func = transform_param_factory (input_files_task_globs,
                                                                     False,              # flatten
-                                                                    matching_regex,
-                                                                    #regex_or_suffix
-                                                                    True,               # substitute all parameters
+                                                                    file_names_transform,
                                                                     extra_input_files_task_globs,
                                                                     t_extra_inputs.REPLACE_INPUTS,
                                                                     *output_and_extras)
@@ -2827,6 +2838,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     if not isinstance(runtime_data, dict):
         raise Exception("pipeline_run parameter runtime_data should be a dictionary of "
                         "values passes to jobs at run time.")
+
 
     if verbose == 0:
         logger = black_hole_logger

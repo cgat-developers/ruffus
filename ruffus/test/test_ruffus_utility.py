@@ -480,9 +480,11 @@ class Test_expand_nested_tasks_or_globs(unittest.TestCase):
 #_________________________________________________________________________________________
 class Test_regex_replace (unittest.TestCase):
     def helper (self, data, result):
+        regex_str = "([a-z]+)\.([a-z]+)\.([a-z]+)\.([a-z]+)"
         try_result = regex_replace("aaa.bbb.ccc.aaa",
-                                  re.compile("([a-z]+)\.([a-z]+)\.([a-z]+)\.([a-z]+)"),
-                                  data)
+                                   regex_str,
+                                    re.compile(regex_str),
+                                    data)
         self.assertEqual(try_result ,  result)
 
     def test_regex_replace(self):

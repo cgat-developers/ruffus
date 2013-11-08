@@ -188,7 +188,7 @@ class Test_task_mkdir(unittest.TestCase):
                             logger = save_to_str_logger,
                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                             verbose = 1)
-        
+
         self.assert_("no files names matched" in save_to_str_logger.warning_str)
         print >>sys.stderr, "\n    Warning printed out correctly"
         

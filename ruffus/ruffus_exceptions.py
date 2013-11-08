@@ -106,7 +106,7 @@ class RethrownJobError(error_task):
     def task_to_func_name (self, task_name):
         if "mkdir " in task_name:
             return task_name
-        
+
         return "def %s(...):" % task_name.replace("__main__.", "")
 
 
@@ -128,6 +128,9 @@ class RethrownJobError(error_task):
         #       turn original exception stack message into an indented string
         #
         return (self.get_main_msg()).replace("\n", "\n    ") + "".join(message)
+
+class error_input_file_does_not_match(error_task):
+    pass
 
 class task_FilesArgumentsError(error_task):
     pass
