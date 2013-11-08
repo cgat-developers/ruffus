@@ -162,10 +162,52 @@ def path_decomposition (orig_path):
     subpaths, subdirs = recursive_split (path_part)
     return {'basename': file_part,
             'ext':      ext_part,
-            'path':     subpaths,
-            'subdir':   subdirs}
+            'subpath':  subpaths,
+            'subdir':   subdirs,
+            'path':     path_part}
 
 
+#_________________________________________________________________________________________
+#
+#   to_nested_dict_str
+#
+#_________________________________________________________________________________________
+def to_nested_dict_str (coll):
+    #
+    #   convert list to dict
+    #       all values should be strings or dicts of strings
+    #
+    if isinstance(coll, (list, set)):
+        new_coll = {}
+        for ii, val in enumerate(coll):
+            new_coll[str(ii)] = to_nested_dict_str(val)
+        return new_coll
+    #
+    #   make sure dict keys are strings,
+    #       and in fact that it all hold values which are strings or dicts of strings
+    #
+    if isinstance(coll, dict):
+        new_coll = {}
+        for key, val in coll.iteritems():
+            new_coll[str(key)] = to_nested_dict_str(val)
+        return new_coll
+    return str(coll)
+
+
+#_________________________________________________________________________________________
+#
+#   list_dict_to_dict_dict
+#
+#_________________________________________________________________________________________
+def list_dict_to_dict_dict (list_dict):
+    new_dict = {}
+    for ii, item in enumerate(list_dict):
+        for key, value in item.iteritems():
+            if not key in new_dict:
+                new_dict[key]={ii:value}
+            else:
+                new_dict[key][ii] = value
+    return new_dict
 
 #_________________________________________________________________________________________
 #
@@ -198,7 +240,8 @@ def get_all_paths_components(paths, regex_str):
                     'id':       '1'                             // captured by name
                     'ext':      '.bam',
                     'subdir':   ['c', 'b', 'a', '/'],
-                    'path':     ['/a/b/c', '/a/b', '/a', '/'],
+                    'subpath':  ['/a/b/c', '/a/b', '/a', '/'],
+                    'path':     '/a/b/c',
                     'basename': 'sample1',
                 },
                 {
@@ -332,7 +375,10 @@ class t_format_replace(object):
         self.regex_str = regex_str if regex_str else ""
 
     def __call__(self, p):
-        return p.format(*self.path_regex_components)
+        #return p.format(*[to_nested_dict_str (m) for m in self.path_regex_components])
+        #print >>sys.stderr, list_dict_to_dict_dict([m for m in self.path_regex_componens])
+
+        return p.format(**list_dict_to_dict_dict(m for m in self.path_regex_components))
 
 
 #_________________________________________________________________________________________
@@ -659,6 +705,15 @@ class regex(object):
 
 #_________________________________________________________________________________________
 
+#   regex
+
+#_________________________________________________________________________________________
+class formatter(object):
+    def __init__ (self, *args):
+        self.args = args
+
+#_________________________________________________________________________________________
+
 #   wrap_exception_as_string
 
 #_________________________________________________________________________________________
@@ -679,25 +734,37 @@ def wrap_exception_as_string ():
 #   compile_regex
 
 #_________________________________________________________________________________________
-def compile_regex(enclosing_task, regex, error_object, descriptor_string):
+def compile_regex(enclosing_task, regex, error_object, descriptor_string, regex_object_name = "regex"):
     """
     throw error unless regular expression compiles
     """
-    if not len(regex.args):
-        raise error_object(enclosing_task, "%s: " % descriptor_string +
-                                   "regex() is malformed\n" +
-                                    "regex(...) should be used to wrap a regular expression string")
-    if len(regex.args) > 1 or not isinstance(regex.args[0], basestring):
-        raise error_object(enclosing_task, "%s: " % descriptor_string +
-                                   "regex('%s') is malformed\n" % (regex.args,) +
-                                    "regex(...) should only be used to wrap a single regular expression string")
+    if not len(regex.args) or len(regex.args) > 1 or not isinstance(regex.args[0], basestring):
+        regex_str = str(regex.args)
+        if len(regex.args) > 1:
+            regex_str = regex_str[1:-1]
+        elif len(regex.args) == 0:
+            regex_str = ''
+        else:
+            regex_str = regex_str
+        raise error_object(enclosing_task, ("{descriptor_string}: "
+                                   "{regex_object_name}({regex_str}) is malformed\n"
+                                    "{regex_object_name}(...) should only be used to wrap a single regular expression string")
+                                    .format(descriptor_string = descriptor_string,
+                                            regex_str = regex_str,
+                                            regex_object_name = regex_object_name)
+                           )
     try:
         matching_regex = re.compile(regex.args[0])
         return matching_regex
     except:
-        raise error_object(enclosing_task, "%s: regular expression " % descriptor_string +
-                                                   "regex('%s') is malformed\n" % regex.args[0] +
-                                                    "[%s]" %  wrap_exception_as_string())
+        raise error_object(enclosing_task, ("{descriptor_string}: "
+                                   "regular expression {regex_object_name}('{regex_str}') is malformed\n"
+                                    "[{except_str}]")
+                                    .format(descriptor_string = descriptor_string,
+                                            regex_object_name = regex_object_name,
+                                            regex_str = regex.args[0],
+                                            except_str = wrap_exception_as_string())
+                           )
 
 #_________________________________________________________________________________________
 

@@ -184,16 +184,16 @@ class t_format_file_names_transform(t_file_names_transform):
         replacing a specified regular expression
     """
     def __init__ (self, enclosing_task, format_object, error_object, descriptor_string):
-        if len(regex.args):
-            self.matching_regex     = compile_regex(enclosing_task, regex_object, error_object, descriptor_string)
-            self.matching_regex_str = regex_object.args[0]
+        if len(format_object.args):
+            self.matching_regex     = compile_regex(enclosing_task, format_object, error_object, descriptor_string)
+            self.matching_regex_str = format_object.args[0]
         else:
             self.matching_regex     = None
             self.matching_regex_str = ""
 
     def substitute (self, starting_file_names, pattern):
         # note: uses all file names
-        return format_replace (starting_file_names, pattern)
+        return format_replace (starting_file_names, self.matching_regex_str, self.matching_regex, pattern)
 
     def substitute_output_files (self, starting_file_names, pattern):
         # note: uses all file names

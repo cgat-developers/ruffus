@@ -288,14 +288,14 @@ class Test_compile_regex (unittest.TestCase):
         try:
             compile_regex("Dummy Task", regex(".*", "o"), Exception, "test1")
         except Exception, e:
-            self.assertEqual(e.args, ('Dummy Task', "test1: regex('('.*', 'o')') is malformed\nregex(...) should only be used to wrap a single regular expression string"))
+            self.assertEqual(e.args, ('Dummy Task', "test1: regex('.*', 'o') is malformed\nregex(...) should only be used to wrap a single regular expression string"))
 
         # 0 number of items regex
         self.assertRaises(Exception, compile_regex, "Dummy Task", regex(), Exception, "test1")
         try:
             compile_regex("Dummy Task", regex(), Exception, "test1")
         except Exception, e:
-            self.assertEqual(e.args, ('Dummy Task', 'test1: regex() is malformed\nregex(...) should be used to wrap a regular expression string'))
+            self.assertEqual(e.args, ('Dummy Task', 'test1: regex() is malformed\nregex(...) should only be used to wrap a single regular expression string'))
 
         # bad number of items suffix
         self.assertRaises(Exception, compile_suffix, "Dummy Task", suffix(".*", "o"), Exception, "test1")
@@ -514,42 +514,48 @@ class Test_path_decomposition (unittest.TestCase):
         self.helper("/a/b/c/d/filename.txt",
                     {   'basename': 'filename',
                         'ext':      '.txt',
-                        'path':     ['/a/b/c/d', '/a/b/c', '/a/b', '/a', '/'],
-                        'subdir': ['d', 'c', 'b', 'a', '/']
+                        'subpath':     ['/a/b/c/d', '/a/b/c', '/a/b', '/a', '/'],
+                        'subdir': ['d', 'c', 'b', 'a', '/'],
+                        'path':    '/a/b/c/d'
                     })
         # double slash
         self.helper("//a/filename.txt",
                     {   'basename': 'filename',
                         'ext':      '.txt',
-                        'path':     ['//a', '//'],
+                        'subpath':     ['//a', '//'],
+                        'path':    '//a',
                         'subdir': ['a', '//']
                     })
         # test no path
         self.helper("filename.txt",
                     {   'basename': 'filename',
                         'ext':      '.txt',
-                        'path':     [],
+                        'subpath':     [],
+                        'path':   '',
                         'subdir': []
                     })
         # root
         self.helper("/filename.txt",
                     {   'basename': 'filename',
                         'ext':      '.txt',
-                        'path':     ['/'],
+                        'path':     '/',
+                        'subpath':     ['/'],
                         'subdir':   ['/']
                     })
         # unrooted
         self.helper("a/b/filename.txt",
                     {   'basename': 'filename',
                         'ext':      '.txt',
-                        'path':     ['a/b', 'a'],
+                        'subpath':     ['a/b', 'a'],
+                        'path':     'a/b',
                         'subdir':   ['b', 'a']
                     })
         # glob
         self.helper("/a/b/*.txt",
                     {   'basename': '*',
                         'ext':      '.txt',
-                        'path':     ['/a/b', '/a', '/'],
+                        'path':     '/a/b',
+                        'subpath':     ['/a/b', '/a', '/'],
                         'subdir':   ['b', 'a', '/']
                     })
         # no basename
@@ -557,28 +563,32 @@ class Test_path_decomposition (unittest.TestCase):
         self.helper("/a/b/.txt",
                     {   'basename': '.txt',
                         'ext':      '',
-                        'path':     ['/a/b', '/a', '/'],
+                        'path':     '/a/b',
+                        'subpath':     ['/a/b', '/a', '/'],
                         'subdir':   ['b', 'a', '/']
                     })
         # no ext
         self.helper("/a/b/filename",
                     {   'basename': 'filename',
                         'ext':      '',
-                        'path':     ['/a/b', '/a', '/'],
+                        'path':     '/a/b',
+                        'subpath':     ['/a/b', '/a', '/'],
                         'subdir':   ['b', 'a', '/']
                     })
         # empty ext
         self.helper("/a/b/filename.",
                     {   'basename': 'filename',
                         'ext':      '.',
-                        'path':     ['/a/b', '/a', '/'],
+                        'path':     '/a/b',
+                        'subpath':  ['/a/b', '/a', '/'],
                         'subdir':   ['b', 'a', '/']
                     })
         # only path
         self.helper("/a/b/",
                     {   'basename': '',
                         'ext':      '',
-                        'path':     ['/a/b', '/a', '/'],
+                        'path':     '/a/b',
+                        'subpath':     ['/a/b', '/a', '/'],
                         'subdir':   ['b', 'a', '/']
                     })
 
@@ -627,7 +637,8 @@ class Test_get_all_paths_components (unittest.TestCase):
                     [
                         {'basename': 'sample1',
                          'ext': '.bam',
-                         'path': ['/a/b/c', '/a/b', '/a', '/'],
+                         'subpath': ['/a/b/c', '/a/b', '/a', '/'],
+                         'path': '/a/b/c',
                          'subdir': ['c', 'b', 'a', '/']
                          }
                     ])
@@ -641,7 +652,8 @@ class Test_get_all_paths_components (unittest.TestCase):
                             'id': '1',
                             'basename': 'sample1',
                             'ext': '.bam',
-                            'path': ['/a/b/c', '/a/b', '/a', '/'],
+                            'subpath': ['/a/b/c', '/a/b', '/a', '/'],
+                            'path': '/a/b/c',
                             'subdir': ['c', 'b', 'a', '/']
                             }
                     ])
@@ -654,7 +666,8 @@ class Test_get_all_paths_components (unittest.TestCase):
                             1: '/a/b/c/sample',
                             'basename': '1',
                             'ext': '.bam',
-                            'path': ['/a/b/c', '/a/b', '/a', '/'],
+                            'subpath': ['/a/b/c', '/a/b', '/a', '/'],
+                            'path': '/a/b/c',
                             'subdir': ['c', 'b', 'a', '/']
                             }
                     ])
@@ -673,7 +686,8 @@ class Test_get_all_paths_components (unittest.TestCase):
                             'id':       '1',                            # captured by name
                             'ext':      '.bam',
                             'subdir':   ['c', 'b', 'a', '/'],
-                            'path':     ['/a/b/c', '/a/b', '/a', '/'],
+                            'subpath':     ['/a/b/c', '/a/b', '/a', '/'],
+                            'path': '/a/b/c',
                             'basename': 'sample1',
                         },
                         {
@@ -682,7 +696,8 @@ class Test_get_all_paths_components (unittest.TestCase):
                             'id': '5',                                  # captured by name
                             'ext': '.vcf',
                             'subdir': [],
-                            'path': [],
+                            'subpath': [],
+                            'path': '',
                             'basename': 'dbsnp15',
                         },
 

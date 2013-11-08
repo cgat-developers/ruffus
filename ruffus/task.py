@@ -1410,8 +1410,12 @@ class _task (node):
         # simulate end of string (suffix) match
         elif isinstance(orig_args[1], suffix):
             file_names_transform = t_suffix_file_names_transform(self, orig_args[1], error_task_split, "@split")
+
+        # new style string.format()
+        elif isinstance(orig_args[1], formatter):
+            file_names_transform = t_format_file_names_transform(self, orig_args[1], error_task_split, "@split")
         else:
-            raise error_task_split(self, "@split expects suffix() or regex() as the second argument")
+            raise error_task_split(self, "@split expects suffix(), regex(), or formatter() as the second argument")
 
 
         #
@@ -1571,9 +1575,13 @@ class _task (node):
         elif isinstance(orig_args[1], suffix):
             file_names_transform = t_suffix_file_names_transform(self, orig_args[1], error_task_transform, "@transform")
 
+        # new style string.format()
+        elif isinstance(orig_args[1], formatter):
+            file_names_transform = t_format_file_names_transform(self, orig_args[1], error_task_transform, "@transform")
+
         else:
-            raise error_task_transform(self, "@transform expects suffix() or "
-                                                            "regex() as the second argument")
+            raise error_task_transform(self, "@transform expects suffix(), regex(), or "
+                                                            "formatter() as the second argument")
 
 
 
