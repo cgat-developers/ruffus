@@ -15,7 +15,6 @@ Removing references to "legacy" methods
     e.g., @files
 
 
-
 ***************************************
 Reusing pipeline code in modules
 ***************************************
@@ -24,7 +23,7 @@ Reusing pipeline code in modules
 New features
 ***************************************
 ==============================================================================
-@subdivide
+@subdivide / @split(..., regex(), ...)
 ==============================================================================
     synonym for @split
 
@@ -35,13 +34,25 @@ formatter
     with regular expression or not
 
 ==============================================================================
-@split
-==============================================================================
-
-    with regex()
-
-==============================================================================
 @product
+==============================================================================
+
+    with formatter()
+
+==============================================================================
+@permutations
+==============================================================================
+
+    with formatter()
+
+==============================================================================
+@combinations
+==============================================================================
+
+    with formatter()
+
+==============================================================================
+@combinations_with_replacement
 ==============================================================================
 
     with formatter()
@@ -104,7 +115,7 @@ Task completion monitoring
 Add dispatch / completion timestamp to jobs
 ****************************************************************************
 
-    Is this logged by Jake
+    Is this logged by Jake?
 
 **************************************************
 Running python jobs remotely on cluster nodes
@@ -113,8 +124,11 @@ Running python jobs remotely on cluster nodes
 
          *  marshalled arguments
          *  marshalled function
-         *  timestamp
-         *  return
+         *  submission timestamp
+
+    Returns
+         *  completion timestamp
+         *  returned values
          *  exception
 
     #) Use libpythongrid
@@ -127,7 +141,8 @@ Running python jobs remotely on cluster nodes
        #) time stamp
        #) process recycling: max number of jobs, min/max time
        #) resubmit
-       #) port?
+       #) specify port
+       #) map interface
 
 ***************************************
 Custom parameter generator
