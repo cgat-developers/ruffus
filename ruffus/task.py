@@ -2163,7 +2163,7 @@ class _task (node):
         # doesn't have a real function
         #  use job_wrapper just so it is not None
         self.user_defined_work_func = self.job_wrapper
-        self.single_multi_io           = self.one_to_one
+        self.single_multi_io        = self.one_to_one
 
 
 
