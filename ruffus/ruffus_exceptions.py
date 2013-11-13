@@ -154,7 +154,15 @@ class error_task_transform(error_task_contruction):
     pass
 class error_task_product(error_task_contruction):
     pass
+class error_task_permutations(error_task_contruction):
+    pass
+class error_task_combinations(error_task_contruction):
+    pass
+class error_task_combinations_with_replacement(error_task_contruction):
+    pass
 class error_task_merge(error_task_contruction):
+    pass
+class error_task_subdivide(error_task_contruction):
     pass
 class error_task_collate(error_task_contruction):
     pass

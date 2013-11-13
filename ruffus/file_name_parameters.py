@@ -860,7 +860,7 @@ def input_param_to_file_name_list (input_params):
     Common function for
             collate_param_factory
             transform_param_factory
-            split_ex_param_factory
+            subdivide_param_factory
         Creates adapter object
         Converts (on the fly) collection / iterator of input params
                 ==> generator of flat list of strings (file_names)
@@ -906,9 +906,9 @@ def yield_io_params_per_job (input_params,
     Helper function for
         transform_param_factory and
         collate_param_factory and
-        split_ex_param_factory
+        subdivide_param_factory
 
-    split_ex_param_factory requires globs patterned to be expanded
+    subdivide_param_factory requires globs patterned to be expanded
         also yields the useful and for display parameters separately
 
     """
@@ -1006,10 +1006,10 @@ def yield_io_params_per_job (input_params,
 
 #_________________________________________________________________________________________
 
-#   split_ex_param_factory
+#   subdivide_param_factory
 
 #_________________________________________________________________________________________
-def split_ex_param_factory (input_files_task_globs,
+def subdivide_param_factory (input_files_task_globs,
                             flatten_input,
                             file_names_transform,
                             extra_input_files_task_globs,
@@ -1048,16 +1048,67 @@ def split_ex_param_factory (input_files_task_globs,
 
 
 
+#_________________________________________________________________________________________
+
+#   combinatorics_param_factory
+
+#_________________________________________________________________________________________
+def combinatorics_param_factory(input_files_task_globs,
+                                flatten_input,
+                                combinatorics_type,
+                                k_tuple,
+                                file_names_transform,
+                                extra_input_files_task_globs,
+                                replace_inputs,
+                                output_pattern,
+                                *extra_specs):
+    """
+    Factory for task_combinations_with_replacement, task_combinations, task_permutations
+    """
+    def iterator(runtime_data):
+
+        #
+        #   Convert input file names, globs, and tasks -> a list of (nested) file names
+        #       Each element of the list corresponds to the input parameters of a single job
+        #
+        input_params = file_names_from_tasks_globs(input_files_task_globs, runtime_data)
+
+        if not len(input_params):
+            return
+
+        if flatten_input:
+            input_params = get_strings_in_nested_sequence(input_params)
+
+        if combinatorics_type == COMBINATORICS_PERMUTATIONS:
+            combinatoric_iter = itertools.permutations(input_params, k_tuple)
+        elif combinatorics_type == COMBINATORICS_COMBINATIONS:
+            combinatoric_iter = itertools.combinations(input_params, k_tuple)
+        elif combinatorics_type == COMBINATORICS_COMBINATIONS_WITH_REPLACEMENT:
+            combinatoric_iter = itertools.combinations_with_replacement(input_params, k_tuple)
+        else:
+            raise Exception("Unknown combinatorics type %d" % combinatorics_type)
+
+        for y in yield_io_params_per_job (list_input_param_to_file_name_list(combinatoric_iter),
+                                          file_names_transform,
+                                          extra_input_files_task_globs,
+                                          replace_inputs,
+                                          output_pattern,
+                                          extra_specs,
+                                          runtime_data,
+                                          iterator):
+            yield y, y
+
+    return iterator
 
 
 #_________________________________________________________________________________________
 
-#   transform_param_factory
+#   product_param_factory
 
 #_________________________________________________________________________________________
 def product_param_factory ( list_input_files_task_globs,
                             flatten_input,
-                            list_file_names_transform,
+                            file_names_transform,
                             extra_input_files_task_globs,
                             replace_inputs,
                             output_pattern,
@@ -1073,14 +1124,21 @@ def product_param_factory ( list_input_files_task_globs,
         #
         input_params_list = [ file_names_from_tasks_globs(ftg, runtime_data) for ftg in list_input_files_task_globs]
 
+        #
+        #   ignore if empty list in any of all versus all
+        #
         if not len(input_params_list):
             return
+
+        for input_params in input_params_list:
+            if not len(input_params):
+                return
 
         if flatten_input:
             input_params_list = [get_strings_in_nested_sequence(ii) for ii in input_params_list]
 
         for y in yield_io_params_per_job (list_input_param_to_file_name_list(itertools.product(*input_params_list)),
-                                          list_file_names_transform,
+                                          file_names_transform,
                                           extra_input_files_task_globs,
                                           replace_inputs,
                                           output_pattern,

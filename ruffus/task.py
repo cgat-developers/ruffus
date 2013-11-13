@@ -313,6 +313,9 @@ class split(task_decorator):
 class transform(task_decorator):
     pass
 
+class subdivide(task_decorator):
+    pass
+
 class merge(task_decorator):
     pass
 
@@ -348,21 +351,6 @@ class parallel(task_decorator):
 class files_re(task_decorator):
     pass
 
-
-#
-#   Combinatoric generators:
-#
-class product(task_decorator):
-	pass
-
-class permutations(task_decorator):
-	pass
-
-class combinations(task_decorator):
-	pass
-
-class combinations_with_replacement(task_decorator):
-	pass
 
 
 
@@ -700,6 +688,11 @@ def register_cleanup (file_name, operation):
 #   _task
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+COMBINATORICS_PRODUCT                       = 0
+COMBINATORICS_PERMUTATIONS                  = 1
+COMBINATORICS_COMBINATIONS                  = 2
+COMBINATORICS_COMBINATIONS_WITH_REPLACEMENT = 3
+
 class _task (node):
     """
     pipeline task
@@ -721,6 +714,7 @@ class _task (node):
                     "task_permutations",
                     "task_combinations",
                     "task_combinations_with_replacement",
+                    "task_subdivide",
                     ]
     action_unspecified                          =  0
     action_task                                 =  1
@@ -738,6 +732,7 @@ class _task (node):
     action_task_permutations                    = 13
     action_task_combinations                    = 14
     action_task_combinations_with_replacement   = 15
+    action_task_subdivide                       = 16
 
 
 
@@ -1408,7 +1403,13 @@ class _task (node):
             where the number of output files may not be known beforehand.
         """
         if isinstance(orig_args[1], regex):
-            self.task_split_ex(orig_args)
+            #
+            #   This is actually @subdivide
+            #
+            decorator_name  = "@split"
+            error_type      = error_task_split
+            self.set_action_type (_task.action_task_split)
+            do_task_subdivide(orig_args, decorator_name, error_type)
             return
 
         #check enough arguments
@@ -1450,7 +1451,7 @@ class _task (node):
     #_________________________________________________________________________________________
     def get_extra_inputs_outputs_extra (self, orig_args, error_type, decorator_name):
         """
-        shared code for split_ex, transform, product etc for parsing orig_args into
+        shared code for subdivide, transform, product etc for parsing orig_args into
             add_inputs/inputs, output, extra
         """
 
@@ -1494,10 +1495,9 @@ class _task (node):
     #   choose_file_names_transform
 
     #_________________________________________________________________________________________
-
     def choose_file_names_transform (self, file_name_transform_tag, error_type, decorator_name, valid_tags = (regex, suffix, formatter)):
         """
-        shared code for split_ex, transform, product etc for choosing method for transform input file to output files
+        shared code for subdivide, transform, product etc for choosing method for transform input file to output files
         """
         valid_tag_names = [];
         # regular expression match
@@ -1519,24 +1519,23 @@ class _task (node):
                 return t_formatter_file_names_transform(self, file_name_transform_tag, error_type, decorator_name)
 
         raise error_type(self, "%s expects one of as the second argument" % (decorator_name, ", ".join(valid_tag_names)))
-    #_________________________________________________________________________________________
-
-    #   task_split_ex
 
     #_________________________________________________________________________________________
-    def task_split_ex (self, orig_args):
+
+    #   do_task_subdivide
+
+    #_________________________________________________________________________________________
+    def do_task_subdivide (self, orig_args, decorator_name, error_type):
         """
-        Splits a single set of input files into multiple output file names,
-            where the number of output files may not be known beforehand.
+            @subdivide and @split are synonyms
+            Common code here
         """
-        decorator_name  = "@split"
-        error_type      = error_task_split
+
         if len(orig_args) < 3:
             raise error_type(self, "Too few arguments for %s" % decorator_name)
 
 
 
-        self.set_action_type (_task.action_task_split)
 
         #
         # replace function / function names with tasks
@@ -1547,7 +1546,7 @@ class _task (node):
         input_files_task_globs.single_file_to_list()
 
         # how to transform input to output file name
-        file_names_transform = self.choose_file_names_transform (orig_args[1], error_task_split, decorator_name)
+        file_names_transform = self.choose_file_names_transform (orig_args[1], error_type, decorator_name)
 
         orig_args = orig_args[2:]
 
@@ -1559,12 +1558,12 @@ class _task (node):
         #
         output_files_task_globs = self.handle_tasks_globs_in_inputs(output_pattern)
         if len(output_files_task_globs.tasks):
-            raise error_task_split(self, "@split cannot output to another task. "
-                                            "Do not include tasks in output parameters.")
+            raise error_type(self, ("%s cannot output to another task. "
+                                          "Do not include tasks in output parameters.") % decorator_name)
 
 
 
-        self.param_generator_func = split_ex_param_factory (   input_files_task_globs,
+        self.param_generator_func = subdivide_param_factory (   input_files_task_globs,
                                                                 False, # flatten input
                                                                 file_names_transform,
                                                                 extra_inputs,
@@ -1579,6 +1578,21 @@ class _task (node):
         # output is a glob
         self.indeterminate_output = 2
         self.single_multi_io       = self.many_to_many
+
+    #_________________________________________________________________________________________
+
+    #   task_subdivide
+
+    #_________________________________________________________________________________________
+    def task_subdivide (self, orig_args):
+        """
+        Splits a single set of input files into multiple output file names,
+            where the number of output files may not be known beforehand.
+        """
+        decorator_name  = "@split"
+        error_type      = error_task_split
+        self.set_action_type (_task.action_task_subdivide)
+        do_task_subdivide(orig_args, decorator_name, error_type)
 
     #_________________________________________________________________________________________
 
@@ -1643,11 +1657,74 @@ class _task (node):
 
     #_________________________________________________________________________________________
 
+    #   task_combinatorics
+
+    #_________________________________________________________________________________________
+    def task_combinatorics (self, orig_args, combinatorics_type, decorator_name, error_type):
+        """
+            Common code for task_permutations, task_combinations_with_replacement, task_combinations
+        """
+
+        if len(orig_args) < 4:
+            raise error_type(self, "Too few arguments for %s" % decorator_name)
+
+
+        if not isinstance(orig_args[1], formatter):
+            raise error_task_product(self, "%s expects formatter() as the second argument" % decorator_name)
+
+        #
+        # replace function / function names with tasks
+        #
+        input_files_task_globs  = self.handle_tasks_globs_in_inputs(orig_args[0])
+
+        # how to transform input to output file name: len(k-tuples) of (identical) formatters
+        file_names_transform = t_nested_formatter_file_names_transform(self, [orig_args[1]] * k_tuple, error_type, decorator_name)
+
+
+        self.set_action_type (_task.action_task_permutations)
+
+        if not is_instance(orig_args[2], int):
+            raise error_task_product(self, "%s expects an integer number as the third argument specifying the number of elements in each tuple." % decorator_name)
+
+        k_tuple = orig_args[2]
+
+        orig_args = orig_args[3:]
+
+
+        #
+        #   inputs can also be defined by pattern match
+        #
+        extra_inputs, replace_inputs, output_pattern, extra_params = self.get_extra_inputs_outputs_extra (orig_args, error_type, decorator_name)
+
+        self.param_generator_func = combinatorics_param_factory (   input_files_task_globs,
+                                                                    False, # flatten input
+                                                                    combinatorics_type,
+                                                                    k_tuple,
+                                                                    file_names_transform,
+                                                                    extra_inputs,
+                                                                    replace_inputs,
+                                                                    output_pattern,
+                                                                    *extra_params)
+        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
+        self.job_wrapper          = job_wrapper_io_files
+        self.job_descriptor       = io_files_job_descriptor
+        self.single_multi_io      = self.many_to_many
+
+    #_________________________________________________________________________________________
+
     #   task_permutations
 
     #_________________________________________________________________________________________
     def task_permutations(self, orig_args):
-        pass
+        """
+            k-permutations of n
+
+            k-length tuples, all possible orderings, no self vs self
+        """
+        decorator_name      = "@permutations"
+        error_type          = error_task_permutations
+        combinatorics_type  = COMBINATORICS_PERMUTATIONS
+        self.task_combinatorics (orig_args, combinatorics_type, decorator_name, error_type)
 
 
     #_________________________________________________________________________________________
@@ -1656,7 +1733,19 @@ class _task (node):
 
     #_________________________________________________________________________________________
     def task_combinations(self, orig_args):
-        pass
+        """
+            k-length tuples
+                Single (sorted) ordering, i.e. AB is the same as BA,
+                No repeats. No AA, BB
+
+            E.g.
+                combinations("ABCD", 3) = ['ABC', 'ABD', 'ACD', 'BCD']
+                combinations("ABCD", 2) = ['AB', 'AC', 'AD', 'BC', 'BD', 'CD']
+        """
+        decorator_name      = "@combinations"
+        error_type          = error_task_combinations
+        combinatorics_type  = COMBINATORICS_COMBINATIONS
+        self.task_combinatorics (orig_args, combinatorics_type, decorator_name, error_type)
 
 
     #_________________________________________________________________________________________
@@ -1665,7 +1754,32 @@ class _task (node):
 
     #_________________________________________________________________________________________
     def task_combinations_with_replacement(self, orig_args):
-        pass
+        """
+            k-length tuples
+                Single (sorted) ordering, i.e. AB is the same as BA,
+                Repeats. AA, BB, AAC etc.
+
+            E.g.
+                combinations_with_replacement("ABCD", 3) = ['AAA', 'AAB', 'AAC', 'AAD',
+                                                            'ABB', 'ABC', 'ABD',
+                                                            'ACC', 'ACD',
+                                                            'ADD',
+                                                            'BBB', 'BBC', 'BBD',
+                                                            'BCC', 'BCD',
+                                                            'BDD',
+                                                            'CCC', 'CCD',
+                                                            'CDD',
+                                                            'DDD']
+                combinations_with_replacement("ABCD", 2) = ['AA', 'AB', 'AC', 'AD',
+                                                            'BB', 'BC', 'BD',
+                                                            'CC', 'CD',
+                                                            'DD']
+
+        """
+        decorator_name      = "@combinations_with_replacement"
+        error_type          = error_task_combinations_with_replacement
+        combinatorics_type  = COMBINATORICS_COMBINATIONS_WITH_REPLACEMENT
+        self.task_combinatorics (orig_args, combinatorics_type, decorator_name, error_type)
 
 
 

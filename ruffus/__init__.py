@@ -30,7 +30,7 @@ from task import pipeline_printout, pipeline_printout_graph, pipeline_run, regis
 from graph  import graph_colour_demo_printout
 from file_name_parameters import needs_update_check_modify_time
 import cmdline
-
+import combinatorics
 #output_dependency_tree_in_dot_format, output_dependency_tree_key_in_dot_format
 import ruffus_version
 __version__=ruffus_version.__version
