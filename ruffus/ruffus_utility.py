@@ -59,6 +59,7 @@ if __name__ == '__main__':
 from ruffus_exceptions import *
 #import task
 import collections
+from collections import defaultdict
 import multiprocessing.managers
 import hashlib
 import marshal
@@ -167,54 +168,56 @@ def path_decomposition (orig_path):
             'path':     path_part}
 
 
-#_________________________________________________________________________________________
-#
-#   to_nested_dict_str
-#
-#_________________________________________________________________________________________
-def to_nested_dict_str (coll):
-    #
-    #   convert list to dict
-    #       all values should be strings or dicts of strings
-    #
-    if isinstance(coll, (list, set)):
-        new_coll = {}
-        for ii, val in enumerate(coll):
-            new_coll[str(ii)] = to_nested_dict_str(val)
-        return new_coll
-    #
-    #   make sure dict keys are strings,
-    #       and in fact that it all hold values which are strings or dicts of strings
-    #
-    if isinstance(coll, dict):
-        new_coll = {}
-        for key, val in coll.iteritems():
-            new_coll[str(key)] = to_nested_dict_str(val)
-        return new_coll
-    return str(coll)
-
 
 #_________________________________________________________________________________________
 #
-#   list_dict_to_dict_dict
+#   swap_nesting_order
 #
 #_________________________________________________________________________________________
-def list_dict_to_dict_dict (list_dict):
-    new_dict = {}
-    for ii, item in enumerate(list_dict):
-        for key, value in item.iteritems():
-            if not key in new_dict:
-                new_dict[key]={ii:value}
+def swap_nesting_order (orig_coll):
+    """
+    Reverse nested order so that coll[3]['a'] becomes coll['a'][3]
+    """
+    new_dict = defaultdict(dict)
+    new_list = []
+    for ii, ii_item in enumerate(orig_coll):
+        for jj, value in ii_item.iteritems():
+            if isinstance(jj, int):
+                # resize
+                new_list += [{}]*(jj + 1 - len(new_list))
+                new_list[jj][ii] = value
             else:
-                new_dict[key][ii] = value
-    return new_dict
+                new_dict[jj][ii] = value
+    return new_list, new_dict
+
+#_________________________________________________________________________________________
+#
+#   swap_doubly_nested_order
+#
+#_________________________________________________________________________________________
+def swap_doubly_nested_order (orig_coll):
+    """
+    Reverse nested order so that coll[3]['a'] becomes coll['a'][3]
+    """
+    new_dict = defaultdict(lambda: defaultdict(dict))
+    new_list = []
+    for ii, ii_item in enumerate(orig_coll):
+        for jj, jj_item in enumerate(ii_item):
+            for kk, value in jj_item.iteritems():
+                if isinstance(kk, int):
+                    # resize
+                    new_list += [defaultdict(dict)]*(kk + 1 - len(new_list))
+                    new_list[kk][ii][jj] = value
+                else:
+                    new_dict[kk][ii][jj] = value
+    return new_list, new_dict
 
 #_________________________________________________________________________________________
 #
 #   get_all_paths_components
 #
 #_________________________________________________________________________________________
-def get_all_paths_components(paths, regex_str):
+def get_all_paths_components(paths, compiled_regex):
     """
         For each path in a list,
             returns a dictionary identifying the components of a file path.
@@ -226,7 +229,7 @@ def get_all_paths_components(paths, regex_str):
             and regular expression matches
                 The keys are the index or name of the capturing group.
 
-            If regex_str is specified, and the regular expression does not match, an empty
+            If compiled_regex is specified, and the regular expression does not match, an empty
             dictionary is returned.
 
         For example, the following three paths give:
@@ -260,9 +263,11 @@ def get_all_paths_components(paths, regex_str):
                 }
             ]
     """
-    def regex_match_str_list(test_str_list, regex_str):
-        compiled_str = re.compile(regex_str)
-        matches = [compiled_str.search(ss) for ss in test_str_list]
+    def regex_match_str_list(test_str_list, compiled_regex):
+        if isinstance(compiled_regex, basestring):
+            compiled_regex = re.compile(compiled_regex)
+        matches = [compiled_regex.search(ss) for ss in test_str_list]
+
         matchdicts = []
         for mm in matches:
             if not mm:
@@ -270,16 +275,16 @@ def get_all_paths_components(paths, regex_str):
             else:
                 # no dictionary comprehensions in python 2.6 :-(
                 #matchdicts.append({i : mm.group(i) for i in (range(mm.lastindex) + mm.groupdict().keys())})
-                matchdicts.append(dict((i, mm.group(i)) for i in (range(mm.lastindex) + mm.groupdict().keys())))
+                matchdicts.append(dict((i, mm.group(i)) for i in (range(mm.lastindex + 1) + mm.groupdict().keys())))
         return matchdicts
     #
     #   merge regular expression matches and path decomposition
     #
     path_components = [path_decomposition(pp) for pp in paths]
-    if regex_str == None:
+    if compiled_regex == None:
         return path_components
     else:
-        regex_match_components = regex_match_str_list(paths, regex_str)
+        regex_match_components = regex_match_str_list(paths, compiled_regex)
         both_components = []
         for rr, pp in izip(regex_match_components, path_components):
             if not len(rr):
@@ -366,19 +371,45 @@ class t_regex_replace(object):
 
 #_________________________________________________________________________________________
 #
-#   t_format_replace
+#   t_formatter_replace
 #
 #_________________________________________________________________________________________
-class t_format_replace(object):
+class t_formatter_replace(object):
     def __init__ (self, filenames, regex_str, compiled_regex = None):
         self.path_regex_components = get_all_paths_components(filenames, compiled_regex)
         self.regex_str = regex_str if regex_str else ""
 
     def __call__(self, p):
-        #return p.format(*[to_nested_dict_str (m) for m in self.path_regex_components])
-        #print >>sys.stderr, list_dict_to_dict_dict([m for m in self.path_regex_componens])
+        # swapped nesting order makes the syntax easier to explain:
+        #   The first level of indirection is always the path component
+        #   So basename[0] is the file name for the first file
+        #   This looks better than the normal 0[basename]
 
-        return p.format(**list_dict_to_dict_dict(m for m in self.path_regex_components))
+        # some contortions because format decodes {0} as an offset into a list and not not a lookup into a dict...
+        dl, dd = swap_nesting_order(self.path_regex_components)
+        return p.format(*dl, **dd)
+
+#_________________________________________________________________________________________
+#
+#   t_nested_formatter_replace
+#
+#_________________________________________________________________________________________
+class t_nested_formatter_replace(object):
+    def __init__ (self, filenames, regex_strings, compiled_regexes):
+        if len(filenames) != len(regex_strings) or len(filenames) != len(compiled_regexes):
+            raise Exception("Logic Error.")
+        self.path_regex_components = [get_all_paths_components(f, r) for (f,r) in zip(filenames, compiled_regexes)]
+        self.regex_strings = regex_strings
+
+    def __call__(self, p):
+        # swapped nesting order makes the syntax easier to explain:
+        #   The first level of indirection is always the path component
+        #   So basename[0] is the file name for the first file
+        #   This looks better than the normal 0[basename]
+
+        # some contortions because format decodes {0} as an offset into a list and not not a lookup into a dict...
+        dl, dd = swap_doubly_nested_order(self.path_regex_components)
+        return p.format(*dl, **dd)
 
 
 #_________________________________________________________________________________________
@@ -414,8 +445,11 @@ SUFFIX_SUBSTITUTE              = 1
 def regex_replace(filename, regex_str, compiled_regex, substitution_patterns, regex_or_suffix = REGEX_SUBSTITUTE):
     return apply_func_to_sequence(substitution_patterns, t_regex_replace(filename, regex_str, compiled_regex, regex_or_suffix))
 
-def format_replace (filenames, regex_str, compiled_regex, substitution_patterns):
-    return apply_func_to_sequence(substitution_patterns, t_format_replace(filenames, regex_str, compiled_regex))
+def formatter_replace (filenames, regex_str, compiled_regex, substitution_patterns):
+    return apply_func_to_sequence(substitution_patterns, t_formatter_replace(filenames, regex_str, compiled_regex))
+
+def nested_formatter_replace (filenames, regex_strings, compiled_regexes, substitution_patterns):
+    return apply_func_to_sequence(substitution_patterns, t_nested_formatter_replace(filenames, regex_strings, compiled_regexes))
 
 
 #_________________________________________________________________________________________

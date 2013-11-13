@@ -54,6 +54,12 @@ import re
 import glob
 from operator import itemgetter
 from itertools import groupby
+import itertools
+#from itertools import product
+#from itertools import permutations
+#from itertools import combinations
+#from itertools import combinations_with_replacement
+
 from collections import defaultdict
 from time import strftime, gmtime
 if __name__ == '__main__':
@@ -143,7 +149,13 @@ class t_file_names_transform(object):
         2) On the other, we throw away the nested structure of tasks / globs on one hand
            and the nested structure of the outputs on the other hand.
     """
-    pass
+    def substitute (self, starting_file_names, pattern):
+        pass
+
+    # overriden only in t_suffix_file_names_transform
+    # only suffix() behaves differently for output and extra files...
+    def substitute_output_files (self, starting_file_names, pattern):
+        return self.substitute (starting_file_names, pattern)
 
 
 class t_suffix_file_names_transform(t_file_names_transform):
@@ -151,8 +163,8 @@ class t_suffix_file_names_transform(t_file_names_transform):
     Does the work for generating output / "extra input" / "extra" filenames
         replacing a specified suffix
     """
-    def __init__ (self, enclosing_task, suffix_object, error_object, descriptor_string):
-        self.matching_regex = compile_suffix(enclosing_task, suffix_object, error_object, descriptor_string)
+    def __init__ (self, enclosing_task, suffix_object, error_type, descriptor_string):
+        self.matching_regex = compile_suffix(enclosing_task, suffix_object, error_type, descriptor_string)
         self.matching_regex_str = suffix_object.args[0]
 
     def substitute (self, starting_file_names, pattern):
@@ -167,25 +179,23 @@ class t_regex_file_names_transform(t_file_names_transform):
     Does the work for generating output / "extra input" / "extra" filenames
         replacing a specified regular expression
     """
-    def __init__ (self, enclosing_task, regex_object, error_object, descriptor_string):
-        self.matching_regex = compile_regex(enclosing_task, regex_object, error_object, descriptor_string)
+    def __init__ (self, enclosing_task, regex_object, error_type, descriptor_string):
+        self.matching_regex = compile_regex(enclosing_task, regex_object, error_type, descriptor_string)
         self.matching_regex_str = regex_object.args[0]
 
     def substitute (self, starting_file_names, pattern):
         return regex_replace(starting_file_names[0], self.matching_regex_str, self.matching_regex, pattern)
 
-    def substitute_output_files (self, starting_file_names, pattern):
-        return regex_replace(starting_file_names[0], self.matching_regex_str, self.matching_regex, pattern)
 
 
-class t_format_file_names_transform(t_file_names_transform):
+class t_formatter_file_names_transform(t_file_names_transform):
     """
     Does the work for generating output / "extra input" / "extra" filenames
         replacing a specified regular expression
     """
-    def __init__ (self, enclosing_task, format_object, error_object, descriptor_string):
+    def __init__ (self, enclosing_task, format_object, error_type, descriptor_string):
         if len(format_object.args):
-            self.matching_regex     = compile_regex(enclosing_task, format_object, error_object, descriptor_string)
+            self.matching_regex     = compile_regex(enclosing_task, format_object, error_type, descriptor_string)
             self.matching_regex_str = format_object.args[0]
         else:
             self.matching_regex     = None
@@ -193,11 +203,30 @@ class t_format_file_names_transform(t_file_names_transform):
 
     def substitute (self, starting_file_names, pattern):
         # note: uses all file names
-        return format_replace (starting_file_names, self.matching_regex_str, self.matching_regex, pattern)
+        return formatter_replace (starting_file_names, self.matching_regex_str, self.matching_regex, pattern)
 
-    def substitute_output_files (self, starting_file_names, pattern):
+
+class t_nested_formatter_file_names_transform(t_file_names_transform):
+    """
+    Does the work for generating output / "extra input" / "extra" filenames
+        apply a whole series of regular expresions to a whole series of input
+    """
+    def __init__ (self, enclosing_task, format_objects, error_type, descriptor_string):
+        self.list_matching_regex    = []
+        self.list_matching_regex_str= []
+
+        for format_object in format_objects:
+            if len(format_object.args):
+                self.list_matching_regex.append(compile_regex(enclosing_task, format_object, error_type, descriptor_string))
+                self.list_matching_regex_str.append(format_object.args[0])
+
+            else:
+                self.list_matching_regex.append(None)
+                self.list_matching_regex_str.append("")
+
+    def substitute (self, starting_file_names, pattern):
         # note: uses all file names
-        return format_replace (starting_file_names, self.matching_regex_str, self.matching_regex, pattern)
+        return nested_formatter_replace (starting_file_names, self.list_matching_regex_str, self.list_matching_regex, pattern)
 
 
 #_________________________________________________________________________________________
@@ -820,7 +849,45 @@ def split_param_factory (input_files_task_globs, output_files_task_globs, *extra
     return iterator
 
 
-#
+
+#_________________________________________________________________________________________
+
+#   input_param_to_file_name_list
+
+#_________________________________________________________________________________________
+def input_param_to_file_name_list (input_params):
+    """
+    Common function for
+            collate_param_factory
+            transform_param_factory
+            split_ex_param_factory
+        Creates adapter object
+        Converts (on the fly) collection / iterator of input params
+                ==> generator of flat list of strings (file_names)
+    """
+    for per_job_input_param in input_params:
+        flattened_list_of_file_names = get_strings_in_nested_sequence(per_job_input_param)
+        yield per_job_input_param, flattened_list_of_file_names
+
+
+#_________________________________________________________________________________________
+
+#   input_param_to_file_name_list
+
+#_________________________________________________________________________________________
+def list_input_param_to_file_name_list (input_params):
+    """
+    Common function for
+            product_param_factory
+        Creates adapter object
+        Converts (on the fly) collection / iterator of nested (input params)
+                ==> generator of flat list of strings (file_names)
+    """
+    for per_job_input_param_list in input_params:
+        list_of_flattened_list_of_file_names = [ get_strings_in_nested_sequence(ii) for ii in per_job_input_param_list]
+        yield per_job_input_param_list, list_of_flattened_list_of_file_names
+
+
 #_________________________________________________________________________________________
 
 #   yield_io_params_per_job
@@ -851,23 +918,26 @@ def yield_io_params_per_job (input_params,
     #
     no_regular_expression_matches = True
 
-    for orig_input_param in input_params:
+    for orig_input_param, filenames in input_params:
+
 
         try:
 
             #
-            #   turn input param into a list of strings
+            #   Should run job even if there are no file names, so long as there are input parameters...??
             #
-            filenames = get_strings_in_nested_sequence(orig_input_param)
+            # if not orig_input_param:
             if not filenames:
                 continue
 
             #
-            #   extra input strings might be substitution patterns
-            #       Substitute these now,
-            #       Leave filenames inherited from tasks unchanged
-            #       Add or replace input file names
+            #   extra input has a mixture of input and output parameter behaviours:
+            #       1) If it contains tasks, the files from these are passed through unchanged
+            #       2) If it contains strings which look like strings,
+            #          these are transformed using regular expression, file component substitution etc.
+            #          just like output params
             #
+            #       So we do (2) first, ignoring tasks, then (1)
             if extra_input_files_task_globs != None:
 
                 extra_inputs = extra_input_files_task_globs.file_names_transformed (filenames, file_names_transform)
@@ -905,9 +975,14 @@ def yield_io_params_per_job (input_params,
                 yield (input_param, output_param) + extra_params
 
             no_regular_expression_matches = False
-        except Exception:
-            # regular expression match failures are ignored
+        except KeyError:
             continue
+        except IndexError:
+            continue
+        except Exception:
+            #print sys.exc_info()
+            raise
+            # regular expression match failures are ignored
 
     #
     #   Add extra warning if no regular expressions match:
@@ -941,7 +1016,8 @@ def split_ex_param_factory (input_files_task_globs,
     def iterator(runtime_data):
 
         #
-        # get list of input_params
+        #   Convert input file names, globs, and tasks -> a list of (nested) file names
+        #       Each element of the list corresponds to the input parameters of a single job
         #
         input_params = file_names_from_tasks_globs(input_files_task_globs, runtime_data)
 
@@ -951,7 +1027,7 @@ def split_ex_param_factory (input_files_task_globs,
         if not len(input_params):
             return
 
-        return yield_io_params_per_job (sorted(input_params),
+        return yield_io_params_per_job (input_param_to_file_name_list(sorted(input_params)),
                                         file_names_transform,
                                         extra_input_files_task_globs,
                                         replace_inputs,
@@ -973,6 +1049,49 @@ def split_ex_param_factory (input_files_task_globs,
 #   transform_param_factory
 
 #_________________________________________________________________________________________
+def product_param_factory ( list_input_files_task_globs,
+                            flatten_input,
+                            list_file_names_transform,
+                            extra_input_files_task_globs,
+                            replace_inputs,
+                            output_pattern,
+                            *extra_specs):
+    """
+    Factory for task_transform
+    """
+    def iterator(runtime_data):
+
+        #
+        #   Convert input file names, globs, and tasks -> a list of (nested) file names
+        #       Each element of the list corresponds to the input parameters of a single job
+        #
+        input_params_list = [ file_names_from_tasks_globs(ftg, runtime_data) for ftg in list_input_files_task_globs]
+
+        if not len(input_params_list):
+            return
+
+        if flatten_input:
+            input_params_list = [get_strings_in_nested_sequence(ii) for ii in input_params_list]
+
+        for y in yield_io_params_per_job (list_input_param_to_file_name_list(itertools.product(*input_params_list)),
+                                          list_file_names_transform,
+                                          extra_input_files_task_globs,
+                                          replace_inputs,
+                                          output_pattern,
+                                          extra_specs,
+                                          runtime_data,
+                                          iterator):
+            yield y, y
+
+    return iterator
+
+
+
+#_________________________________________________________________________________________
+
+#   transform_param_factory
+
+#_________________________________________________________________________________________
 def transform_param_factory (input_files_task_globs,
                              flatten_input,
                              file_names_transform,
@@ -986,7 +1105,8 @@ def transform_param_factory (input_files_task_globs,
     def iterator(runtime_data):
 
         #
-        # get list of input_params
+        #   Convert input file names, globs, and tasks -> a list of (nested) file names
+        #       Each element of the list corresponds to the input parameters of a single job
         #
         input_params = file_names_from_tasks_globs(input_files_task_globs, runtime_data)
 
@@ -996,7 +1116,8 @@ def transform_param_factory (input_files_task_globs,
         if not len(input_params):
             return
 
-        for y in yield_io_params_per_job (sorted(input_params),
+
+        for y in yield_io_params_per_job (input_param_to_file_name_list(sorted(input_params)),
                                           file_names_transform,
                                           extra_input_files_task_globs,
                                           replace_inputs,
@@ -1023,14 +1144,15 @@ def collate_param_factory (input_files_task_globs,
                            *extra_specs):
     """
     Factory for task_collate
-    looks exactly like @transform except that
-        all [input] which lead to the same [output / extra] are combined together
+
+    Looks exactly like @transform except that all [input] which lead to the same [output / extra] are combined together
     """
     #
     def iterator(runtime_data):
 
         #
-        # get list of input_params
+        #   Convert input file names, globs, and tasks -> a list of (nested) file names
+        #       Each element of the list corresponds to the input parameters of a single job
         #
         input_params = file_names_from_tasks_globs(input_files_task_globs, runtime_data)
 
@@ -1041,7 +1163,7 @@ def collate_param_factory (input_files_task_globs,
             return
 
         get_output_extras = lambda x: x[1:]
-        io_params_iter = yield_io_params_per_job(   sorted(input_params),
+        io_params_iter = yield_io_params_per_job(   input_param_to_file_name_list(sorted(input_params)),
                                                     file_names_transform,
                                                     extra_input_files_task_globs,
                                                     replace_inputs,

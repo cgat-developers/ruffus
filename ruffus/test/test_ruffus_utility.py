@@ -649,6 +649,7 @@ class Test_get_all_paths_components (unittest.TestCase):
                         {
                             0: '/a/b/c/sample1.bam',
                             1: '/a/b/c/sample',
+                            2: '1',
                             'id': '1',
                             'basename': 'sample1',
                             'ext': '.bam',
@@ -664,6 +665,7 @@ class Test_get_all_paths_components (unittest.TestCase):
                         {
                             0: '/a/b/c/sample1.bam',
                             1: '/a/b/c/sample',
+                            2: '1',
                             'basename': '1',
                             'ext': '.bam',
                             'subpath': ['/a/b/c', '/a/b', '/a', '/'],
@@ -683,6 +685,7 @@ class Test_get_all_paths_components (unittest.TestCase):
                     [   {
                             0:          '/a/b/c/sample1.bam',           # captured by index
                             1:          '/a/b/c/sample',                # captured by index
+                            2:          '1',                            # captured by index
                             'id':       '1',                            # captured by name
                             'ext':      '.bam',
                             'subdir':   ['c', 'b', 'a', '/'],
@@ -693,6 +696,7 @@ class Test_get_all_paths_components (unittest.TestCase):
                         {
                             0: 'dbsnp15.vcf',                           # captured by index
                             1: 'dbsnp1',                                # captured by index
+                            2: '5',                                     # captured by index
                             'id': '5',                                  # captured by name
                             'ext': '.vcf',
                             'subdir': [],
@@ -708,7 +712,135 @@ class Test_get_all_paths_components (unittest.TestCase):
                     ])
 
 
+        #_________________________________________________________________________________________
 
+        #   Test_path_decomposition
+
+        #_________________________________________________________________________________________
+        class Test_get_all_paths_components (unittest.TestCase):
+            def helper (self, test_paths, regex_str, expected_result):
+                try_result = get_all_paths_components(test_paths, regex_str)
+                self.assertEqual(try_result,  expected_result)
+
+            def test_get_all_paths_components(self):
+                # no regex
+                self.helper(["/a/b/c/sample1.bam"], None,
+                            [
+                                {'basename': 'sample1',
+                                 'ext': '.bam',
+                                 'subpath': ['/a/b/c', '/a/b', '/a', '/'],
+                                 'path': '/a/b/c',
+                                 'subdir': ['c', 'b', 'a', '/']
+                                 }
+                            ])
+
+                # regex
+                self.helper(["/a/b/c/sample1.bam"],r"(.*)(?P<id>\d+)\..+",
+                            [
+                                {
+                                    0: '/a/b/c/sample1.bam',
+                                    1: '/a/b/c/sample',
+                                    2: '1',
+                                    'id': '1',
+                                    'basename': 'sample1',
+                                    'ext': '.bam',
+                                    'subpath': ['/a/b/c', '/a/b', '/a', '/'],
+                                    'path': '/a/b/c',
+                                    'subdir': ['c', 'b', 'a', '/']
+                                    }
+                            ])
+                # nameclash
+                # "basename" overridden by named regular expression capture group
+                self.helper(["/a/b/c/sample1.bam"],r"(.*)(?P<basename>\d+)\..+",
+                            [
+                                {
+                                    0: '/a/b/c/sample1.bam',
+                                    1: '/a/b/c/sample',
+                                    'basename': '1',
+                                    'ext': '.bam',
+                                    'subpath': ['/a/b/c', '/a/b', '/a', '/'],
+                                    'path': '/a/b/c',
+                                    'subdir': ['c', 'b', 'a', '/']
+                                    }
+                            ])
+
+                # empty path
+                self.helper([""],r"(.*)(?P<basename>\d+)\..+", [{}])
+                # not matching regular expression
+                self.helper(["/a/b/c/nonumber.txt"],r"(.*)(?P<id>\d+)\..+", [{}])
+                # multiple paths
+                self.helper(["/a/b/c/sample1.bam",
+                             "dbsnp15.vcf",
+                             "/test.txt"] ,r"(.*)(?P<id>\d+)\..+",
+                            [   {
+                                    0:          '/a/b/c/sample1.bam',           # captured by index
+                                    1:          '/a/b/c/sample',                # captured by index
+                                    2:          '1',                            # captured by index
+                                    'id':       '1',                            # captured by name
+                                    'ext':      '.bam',
+                                    'subdir':   ['c', 'b', 'a', '/'],
+                                    'subpath':     ['/a/b/c', '/a/b', '/a', '/'],
+                                    'path': '/a/b/c',
+                                    'basename': 'sample1',
+                                },
+                                {
+                                    0: 'dbsnp15.vcf',                           # captured by index
+                                    1: 'dbsnp1',                                # captured by index
+                                    2: '5',                                     # captured by index
+                                    'id': '5',                                  # captured by name
+                                    'ext': '.vcf',
+                                    'subdir': [],
+                                    'subpath': [],
+                                    'path': '',
+                                    'basename': 'dbsnp15',
+                                },
+
+                                # no regular expression match
+                                # everything fails!
+                                {
+                                }
+                            ])
+
+
+#
+#_________________________________________________________________________________________
+
+#   Test_swap_nesting_order
+
+#_________________________________________________________________________________________
+class Test_swap_nesting_order (unittest.TestCase):
+
+    def test_swap_nesting_order(self):
+        orig_data = [
+                        {'a':1, 'b':2},
+                        {'a':3, 'b': 4, 'c':5}
+                    ]
+
+        self.assertEqual(swap_nesting_order(orig_data),
+                            ([],
+                            {'a': {0: 1, 1: 3},
+                             'c': {1: 5},
+                             'b': {0: 2, 1: 4}})
+                         )
+        orig_data = [
+                        [   {'a':1, 'b':2},
+                            {'a':3, 'b': 4, 'c':5}  ],
+                        [   {'a':6, 'b':7},
+                            {'a':8, 'b': 9, 'd':10} ]
+                    ]
+
+
+        self.assertEqual(swap_doubly_nested_order(orig_data),
+                        ([],
+                        {   'a':  {0: {0: 1, 1: 3}, 1: {0: 6, 1: 8}},
+                            'c':  {0: {1: 5}},
+                            'b':  {0: {0: 2, 1: 4}, 1: {0: 7, 1: 9}},
+                            'd':  {1: {1: 10}}
+                        }))
+
+
+
+#
 #
 #   debug parameter ignored if called as a module
 #

@@ -730,6 +730,15 @@ class Test_transform_param_factory(unittest.TestCase):
         return fake_task.param_generator_func
 
 
+    def do_task_transform (self, *old_args):
+        """
+        This extra function is to simulate the forwarding from the decorator to
+            the task creation function
+        """
+        # extra dereference because we are only interested in the first (only) job
+        return list(p1 for (p1, ps) in self.get_param_iterator (*old_args)(None))
+
+
     def test_simple(self):
         """
         test simple_form
@@ -741,14 +750,6 @@ class Test_transform_param_factory(unittest.TestCase):
 
         self.assertEqual(paths,
                         [('a.test', 'b.test')] )
-    def do_task_transform (self, *old_args):
-        """
-        This extra function is to simulate the forwarding from the decorator to
-            the task creation function
-        """
-        # extra dereference because we are only interested in the first (only) job
-        return list(p1 for (p1, ps) in self.get_param_iterator (*old_args)(None))
-
 
 
     def test_suffix(self):
@@ -804,6 +805,7 @@ class Test_transform_param_factory(unittest.TestCase):
                             ('DIR/f1.test', ['DIR/f1.output1', 'DIR/f1.output2'], "DIR/f1.output3"),
                             ('DIR/f2.test', ['DIR/f2.output1', 'DIR/f2.output2'], "DIR/f2.output3"),
                                            ])
+
     def test_inputs(self):
         """
         test transform with inputs in both regex and suffix forms
@@ -907,7 +909,8 @@ class Test_transform_param_factory(unittest.TestCase):
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
         self.assertEqual(paths, [((2, 'output5.test'), 'output')]  )
 
-
+#
+#
 #=========================================================================================
 
 #   collate_param_factory
@@ -1365,6 +1368,141 @@ class Test_files_param_factory(unittest.TestCase):
         paths = self.files([task.output_from("module.func4"), task.output_from("module.func2")], "output", "extra")
         self.assertEqual(paths,  [([(2, 'output5.test'), 'output.ignored'], 'output', 'extra')])
 
+
+#
+#=========================================================================================
+
+#   product_param_factory
+
+#=========================================================================================
+
+class Test_product_param_factory(unittest.TestCase):
+    def setUp(self):
+        if not os.path.exists(test_path):
+            os.makedirs(test_path)
+        open("%s/a.test1" % (test_path), "w")
+        open("%s/b.test1" % (test_path), "w")
+        open("%s/c.test2" % (test_path), "w")
+        open("%s/d.test2" % (test_path), "w")
+        open("%s/a.testwhat1" % (test_path), "w")
+        open("%s/b.testwhat1" % (test_path), "w")
+        open("%s/c.testwhat2" % (test_path), "w")
+        open("%s/d.testwhat2" % (test_path), "w")
+
+        open("%s/a.b.output" % (test_path), "w")
+        open("%s/a.c.output" % (test_path), "w")
+        open("%s/b.c.output" % (test_path), "w")
+        open("%s/b.d.output" % (test_path), "w")
+
+        time.sleep(1)
+        self.tasks = [t1, t2, t3, t4, t5]
+        self.maxDiff = None
+
+
+    def tearDown(self):
+        os.unlink("%s/a.test1" % (test_path))
+        os.unlink("%s/b.test1" % (test_path))
+        os.unlink("%s/c.test2" % (test_path))
+        os.unlink("%s/d.test2" % (test_path))
+        os.unlink("%s/a.testwhat1" % (test_path))
+        os.unlink("%s/b.testwhat1" % (test_path))
+        os.unlink("%s/c.testwhat2" % (test_path))
+        os.unlink("%s/d.testwhat2" % (test_path))
+        os.unlink("%s/a.b.output" % (test_path))
+        os.unlink("%s/a.c.output" % (test_path))
+        os.unlink("%s/b.c.output" % (test_path))
+        os.unlink("%s/b.d.output" % (test_path))
+
+
+        os.removedirs(test_path)
+        pass
+
+
+
+
+    #_____________________________________________________________________________
+
+    #   wrappers
+
+    #_____________________________________________________________________________
+    def get_param_iterator (self, *orig_args):
+        #
+        # replace function / function names with tasks
+        #
+        # fake virgin task
+        fake_task = task._task("module", "func_fake%d" % randint(1, 1000000))
+        fake_task.task_product(orig_args)
+        return fake_task.param_generator_func
+
+
+    def do_task_product (self, *old_args):
+        """
+        This extra function is to simulate the forwarding from the decorator to
+            the task creation function
+        """
+        # extra dereference because we are only interested in the first (only) job
+        return list(p1 for (p1, ps) in self.get_param_iterator (*old_args)(None))
+
+
+    def test_simple(self):
+        """
+        test simple_form
+        """
+        #
+        # simple 1 input, 1 output
+        #
+        paths = self.do_task_product([test_path + "/a.test1", test_path + "/b.test1"],                          task.formatter("(?P<ID>\w+)\.(.+)"),
+                                     [test_path + "/c.test2", test_path + "/d.test2", test_path + "/e.ignore"], task.formatter("(?P<ID>\w+)\.(test2)"),
+                                     r"{path[0][0]}/{ID[0][0]}.{1[1][0]}.output")
+
+        self.assertEqual(recursive_replace(paths, test_path, "DIR"),
+                         [
+                            (('DIR/a.test1','DIR/c.test2'),'DIR/a.c.output'),
+                            (('DIR/a.test1','DIR/d.test2'),'DIR/a.d.output'),
+                            (('DIR/b.test1','DIR/c.test2'),'DIR/b.c.output'),
+                            (('DIR/b.test1','DIR/d.test2'),'DIR/b.d.output')
+                         ]
+                         )
+
+    def test_inputs(self):
+        """
+        test transform with inputs in both regex and suffix forms
+        """
+        #
+        # (replace) inputs
+        #
+        #
+        paths = self.do_task_product([test_path + "/a.test1", test_path + "/b.test1"],                          task.formatter("(?P<ID>\w+)\.(.+)"),
+                                     [test_path + "/c.test2", test_path + "/d.test2", test_path + "/e.ignore"], task.formatter("(?P<ID>\w+)\.(test2)"),
+                                     task.inputs(("{path[0][0]}/{basename[0][0]}.testwhat1", "{path[1][0]}/{basename[1][0]}.testwhat2") ),
+                                     r"{path[0][0]}/{ID[0][0]}.{1[1][0]}.output")
+        paths = recursive_replace(paths, test_path, "DIR")
+        self.assertEqual(paths,
+                         [
+                            (('DIR/a.testwhat1','DIR/c.testwhat2'),'DIR/a.c.output'),
+                            (('DIR/a.testwhat1','DIR/d.testwhat2'),'DIR/a.d.output'),
+                            (('DIR/b.testwhat1','DIR/c.testwhat2'),'DIR/b.c.output'),
+                            (('DIR/b.testwhat1','DIR/d.testwhat2'),'DIR/b.d.output')
+                         ]
+                         )
+        #
+        # add inputs
+        #
+        #
+        paths = self.do_task_product([test_path + "/a.test1", test_path + "/b.test1"],                          task.formatter("(?P<ID>\w+)\.(.+)"),
+                                     [test_path + "/c.test2", test_path + "/d.test2", test_path + "/e.ignore"], task.formatter("(?P<ID>\w+)\.(test2)"),
+                                     task.add_inputs("{path[0][0]}/{basename[0][0]}.testwhat1", "{path[1][0]}/{basename[1][0]}.testwhat2", ),
+                                     r"{path[0][0]}/{ID[0][0]}.{1[1][0]}.output")
+
+        paths = recursive_replace(paths, test_path, "DIR")
+        self.assertEqual(paths,
+                         [
+                            ((('DIR/a.test1','DIR/c.test2'), 'DIR/a.testwhat1','DIR/c.testwhat2'),'DIR/a.c.output'),
+                            ((('DIR/a.test1','DIR/d.test2'), 'DIR/a.testwhat1','DIR/d.testwhat2'),'DIR/a.d.output'),
+                            ((('DIR/b.test1','DIR/c.test2'), 'DIR/b.testwhat1','DIR/c.testwhat2'),'DIR/b.c.output'),
+                            ((('DIR/b.test1','DIR/d.test2'), 'DIR/b.testwhat1','DIR/d.testwhat2'),'DIR/b.d.output')
+                         ]
+                         )
 
 
 

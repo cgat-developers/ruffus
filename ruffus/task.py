@@ -302,6 +302,8 @@ class files(task_decorator):
 
 
 
+
+
 #
 #   Core
 #
@@ -346,6 +348,21 @@ class parallel(task_decorator):
 class files_re(task_decorator):
     pass
 
+
+#
+#   Combinatoric generators:
+#
+class product(task_decorator):
+	pass
+
+class permutations(task_decorator):
+	pass
+
+class combinations(task_decorator):
+	pass
+
+class combinations_with_replacement(task_decorator):
+	pass
 
 
 
@@ -700,19 +717,27 @@ class _task (node):
                     "task_mkdir",
                     "task_parallel",
                     "task_active_if",
+                    "task_product",
+                    "task_permutations",
+                    "task_combinations",
+                    "task_combinations_with_replacement",
                     ]
-    action_unspecified        =  0
-    action_task               =  1
-    action_task_files_re      =  2
-    action_task_split         =  3
-    action_task_merge         =  4
-    action_task_transform     =  5
-    action_task_collate       =  6
-    action_task_files_func    =  7
-    action_task_files         =  8
-    action_mkdir              =  9
-    action_parallel           = 10
-    action_active_if          = 11
+    action_unspecified                          =  0
+    action_task                                 =  1
+    action_task_files_re                        =  2
+    action_task_split                           =  3
+    action_task_merge                           =  4
+    action_task_transform                       =  5
+    action_task_collate                         =  6
+    action_task_files_func                      =  7
+    action_task_files                           =  8
+    action_mkdir                                =  9
+    action_parallel                             = 10
+    action_active_if                            = 11
+    action_task_product                         = 12
+    action_task_permutations                    = 13
+    action_task_combinations                    = 14
+    action_task_combinations_with_replacement   = 15
 
 
 
@@ -1371,108 +1396,6 @@ class _task (node):
 
     #8888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-    #_________________________________________________________________________________________
-
-    #   task_split_ex
-
-    #_________________________________________________________________________________________
-    def task_split_ex (self, orig_args):
-        """
-        Splits a single set of input files into multiple output file names,
-            where the number of output files may not be known beforehand.
-        """
-        #
-        #   check enough arguments
-        #
-        if (len(orig_args) < 3 or
-            (isinstance(orig_args[2], inputs) and len(orig_args) < 4) or
-            (isinstance(orig_args[2], add_inputs) and len(orig_args) < 4)
-            ):
-            raise error_task_split(self, "Too few arguments for @split")
-
-
-
-        self.set_action_type (_task.action_task_split)
-
-        #
-        # replace function / function names with tasks
-        #
-        input_files_task_globs = self.handle_tasks_globs_in_inputs(orig_args[0])
-
-        #   allows split to take a single file or task
-        input_files_task_globs.single_file_to_list()
-
-
-        # regular expression match
-        if isinstance(orig_args[1], regex):
-            file_names_transform = t_regex_file_names_transform(self, orig_args[1], error_task_split, "@split")
-
-        # simulate end of string (suffix) match
-        elif isinstance(orig_args[1], suffix):
-            file_names_transform = t_suffix_file_names_transform(self, orig_args[1], error_task_split, "@split")
-
-        # new style string.format()
-        elif isinstance(orig_args[1], formatter):
-            file_names_transform = t_format_file_names_transform(self, orig_args[1], error_task_split, "@split")
-        else:
-            raise error_task_split(self, "@split expects suffix(), regex(), or formatter() as the second argument")
-
-
-        #
-        #   inputs can also be defined by pattern match
-        #
-        if isinstance(orig_args[2], inputs):
-            if len(orig_args[2].args) != 1:
-                raise error_task_transform_inputs_multiple_args(self,
-                                    "inputs(...) expects only a single argument. "
-                                    "This can be, for example, a file name, "
-                                    "a regular expression pattern, or any "
-                                    "nested structure. If the intention was to "
-                                    "specify a tuple as the input parameter, "
-                                    "please wrap the elements of the tuple "
-                                    "in brackets in the decorator\n\n@transform(..., inputs(...), ...)\n")
-            replace_inputs = t_extra_inputs.REPLACE_INPUTS
-            extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[2].args[0])
-            output_pattern = orig_args[3]
-            extra_params = orig_args[4:]
-        elif isinstance(orig_args[2], add_inputs):
-            replace_inputs = t_extra_inputs.ADD_TO_INPUTS
-            extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[2].args)
-            output_pattern = orig_args[3]
-            extra_params = orig_args[4:]
-        else:
-            replace_inputs = t_extra_inputs.KEEP_INPUTS
-            extra_inputs = None
-            output_pattern = orig_args[2]
-            extra_params = orig_args[3:]
-
-
-
-        #
-        #   output globs will be replaced with files. But there should not be tasks here!
-        #
-        output_files_task_globs = self.handle_tasks_globs_in_inputs(output_pattern)
-        if len(output_files_task_globs.tasks):
-            raise error_task_split(self, "@split cannot output to another task. "
-                                            "Do not include tasks in output parameters.")
-
-
-
-        self.param_generator_func = split_ex_param_factory (   input_files_task_globs,
-                                                                False, # flatten input
-                                                                file_names_transform,
-                                                                extra_inputs,
-                                                                replace_inputs,
-                                                                output_files_task_globs,
-                                                                *extra_params)
-        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
-        self.job_wrapper          = job_wrapper_io_files
-        #self.job_descriptor       = io_files_job_descriptor # (orig_args[2], output_runtime_data_names)
-        self.job_descriptor       = io_files_one_to_many_job_descriptor
-
-        # output is a glob
-        self.indeterminate_output = 2
-        self.single_multi_io       = self.many_to_many
 
     #_________________________________________________________________________________________
 
@@ -1522,6 +1445,233 @@ class _task (node):
 
     #_________________________________________________________________________________________
 
+    #   get_extra_inputs
+
+    #_________________________________________________________________________________________
+    def get_extra_inputs_outputs_extra (self, orig_args, error_type, decorator_name):
+        """
+        shared code for split_ex, transform, product etc for parsing orig_args into
+            add_inputs/inputs, output, extra
+        """
+
+        #
+        #   inputs can also be defined by pattern match
+        #
+        if isinstance(orig_args[0], inputs):
+            if len(orig_args) < 2:
+                raise error_type(self, "Too few arguments for %s" % decorator_name)
+            if len(orig_args[0].args) != 1:
+                raise error_task_transform_inputs_multiple_args(self,
+                                    "inputs(...) expects only a single argument. "
+                                    "This can be, for example, a file name, "
+                                    "a regular expression pattern, or any "
+                                    "nested structure. If the intention was to "
+                                    "specify a tuple as the input parameter, "
+                                    "please wrap the elements of the tuple "
+                                    "in brackets in the decorator\n\n"
+                                    "%s(..., inputs(...), ...)\n" % (decorator_name))
+            replace_inputs = t_extra_inputs.REPLACE_INPUTS
+            extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[0].args[0])
+            output_pattern = orig_args[1]
+            extra_params = orig_args[2:]
+        elif isinstance(orig_args[0], add_inputs):
+            if len(orig_args) < 2:
+                raise error_type(self, "Too few arguments for %s" % decorator_name)
+            replace_inputs = t_extra_inputs.ADD_TO_INPUTS
+            extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[0].args)
+            output_pattern = orig_args[1]
+            extra_params = orig_args[2:]
+        else:
+            replace_inputs = t_extra_inputs.KEEP_INPUTS
+            extra_inputs = None
+            output_pattern = orig_args[0]
+            extra_params = orig_args[1:]
+
+        return extra_inputs, replace_inputs, output_pattern, extra_params
+
+    #_________________________________________________________________________________________
+
+    #   choose_file_names_transform
+
+    #_________________________________________________________________________________________
+
+    def choose_file_names_transform (self, file_name_transform_tag, error_type, decorator_name, valid_tags = (regex, suffix, formatter)):
+        """
+        shared code for split_ex, transform, product etc for choosing method for transform input file to output files
+        """
+        valid_tag_names = [];
+        # regular expression match
+        if (regex in valid_tags):
+            valid_tag_names.append("regex()")
+            if isinstance(file_name_transform_tag, regex):
+                return t_regex_file_names_transform(self, file_name_transform_tag, error_type, decorator_name)
+
+        # simulate end of string (suffix) match
+        if (suffix in valid_tags):
+            valid_tag_names.append("suffix()")
+            if isinstance(file_name_transform_tag, suffix):
+                return t_suffix_file_names_transform(self, file_name_transform_tag, error_type, decorator_name)
+
+        # new style string.format()
+        if (formatter in valid_tags):
+            valid_tag_names.append("formatter()")
+            if isinstance(file_name_transform_tag, formatter):
+                return t_formatter_file_names_transform(self, file_name_transform_tag, error_type, decorator_name)
+
+        raise error_type(self, "%s expects one of as the second argument" % (decorator_name, ", ".join(valid_tag_names)))
+    #_________________________________________________________________________________________
+
+    #   task_split_ex
+
+    #_________________________________________________________________________________________
+    def task_split_ex (self, orig_args):
+        """
+        Splits a single set of input files into multiple output file names,
+            where the number of output files may not be known beforehand.
+        """
+        decorator_name  = "@split"
+        error_type      = error_task_split
+        if len(orig_args) < 3:
+            raise error_type(self, "Too few arguments for %s" % decorator_name)
+
+
+
+        self.set_action_type (_task.action_task_split)
+
+        #
+        # replace function / function names with tasks
+        #
+        input_files_task_globs = self.handle_tasks_globs_in_inputs(orig_args[0])
+
+        #   allows split to take a single file or task
+        input_files_task_globs.single_file_to_list()
+
+        # how to transform input to output file name
+        file_names_transform = self.choose_file_names_transform (orig_args[1], error_task_split, decorator_name)
+
+        orig_args = orig_args[2:]
+
+        #   inputs can also be defined by pattern match
+        extra_inputs, replace_inputs, output_pattern, extra_params = self.get_extra_inputs_outputs_extra (orig_args, error_type, decorator_name)
+
+        #
+        #   output globs will be replaced with files. But there should not be tasks here!
+        #
+        output_files_task_globs = self.handle_tasks_globs_in_inputs(output_pattern)
+        if len(output_files_task_globs.tasks):
+            raise error_task_split(self, "@split cannot output to another task. "
+                                            "Do not include tasks in output parameters.")
+
+
+
+        self.param_generator_func = split_ex_param_factory (   input_files_task_globs,
+                                                                False, # flatten input
+                                                                file_names_transform,
+                                                                extra_inputs,
+                                                                replace_inputs,
+                                                                output_files_task_globs,
+                                                                *extra_params)
+        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
+        self.job_wrapper          = job_wrapper_io_files
+        #self.job_descriptor       = io_files_job_descriptor # (orig_args[0], output_runtime_data_names)
+        self.job_descriptor       = io_files_one_to_many_job_descriptor
+
+        # output is a glob
+        self.indeterminate_output = 2
+        self.single_multi_io       = self.many_to_many
+
+    #_________________________________________________________________________________________
+
+    #   task_product
+
+    #_________________________________________________________________________________________
+    def task_product(self, orig_args):
+        """
+        all versus all
+        """
+        decorator_name  = "@product"
+        error_type      = error_task_product
+        if len(orig_args) < 3:
+            raise error_type(self, "Too few arguments for %s" % decorator_name)
+
+        #
+        #   get all pairs of tasks / globs and formatter()
+        #
+        list_input_files_task_globs = []
+        list_formatter = []
+        while len(orig_args) >= 3:
+            if isinstance(orig_args[1], formatter):
+                list_input_files_task_globs .append(orig_args[0])
+                list_formatter              .append(orig_args[1])
+                orig_args = orig_args[2:]
+            else:
+                break
+
+        if not len(list_formatter):
+            raise error_task_product(self, "@product expects formatter() as the second argument")
+
+
+        self.set_action_type (_task.action_task_product)
+
+        #
+        # replace function / function names with tasks
+        #
+        list_input_files_task_globs = [self.handle_tasks_globs_in_inputs(ii) for ii in list_input_files_task_globs]
+
+
+        # list of new style string.format()
+        file_names_transform = t_nested_formatter_file_names_transform(self, list_formatter, error_task_product, decorator_name)
+
+
+        #
+        #   inputs can also be defined by pattern match
+        #
+        extra_inputs, replace_inputs, output_pattern, extra_params = self.get_extra_inputs_outputs_extra (orig_args, error_type, decorator_name)
+
+        self.param_generator_func = product_param_factory ( list_input_files_task_globs,
+                                                            False, # flatten input
+                                                            file_names_transform,
+                                                            extra_inputs,
+                                                            replace_inputs,
+                                                            output_pattern,
+                                                            *extra_params)
+        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
+        self.job_wrapper          = job_wrapper_io_files
+        self.job_descriptor       = io_files_job_descriptor
+        self.single_multi_io      = self.many_to_many
+
+
+    #_________________________________________________________________________________________
+
+    #   task_permutations
+
+    #_________________________________________________________________________________________
+    def task_permutations(self, orig_args):
+        pass
+
+
+    #_________________________________________________________________________________________
+
+    #   task_combinations
+
+    #_________________________________________________________________________________________
+    def task_combinations(self, orig_args):
+        pass
+
+
+    #_________________________________________________________________________________________
+
+    #   task_combinations_with_replacement
+
+    #_________________________________________________________________________________________
+    def task_combinations_with_replacement(self, orig_args):
+        pass
+
+
+
+
+    #_________________________________________________________________________________________
+
     #   task_transform
 
     #_________________________________________________________________________________________
@@ -1529,15 +1679,10 @@ class _task (node):
         """
         Merges multiple input files into a single output.
         """
-        #
-        #   check enough arguments
-        #
-        if (len(orig_args) < 3 or
-            (isinstance(orig_args[2], inputs) and len(orig_args) < 4) or
-            (isinstance(orig_args[2], add_inputs) and len(orig_args) < 4)
-            ):
-            raise error_task_transform(self, "Too few arguments for @transform")
-
+        decorator_name  = "@transform"
+        error_type      = error_task_split
+        if len(orig_args) < 3:
+            raise error_type(self, "Too few arguments for %s" % decorator_name)
 
 
         self.set_action_type (_task.action_task_transform)
@@ -1566,54 +1711,16 @@ class _task (node):
 
         #_________________________________________________________________________________
 
-        # regular expression match
-        if isinstance(orig_args[1], regex):
-            file_names_transform = t_regex_file_names_transform(self, orig_args[1], error_task_transform, "@transform")
+        # how to transform input to output file name
+        file_names_transform = self.choose_file_names_transform (orig_args[1], error_task_transform, decorator_name)
 
-
-        # simulate end of string (suffix) match
-        elif isinstance(orig_args[1], suffix):
-            file_names_transform = t_suffix_file_names_transform(self, orig_args[1], error_task_transform, "@transform")
-
-        # new style string.format()
-        elif isinstance(orig_args[1], formatter):
-            file_names_transform = t_format_file_names_transform(self, orig_args[1], error_task_transform, "@transform")
-
-        else:
-            raise error_task_transform(self, "@transform expects suffix(), regex(), or "
-                                                            "formatter() as the second argument")
-
+        orig_args = orig_args[2:]
 
 
         #
         #   inputs can also be defined by pattern match
         #
-        if isinstance(orig_args[2], inputs):
-            if len(orig_args[2].args) != 1:
-                raise error_task_transform_inputs_multiple_args(self,
-                                    "inputs(...) expects only a single argument. "
-                                    "This can be, for example, a file name, "
-                                    "a regular expression pattern, or any "
-                                    "nested structure. If the intention was to "
-                                    "specify a tuple as the input parameter, "
-                                    "please wrap the elements of the tuple "
-                                    "in brackets in the decorator\n\n@transform(..., inputs(...), ...)\n")
-            replace_inputs = t_extra_inputs.REPLACE_INPUTS
-            extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[2].args[0])
-            output_pattern = orig_args[3]
-            extra_params = orig_args[4:]
-        elif isinstance(orig_args[2], add_inputs):
-            replace_inputs = t_extra_inputs.ADD_TO_INPUTS
-            extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[2].args)
-            output_pattern = orig_args[3]
-            extra_params = orig_args[4:]
-        else:
-            replace_inputs = t_extra_inputs.KEEP_INPUTS
-            extra_inputs = None
-            output_pattern = orig_args[2]
-            extra_params = orig_args[3:]
-
-
+        extra_inputs, replace_inputs, output_pattern, extra_params = self.get_extra_inputs_outputs_extra (orig_args, error_type, decorator_name)
 
         self.param_generator_func = transform_param_factory (   input_files_task_globs,
                                                                 False, # flatten input
@@ -1636,11 +1743,10 @@ class _task (node):
         """
         Merges multiple input files into a single output.
         """
-        #
-        #   check enough arguments
-        #
+        decorator_name = "@collate"
+        error_type      = error_task_collate
         if len(orig_args) < 3:
-            raise error_task_collate(self, "Too few arguments for @collate")
+            raise error_type(self, "Too few arguments for %s" % decorator_name)
 
         self.set_action_type (_task.action_task_collate)
 
@@ -1650,47 +1756,25 @@ class _task (node):
         input_files_task_globs = self.handle_tasks_globs_in_inputs(orig_args[0])
 
 
-        # regular expression match
-        if isinstance(orig_args[1], regex):
-            matching_regex = compile_regex(self, orig_args[1], error_task_collate, "@collate")
-            file_names_transform = t_regex_file_names_transform(self, orig_args[1], error_task_transform, "@transform")
-        else:
-            raise error_task_collate(self, "@collate expects regex() as the second argument")
+        # how to transform input to output file name
+        file_names_transform = self.choose_file_names_transform (orig_args[1], error_task_collate, decorator_name, (regex, formatter))
+
+        orig_args = orig_args[2:]
 
         #
         #   inputs also defined by pattern match
         #
-        if isinstance(orig_args[2], inputs):
-            if len(orig_args[2].args) != 1:
-                raise error_task_collate_inputs_multiple_args(self,
-                                    "inputs(...) expects only a single argument. "
-                                    "This can be, for example, a file name, "
-                                    "a regular expression pattern, or any "
-                                    "nested structure. If the intention was to "
-                                    "specify a tuple as the input parameter, "
-                                    "please wrap the elements of the tuple "
-                                    "in brackets in the decorator\n\n@collate(..., inputs(...), ...)\n")
-            replace_inputs = t_extra_inputs.REPLACE_INPUTS
-            extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[2].args[0])
-            output_pattern_extras = orig_args[3:]
-        elif isinstance(orig_args[2], add_inputs):
-            replace_inputs = t_extra_inputs.ADD_TO_INPUTS
-            extra_inputs = self.handle_tasks_globs_in_inputs(orig_args[2].args)
-            output_pattern_extras = orig_args[3:]
-        else:
-            replace_inputs = t_extra_inputs.KEEP_INPUTS
-            extra_inputs = None
-            output_pattern_extras = orig_args[2:]
+        extra_inputs, replace_inputs, output_pattern, extra_params = self.get_extra_inputs_outputs_extra (orig_args, error_type, decorator_name)
 
-        extra_params = orig_args[2:]
         self.single_multi_io           = self.many_to_many
 
-        self.param_generator_func = collate_param_factory (input_files_task_globs,
+        self.param_generator_func = collate_param_factory ( input_files_task_globs,
                                                             False, # flatten input
                                                             file_names_transform,
                                                             extra_inputs,
                                                             replace_inputs,
-                                                            *output_pattern_extras)
+                                                            output_pattern,
+                                                            *extra_params)
         self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_io_files
         self.job_descriptor       = io_files_job_descriptor
@@ -1891,7 +1975,6 @@ class _task (node):
         #
         input_files_task_globs = self.handle_tasks_globs_in_inputs(orig_args[0])
 
-        #matching_regex = compile_regex(self, regex(orig_args[1]), error_task_files_re, "@files_re")
         file_names_transform = t_regex_file_names_transform(self, regex(orig_args[1]), error_task_files_re, "@files_re")
 
 
