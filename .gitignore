@@ -6,3 +6,4 @@ build
 _build
 doc/hosted_site.cmd
 .ruffus_history.sqlite
+ruffus_development.*
