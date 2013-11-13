@@ -28,6 +28,18 @@ New features
     with regex
 
 ==============================================================================
+@product
+==============================================================================
+
+    with regex
+
+==============================================================================
+formatter
+==============================================================================
+
+    with regex
+
+==============================================================================
 @active_if
 ==============================================================================
 
@@ -159,7 +171,7 @@ Refactoring parameter handling
 New decorators
 ***************************************
 ==============================================================================
-To do:
+How to:
 ==============================================================================
 
 
@@ -329,11 +341,14 @@ Task completion monitoring
     * Jake has done this already.
     * Fantastic code. Checked in.
     * Get Job history / stats
+    * On by default?
+    * Can we get status?
 
 ***************************************
 job trickling
 ***************************************
 
+    * @recombine is the necessary step, otherwise all @split @merge end in a stall and we might as well not bother...
     * depth first etc iteration of tree
     * Jobs need unique job_id tag
     * Need a way of generating filenames without returning from a function
