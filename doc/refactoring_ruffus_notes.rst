@@ -120,6 +120,10 @@ Add dispatch / completion timestamp to jobs
 **************************************************
 Running python jobs remotely on cluster nodes
 **************************************************
+
+    abstract out ``task.run_pooled_job_without_exceptions()`` as a function which can be supplied to
+        pipeline_run
+
     Common "job" interface:
 
          *  marshalled arguments
@@ -131,18 +135,23 @@ Running python jobs remotely on cluster nodes
          *  returned values
          *  exception
 
-    #) Use libpythongrid
-       Too customised?
-       https://code.google.com/p/pythongrid/source/browse/#git%2Fpythongrid
-    #) file-based invocation
-       * needs common directory
-    #) Light weight version of python grid needs
-       #) "heart beat"
-       #) time stamp
-       #) process recycling: max number of jobs, min/max time
-       #) resubmit
-       #) specify port
-       #) map interface
+    #) Full version use libpythongrid
+       * Christian Widmer <ckwidmer@gmail.com>
+       * Cheng Soon Ong <chengsoon.ong@unimelb.edu.au>
+       * https://code.google.com/p/pythongrid/source/browse/#git%2Fpythongrid
+       * Probably not good to base Ruffus entirely on libpythongrid to minimise dependencies, their more sophisticated configuration policies etc. and to abstract out commonalities.
+    #) Start with light-weight file-based protocol
+       * both drmaa and this needs specified local and remote directories
+       * use drmaa to start jobs
+       * have executable module which knows how to load deserialise (unmarshall) function / parameters from disk
+       * time stamp
+       * "heart beat"
+    #) Next step: pipe-based protocol
+       * use specified master port
+       * child is handed port in start up code to initiate hand shake or die
+       * start remote processes using drmaa
+       * process recycling: run successive jobs on the same remote process for reduced overhead, until exceeds max number of jobs on the same process, min/max time on the same process
+       * resubmit if die (Don't do sophisticated stuff like libpythongrid).
 
 ***************************************
 Custom parameter generator
