@@ -225,6 +225,28 @@ To do:
     * The length of combinations and permutations needs to be specified
     * Adds one level of nesting to normal @transform 
     * ``ruffus_uilility.swap_doubly_nested_order()`` makes the syntax / implementation very orthogonal
+    * Retain same code for @product and @transform by adding an additional level of indirection:
+        * generator wrap around ``get_strings_in_nested_sequence`` to convert nested input parameters either to a single flat list of file names or to nested lists of file names
+
+          .. code-block:: python
+
+              file_name_parameters.input_param_to_file_name_list (input_params)
+              file_name_parameters.list_input_param_to_file_name_list (input_params)
+
+        * ``t_file_names_transform`` class which stores a list of regular expressions, one for each ``formatter()`` object corresponding to a single set of input parameters
+
+          .. code-block:: python
+
+            t_formatter_file_names_transform
+            t_nested_formatter_file_names_transform
+
+        * string substitution functions which will apply a list of ``formatter`` changes
+
+          .. code-block:: python
+
+                ruffus.utility.t_formatter_replace()
+                ruffus.utility.t_nested_formatter_replace()
+        
 
             
         
