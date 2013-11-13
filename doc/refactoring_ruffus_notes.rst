@@ -2,6 +2,8 @@
 In progress: Refactoring Ruffus Docs
 ##########################################
 
+    Remember to cite Jake Biesinger and see if he is interested to be a co-author if we ever resubmit the drastically changed version...
+
 ***************************************
 Best Practices
 ***************************************
@@ -22,38 +24,48 @@ Reusing pipeline code in modules
 New features
 ***************************************
 ==============================================================================
-@split
+@subdivide
 ==============================================================================
-
-    with regex
-
-==============================================================================
-@product
-==============================================================================
-
-    with regex
+    synonym for @split
 
 ==============================================================================
 formatter
 ==============================================================================
 
-    with regex
+    with regular expression or not
+
+==============================================================================
+@split
+==============================================================================
+
+    with regex()
+
+==============================================================================
+@product
+==============================================================================
+
+    with formatter()
 
 ==============================================================================
 @active_if
 ==============================================================================
 
-    with regex
 
 ==============================================================================
 task completion monitoring
 ==============================================================================
+
+    Jake Biesinger
 
 ==============================================================================
 command line
 ==============================================================================
 
     new minimal code template
+
+==============================================================================
+drmaa
+==============================================================================
 
 ***************************************
 git hub docs
@@ -65,6 +77,222 @@ git hub docs
 ##########################################
 In progress: Refactoring Ruffus
 ##########################################
+***************************************
+Task completion monitoring
+***************************************
+
+    * On by default?
+    * Can we query the database, get Job history / stats
+    * What are the run time performance implications?
+
+************************************************************************************************
+@permutations(...), @combinations(...), @combinations_with_replacement(...), @permutations(...),
+************************************************************************************************
+
+    * Need test code in test/test_file_name_parameter.py
+    * Need test scripts
+
+************************************************************************************************
+@subdivide
+************************************************************************************************
+
+    * needs test code
+    * needs test scripts
+
+
+****************************************************************************
+Add dispatch / completion timestamp to jobs
+****************************************************************************
+
+    Is this logged by Jake
+
+**************************************************
+Running python jobs remotely on cluster nodes
+**************************************************
+    Common "job" interface:
+
+         *  marshalled arguments
+         *  marshalled function
+         *  timestamp
+         *  return
+         *  exception
+
+    #) Use libpythongrid
+       Too customised?
+       https://code.google.com/p/pythongrid/source/browse/#git%2Fpythongrid
+    #) file-based invocation
+       * needs common directory
+    #) Light weight version of python grid needs
+       #) "heart beat"
+       #) time stamp
+       #) process recycling: max number of jobs, min/max time
+       #) resubmit
+       #) port?
+
+***************************************
+Custom parameter generator
+***************************************
+
+    Leverages built-in Ruffus functionality.
+    Don't have to write entire parameter generation from scratch.
+
+    * Gets passed an iterator where you can do a for loop to get input parameters / a flattened list of files
+    * Other parameters are forwarded as is
+    * The duty of the function is to ``yield`` input, output, extra parameters
+
+***************************************
+@mkdir with regex
+***************************************
+
+
+##########################################
+Planned: Refactoring Ruffus
+##########################################
+
+***************************************
+New decorators
+***************************************
+==============================================================================
+How to:
+==============================================================================
+
+
+    New placeholder class. E.g. for @new_deco
+
+    .. code-block:: python
+
+        class new_deco(task_decorator):
+            pass
+
+    Add to list of action names and ids:
+
+    .. code-block:: python
+
+        action_names = ["unspecified",
+                        ...
+                        "task_new_deco",
+
+        action_task_new_deco     =  15
+
+    Add function:
+
+    .. code-block:: python
+
+        def task_transform (self, orig_args):
+
+
+
+==============================================================================
+@split / @subdivide
+==============================================================================
+
+    yielding file names
+
+
+==============================================================================
+@generate
+==============================================================================
+
+    @split ex nihilo
+
+
+==============================================================================
+@recombine
+==============================================================================
+
+    regroups previously @subdivide-d jobs **providing** that the output file names
+    were returned from the function
+
+
+***************************************
+job trickling
+***************************************
+
+    * @recombine is the necessary step, otherwise all @split @merge end in a stall and we might as well not bother...
+    * depth first etc iteration of tree
+    * Jobs need unique job_id tag
+    * Need a way of generating filenames without returning from a function
+      indefinitely: i.e. a generator
+    * Need a way of knowing which files group together (i.e. were split
+      from a common job) without using regex (magic @split and @remerge)
+    * @split needs to be able to specify at run time the number of
+      resulting jobs without using wild cards
+    * @merge needs to know when all of a group of files have completed
+    * legacy support for wild cards and file names.
+    * Possible breaking change: Assumes an explicit @follows if require
+      *all* jobs from the previous task to finish
+    * "Push" system of checking in completed jobs into "slots" of waiting
+      tasks
+    * New jobs dispatched when slots filled adequately
+    * Funny "single file" mode for @transform, @files needs to be
+      regularised so it is a syntactic (front end) convenience (oddity!)
+      and not plague the inards of ruffus
+    * use named parameters in decorators for clarity?
+
+
+
+
+
+
+******************************************************************************
+    Ruffus GUI interface.
+******************************************************************************
+
+    Desktop (PyQT or web-based solution?)  I'd love to see an svg pipeline picture that I could actually interact with
+
+
+
+
+******************************************************************************
+Extending graphviz output
+******************************************************************************
+
+
+
+***************************************
+Deleting intermediate files
+***************************************
+==============================================================================
+Bernie Pope hack: truncate file to zero, preserving modification times
+==============================================================================
+
+    .. code-block:: python
+
+        def zeroFile(file):
+            if os.path.exists(file):
+                # save the current time of the file
+                timeInfo = os.stat(file)
+                try:
+                    f = open(file,'w')
+                except IOError:
+                    pass
+                else:
+                    f.truncate(0)
+                    f.close()
+                    # change the time of the file back to what it was
+                    os.utime(file,(timeInfo.st_atime, timeInfo.st_mtime))
+
+
+##########################################
+Completed: Refactoring Ruffus Docs
+##########################################
+
+##########################################
+Completed: Refactoring Ruffus
+##########################################
+
+***************************************
+drmaa
+***************************************
+
+    Implemented in drmaa_wrapper.py
+
+    Alternative, non-drmaa polling code at
+
+    https://github.com/bjpop/rubra/blob/master/rubra/cluster_job.py
+
+    Probably not necessary surely.
+
 ******************************************************************************
 New flexible "format" alternative to regex suffix
 ******************************************************************************
@@ -144,7 +372,6 @@ New flexible "format" alternative to regex suffix
     The only trickiness is that string.format() understands all integer number keys to be offsets into lists/ tuples and everything else
     including negative numbers to be dict keys.
 
-
 ******************************************************************************
 Refactoring parameter handling
 ******************************************************************************
@@ -164,80 +391,88 @@ Refactoring parameter handling
     unit tests added to ``test_file_name_parameters.py`` and ``test_ruffus_utility.py``
 
 
+***************************************
+Task completion monitoring
+***************************************
 
+    * Jake Biesinger has done this already.
+    * Fantastic code. Checked in.
 
 
 ***************************************
-New decorators
+@product()
 ***************************************
-==============================================================================
-How to:
-==============================================================================
-
-
-    New placeholder class. E.g. for @new_deco
-
-    .. code-block:: python
-
-        class new_deco(task_decorator):
-            pass
-
-    Add to list of action names and ids:
-
-    .. code-block:: python
-
-        action_names = ["unspecified",
-                        ...
-                        "task_new_deco",
-
-        action_task_new_deco     =  15
-
-    Add function:
-
-    .. code-block:: python
-
-        def task_transform (self, orig_args):
-
-
 ============================================================================================================================================================
-@product() / @permutations/ @combinations() / @combinations_with_replacement
+Final syntax
 ============================================================================================================================================================
 
-    Final syntax:
-
     .. code-block:: python
 
 
-        @product( 
+        @product(
                 "*.a",
                 formatter( ".*/(?P<ID>\w+.bamfile).bam" ),
                 AToB,
                 formatter(),
                 ...
                 "{path[0][0]}/{base_name[0][0]}.{base_name[0][0]}.out",
-                "{path[0][0]}",       # extra: path for 1st input, 1st file 
-                "{path[1][0]}",       # extra: path for 2nd input, 1st file 
-                "{basename[0][1]}",   # extra: file name for 1st input, 2nd file 
-                "{ID[1][2]}",         # extra: regular expression named capture group for 2nd input, 3rd file 
+                "{path[0][0]}",       # extra: path for 1st input, 1st file
+                "{path[1][0]}",       # extra: path for 2nd input, 1st file
+                "{basename[0][1]}",   # extra: file name for 1st input, 2nd file
+                "{ID[1][2]}",         # extra: regular expression named capture group for 2nd input, 3rd file
                 )
-        def product( infiles, outfile, 
-                    input_1__path,  
-                    input_2__path,  
-                    input_1__2nd_file_name,  
-                    input_2__3rd_file_match  
+        def product( infiles, outfile,
+                    input_1__path,
+                    input_2__path,
+                    input_1__2nd_file_name,
+                    input_2__3rd_file_match
                     ):
             print infiles, outfile
-
 
     * Flexible number of pairs of ``task`` / ``glob`` / file names + ``formatter()``
     * Only ``formatter([OPTIONAl_REGEX])`` provides the necessary flexibility to construct the output so we won't bother with suffix and regex
     * Use all "Combinatoric generators" from itertools. Use the original names for clarity, and the itertools implementation under the hood
     * Put all new generators in an itertools submodule namespace to avoid breaking user code. (They can import if necessary.)
     * The ``itertools.product(repeat)`` parameter doesn't make sense for Ruffus and will not be used
-    * The length of combinations and permutations needs to be specified
-    * Adds one level of nesting to normal @transform 
-    * ``ruffus_uilility.swap_doubly_nested_order()`` makes the syntax / implementation very orthogonal
-    * Retain same code for @product and @transform by adding an additional level of indirection:
+
+
+============================================================================================================================================================
+Initial proposed syntax
+============================================================================================================================================================
+
+    Andreas Heger:
+
+    .. code-block:: python
+
+        @product( "*.a", AToB,
+              regex( "(.*).a" ),
+              regex( "(.*).b" ),
+              "%1_vs_%2.out" )
+        def product( infiles, outfile ):
+            print infiles, outfile
+
+
+    Jake Biesinger:
+
+    .. code-block:: python
+
+
+        @product( "*.a",
+                regex( "(.*).a" ),
+                AToB,
+                regex( "(.*).b" ),
+                ...
+                "???,out" )
+        def product( infiles, outfile ):
+            print infiles, outfile
+
+============================================================================================================================================================
+Implementation
+============================================================================================================================================================
+
+    Similar to @transform but with extra level of nested-ness
+
+    Retain same code for @product and @transform by adding an additional level of indirection:
         * generator wrap around ``get_strings_in_nested_sequence`` to convert nested input parameters either to a single flat list of file names or to nested lists of file names
 
           .. code-block:: python
@@ -258,194 +493,61 @@ How to:
 
                 ruffus.utility.t_formatter_replace()
                 ruffus.utility.t_nested_formatter_replace()
-        
 
-            
-        
+        * ``ruffus_uilility.swap_doubly_nested_order()`` makes the syntax / implementation very orthogonal
 
 
-    Andreas syntax:
+
+
+
+
+******************************************************************************
+@permutations(...), @combinations(...), @combinations_with_replacement(...)
+******************************************************************************
+
+    * Put all new generators in an ``combinatorics`` submodule namespace to avoid breaking user code. (They can import if necessary.)
+    * Only ``formatter([OPTIONAl_REGEX])`` provides the necessary flexibility to construct the output so we won't bother with suffix and regex
+
+    Use combinatoric generators from itertools and keep that naming scheme
+
+    Final syntax:
+
+
+
 
     .. code-block:: python
 
-        @product( "*.a", AToB,
-              regex( "(.*).a" ),
-              regex( "(.*).b" ),
-              "%1_vs_%2.out" )
-        def product( infiles, outfile ):
+
+
+
+        @permutations(
+                "*.a",
+                formatter( ".*/(?P<ID>\w+.bamfile).bam" ),     # Elements in a tuple come from a single list, so we only need one formatter
+                2,                                             # k_length_tuples,
+                "{path[0][0]}/{base_name[0][0]}.{base_name[1][0]}.out",
+                "{path[0][0]}",                                # extra: path for 1st input, 1st file
+                "{path[1][0]}",                                # extra: path for 2nd input, 1st file
+                "{basename[0][1]}",                            # extra: file name for 1st input, 2nd file
+                "{ID[1][2]}",                                  # extra: regular expression named capture group for 2nd input, 3rd file
+                )
+        def task1( infiles, outfile,
+                    input_1__path,
+                    input_2__path,
+                    input_1__2nd_file_name,
+                    input_2__3rd_file_match
+                    ):
             print infiles, outfile
 
 
-    Jake syntax:
+============================================================================================================================================================
+Implementation
+============================================================================================================================================================
 
-    .. code-block:: python
+    Similar to @product extra level of nested-ness is self versus self
 
-
-        @product( "*.a",
-                regex( "(.*).a" ),
-                AToB,
-                regex( "(.*).b" ),
-                ...
-                "???,out" )
-        def product( infiles, outfile ):
-            print infiles, outfile
-
-
-
-
-==============================================================================
-@subdivide
-==============================================================================
-
-    synonym for @split_ex
-
-==============================================================================
-@mkdir with regex
-==============================================================================
-
-
-==============================================================================
-@split
-==============================================================================
-
-    yielding file names
-
-
-==============================================================================
-@generate
-==============================================================================
-
-    @split ex nihilo
-
-
-==============================================================================
-@recombine
-==============================================================================
-
-    regroups previously subdivided / split jobs **providing** that the output file names
-    were returned from the function
-
-***************************************
-Custom parameter generator
-***************************************
-
-    * Which leverages some of the current functionality. Don't have to
-        write entire parameter generation from scratch?
-
-    * Add customisation point?
-
-***************************************
-Task completion monitoring
-***************************************
-
-    * Jake has done this already.
-    * Fantastic code. Checked in.
-    * Get Job history / stats
-    * On by default?
-    * Can we get status?
-
-***************************************
-job trickling
-***************************************
-
-    * @recombine is the necessary step, otherwise all @split @merge end in a stall and we might as well not bother...
-    * depth first etc iteration of tree
-    * Jobs need unique job_id tag
-    * Need a way of generating filenames without returning from a function
-      indefinitely: i.e. a generator
-    * Need a way of knowing which files group together (i.e. were split
-      from a common job) without using regex (magic @split and @remerge)
-    * @split needs to be able to specify at run time the number of
-      resulting jobs without using wild cards
-    * @merge needs to know when all of a group of files have completed
-    * legacy support for wild cards and file names.
-    * Possible breaking change: Assumes an explicit @follows if require
-      *all* jobs from the previous task to finish
-    * "Push" system of checking in completed jobs into "slots" of waiting
-      tasks
-    * New jobs dispatched when slots filled adequately
-    * Funny "single file" mode for @transform, @files needs to be
-      regularised so it is a syntactic (front end) convenience (oddity!)
-      and not plague the inards of ruffus
-    * use named parameters in decorators for clarity?
-
-
-
-***************************************
-drmaa
-***************************************
-
-    Implemented in drmaa_wrapper.py
-
-    Alternative, non-drmaa polling code at
-
-    https://github.com/bjpop/rubra/blob/master/rubra/cluster_job.py
-
-    Probably not necessary surely.
-
-
-***************************************
-Running python on nodes
-***************************************
-    Common "job" interface:
-
-         *  marshalled arguments
-         *  marshalled function
-         *  timestamp
-         *  return
-         *  exception
-
-    #) Use libpythongrid
-       Too customised?
-       https://code.google.com/p/pythongrid/source/browse/#git%2Fpythongrid
-    #) file-based invocation
-       * needs common directory
-    #) Light weight version of python grid needs
-       #) "heart beat"
-       #) time stamp
-       #) process recycling: max number of jobs, min/max time
-       #) resubmit
-       #) port?
-
-
-******************************************************************************
-    Ruffus GUI interface.
-******************************************************************************
-
-    Desktop (PyQT or web-based solution?)  I'd love to see an svg pipeline picture that I could actually interact with
-
-
-
-
-******************************************************************************
-Extending graphviz output
-******************************************************************************
-
-
-
-***************************************
-Deleting intermediate files
-***************************************
-==============================================================================
-Bernie Pope hack: truncate file to zero, preserving modification times
-==============================================================================
-
-    .. code-block:: python
-
-        def zeroFile(file):
-            if os.path.exists(file):
-                # save the current time of the file
-                timeInfo = os.stat(file)
-                try:
-                    f = open(file,'w')
-                except IOError:
-                    pass
-                else:
-                    f.truncate(0)
-                    f.close()
-                    # change the time of the file back to what it was
-                    os.utime(file,(timeInfo.st_atime, timeInfo.st_mtime))
-
-
+    Retain same code for @product
+        * forward to a sinble ``file_name_parameters.combinatorics_param_factory()``
+        * use ``combinatorics_type`` to dispatch to ``itertools.permutations``, ``itertools.combinations`` and ``itertools.combinations_with_replacement``
+        * use ``list_input_param_to_file_name_list`` from ``file_name_parameters.product_param_factory()``
 
 
