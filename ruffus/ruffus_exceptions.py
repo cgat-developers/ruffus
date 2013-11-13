@@ -152,6 +152,8 @@ class error_task_transform_inputs_multiple_args(error_task_contruction):
     pass
 class error_task_transform(error_task_contruction):
     pass
+class error_task_product(error_task_contruction):
+    pass
 class error_task_merge(error_task_contruction):
     pass
 class error_task_collate(error_task_contruction):

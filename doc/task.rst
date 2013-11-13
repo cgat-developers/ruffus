@@ -80,7 +80,6 @@ Parameter factories:
 =================================
 .. autofunction:: merge_param_factory
 .. autofunction:: collate_param_factory
-.. autofunction:: files_re_param_factory                                                                        
 .. autofunction:: transform_param_factory
 .. autofunction:: files_param_factory
 .. autofunction:: args_param_factory
