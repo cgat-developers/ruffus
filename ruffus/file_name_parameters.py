@@ -975,14 +975,20 @@ def yield_io_params_per_job (input_params,
                 yield (input_param, output_param) + extra_params
 
             no_regular_expression_matches = False
+
+        # match failures are ignored
         except KeyError:
             continue
         except IndexError:
             continue
+        except error_input_file_does_not_match:
+            continue
+
+        # all other exceptions including malformed regexes are raised
         except Exception:
             #print sys.exc_info()
             raise
-            # regular expression match failures are ignored
+
 
     #
     #   Add extra warning if no regular expressions match:
