@@ -2613,7 +2613,7 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
         return
 
     if not hasattr(output_stream, "write"):
-        raise Exception("The first parameter to pipeline_printout needs to be an output file, e.g. sys.stdout")
+        raise Exception("The first parameter to pipeline_printout needs to be an output file, e.g. sys.stdout and not %s" % str(output_stream))
 
     if runtime_data == None:
         runtime_data = {}

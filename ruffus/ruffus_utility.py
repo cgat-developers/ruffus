@@ -364,7 +364,7 @@ class t_regex_replace(object):
             # throw exception if doesn't match regular expression at all
             (res_str, cnt_replacements) = self.compiled_regex.subn(match_p, self.filename)
             if cnt_replacements == 0:
-                raise error_input_file_does_not_match("File '%s' does not match regex('%s') and pattern ('%s')" % (self.filename, self.regex_str, p))
+                raise error_input_file_does_not_match("File '%s' does not match suffix('%s') and pattern '%s'" % (self.filename, self.regex_str, p))
             return res_str
 
         #
@@ -374,10 +374,22 @@ class t_regex_replace(object):
         #           only substitute if r"\1" or r"\g<1>" is specified
         #
         #
-        (res_str, cnt_replacements) = self.compiled_regex.subn(p, self.filename)
-        if cnt_replacements == 0:
-            raise error_input_file_does_not_match("File '%s' does not match regex('%s') and pattern ('%s')" % (self.filename, self.regex_str, p))
-        return res_str
+        err_str = ""
+        try:
+            (res_str, cnt_replacements) = self.compiled_regex.subn(p, self.filename)
+            if cnt_replacements > 0:
+                return res_str
+        except re.error as e:
+            err_str = str(e)
+            raise fatal_error_input_file_does_not_match("File '%s' does not match regex('%s') and pattern '%s':\n\t%s\n" % (self.filename, self.regex_str, p, err_str))
+        except IndexError as e:
+            err_str = str(e)
+            raise fatal_error_input_file_does_not_match("File '%s' does not match regex('%s') and pattern '%s':\n\t%s\n" % (self.filename, self.regex_str, p, err_str))
+
+        #except (re.error, IndexError):
+            #err_str = str(sys.exc_info()[1]),
+
+        raise error_input_file_does_not_match("File '%s' does not match regex('%s') and pattern '%s'\n%s\n" % (self.filename, self.regex_str, p, err_str))
 
 #_________________________________________________________________________________________
 #
