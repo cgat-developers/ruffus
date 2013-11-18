@@ -199,17 +199,24 @@ def swap_doubly_nested_order (orig_coll):
     """
     Reverse nested order so that coll[3]['a'] becomes coll['a'][3]
     """
-    new_dict = defaultdict(lambda: defaultdict(dict))
+    new_dict = dict()
     new_list = []
     for ii, ii_item in enumerate(orig_coll):
         for jj, jj_item in enumerate(ii_item):
             for kk, value in jj_item.iteritems():
                 if isinstance(kk, int):
                     # resize
-                    new_list += [defaultdict(dict)]*(kk + 1 - len(new_list))
+                    new_list += [{}]*(kk + 1 - len(new_list))
+                    if ii not in new_list[kk]:
+                        new_list[kk][ii] = dict()
                     new_list[kk][ii][jj] = value
                 else:
+                    if kk not in new_dict:
+                        new_dict[kk] = dict()
+                    if ii not in new_dict[kk]:
+                        new_dict[kk][ii] = dict()
                     new_dict[kk][ii][jj] = value
+
     return new_list, new_dict
 
 #_________________________________________________________________________________________
@@ -270,12 +277,15 @@ def get_all_paths_components(paths, compiled_regex):
 
         matchdicts = []
         for mm in matches:
-            if not mm:
-                matchdicts.append({})
+            if mm == None:
+                matchdicts.append(None)
             else:
-                # no dictionary comprehensions in python 2.6 :-(
-                #matchdicts.append({i : mm.group(i) for i in (range(mm.lastindex) + mm.groupdict().keys())})
-                matchdicts.append(dict((i, mm.group(i)) for i in (range(mm.lastindex + 1) + mm.groupdict().keys())))
+                if mm.lastindex == None:
+                    matchdicts.append({})
+                else:
+                    # no dictionary comprehensions in python 2.6 :-(
+                    #matchdicts.append({i : mm.group(i) for i in (range(mm.lastindex) + mm.groupdict().keys())})
+                    matchdicts.append(dict((i, mm.group(i)) for i in (range(mm.lastindex + 1) + mm.groupdict().keys())))
         return matchdicts
     #
     #   merge regular expression matches and path decomposition
@@ -287,7 +297,7 @@ def get_all_paths_components(paths, compiled_regex):
         regex_match_components = regex_match_str_list(paths, compiled_regex)
         both_components = []
         for rr, pp in izip(regex_match_components, path_components):
-            if not len(rr):
+            if rr == None:
                 both_components.append({})
             else:
                 #
@@ -354,7 +364,7 @@ class t_regex_replace(object):
             # throw exception if doesn't match regular expression at all
             (res_str, cnt_replacements) = self.compiled_regex.subn(match_p, self.filename)
             if cnt_replacements == 0:
-                raise error_input_file_does_not_match("File '%s' does not match '%s' / '%s'" % (p, self.filename, self.regex_str))
+                raise error_input_file_does_not_match("File '%s' does not match regex('%s') and pattern ('%s')" % (self.filename, self.regex_str, p))
             return res_str
 
         #
@@ -366,7 +376,7 @@ class t_regex_replace(object):
         #
         (res_str, cnt_replacements) = self.compiled_regex.subn(p, self.filename)
         if cnt_replacements == 0:
-            raise error_input_file_does_not_match("File '%s' does not match '%s' / '%s'" % (p, self.filename, self.regex_str))
+            raise error_input_file_does_not_match("File '%s' does not match regex('%s') and pattern ('%s')" % (self.filename, self.regex_str, p))
         return res_str
 
 #_________________________________________________________________________________________
@@ -376,8 +386,9 @@ class t_regex_replace(object):
 #_________________________________________________________________________________________
 class t_formatter_replace(object):
     def __init__ (self, filenames, regex_str, compiled_regex = None):
+        self.filenames = filenames
         self.path_regex_components = get_all_paths_components(filenames, compiled_regex)
-        self.regex_str = regex_str if regex_str else ""
+        self.regex_str = "'" + regex_str + "'" if regex_str else ""
 
     def __call__(self, p):
         # swapped nesting order makes the syntax easier to explain:
@@ -387,7 +398,16 @@ class t_formatter_replace(object):
 
         # some contortions because format decodes {0} as an offset into a list and not not a lookup into a dict...
         dl, dd = swap_nesting_order(self.path_regex_components)
-        return p.format(*dl, **dd)
+        try:
+            return p.format(*dl, **dd)
+        except (KeyError, IndexError):
+            raise error_input_file_does_not_match("Field '%s' in ('%s') using formatter(%s) fails to match Files '%s'."
+                                                  "."
+                                                  % (   str(sys.exc_info()[1]),
+                                                        p,
+                                                        self.regex_str,
+                                                        self.filenames))
+
 
 #_________________________________________________________________________________________
 #
@@ -398,6 +418,7 @@ class t_nested_formatter_replace(object):
     def __init__ (self, filenames, regex_strings, compiled_regexes):
         if len(filenames) != len(regex_strings) or len(filenames) != len(compiled_regexes):
             raise Exception("Logic Error.")
+        self.filenames = filenames
         self.path_regex_components = [get_all_paths_components(f, r) for (f,r) in zip(filenames, compiled_regexes)]
         self.regex_strings = regex_strings
 
@@ -409,7 +430,16 @@ class t_nested_formatter_replace(object):
 
         # some contortions because format decodes {0} as an offset into a list and not not a lookup into a dict...
         dl, dd = swap_doubly_nested_order(self.path_regex_components)
-        return p.format(*dl, **dd)
+        try:
+            return p.format(*dl, **dd)
+        except (KeyError, IndexError):
+            formatter_str = ", ".join("formatter(%s)" % (s if not s else "'%s'" %s) for s in self.regex_strings)
+            raise error_input_file_does_not_match("Unmatched field %s in ('%s') using %s fails to match Files '%s'"
+                                                  "."
+                                                  % (   str(sys.exc_info()[1]),
+                                                        p,
+                                                        formatter_str,
+                                                        self.filenames))
 
 
 #_________________________________________________________________________________________

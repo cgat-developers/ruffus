@@ -88,6 +88,27 @@ git hub docs
 ##########################################
 In progress: Refactoring Ruffus
 ##########################################
+
+******************************************************************************
+Better error messages for formatter, suffix and regex
+******************************************************************************
+
+***************************************
+Custom parameter generator
+***************************************
+
+    Leverages built-in Ruffus functionality.
+    Don't have to write entire parameter generation from scratch.
+
+    * Gets passed an iterator where you can do a for loop to get input parameters / a flattened list of files
+    * Other parameters are forwarded as is
+    * The duty of the function is to ``yield`` input, output, extra parameters
+
+***************************************
+@mkdir with regex
+***************************************
+
+
 ***************************************
 Task completion monitoring
 ***************************************
@@ -95,13 +116,10 @@ Task completion monitoring
     * On by default?
     * Can we query the database, get Job history / stats
     * What are the run time performance implications?
-
-************************************************************************************************
-@permutations(...), @combinations(...), @combinations_with_replacement(...), @permutations(...),
-************************************************************************************************
-
-    * Need test code in test/test_file_name_parameter.py
-    * Need test scripts
+    * Can we get rid of the minimum 1 second delay between jobs now? Does the database have finer granularity in timestamps? Can we use the database timestamps provided they are *later* than the filesystem ones. They must be if we are recording them *after* the job succeeds.
+    * Can we log this dispatch / completion timestamps to the same database?
+    * How easy is it to abstract out the database?
+    * How resistant is it to corruption?
 
 ************************************************************************************************
 @subdivide
@@ -111,11 +129,6 @@ Task completion monitoring
     * needs test scripts
 
 
-****************************************************************************
-Add dispatch / completion timestamp to jobs
-****************************************************************************
-
-    Is this logged by Jake?
 
 **************************************************
 Running python jobs remotely on cluster nodes
@@ -152,22 +165,6 @@ Running python jobs remotely on cluster nodes
        * start remote processes using drmaa
        * process recycling: run successive jobs on the same remote process for reduced overhead, until exceeds max number of jobs on the same process, min/max time on the same process
        * resubmit if die (Don't do sophisticated stuff like libpythongrid).
-
-***************************************
-Custom parameter generator
-***************************************
-
-    Leverages built-in Ruffus functionality.
-    Don't have to write entire parameter generation from scratch.
-
-    * Gets passed an iterator where you can do a for loop to get input parameters / a flattened list of files
-    * Other parameters are forwarded as is
-    * The duty of the function is to ``yield`` input, output, extra parameters
-
-***************************************
-@mkdir with regex
-***************************************
-
 
 ##########################################
 Planned: Refactoring Ruffus
@@ -327,7 +324,38 @@ New flexible "format" alternative to regex suffix
     If ``regex_str`` is not None, then regular expression match failures will return an empty dictionary.
     The idea is that all file names which throw exceptions will be skipped, and we can continue
     to use regular expression matches as a filter, even if they are not used to construct the result.
-    The same is now true for regex matches
+    Note that the regular expression is applied to *all* file names in case *any* of them is used in
+    format string. So regular expression matches only failures for the file referenced in the format pattern.
+
+    For example,
+
+    .. code-block:: python
+
+        # filter on ".txt"
+        input_filenames = ["a.wrong", "b.txt"]
+        formatter(".txt$")
+
+        # OK: regular expression matches the second file name
+        "{basename[1]}"
+
+        # Failures: regular expression does not match the second file name. No format substitutions make sense
+        "{basename[1]}"
+
+
+    The previous behaviour with regex() where mismatches fail even if no substitution is made is retained by the use of ``re.subn()``.
+    This is a corner case but I didn't want user code to break
+
+    .. code-block:: python
+
+        # filter on ".txt"
+        input_filenames = ["a.wrong", "b.txt"]
+        regex("(.txt)$")
+
+        # fails, no substitution possible
+        r"\1"
+
+        # fails anyway even through regular expression matches not referenced...
+        r"output.filename"
 
     .. code-block:: python
 
@@ -426,6 +454,9 @@ Task completion monitoring
 ***************************************
 @product()
 ***************************************
+
+    * test code in test/test_combinatorics.py
+
 ============================================================================================================================================================
 Final syntax
 ============================================================================================================================================================
@@ -456,7 +487,7 @@ Final syntax
     * Flexible number of pairs of ``task`` / ``glob`` / file names + ``formatter()``
     * Only ``formatter([OPTIONAl_REGEX])`` provides the necessary flexibility to construct the output so we won't bother with suffix and regex
     * Use all "Combinatoric generators" from itertools. Use the original names for clarity, and the itertools implementation under the hood
-    * Put all new generators in an itertools submodule namespace to avoid breaking user code. (They can import if necessary.)
+    * Put all new generators in an ``combinatorics`` submodule namespace to avoid breaking user code. (They can import if necessary.)
     * The ``itertools.product(repeat)`` parameter doesn't make sense for Ruffus and will not be used
 
 
@@ -531,6 +562,7 @@ Implementation
 
     * Put all new generators in an ``combinatorics`` submodule namespace to avoid breaking user code. (They can import if necessary.)
     * Only ``formatter([OPTIONAl_REGEX])`` provides the necessary flexibility to construct the output so we won't bother with suffix and regex
+    * test code in test/test_combinatorics.py
 
     Use combinatoric generators from itertools and keep that naming scheme
 
@@ -571,7 +603,7 @@ Implementation
 
     Retain same code for @product
         * forward to a sinble ``file_name_parameters.combinatorics_param_factory()``
-        * use ``combinatorics_type`` to dispatch to ``itertools.permutations``, ``itertools.combinations`` and ``itertools.combinations_with_replacement``
+        * use ``combinatorics_type`` to dispatch to ``combinatorics.permutations``, ``combinatorics.combinations`` and ``combinatorics.combinations_with_replacement``
         * use ``list_input_param_to_file_name_list`` from ``file_name_parameters.product_param_factory()``
 
 
