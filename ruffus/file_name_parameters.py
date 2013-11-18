@@ -73,8 +73,11 @@ from ruffus_utility import *
 import dbdict
 
 class t_extra_inputs:
-    (ADD_TO_INPUTS, REPLACE_INPUTS, KEEP_INPUTS) = range(0, 3)
+    (ADD_TO_INPUTS, REPLACE_INPUTS, KEEP_INPUTS) = range(3)
 
+class t_combinatorics_type:
+    (   COMBINATORICS_PRODUCT, COMBINATORICS_PERMUTATIONS,
+        COMBINATORICS_COMBINATIONS, COMBINATORICS_COMBINATIONS_WITH_REPLACEMENT) = range(4)
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -977,11 +980,11 @@ def yield_io_params_per_job (input_params,
             no_regular_expression_matches = False
 
         # match failures are ignored
-        except KeyError:
-            continue
-        except IndexError:
-            continue
         except error_input_file_does_not_match:
+            if runtime_data != None:
+                if not "MATCH_FAILURE" in runtime_data:
+                    runtime_data["MATCH_FAILURE"] = []
+                runtime_data["MATCH_FAILURE"].append(str(sys.exc_info()[1]).replace("\n", "").strip())
             continue
 
         # all other exceptions including malformed regexes are raised
@@ -1079,11 +1082,11 @@ def combinatorics_param_factory(input_files_task_globs,
         if flatten_input:
             input_params = get_strings_in_nested_sequence(input_params)
 
-        if combinatorics_type == COMBINATORICS_PERMUTATIONS:
+        if combinatorics_type == t_combinatorics_type.COMBINATORICS_PERMUTATIONS:
             combinatoric_iter = itertools.permutations(input_params, k_tuple)
-        elif combinatorics_type == COMBINATORICS_COMBINATIONS:
+        elif combinatorics_type == t_combinatorics_type.COMBINATORICS_COMBINATIONS:
             combinatoric_iter = itertools.combinations(input_params, k_tuple)
-        elif combinatorics_type == COMBINATORICS_COMBINATIONS_WITH_REPLACEMENT:
+        elif combinatorics_type == t_combinatorics_type.COMBINATORICS_COMBINATIONS_WITH_REPLACEMENT:
             combinatoric_iter = itertools.combinations_with_replacement(input_params, k_tuple)
         else:
             raise Exception("Unknown combinatorics type %d" % combinatorics_type)

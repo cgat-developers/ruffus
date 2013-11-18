@@ -688,11 +688,6 @@ def register_cleanup (file_name, operation):
 #   _task
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-COMBINATORICS_PRODUCT                       = 0
-COMBINATORICS_PERMUTATIONS                  = 1
-COMBINATORICS_COMBINATIONS                  = 2
-COMBINATORICS_COMBINATIONS_WITH_REPLACEMENT = 3
-
 class _task (node):
     """
     pipeline task
@@ -1054,10 +1049,16 @@ class _task (node):
                     if verbose > 4:
                         messages.extend(get_job_names (descriptive_param, indent_str))
                         messages.append(indent_str + "  Job up-to-date")
+
             if cnt_jobs == 0:
                 messages.append(indent_str + "!!! No jobs for this task. "
                                              "Are you sure there is not a error in your "
                                              "code / regular expression?")
+            if verbose >= 3 or (verbose and cnt_jobs == 0):
+                if runtime_data and "MATCH_FAILURE" in runtime_data:
+                    for s in runtime_data["MATCH_FAILURE"]:
+                        messages.append(indent_str + "Warning: File match failure: " + s)
+            runtime_data["MATCH_FAILURE"] = []
         messages.append("")
         return messages
 
@@ -1677,16 +1678,17 @@ class _task (node):
         #
         input_files_task_globs  = self.handle_tasks_globs_in_inputs(orig_args[0])
 
+        k_tuple = orig_args[2]
+
         # how to transform input to output file name: len(k-tuples) of (identical) formatters
         file_names_transform = t_nested_formatter_file_names_transform(self, [orig_args[1]] * k_tuple, error_type, decorator_name)
 
 
         self.set_action_type (_task.action_task_permutations)
 
-        if not is_instance(orig_args[2], int):
+        if not isinstance(orig_args[2], int):
             raise error_task_product(self, "%s expects an integer number as the third argument specifying the number of elements in each tuple." % decorator_name)
 
-        k_tuple = orig_args[2]
 
         orig_args = orig_args[3:]
 
@@ -1723,7 +1725,7 @@ class _task (node):
         """
         decorator_name      = "@permutations"
         error_type          = error_task_permutations
-        combinatorics_type  = COMBINATORICS_PERMUTATIONS
+        combinatorics_type  = t_combinatorics_type.COMBINATORICS_PERMUTATIONS
         self.task_combinatorics (orig_args, combinatorics_type, decorator_name, error_type)
 
 
@@ -1744,7 +1746,7 @@ class _task (node):
         """
         decorator_name      = "@combinations"
         error_type          = error_task_combinations
-        combinatorics_type  = COMBINATORICS_COMBINATIONS
+        combinatorics_type  = t_combinatorics_type.COMBINATORICS_COMBINATIONS
         self.task_combinatorics (orig_args, combinatorics_type, decorator_name, error_type)
 
 
@@ -1778,7 +1780,7 @@ class _task (node):
         """
         decorator_name      = "@combinations_with_replacement"
         error_type          = error_task_combinations_with_replacement
-        combinatorics_type  = COMBINATORICS_COMBINATIONS_WITH_REPLACEMENT
+        combinatorics_type  = t_combinatorics_type.COMBINATORICS_COMBINATIONS_WITH_REPLACEMENT
         self.task_combinatorics (orig_args, combinatorics_type, decorator_name, error_type)
 
 
@@ -3300,8 +3302,8 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     if len(job_errors):
         raise job_errors
 
-
     syncmanager.shutdown()
+
     if pool:
         pool.close()
         pool.join()
