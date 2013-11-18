@@ -131,6 +131,8 @@ class RethrownJobError(error_task):
 
 class error_input_file_does_not_match(error_task):
     pass
+class fatal_error_input_file_does_not_match(error_task):
+    pass
 
 class task_FilesArgumentsError(error_task):
     pass
