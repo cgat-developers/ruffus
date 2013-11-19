@@ -673,24 +673,24 @@ Implementation
 
 
 ******************************************************************************
-Better error messages for formatter, suffix and regex
+Better error messages for ``formatter()``, ``suffix()`` and ``regex()``
 ******************************************************************************
 
-    * Error messages for pipeline_printout if verbose >= 3 showing mismatching regular expression and offending file name
+    * Error messages for ``pipeline_printout`` if ``verbose >= 3`` showing mismatching regular expression and offending file name
     * Wrong capture group names or out of range indices will raise informative Exception
-    * regex() and suffix() examples in ``test/test_regex_error_messages.py``
-    * formatter() examples in ``test/test_combinatorics.py``
+    * ``regex()`` and ``suffix()`` examples in ``test/test_regex_error_messages.py``
+    * ``formatter()`` examples in ``test/test_combinatorics.py``
 
 
-***************************************
-@mkdir with regex | suffix | formatter
-***************************************
+******************************************************************************
+``@mkdir`` with ``formatter()``, ``suffix()`` and ``regex()``
+******************************************************************************
 
-    * essentially behaves just like @transform but with its own (internal) function which does the actual work of making a directory
-    * mkdir works seamlessly inside @follows) and as its own decorator due to the original happy orthogonal design
+    * essentially behaves just like ``@transform`` but with its own (internal) function which does the actual work of making a directory
+    * ``mkdir`` continues to work seamlessly inside ``@follows``) but also as its own decorator ``@mkdir`` due to the original happy orthogonal design
     * fixed bug in checking so that Ruffus does't blow up if non strings are in the output (number...)
-    * fixed ugly bug in pipeline_printout for printing single line output
-    * fixed description and printout indent for rmkdir
+    * fixed ugly bug in ``pipeline_printout`` for printing single line output
+    * fixed description and printout indent
     * note: adding the decorator to a previously undecorated function might have unintended consequences. The undecorated function
       turns into a zombie.
 
