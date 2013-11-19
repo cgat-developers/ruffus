@@ -168,6 +168,8 @@ class error_task_merge(error_task_contruction):
     pass
 class error_task_subdivide(error_task_contruction):
     pass
+class error_task_originate(error_task_contruction):
+    pass
 class error_task_collate(error_task_contruction):
     pass
 class error_task_collate_inputs_multiple_args(error_task_contruction):
