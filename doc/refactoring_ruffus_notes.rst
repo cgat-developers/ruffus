@@ -407,11 +407,134 @@ drmaa
     Probably not necessary surely.
 
 ******************************************************************************
-New flexible "format" alternative to regex suffix
+New flexible ``formatter`` alternative to ``regex`` ``suffix``
 ******************************************************************************
 
+    * Produces optional [Regular Expression] matches
+    * Produces (pre-canned) path subcomponents in the style ``os.path.split()``
+    * Familiar pythonesque syntax
+    * Refer to the Nth-input file and not just the first
+    * Refer to individual letters within a match
 
+    ``Suffix()`` and ``Regex()`` only use the first file name in the input.
+    ``formatter()`` is more flexible and can use any file names in the input.
+
+
+==============================================================================
+Building blocks for pattern substitution
+==============================================================================
+    Formatter takes these results and adds a level of indirection for each level of nesting.
+    In the case of ``@transform`` ``@collate`` we are dealing with a list of input files per job, so typically,
+    the components with be, using python format syntax:
+
+        .. code-block:: python
+
+            input_file_names = ['/a/b/c/sample1.bam']
+            formatter(r"(.*)(?P<id>\d+)\.(.+)")
+
+            "{0[0]}"            #   '/a/b/c/sample1.bam',           // Entire match captured by index
+            "{1[0]}"            #   '/a/b/c/sample',                // captured by index
+            "{2[0]}"            #   'bam',                          // captured by index
+            "{id[0]}"           #   '1'                             // captured by name
+            "{ext[0]}"          #   '.bam',
+            "{subdir[0][0]}"    #   'c'
+            "{subpath[0][1]}"   #   '/a/b'
+            "{path[0]}"         #   '/a/b/c',
+            "{basename[0]}"     #   'sample1',
+
+
+==============================================================================
+``@transform`` example
+==============================================================================
+    .. code-block:: python
+
+        @transform( previous_task,
+                    formatter(".*/(?P<FILE_PART>.+).tmp1$" ),   # formatter with optional regular expression
+                    "{path[0]}/{FILE_PART[0]}.tmp2",            # output
+                    "{basename}",                               # extra: list of all file names
+                    "{basename[0]}",                            # extra: first file name
+                    "{basename[0][0]}",                         # extra: first letter of first file name
+                    "{subpath[0][0]}",                          # extra: first level sub path of first file name
+                    "{subdir[0][0]}")                           # extra: first level sub directory of first file name
+        def test_transform_task(    infiles,
+                                    outfile,
+                                    all_file_names_str,
+                                    first_file_name,
+                                    first_file_name_1st_letter,
+                                    first_file_name_first_subpath,
+                                    first_file_name_first_subdir):
+            """
+                Test transform with formatter
+            """
+            pass
+
+==============================================================================
+``@combinations`` example
+==============================================================================
+
+    Extra level of indirection because we are dealing with 3 **groups** of input combined
+
+    .. code-block:: python
+
+        @combinations(  previous_task,
+                        formatter(".*/(?P<FILE_PART>.+).tmp1$" ),                                   # formatter with optional regular expression
+                        3,                                                                          # number of k-mers
+                        "{path[0][0]}/{FILE_PART[0][0]}.{basename[1][0]}.{basename[2][0]}.tmp2",    # output file name is a combination of each 3 input files
+                        "{basename[0]}{basename[1]}{basename[2]}"                                   # extra: list of 3 sets of file names
+                        "{basename[0][0]}{basename[1][0]}{basename[2][0]}",                         # extra: first file names for each of 3 set
+                        "{basename[0][0][0]}{basename[1][0][0]}{basename[2][0][0]}",                # extra: first letters of first file name from each of 3 input
+                        "{subpath[0][0][0]}",                                                       # extra: first level sub path of first file name
+                        "{subdir[0][0][0]}")                                                        # extra: first level sub directory of first file name
+        def test_combinations3_task(nfiles,
+                                    outfile,
+                                    all_file_names_str,
+                                    first_file_names,
+                                    first_file_names_1st_letters,
+                                    first_file_name_first_subpath,
+                                    first_file_name_first_subdir):
+            """
+                Test combinations with k-tuple = 3
+            """
+            pass
+
+
+==============================================================================
+implementation overview
+==============================================================================
     ``get_all_paths_components(paths, regex_str)`` in ``ruffus_utility.py``
+
+    Input files names are first squished into a flat list of files.
+    ``get_all_paths_components()`` returns both the regular expression matches and the break down of the path.
+
+    In case of name clashes, the classes with higher priority override:
+
+        1) Captures by name
+        2) Captures by index
+        3) Path components:
+            'ext' = extension with dot
+            'basename' = file name without extension
+            'path' = path before basename, not ending with slash
+            'subdir' = list of directories starting with the most nested and ending with the root (if normalised)
+            'subpath' = list of 'path' with successive directories removed starting with the most nested and ending with the root (if normalised)
+
+        E.g.  ``name = '/a/b/c/sample1.bam'``, ``formatter=r"(.*)(?P<id>\d+)\.(.+)")`` returns:
+
+        .. code-block:: python
+
+                0:          '/a/b/c/sample1.bam',           // Entire match captured by index
+                1:          '/a/b/c/sample',                // captured by index
+                2:          'bam',                          // captured by index
+                'id':       '1'                             // captured by name
+                'ext':      '.bam',
+                'subdir':   ['c', 'b', 'a', '/'],
+                'subpath':  ['/a/b/c', '/a/b', '/a', '/'],
+                'path':     '/a/b/c',
+                'basename': 'sample1',
+
+
+==============================================================================
+implementation for regular expressions
+==============================================================================
 
     If ``regex_str`` is not None, then regular expression match failures will return an empty dictionary.
     The idea is that all file names which throw exceptions will be skipped, and we can continue
@@ -462,55 +585,6 @@ New flexible "format" alternative to regex suffix
         class t_regex_filename_transform(t_filename_transform):
         class t_format_filename_transform(t_filename_transform):
 
-    ... contains both the regular expression string and the code to make output / extra parameters from
-    the input files.
-    Suffix and Regex only use the first file name in the input.
-    Formatter is more flexible and can use any file names in the input.
-
-        Input files names are first squished into a flat list of files.
-        ``get_all_paths_components()`` returns both the regular expression matches and the break down of the path.
-
-        In case of name clashes, the classes with higher priority override:
-
-            1) Captures by name
-            2) Captures by index
-            3) Path components:
-                'ext' = extension with dot
-                'basename' = file name without extension
-                'path' = path before basename, not ending with slash
-                'subdir' = list of directories starting with the most nested and ending with the root (if normalised)
-                'subpath' = list of 'path' with successive directories removed starting with the most nested and ending with the root (if normalised)
-
-            E.g.  ``name = '/a/b/c/sample1.bam'``, ``formatter=r"(.*)(?P<id>\d+)\.(.+)")`` returns:
-
-            .. code-block:: python
-
-                    0:          '/a/b/c/sample1.bam',           // Entire match captured by index
-                    1:          '/a/b/c/sample',                // captured by index
-                    2:          'bam',                          // captured by index
-                    'id':       '1'                             // captured by name
-                    'ext':      '.bam',
-                    'subdir':   ['c', 'b', 'a', '/'],
-                    'subpath':  ['/a/b/c', '/a/b', '/a', '/'],
-                    'path':     '/a/b/c',
-                    'basename': 'sample1',
-
-    Formatter takes these results and adds a level of indirection for each level of nesting.
-    In the case of ``@transform,`` ``@collate,`` we are dealing with a list of input files per job, so typically,
-    the components with be, using python format syntax::
-
-        input_file_names = ['/a/b/c/sample1.bam']
-        formatter(r"(.*)(?P<id>\d+)\.(.+)")
-
-        "{0[0]}"            #   '/a/b/c/sample1.bam',           // Entire match captured by index
-        "{1[0]}"            #   '/a/b/c/sample',                // captured by index
-        "{2[0]}"            #   'bam',                          // captured by index
-        "{id[0]}"           #   '1'                             // captured by name
-        "{ext[0]}"          #   '.bam',
-        "{subdir[0][0]}"    #   'c'
-        "{subpath[0][1]}"   #   '/a/b'
-        "{path[0]}"         #   '/a/b/c',
-        "{basename[0]}"     #   'sample1',
 
 
     The only trickiness is that string.format() understands all integer number keys to be offsets into lists/ tuples and everything else
