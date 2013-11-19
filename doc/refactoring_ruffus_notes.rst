@@ -1,5 +1,5 @@
 ##########################################
-In progress: Refactoring Ruffus Docs
+To be done: Refactoring Ruffus Docs
 ##########################################
 
     Remember to cite Jake Biesinger and see if he is interested to be a co-author if we ever resubmit the drastically changed version...
@@ -7,6 +7,25 @@ In progress: Refactoring Ruffus Docs
 ***************************************
 Best Practices
 ***************************************
+==============================================================================
+Bernie Pope hack: truncate file to zero, preserving modification times
+==============================================================================
+
+    .. code-block:: python
+
+        def zeroFile(file):
+            if os.path.exists(file):
+                # save the current time of the file
+                timeInfo = os.stat(file)
+                try:
+                    f = open(file,'w')
+                except IOError:
+                    pass
+                else:
+                    f.truncate(0)
+                    f.close()
+                    # change the time of the file back to what it was
+                    os.utime(file,(timeInfo.st_atime, timeInfo.st_mtime))
 
 ***************************************
 Removing references to "legacy" methods
@@ -27,6 +46,12 @@ New features
 Job completion monitoring
 ==============================================================================
     ``pipeline_run(..., checksum_level=CHECKSUM_FILE_TIMESTAMPS, ...)``
+
+==============================================================================
+@originate()
+==============================================================================
+    Make new files (jobs) ab nihilo
+
 
 ==============================================================================
 @subdivide / @split(..., regex(), ...)
@@ -86,7 +111,7 @@ git hub docs
 
 
 ##########################################
-In progress: Refactoring Ruffus
+To be done: Refactoring Ruffus
 ##########################################
 
 ************************************************************************************************
@@ -95,13 +120,6 @@ In progress: Refactoring Ruffus
 
     * needs test code
     * needs test scripts
-
-************************************************************************************************
-@originate
-************************************************************************************************
-
-    @split ex nihilo
-
 
 
 ***************************************
@@ -318,33 +336,14 @@ Extending graphviz output
 ***************************************
 Deleting intermediate files
 ***************************************
-==============================================================================
-Bernie Pope hack: truncate file to zero, preserving modification times
-==============================================================================
-
-    .. code-block:: python
-
-        def zeroFile(file):
-            if os.path.exists(file):
-                # save the current time of the file
-                timeInfo = os.stat(file)
-                try:
-                    f = open(file,'w')
-                except IOError:
-                    pass
-                else:
-                    f.truncate(0)
-                    f.close()
-                    # change the time of the file back to what it was
-                    os.utime(file,(timeInfo.st_atime, timeInfo.st_mtime))
 
 
 ##########################################
-Completed: Refactoring Ruffus Docs
+Updated Docs
 ##########################################
 
 ##########################################
-Completed: Refactoring Ruffus
+Updated Ruffus
 ##########################################
 
 ***************************************
@@ -694,6 +693,86 @@ Better error messages for formatter, suffix and regex
     * fixed description and printout indent for rmkdir
     * note: adding the decorator to a previously undecorated function might have unintended consequences. The undecorated function
       turns into a zombie.
+
+************************************************************************************************
+@originate
+************************************************************************************************
+
+    * synonym for @split(None,...)
+    * prints as such
+    * N.B. Task function obviously only takes outputs (and extras)
+
+************************************************************************************************
+cmdline: 5 lines of boilerplate
+************************************************************************************************
+
+    To use with (deprecated) optparse:
+
+        .. code-block:: python
+
+            from ruffus import *
+
+            parser = cmdline.get_argparse(description='WHAT DOES THIS PIPELINE DO?')
+
+            parser.add_argument("--input_file")
+
+            options = parser.parse_args()
+
+            #  logger which can be passed to ruffus tasks
+            logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
+
+            #_____________________________________________________________________________________
+
+            #   pipelined functions go here
+
+            #_____________________________________________________________________________________
+
+            cmdline.run (options)
+
+
+    Provides these predefined options:
+
+        .. code-block:: bash
+
+                    --verbose
+                    --version
+                    --log_file
+
+                -t, --target_tasks
+                -j, --jobs
+                -n, --just_print
+                    --flowchart
+                    --key_legend_in_graph
+                    --draw_graph_horizontally
+                    --flowchart_format
+                    --forced_tasks
+
+    To use with (deprecated) optparse:
+
+        .. code-block:: python
+
+            #
+            #   Using optparse (new in python v 2.6)
+            #
+            from ruffus import *
+
+            parser = cmdline.get_optgparse(version="%prog 1.0", usage = "\n\n    %prog [options]")
+
+            parser.add_option("-i", "--input_file", dest="input_file", help="Input file")
+
+            (options, remaining_args) = parser.parse_args()
+
+            #  logger which can be passed to ruffus tasks
+            logger, logger_mutex = cmdline.setup_logging ("this_program", options.log_file, options.verbose)
+
+            #_____________________________________________________________________________________
+
+            #   pipelined functions go here
+
+            #_____________________________________________________________________________________
+
+            cmdline.run (options)
+
 
 
 
