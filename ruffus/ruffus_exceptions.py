@@ -156,6 +156,8 @@ class error_task_transform(error_task_contruction):
     pass
 class error_task_product(error_task_contruction):
     pass
+class error_task_mkdir(error_task_contruction):
+    pass
 class error_task_permutations(error_task_contruction):
     pass
 class error_task_combinations(error_task_contruction):

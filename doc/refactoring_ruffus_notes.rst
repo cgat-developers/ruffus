@@ -89,9 +89,6 @@ git hub docs
 In progress: Refactoring Ruffus
 ##########################################
 
-******************************************************************************
-Better error messages for formatter, suffix and regex
-******************************************************************************
 
 ***************************************
 Custom parameter generator
@@ -607,4 +604,11 @@ Implementation
         * use ``list_input_param_to_file_name_list`` from ``file_name_parameters.product_param_factory()``
 
 
+******************************************************************************
+Better error messages for formatter, suffix and regex
+******************************************************************************
 
+    * Error messages for pipeline_printout if verbose >= 3 showing mismatching regular expression and offending file name
+    * Wrong capture group names or out of range indices will raise informative Exception
+    * regex() and suffix() examples in ``test/test_regex_error_messages.py``
+    * formatter() examples in ``test/test_combinatorics.py``

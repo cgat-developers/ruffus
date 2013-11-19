@@ -365,9 +365,10 @@ class files_re(task_decorator):
 #   mkdir
 
 #_________________________________________________________________________________________
-class mkdir(object):
-    def __init__ (self, *args):
-        self.args = args
+class mkdir(task_decorator):
+    #def __init__ (self, *args):
+    #    self.args = args
+    pass
 
 #_________________________________________________________________________________________
 
@@ -455,7 +456,12 @@ def io_files_one_to_many_job_descriptor (param, runtime_data):
 
 def mkdir_job_descriptor (param, runtime_data):
     # input, output and parameters
-    m = "Make directories %s" % (shorten_filenames_encoder(param[0]))
+    if len(param) == 1:
+        m = "Make directories %s" % (shorten_filenames_encoder(param[0]))
+    elif len(param) == 2:
+        m = "Make directories %s" % (shorten_filenames_encoder(param[1]))
+    else:
+        return [], []
     return m, [m]
 
 
@@ -528,7 +534,19 @@ def job_wrapper_mkdir(param, user_defined_work_func, register_cleanup, touch_fil
     #   Should not be necessary because of "sorted" in task_mkdir
     #
     #
-    for d in param[0]:
+    if len(param) == 1:
+        dirs = param[0]
+
+    # if there are two parameters, they are i/o, and the directories to be created are the output 
+    elif len(param) == 2:
+        dirs = param[1]
+    else:
+        raise Exception("Wrong number of arguments in mkdir check %s" % (param,))
+
+    # get all file names in flat list
+    dirs = get_strings_in_nested_sequence (dirs)
+
+    for d in dirs:
         try:
             os.makedirs(d)
             register_cleanup(d, "makedirs")
@@ -947,6 +965,8 @@ class _task (node):
             if len(job_names) > 1:
                 job_names = ([indent_str + job_names[0]]  +
                              [indent_str + "      " + jn for jn in job_names[1:]])
+            else:
+                job_names = ([indent_str + job_names[0]])
             return job_names
 
 
@@ -1796,7 +1816,7 @@ class _task (node):
         Merges multiple input files into a single output.
         """
         decorator_name  = "@transform"
-        error_type      = error_task_split
+        error_type      = error_task_transform
         if len(orig_args) < 3:
             raise error_type(self, "Too few arguments for %s" % decorator_name)
 
@@ -2136,36 +2156,101 @@ class _task (node):
 
     #_________________________________________________________________________________________
     def task_mkdir (self, orig_args):
+        self.cnt_task_mkdir += 1
+        # give unique name to this instance of mkdir
+        unique_name = r"(mkdir %d) before " % self.cnt_task_mkdir + self._name
+        new_node = _task(self._module_name, unique_name)
+        self.add_child(new_node)
+        new_node.do_task_mkdir(orig_args)
+        new_node.display_name = new_node._description
+
+
+    def do_task_mkdir (self, orig_args):
         """
         list of directory names or a single argument which is aa list of directory names
         Creates directory if missing
         """
+        decorator_name = "mkdir"
+        error_type      = error_task_mkdir
+
         #   jump through hoops
         self.set_action_type (_task.action_mkdir)
-
-        # the mkdir decorator accepts one string, multiple strings or a list of strings
-        # convert everything into the multiple strings format
-        # accepts unicode
-        if not isinstance(orig_args[0], basestring):
-            orig_args = orig_args[0]
-        #   all directories created in one job to reduce race conditions
-        #    so we are converting [a,b,c] into [   [(a, b,c)]   ]
-        #    where orig_args = (a,b,c)
-        #   i.e. one job whose solitory argument is a tuple/list of directory names
-        param_func                = args_param_factory([[sorted(orig_args)]])
-
-        #print >>sys.stderr, dumps(list(param_func()), indent = 4) # DEBUG
-
-        self.param_generator_func = param_func
-        self._description         = "Make directories %s" % (shorten_filenames_encoder(orig_args))
         self.needs_update_func    = self.needs_update_func or needs_update_check_directory_missing
+        self._description         = "Make directories %s" % (shorten_filenames_encoder(orig_args))
         self.job_wrapper          = job_wrapper_mkdir
         self.job_descriptor       = mkdir_job_descriptor
 
         # doesn't have a real function
         #  use job_wrapper just so it is not None
         self.user_defined_work_func = self.job_wrapper
-        self.single_multi_io        = self.one_to_one
+
+
+        #
+        # @transform like behaviour with regex / suffix or formatter
+        #
+        if len(orig_args) > 1 and isinstance(orig_args[1], (formatter, suffix, regex)):
+            self.single_multi_io      = self.many_to_many
+
+            if len(orig_args) < 3:
+                raise error_type(self, "Too few arguments for %s" % decorator_name)
+
+            #
+            # replace function / function names with tasks
+            #
+            input_files_task_globs = self.handle_tasks_globs_in_inputs(orig_args[0])
+
+
+            # how to transform input to output file name
+            file_names_transform = self.choose_file_names_transform (orig_args[1], error_task_transform, decorator_name)
+
+            orig_args = orig_args[2:]
+
+            #
+            #   inputs can also be defined by pattern match
+            #
+            extra_inputs, replace_inputs, output_pattern, extra_params = self.get_extra_inputs_outputs_extra (orig_args, error_type, decorator_name)
+
+            if len(extra_params):
+                raise error_type(self, "Too many arguments for %s" % decorator_name)
+
+
+            self.param_generator_func = transform_param_factory (   input_files_task_globs,
+                                                                    False, # flatten input
+                                                                    file_names_transform,
+                                                                    extra_inputs,
+                                                                    replace_inputs,
+                                                                    output_pattern,
+                                                                    *extra_params)
+
+        #
+        # simple behaviour: just make directories in list of strings
+        #
+        # the mkdir decorator accepts one string, multiple strings or a list of strings
+        else:
+            self.single_multi_io        = self.one_to_one
+
+            #
+            #
+            #
+            # if a single argument collection of parameters, keep that as is
+            if len(orig_args) == 0:
+                mkdir_params = []
+            elif len(orig_args) > 1:
+                mkdir_params = orig_args
+            # len(orig_args) == 1: unpack orig_args[0]
+            elif non_str_sequence (orig_args[0]):
+                mkdir_params = orig_args[0]
+            # single string or other non collection types
+            else:
+                mkdir_params = orig_args
+
+            #   all directories created in one job to reduce race conditions
+            #    so we are converting [a,b,c] into [   [(a, b,c)]   ]
+            #    where orig_args = (a,b,c)
+            #   i.e. one job whose solitory argument is a tuple/list of directory names
+            self.param_generator_func = args_param_factory([[sorted(mkdir_params)]])
+
+
 
 
 
@@ -2236,7 +2321,7 @@ class _task (node):
                 unique_name = r"(mkdir %d) before " % self.cnt_task_mkdir + self._name
                 new_node = _task(self._module_name, unique_name)
                 self.add_child(new_node)
-                new_node.task_mkdir(arg.args)
+                new_node.do_task_mkdir(arg.args)
                 new_node.display_name = new_node._description
                 new_tasks.append(new_node)
 
@@ -3264,7 +3349,10 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                     output_file_name = job_result.params[1]
                     if not isinstance(output_file_name, list): # some have multiple outputs from one job
                         output_file_name = [output_file_name]
-                    for o_f_n in output_file_name:
+                    # 
+                    # N.B. output parameters are not necessary all strings
+                    #
+                    for o_f_n in get_strings_in_nested_sequence(output_file_name):
                         mtime = os.path.getmtime(o_f_n)
                         chksum = JobHistoryChecksum(o_f_n, mtime, job_result.params[2:], t)
                         job_history[o_f_n] = chksum
