@@ -3144,7 +3144,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                  gnu_make_maximal_rebuild_mode  = True, verbose = 1,
                  runtime_data = None, one_second_per_job = True, touch_files_only = False,
                  exceptions_terminate_immediately = False, log_exceptions = False,
-                 checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, use_multi_threading = False):
+                 checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, multithread = 0):
                  # Remember to add further extra parameters here to "extra_pipeline_run_options" inside cmdline.py
                  # This will forward extra parameters from the command line to pipeline_run
     """
@@ -3177,6 +3177,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                            level 1 : above, plus timestamp of successful job completion
                            level 2 : above, plus a checksum of the pipeline function body
                            level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
+    :param multithread: The number of multithreaded jobs. If > 1, ruffus will use multithreading *instead of* multiprocessing (and ignore the multiprocess parameter)
 
     """
     syncmanager = multiprocessing.Manager()
@@ -3303,13 +3304,12 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
 
 
     #
-    #   whether using multiprocessing
+    #   whether using multiprocessing or multithreading
     #
-    if multiprocess > 1:
-        if use_multi_threading:
-            pool = ThreadPool(multiprocess)
-        else:
-            pool = Pool(multiprocess)
+    if multithread:
+        pool = ThreadPool(multithread)
+    elif multiprocess > 1:
+        pool = Pool(multiprocess)
     else:
         pool = None
 
