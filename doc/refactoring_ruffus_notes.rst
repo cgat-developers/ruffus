@@ -28,10 +28,38 @@ Bernie Pope hack: truncate file to zero, preserving modification times
                     os.utime(file,(timeInfo.st_atime, timeInfo.st_mtime))
 
 ***************************************
+@active_if
+***************************************
+
+***************************************
+Pipeline_run and exceptions
+***************************************
+    * Optionally terminate pipeline after first exception
+        To have all exceptions interrupt immediately::
+
+                pipeline_run(..., exceptions_terminate_immediately = True)
+
+        By default ruffus accumulates ``NN`` errors before interrupting the pipeline prematurely. ``NN`` is the specified parallelism for ``pipeline_run(..., multiprocess = NN)``.
+
+        Otherwise, a pipeline will only be interrupted immediately if exceptions of type ``ruffus.JobSignalledBreak`` are thrown.
+
+    * Display exceptions without delay
+
+        By default, Ruffus re-throws exceptions in ensemble after pipeline termination.
+
+        To see exceptions as they occur::
+
+                pipeline_run(..., log_exceptions = True)
+
+        ``logger.error(...)`` will be invoked with the string representation of the each exception, and associated stack trace.
+
+        The default logger prints to sys.stderr, but this can be changed to any class from the logging module or compatible object via ``pipeline_run(..., logger = ???)``
+
+***************************************
 Removing references to "legacy" methods
 ***************************************
 
-    e.g., @files
+    e.g., ``@files``
 
 
 ***************************************
@@ -48,15 +76,16 @@ Job completion monitoring
     ``pipeline_run(..., checksum_level=CHECKSUM_FILE_TIMESTAMPS, ...)``
 
 ==============================================================================
-@originate()
+``@originate()``
 ==============================================================================
     Make new files (jobs) ab nihilo
 
 
 ==============================================================================
-@subdivide / @split(..., regex(), ...)
+``@subdivide`` / ``@split(..., regex(), ...)``
 ==============================================================================
-    synonym for @split
+
+    synonym for ``@split``
 
 ==============================================================================
 formatter
@@ -65,31 +94,31 @@ formatter
     with regular expression or not
 
 ==============================================================================
-@product
+``@product``
 ==============================================================================
 
-    with formatter()
+    with ``formatter()``
 
 ==============================================================================
-@permutations
+``@permutations``
 ==============================================================================
 
-    with formatter()
+    with ``formatter()``
 
 ==============================================================================
-@combinations
+``@combinations``
 ==============================================================================
 
-    with formatter()
+    with ``formatter()``
 
 ==============================================================================
-@combinations_with_replacement
+``@combinations_with_replacement``
 ==============================================================================
 
-    with formatter()
+    with ``formatter()``
 
 ==============================================================================
-@active_if
+``@active_if``
 ==============================================================================
 
 
@@ -111,27 +140,16 @@ git hub docs
 
 
 ##########################################
-To be done: Refactoring Ruffus
+In progress: Refactoring Ruffus
 ##########################################
 
 ************************************************************************************************
-@subdivide
+``@subdivide``
 ************************************************************************************************
 
     * needs test code
     * needs test scripts
 
-
-***************************************
-Custom parameter generator
-***************************************
-
-    Leverages built-in Ruffus functionality.
-    Don't have to write entire parameter generation from scratch.
-
-    * Gets passed an iterator where you can do a for loop to get input parameters / a flattened list of files
-    * Other parameters are forwarded as is
-    * The duty of the function is to ``yield`` input, output, extra parameters
 
 ***************************************
 Job completion monitoring
@@ -160,7 +178,7 @@ Job completion monitoring
 
         * Normally a single instance of dbdict / database connections is created and used inside pipeline_run
         * Each call to ``file_name_parameters.py.needs_update_check_modify_time()`` also opens a connection to the database.
-        * We can pass the dbdict connection as an extra parameter
+        * We can pass the dbdict connection as an extra parameter to reduce overhead
 
     * Why is  ``touch``-ing files (``pipeline_run(..., touch_files_only = True, ...) ``) handled directly (and across the multiprocessor boundary) in ``task.job_wrapper_io_files()``?
 
@@ -196,8 +214,8 @@ Job completion monitoring
         * The key is the output file name, so it is important not to confuse Ruffus by having different tasks generate the same output file!
         * Is it possible to abstract this so that **jobs** get timestamped as well?
         * If we should ever want to abstract out dbdict, we need to have a similar key-value store class,
-          and make sure that a single instance of dbdict is used through pipeline_run which is passed up
-          and down the function call chain. This would be replaceable by our custom, e.g. flat-file, object.
+          and make sure that a single instance of dbdict is used through ``pipeline_run`` which is passed up
+          and down the function call chain. dbdict would then be drop-in replaceable by our custom (e.g. flat-file-based) dbdict alternative.
 
 
 **************************************************
@@ -218,37 +236,34 @@ Running python jobs remotely on cluster nodes
          *  returned values
          *  exception
 
-    #) Full version use libpythongrid
+    #) Full version use libpythongrid?
        * Christian Widmer <ckwidmer@gmail.com>
        * Cheng Soon Ong <chengsoon.ong@unimelb.edu.au>
        * https://code.google.com/p/pythongrid/source/browse/#git%2Fpythongrid
-       * Probably not good to base Ruffus entirely on libpythongrid to minimise dependencies, their more sophisticated configuration policies etc. and to abstract out commonalities.
+       * Probably not good to base Ruffus entirely on libpythongrid to minimise dependencies, the use of sophisticated configuration policies etc.
     #) Start with light-weight file-based protocol
-       * both drmaa and this needs specified local and remote directories
+       * specify where the scripts should live
        * use drmaa to start jobs
-       * have executable module which knows how to load deserialise (unmarshall) function / parameters from disk
+       * have executable ruffus module which knows how to load deserialise (unmarshall) function / parameters from disk. This would be what drmaa starts up, given the marshalled data as an argument
        * time stamp
-       * "heart beat"
-    #) Next step: pipe-based protocol
-       * use specified master port
-       * child is handed port in start up code to initiate hand shake or die
+       * "heart beat" to check that the job is still running
+    #) Next step: socket-based protocol
+       * use specified master port in ruffus script
        * start remote processes using drmaa
+       * child receives marshalled data and the address::port in the ruffus script (head node) to initiate hand shake or die
        * process recycling: run successive jobs on the same remote process for reduced overhead, until exceeds max number of jobs on the same process, min/max time on the same process
        * resubmit if die (Don't do sophisticated stuff like libpythongrid).
 
 ##########################################
-Planned: Refactoring Ruffus
+Planned Changes to  Ruffus
 ##########################################
 
 ***************************************
-New decorators
+Notes on how to write new decorators
 ***************************************
-==============================================================================
-How to:
-==============================================================================
 
 
-    New placeholder class. E.g. for @new_deco
+    New placeholder class. E.g. for ``@new_deco``
 
     .. code-block:: python
 
@@ -273,48 +288,64 @@ How to:
 
 
 
+***************************************
+New decorators
+***************************************
 ==============================================================================
-@split / @subdivide
-==============================================================================
-
-    yielding file names
-
-
-==============================================================================
-@recombine
+``@split`` / ``@subdivide``
 ==============================================================================
 
-    regroups previously @subdivide-d jobs **providing** that the output file names
-    were returned from the function
+    ``yield``s file names so that we can stop using wild cards
+
+
+==============================================================================
+``@recombine``
+==============================================================================
+
+    Like ``@collate`` but automatically regroups jobs which were a result of ``@subdivide``
+
+    This is the only way job trickling can work without stalling the pipeline: We would know
+    how many jobs were pending for each ``@recombine`` job
 
 
 ***************************************
 job trickling
 ***************************************
 
-    * @recombine is the necessary step, otherwise all @split @merge end in a stall and we might as well not bother...
-    * depth first etc iteration of tree
+    * allows depth first iteration of tree
+    * ``@recombine`` is the necessary step, otherwise all ``@split`` + ``@merge`` / ``@collate`` end in a pipeline stall and we are back to running breadth first rather than depth first. Might as well not bother...
     * Jobs need unique job_id tag
     * Need a way of generating filenames without returning from a function
-      indefinitely: i.e. a generator
+      indefinitely: i.e. ``@originate`` and ``@split`` should ``yield``
     * Need a way of knowing which files group together (i.e. were split
-      from a common job) without using regex (magic @split and @remerge)
-    * @split needs to be able to specify at run time the number of
+      from a common job) without using regex (magic ``@split`` and ``@remerge)``
+    * ``@split`` needs to be able to specify at run time the number of
       resulting jobs without using wild cards
-    * @merge needs to know when all of a group of files have completed
+    * ``@merge`` needs to know when all of a group of files have completed
     * legacy support for wild cards and file names.
-    * Possible breaking change: Assumes an explicit @follows if require
+    * Possible breaking change: Assumes an explicit ``@follows`` if require
       *all* jobs from the previous task to finish
     * "Push" system of checking in completed jobs into "slots" of waiting
       tasks
     * New jobs dispatched when slots filled adequately
-    * Funny "single file" mode for @transform, @files needs to be
+    * Funny "single file" mode for ``@transform,`` ``@files`` needs to be
       regularised so it is a syntactic (front end) convenience (oddity!)
       and not plague the inards of ruffus
     * use named parameters in decorators for clarity?
 
 
 
+***************************************
+Custom parameter generator
+***************************************
+
+    Leverages built-in Ruffus functionality.
+    Don't have to write entire parameter generation from scratch.
+
+    * Gets passed an iterator where you can do a for loop to get input parameters / a flattened list of files
+    * Other parameters are forwarded as is
+    * The duty of the function is to ``yield`` input, output, extra parameters
+    * Simple to do but how do we prevent this from being a job-trickling barrier?
 
 
 
@@ -336,6 +367,11 @@ Extending graphviz output
 ***************************************
 Deleting intermediate files
 ***************************************
+
+***************************************
+Registering jobs for clean up
+***************************************
+
 
 
 ##########################################
@@ -460,7 +496,7 @@ New flexible "format" alternative to regex suffix
                     'basename': 'sample1',
 
     Formatter takes these results and adds a level of indirection for each level of nesting.
-    In the case of @transform, @collate, we are dealing with a list of input files per job, so typically,
+    In the case of ``@transform,`` ``@collate,`` we are dealing with a list of input files per job, so typically,
     the components with be, using python format syntax::
 
         input_file_names = ['/a/b/c/sample1.bam']
@@ -517,7 +553,7 @@ Task completion monitoring
 
 
 ***************************************
-@product()
+``@product()``
 ***************************************
 
     * test code in test/test_combinatorics.py
@@ -590,9 +626,9 @@ Initial proposed syntax
 Implementation
 ============================================================================================================================================================
 
-    Similar to @transform but with extra level of nested-ness
+    Similar to ``@transform`` but with extra level of nested-ness
 
-    Retain same code for @product and @transform by adding an additional level of indirection:
+    Retain same code for ``@product`` and ``@transform`` by adding an additional level of indirection:
         * generator wrap around ``get_strings_in_nested_sequence`` to convert nested input parameters either to a single flat list of file names or to nested lists of file names
 
           .. code-block:: python
@@ -622,7 +658,7 @@ Implementation
 
 
 ******************************************************************************
-@permutations(...), @combinations(...), @combinations_with_replacement(...)
+``@permutations(...),`` ``@combinations(...),`` ``@combinations_with_replacement(...)``
 ******************************************************************************
 
     * Put all new generators in an ``combinatorics`` submodule namespace to avoid breaking user code. (They can import if necessary.)
@@ -664,9 +700,9 @@ Implementation
 Implementation
 ============================================================================================================================================================
 
-    Similar to @product extra level of nested-ness is self versus self
+    Similar to ``@product`` extra level of nested-ness is self versus self
 
-    Retain same code for @product
+    Retain same code for ``@product``
         * forward to a sinble ``file_name_parameters.combinatorics_param_factory()``
         * use ``combinatorics_type`` to dispatch to ``combinatorics.permutations``, ``combinatorics.combinations`` and ``combinatorics.combinations_with_replacement``
         * use ``list_input_param_to_file_name_list`` from ``file_name_parameters.product_param_factory()``
@@ -695,11 +731,19 @@ Better error messages for ``formatter()``, ``suffix()`` and ``regex()``
       turns into a zombie.
 
 ************************************************************************************************
-@originate
+``@originate``
 ************************************************************************************************
 
-    * synonym for @split(None,...)
-    * prints as such
+    * synonym for ``@split(None,...)``
+    * prints as such:
+
+        .. code-block:: bash
+           Task = generate_initial_files
+               Job  = [None
+                     -> a.tmp1
+                     -> b.tmp1]
+                 Job needs update: Missing files [a.tmp1, b.tmp1]
+
     * N.B. Task function obviously only takes outputs (and extras)
 
 ************************************************************************************************
