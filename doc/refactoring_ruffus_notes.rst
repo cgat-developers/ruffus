@@ -378,6 +378,12 @@ Updated Docs
 ##########################################
 Updated Ruffus
 ##########################################
+
+    Unfortanately, some additions to the ruffus namespace were made
+
+        ``formatter``, ``subdivide``, ``originate``
+
+
 ***************************************
 Task completion monitoring
 ***************************************
