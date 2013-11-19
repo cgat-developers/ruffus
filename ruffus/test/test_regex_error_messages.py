@@ -31,8 +31,8 @@ parallelism = 1
 #
 #   generate_initial_files1
 #___________________________________________________________________________
-@split(1, [workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"])
-def generate_initial_files1(in_name, out_names):
+@originate([workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"])
+def generate_initial_files1(out_names):
     for on in out_names:
         with open(on, 'w') as outfile:
             pass

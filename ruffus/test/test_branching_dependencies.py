@@ -2,7 +2,7 @@
 """
 
     branching.py
-    
+
         test branching dependencies
 
 """
@@ -10,7 +10,7 @@
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   options        
+#   options
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -40,18 +40,18 @@ parser.add_option("-D", "--debug", dest="debug",
 parser.add_option("-t", "--target_tasks", dest="target_tasks",
                   action="append",
                   default = list(),
-                  metavar="JOBNAME", 
+                  metavar="JOBNAME",
                   type="string",
                   help="Target task(s) of pipeline.")
 parser.add_option("-f", "--forced_tasks", dest="forced_tasks",
                   action="append",
                   default = list(),
-                  metavar="JOBNAME", 
+                  metavar="JOBNAME",
                   type="string",
                   help="Pipeline task(s) which will be included even if they are up to date.")
 parser.add_option("-j", "--jobs", dest="jobs",
                   default=1,
-                  metavar="jobs", 
+                  metavar="jobs",
                   type="int",
                   help="Specifies  the number of jobs (commands) to run simultaneously.")
 parser.add_option("-v", "--verbose", dest = "verbose",
@@ -62,12 +62,12 @@ parser.add_option("--touch_files_only", dest = "touch_files_only",
                   help="Do not run pipeline. Only touch.")
 parser.add_option("-d", "--dependency", dest="dependency_file",
                   #default="simple.svg",
-                  metavar="FILE", 
+                  metavar="FILE",
                   type="string",
                   help="Print a dependency graph of the pipeline that would be executed "
                         "to FILE, but do not execute it.")
 parser.add_option("-F", "--dependency_graph_format", dest="dependency_graph_format",
-                  metavar="FORMAT", 
+                  metavar="FORMAT",
                   type="string",
                   default = 'svg',
                   help="format of dependency graph file. Can be 'ps' (PostScript), "+
@@ -88,7 +88,7 @@ parser.add_option("-H", "--draw_graph_horizontally", dest="draw_horizontally",
                     action="store_true", default=False,
                     help="Draw horizontal dependency graph.")
 
-parameters = [  
+parameters = [
                 ]
 
 
@@ -99,7 +99,7 @@ parameters = [
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   imports        
+#   imports
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -136,7 +136,7 @@ def test_job_io(infiles, outfiles, extra_params):
     """
     # dump parameters
     params = (infiles, outfiles) + extra_params
-    
+
     if isinstance(infiles, str):
         infiles = [infiles]
     elif infiles == None:
@@ -151,7 +151,7 @@ def test_job_io(infiles, outfiles, extra_params):
     for f in outfiles:
         open(f, "w").write(output_text)
 
-    
+
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -181,25 +181,25 @@ helpstr = f.getvalue()
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 #
-#   1   ->  2   ->  3   ->    
+#   1   ->  2   ->  3   ->
 #       ->  4           ->
 #                   5   ->    6
-# 
+#
 
 tempdir = "temp_branching_dir/"
 #
 #    task1
 #
-@split(None, [tempdir + d for d in 'a.1', 'b.1', 'c.1'])
+@originate([tempdir + d for d in 'a.1', 'b.1', 'c.1'])
 @follows(mkdir(tempdir))
 @posttask(lambda: open(tempdir + "task.done", "a").write("Task 1 Done\n"))
-def task1(infiles, outfiles, *extra_params):
+def task1(files, outfiles, *extra_params):
     """
     First task
     """
-    open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
-    test_job_io(infiles, outfiles, extra_params)
-    open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([None, outfiles]))
+    test_job_io(None, outfiles, extra_params)
+    open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([None, outfiles]))
 
 
 #
@@ -262,7 +262,7 @@ def task5(infiles, outfiles, *extra_params):
     time.sleep(3)
     test_job_io(infiles, outfiles, extra_params)
     open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
-    
+
 #
 #    task6
 #
@@ -277,25 +277,25 @@ def task6(infiles, outfiles, *extra_params):
     open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
     test_job_io(infiles, outfiles, extra_params)
     open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
-    
-    
-    
-    
-    
+
+
+
+
+
 def check_job_order_correct(filename):
     """
-       1   ->  2   ->  3   ->    
+       1   ->  2   ->  3   ->
            ->  4           ->
                        5   ->    6
     """
-    
+
     precedence_rules = [[1, 2],
                         [2, 3],
                         [1, 4],
                         [5, 6],
                         [3, 6],
                         [4, 6]]
-    
+
     index_re = re.compile(r'.*\.([0-9])["\]\n]*$')
     job_indices = defaultdict(list)
     for linenum, l in enumerate(open(filename)):
@@ -303,10 +303,10 @@ def check_job_order_correct(filename):
         if not m:
             raise "Non-matching line in [%s]" % filename
         job_indices[int(m.group(1))].append(linenum)
-        
+
     for job_index in job_indices:
         job_indices[job_index].sort()
-        
+
     for before, after in precedence_rules:
         if before not in job_indices or after not in job_indices:
             continue
@@ -315,9 +315,9 @@ def check_job_order_correct(filename):
                                 % ( before, job_indices[before][-1],
                                     after,  job_indices[after][0],
                                 filename))
-        
-    
-    
+
+
+
 def check_final_output_correct(after_touch_files = False):
     """
     check if the final output in final.6 is as expected
@@ -343,8 +343,8 @@ def check_final_output_correct(after_touch_files = False):
         [] -> ["DIR/a.1", "DIR/b.1", "DIR/c.1"]
         [] -> ["DIR/a.1", "DIR/b.1", "DIR/c.1"]
         [] -> ["DIR/a.5"]"""
-        
-        
+
+
     expected_output = expected_output.replace("        ", "").replace("DIR/", tempdir).split("\n")
     if after_touch_files:
         expected_output.pop(-2)
@@ -354,9 +354,9 @@ def check_final_output_correct(after_touch_files = False):
             if l1 != l2:
                 sys.stderr.write("%d\n  >%s<\n  >%s<\n" % (i, l1, l2))
         raise Exception ("Final.6 output is not as expected\n")
-    
-        
-# 
+
+
+#
 #   Necessary to protect the "entry point" of the program under windows.
 #       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 #
@@ -364,73 +364,73 @@ if __name__ == '__main__':
     print >>sys.stderr, "Python version %s" % sys.version
     print >>sys.stderr, "Ruffus version %s" % ruffus.__version__
     if options.just_print:
-        pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks, 
+        pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
                             verbose=options.verbose)
-    
+
     elif options.dependency_file:
         pipeline_printout_graph (     open(options.dependency_file, "w"),
                              options.dependency_graph_format,
-                             options.target_tasks, 
+                             options.target_tasks,
                              options.forced_tasks,
                              draw_vertically = not options.draw_horizontally,
                              no_key_legend  = options.no_key_legend_in_graph)
-        
-    elif options.debug:    
+
+    elif options.debug:
         import os
         os.system("rm -rf %s" % tempdir)
-        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, 
+        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
                             logger = stderr_logger if options.verbose else black_hole_logger,
                             verbose = options.verbose)
 
-        
+
         check_final_output_correct()
         check_job_order_correct(tempdir + "jobs.start")
         check_job_order_correct(tempdir + "jobs.finish")
-        
-        
+
+
         #
         # check touch file works, running the pipeline leaving an empty file where b.1
         #   would be
-        # 
-        if options.touch_files_only:    
+        #
+        if options.touch_files_only:
             #
             # remove these because the precedence for the two runs must not be mixed together
-            # 
+            #
             os.unlink(os.path.join(tempdir, "jobs.start")  )
             os.unlink(os.path.join(tempdir, "jobs.finish") )
 
             #
             #   remove b.1 and touch
-            # 
+            #
             if options.verbose:
                 print "\n\nNow just touch files for task2...\n"
             os.unlink(os.path.join(tempdir, "b.1"))
-            pipeline_run([task2], options.forced_tasks, multiprocess = options.jobs, 
+            pipeline_run([task2], options.forced_tasks, multiprocess = options.jobs,
                                 logger = stderr_logger if options.verbose else black_hole_logger,
                                 gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                                 verbose = options.verbose,
                                 touch_files_only = options.touch_files_only)
-            
-            
+
+
             #
             #   Now wait for the empty b.1 to show up in the output
-            # 
+            #
             if options.verbose:
                 print "\n\nRun normally...\n"
-            pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, 
+            pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
                                 logger = stderr_logger if options.verbose else black_hole_logger,
                                 gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                                 verbose = options.verbose)
             check_final_output_correct(options.touch_files_only)
             check_job_order_correct(tempdir + "jobs.start")
             check_job_order_correct(tempdir + "jobs.finish")
-        
-        
-        
+
+
+
         os.system("rm -rf %s" % tempdir)
         print "OK"
     else:
-        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, 
+        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
                             logger = stderr_logger if options.verbose else black_hole_logger,
                              gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                             verbose = options.verbose, touch_files_only = options.touch_files_only)
