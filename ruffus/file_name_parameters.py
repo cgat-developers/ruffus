@@ -323,18 +323,34 @@ class t_params_tasks_globs_run_time_data(object):
 
 
 #_________________________________________________________________________________________
-def needs_update_check_directory_missing (dirs):
+def needs_update_check_directory_missing (*params, **kwargs):
     """
     Called per directory:
         Does it exist?
         Is it an ordinary file not a directory? (throw exception
     """
-    for d in dirs:
+    if len(params) == 1:
+        dirs = params[0]
+    elif len(params) == 2:
+        dirs = params[1]
+    else:
+        raise Exception("Wrong number of arguments in mkdir check %s" % (params,))
+
+    missing_directories = []
+    for d in get_strings_in_nested_sequence(dirs):
         #print >>sys.stderr, "check directory missing %d " % os.path.exists(d) # DEBUG
         if not os.path.exists(d):
-            return True, "Directory [%s] is missing" % d
+            missing_directories.append(d)
+            continue
+            #return True, "Directory [%s] is missing" % d
         if not os.path.isdir(d):
             raise error_not_a_directory("%s already exists but as a file, not a directory" % d )
+
+    if len(missing_directories):
+        if len(missing_directories) > 1:
+            return True, "Directories [%s] are missing" % (", ".join(missing_directories))
+        else:
+            return True, "Directories [%s] is missing" % (missing_directories[0])
     return False, "All directories exist"
 
 #_________________________________________________________________________________________
@@ -1117,7 +1133,7 @@ def product_param_factory ( list_input_files_task_globs,
                             output_pattern,
                             *extra_specs):
     """
-    Factory for task_transform
+    Factory for task_product
     """
     def iterator(runtime_data):
 
