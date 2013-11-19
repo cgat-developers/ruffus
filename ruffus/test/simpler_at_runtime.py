@@ -165,7 +165,7 @@ def task1(outfiles):
     First task
     """
     output_text  = ""
-    output_text += json.dumps(infile) + " -> " + json.dumps(outfiles) + "\n"
+    output_text += "    -> " + json.dumps(outfiles) + "\n"
     for outfile in outfiles:
         open(outfile, "w").write(output_text)
 
