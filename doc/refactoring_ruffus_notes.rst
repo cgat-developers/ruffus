@@ -178,7 +178,7 @@ Job completion monitoring
         * Each call to ``file_name_parameters.py.needs_update_check_modify_time()`` also opens a connection to the database.
         * We can pass the dbdict connection as an extra parameter to reduce overhead
 
-    * Why is  ``touch``-ing files (``pipeline_run(..., touch_files_only = True, ...) ``) handled directly (and across the multiprocessor boundary) in ``task.job_wrapper_io_files()``?
+    * Why is  ``touch``-ing files (``pipeline_run(..., touch_files_only = True, ...) `` ) handled directly (and across the multiprocessor boundary) in ``task.job_wrapper_io_files()``?
 
         .. code-block:: python
 
