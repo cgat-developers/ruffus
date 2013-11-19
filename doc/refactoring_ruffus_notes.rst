@@ -381,6 +381,20 @@ Updated Docs
 ##########################################
 Updated Ruffus
 ##########################################
+***************************************
+Task completion monitoring
+***************************************
+
+    * Contributed by **Jake Biesinger**
+    * defaults to using checking file timestamps stored in an sqllite database in the current directory (``ruffus_utilility.RUFFUS_HISTORY_FILE = '.ruffus_history.sqlite'``)
+    * ``pipeline_run(..., checksum_level = N, ...)``
+
+        where the default is 1:
+
+           level 0 : Use only file timestamps
+           level 1 : above, plus timestamp of successful job completion
+           level 2 : above, plus a checksum of the pipeline function body
+           level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
 
 ***************************************
 pipeline_run(..., multithread= N, ...)
@@ -410,20 +424,17 @@ drmaa
 New flexible ``formatter`` alternative to ``regex`` ``suffix``
 ******************************************************************************
 
-    * Produces optional [Regular Expression] matches
     * Produces (pre-canned) path subcomponents in the style ``os.path.split()``
+    * Produces optional [Regular Expression] matches (i.e. optionally filters on a regular expression)
     * Familiar pythonesque syntax
-    * Refer to the Nth-input file and not just the first
-    * Refer to individual letters within a match
-
-    ``Suffix()`` and ``Regex()`` only use the first file name in the input.
-    ``formatter()`` is more flexible and can use any file names in the input.
+    * Can refer to the Nth-input file and not just the first like ``Suffix()`` and ``Regex()``
+    * Can even refer to individual letters within a match
 
 
 ==============================================================================
 Building blocks for pattern substitution
 ==============================================================================
-    Formatter takes these results and adds a level of indirection for each level of nesting.
+    Formatter produces regular expression matches and path components, adding a level of indirection for each level of nesting.
     In the case of ``@transform`` ``@collate`` we are dealing with a list of input files per job, so typically,
     the components with be, using python format syntax:
 
@@ -436,11 +447,11 @@ Building blocks for pattern substitution
             "{1[0]}"            #   '/a/b/c/sample',                // captured by index
             "{2[0]}"            #   'bam',                          // captured by index
             "{id[0]}"           #   '1'                             // captured by name
-            "{ext[0]}"          #   '.bam',
-            "{subdir[0][0]}"    #   'c'
-            "{subpath[0][1]}"   #   '/a/b'
-            "{path[0]}"         #   '/a/b/c',
-            "{basename[0]}"     #   'sample1',
+            "{basename[0]}"     #   'sample1',                      // file name
+            "{ext[0]}"          #   '.bam',                         // extension
+            "{path[0]}"         #   '/a/b/c',                       // full path
+            "{subpath[0][1]}"   #   '/a/b'                          // recurse down path 1 level
+            "{subdir[0][0]}"    #   'c'                             // 1st level subdirectory
 
 
 ==============================================================================
@@ -454,8 +465,8 @@ Building blocks for pattern substitution
                     "{basename}",                               # extra: list of all file names
                     "{basename[0]}",                            # extra: first file name
                     "{basename[0][0]}",                         # extra: first letter of first file name
-                    "{subpath[0][0]}",                          # extra: first level sub path of first file name
-                    "{subdir[0][0]}")                           # extra: first level sub directory of first file name
+                    "{subpath[0][1]}",                          # extra: 1st file, recurse down path 1 level
+                    "{subdir[2][1]}")                           # extra: 3rd file, 1st level sub directory
         def test_transform_task(    infiles,
                                     outfile,
                                     all_file_names_str,
@@ -483,8 +494,8 @@ Building blocks for pattern substitution
                         "{basename[0]}{basename[1]}{basename[2]}"                                   # extra: list of 3 sets of file names
                         "{basename[0][0]}{basename[1][0]}{basename[2][0]}",                         # extra: first file names for each of 3 set
                         "{basename[0][0][0]}{basename[1][0][0]}{basename[2][0][0]}",                # extra: first letters of first file name from each of 3 input
-                        "{subpath[0][0][0]}",                                                       # extra: first level sub path of first file name
-                        "{subdir[0][0][0]}")                                                        # extra: first level sub directory of first file name
+                        "{subpath[0][0][1]}",                                                       # extra: 1st input, 1st file, recurse down path 1 level
+                        "{subdir[2][3][1]}")                                                        # extra: 3rd input, 4th file, 1st level sub directory
         def test_combinations3_task(nfiles,
                                     outfile,
                                     all_file_names_str,
@@ -498,8 +509,58 @@ Building blocks for pattern substitution
             pass
 
 
+
 ==============================================================================
-implementation overview
+Using regular expressions as a filter
+==============================================================================
+
+    If ``regex_str`` is specified (``formatter(r".*")`` rather than ``formatter()``),
+    then regular expression match failures will return an empty dictionary.
+
+    The idea is we can use regular expression matches as a filter if we refer to that file our specified pattern.
+
+    For example,
+
+    .. code-block:: python
+
+        # filter on ".txt"
+        input_filenames = ["a.wrong", "b.txt"]
+        formatter(".txt$")
+
+        # OK: regular expression matches the second file name
+        "{basename[1]}"
+
+        # Fails: regular expression does not match the second file name. No format substitutions make sense
+        "{basename[0]}"
+
+
+    Note that we are not doing regular expression *substitution* here only matching. Because ``"a.wrong"`` doesn't match
+    ``".txt"``, even ``basename[0]`` will fail.
+
+    The regular expression mismatch *taints* all references to that file name in the substitution pattern.
+
+==============================================================================
+``regex()`` and ``suffix()``
+==============================================================================
+
+
+    The previous behaviour with regex() where mismatches fail even if no substitution is made is retained by the use of ``re.subn()``.
+    This is a corner case but I didn't want user code to break
+
+    .. code-block:: python
+
+        # filter on ".txt"
+        input_filenames = ["a.wrong", "b.txt"]
+        regex("(.txt)$")
+
+        # fails, no substitution possible
+        r"\1"
+
+        # fails anyway even through regular expression matches not referenced...
+        r"output.filename"
+
+==============================================================================
+implementation
 ==============================================================================
     ``get_all_paths_components(paths, regex_str)`` in ``ruffus_utility.py``
 
@@ -532,51 +593,15 @@ implementation overview
                 'basename': 'sample1',
 
 
-==============================================================================
-implementation for regular expressions
-==============================================================================
-
-    If ``regex_str`` is not None, then regular expression match failures will return an empty dictionary.
-    The idea is that all file names which throw exceptions will be skipped, and we can continue
-    to use regular expression matches as a filter, even if they are not used to construct the result.
-    Note that the regular expression is applied to *all* file names in case *any* of them is used in
-    format string. So regular expression matches only failures for the file referenced in the format pattern.
-
-    For example,
-
-    .. code-block:: python
-
-        # filter on ".txt"
-        input_filenames = ["a.wrong", "b.txt"]
-        formatter(".txt$")
-
-        # OK: regular expression matches the second file name
-        "{basename[1]}"
-
-        # Failures: regular expression does not match the second file name. No format substitutions make sense
-        "{basename[1]}"
-
-
-    The previous behaviour with regex() where mismatches fail even if no substitution is made is retained by the use of ``re.subn()``.
-    This is a corner case but I didn't want user code to break
-
-    .. code-block:: python
-
-        # filter on ".txt"
-        input_filenames = ["a.wrong", "b.txt"]
-        regex("(.txt)$")
-
-        # fails, no substitution possible
-        r"\1"
-
-        # fails anyway even through regular expression matches not referenced...
-        r"output.filename"
+    The code is in ``ruffus_utility.py``:
 
     .. code-block:: python
 
         results = get_all_paths_components(paths, regex_str)
         string.format(results[2])
 
+
+    All the magic is hidden inside black boxes ``filename_transform`` classes:
 
     .. code-block:: python
 
@@ -585,10 +610,6 @@ implementation for regular expressions
         class t_regex_filename_transform(t_filename_transform):
         class t_format_filename_transform(t_filename_transform):
 
-
-
-    The only trickiness is that string.format() understands all integer number keys to be offsets into lists/ tuples and everything else
-    including negative numbers to be dict keys.
 
 ******************************************************************************
 Refactoring parameter handling
@@ -609,27 +630,23 @@ Refactoring parameter handling
     unit tests added to ``test_file_name_parameters.py`` and ``test_ruffus_utility.py``
 
 
-***************************************
-Task completion monitoring
-***************************************
+************************************************************************************************************************************************************
+Better error messages for ``formatter()``, ``suffix()`` and ``regex()`` for ``pipeline_printout(..., verbose >= 3, ...)``
+************************************************************************************************************************************************************
 
-    * Contributed by Jake Biesinger
-    * defaults to using checking file timestamps stored in an sqllite database in the current directory (``ruffus_utilility.RUFFUS_HISTORY_FILE = '.ruffus_history.sqlite'``)
-    * ``pipeline_run(..., checksum_level = N, ...)``
-
-        where the default is 1:
-
-           level 0 : Use only file timestamps
-           level 1 : above, plus timestamp of successful job completion
-           level 2 : above, plus a checksum of the pipeline function body
-           level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
+    * Error messages for showing mismatching regular expression and offending file name
+    * Wrong capture group names or out of range indices will raise informative Exception
+    * ``regex()`` and ``suffix()`` examples in ``test/test_regex_error_messages.py``
+    * ``formatter()`` examples in ``test/test_combinatorics.py``
 
 
 
-***************************************
+********************************************
 ``@product()``
-***************************************
+********************************************
 
+    * Put all new generators in an ``combinatorics`` submodule namespace to avoid breaking user code. (They can imported if necessary.)
+    * Only ``formatter([OPTIONAl_REGEX])`` provides the necessary flexibility to construct the output so we won't bother with suffix and regex
     * test code in test/test_combinatorics.py
 
 ============================================================================================================================================================
@@ -726,16 +743,11 @@ Implementation
 
         * ``ruffus_uilility.swap_doubly_nested_order()`` makes the syntax / implementation very orthogonal
 
-
-
-
-
-
 ******************************************************************************
 ``@permutations(...),`` ``@combinations(...),`` ``@combinations_with_replacement(...)``
 ******************************************************************************
 
-    * Put all new generators in an ``combinatorics`` submodule namespace to avoid breaking user code. (They can import if necessary.)
+    * Put all new generators in an ``combinatorics`` submodule namespace to avoid breaking user code. (They can imported if necessary.)
     * Only ``formatter([OPTIONAl_REGEX])`` provides the necessary flexibility to construct the output so we won't bother with suffix and regex
     * test code in test/test_combinatorics.py
 
@@ -783,16 +795,6 @@ Implementation
 
 
 ******************************************************************************
-Better error messages for ``formatter()``, ``suffix()`` and ``regex()``
-******************************************************************************
-
-    * Error messages for ``pipeline_printout`` if ``verbose >= 3`` showing mismatching regular expression and offending file name
-    * Wrong capture group names or out of range indices will raise informative Exception
-    * ``regex()`` and ``suffix()`` examples in ``test/test_regex_error_messages.py``
-    * ``formatter()`` examples in ``test/test_combinatorics.py``
-
-
-******************************************************************************
 ``@mkdir`` with ``formatter()``, ``suffix()`` and ``regex()``
 ******************************************************************************
 
@@ -808,6 +810,10 @@ Better error messages for ``formatter()``, ``suffix()`` and ``regex()``
 ``@originate``
 ************************************************************************************************
 
+    * generates output *ex nihilo*, i.e. not from previous dependencies
+    * useful at top of pipeline
+    * Can use file lists or wildcards (please don't! :-) )
+    * Planned future support for ``yield`` to get rid of wild cards
     * synonym for ``@split(None,...)``
     * prints as such:
 
@@ -824,7 +830,10 @@ Better error messages for ``formatter()``, ``suffix()`` and ``regex()``
 cmdline: 5 lines of boilerplate
 ************************************************************************************************
 
-    To use with (deprecated) optparse:
+============================================================================================================================================================
+argparse
+============================================================================================================================================================
+
 
         .. code-block:: python
 
@@ -865,7 +874,11 @@ cmdline: 5 lines of boilerplate
                     --flowchart_format
                     --forced_tasks
 
-    To use with (deprecated) optparse:
+============================================================================================================================================================
+optparse (deprecated)
+============================================================================================================================================================
+
+    ``optparse`` deprecated since python 2.7
 
         .. code-block:: python
 
