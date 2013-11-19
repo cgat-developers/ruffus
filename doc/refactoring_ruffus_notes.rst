@@ -22,6 +22,12 @@ Reusing pipeline code in modules
 ***************************************
 New features
 ***************************************
+
+==============================================================================
+Job completion monitoring
+==============================================================================
+    ``pipeline_run(..., checksum_level=CHECKSUM_FILE_TIMESTAMPS, ...)``
+
 ==============================================================================
 @subdivide / @split(..., regex(), ...)
 ==============================================================================
@@ -61,12 +67,6 @@ formatter
 @active_if
 ==============================================================================
 
-
-==============================================================================
-task completion monitoring
-==============================================================================
-
-    Jake Biesinger
 
 ==============================================================================
 command line
@@ -116,7 +116,7 @@ Custom parameter generator
     * The duty of the function is to ``yield`` input, output, extra parameters
 
 ***************************************
-Task completion monitoring
+Job completion monitoring
 ***************************************
 
     * On by default?
@@ -348,6 +348,18 @@ Completed: Refactoring Ruffus
 ##########################################
 
 ***************************************
+pipeline_run(..., multithread= N, ...)
+***************************************
+
+    Use multi_threading rather than multiprocessing
+
+    This is the only safe way to run drmaa.
+
+    Normally this would reduce the amount of parallelism in your code (but reduce the marshalling cost across process boundaries).
+    However, if the work load is mostly on another computer with a separate python interpreter, any cost benefit calculations are moot.
+
+
+***************************************
 drmaa
 ***************************************
 
@@ -492,8 +504,17 @@ Refactoring parameter handling
 Task completion monitoring
 ***************************************
 
-    * Jake Biesinger has done this already.
-    * Fantastic code. Checked in.
+    * Contributed by Jake Biesinger
+    * defaults to using checking file timestamps stored in an sqllite database in the current directory (``ruffus_utilility.RUFFUS_HISTORY_FILE = '.ruffus_history.sqlite'``)
+    * ``pipeline_run(..., checksum_level = N, ...)``
+
+        where the default is 1:
+
+           level 0 : Use only file timestamps
+           level 1 : above, plus timestamp of successful job completion
+           level 2 : above, plus a checksum of the pipeline function body
+           level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
+
 
 
 ***************************************
