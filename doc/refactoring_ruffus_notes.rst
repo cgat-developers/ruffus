@@ -142,16 +142,16 @@ In progress: Refactoring Ruffus
 ##########################################
 
 ************************************************************************************************
-``@subdivide``
+Todo: ``@subdivide``
 ************************************************************************************************
 
     * needs test code
     * needs test scripts
 
 
-***************************************
-Job completion monitoring
-***************************************
+*****************************************
+Comments on: Job completion monitoring
+*****************************************
 
     * On by default?
 
@@ -204,21 +204,21 @@ Job completion monitoring
 
     * How easy is it to abstract out the database?
 
-        * The database is Jacob Sondergaard's dbdict which is a nosql / key-value store wrapper around sqlite
+        * The database is Jacob Sondergaard's ``dbdict`` which is a nosql / key-value store wrapper around sqlite
             .. code-block:: python
 
                 job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
 
         * The key is the output file name, so it is important not to confuse Ruffus by having different tasks generate the same output file!
         * Is it possible to abstract this so that **jobs** get timestamped as well?
-        * If we should ever want to abstract out dbdict, we need to have a similar key-value store class,
-          and make sure that a single instance of dbdict is used through ``pipeline_run`` which is passed up
-          and down the function call chain. dbdict would then be drop-in replaceable by our custom (e.g. flat-file-based) dbdict alternative.
+        * If we should ever want to abstract out ``dbdict``, we need to have a similar key-value store class,
+          and make sure that a single instance of ``dbdict`` is used through ``pipeline_run`` which is passed up
+          and down the function call chain. ``dbdict`` would then be drop-in replaceable by our custom (e.g. flat-file-based) dbdict alternative.
 
 
-**************************************************
-Running python jobs remotely on cluster nodes
-**************************************************
+****************************************************
+Todo: Running python jobs remotely on cluster nodes
+****************************************************
 
     abstract out ``task.run_pooled_job_without_exceptions()`` as a function which can be supplied to
         pipeline_run
@@ -290,25 +290,25 @@ Notes on how to write new decorators
 New decorators
 ***************************************
 ==============================================================================
-``@split`` / ``@subdivide``
+Planned: ``@split`` / ``@subdivide``
 ==============================================================================
 
-    ``yield``s file names so that we can stop using wild cards
+    ``yield`` file names so that we can stop using wild cards
 
 
 ==============================================================================
-``@recombine``
+Planned: ``@recombine``
 ==============================================================================
 
-    Like ``@collate`` but automatically regroups jobs which were a result of ``@subdivide``
+    Like ``@collate`` but automatically regroups jobs which were a result of a previous ``@subdivide`` (even after intervening ``@transform`` )
 
     This is the only way job trickling can work without stalling the pipeline: We would know
     how many jobs were pending for each ``@recombine`` job
 
 
-***************************************
-job trickling
-***************************************
+****************************************
+Planned: Job Trickling
+****************************************
 
     * allows depth first iteration of tree
     * ``@recombine`` is the necessary step, otherwise all ``@split`` + ``@merge`` / ``@collate`` end in a pipeline stall and we are back to running breadth first rather than depth first. Might as well not bother...
@@ -333,9 +333,9 @@ job trickling
 
 
 
-***************************************
-Custom parameter generator
-***************************************
+************************************
+Planned: Custom parameter generator
+************************************
 
     Leverages built-in Ruffus functionality.
     Don't have to write entire parameter generation from scratch.
@@ -347,34 +347,33 @@ Custom parameter generator
 
 
 
-******************************************************************************
-    Ruffus GUI interface.
-******************************************************************************
+****************************************************************************
+Desired!: Ruffus GUI interface.
+****************************************************************************
 
     Desktop (PyQT or web-based solution?)  I'd love to see an svg pipeline picture that I could actually interact with
 
 
+****************************************************************************
+find contributions for!: Extending graphviz output
+****************************************************************************
 
+****************************************
+Desired!: Deleting intermediate files
+****************************************
 
-******************************************************************************
-Extending graphviz output
-******************************************************************************
-
-
-
-***************************************
-Deleting intermediate files
-***************************************
-
-***************************************
-Registering jobs for clean up
-***************************************
+****************************************
+Desired!: Registering jobs for clean up
+****************************************
 
 
 
 ##########################################
 Updated Docs
 ##########################################
+
+    To be done!!
+
 
 ##########################################
 Updated Ruffus
