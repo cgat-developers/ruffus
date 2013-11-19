@@ -193,7 +193,7 @@ tempdir = "temp_branching_dir/"
 @originate([tempdir + d for d in 'a.1', 'b.1', 'c.1'])
 @follows(mkdir(tempdir))
 @posttask(lambda: open(tempdir + "task.done", "a").write("Task 1 Done\n"))
-def task1(files, outfiles, *extra_params):
+def task1(outfiles, *extra_params):
     """
     First task
     """
