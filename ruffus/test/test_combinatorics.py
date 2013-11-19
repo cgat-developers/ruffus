@@ -32,8 +32,8 @@ one_second_per_job = True
 #
 #   generate_initial_files1
 #___________________________________________________________________________
-@split(1, [workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"])
-def generate_initial_files1(in_name, out_names):
+@originate([workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"])
+def generate_initial_files1(out_names):
     for on in out_names:
         with open(on, 'w') as outfile:
             pass
@@ -42,8 +42,8 @@ def generate_initial_files1(in_name, out_names):
 #
 #   generate_initial_files1
 #___________________________________________________________________________
-@split(1, [workdir +  "/e_name.tmp1", workdir +  "/f_name.tmp1"])
-def generate_initial_files2(in_name, out_names):
+@originate([workdir +  "/e_name.tmp1", workdir +  "/f_name.tmp1"])
+def generate_initial_files2(out_names):
     for on in out_names:
         with open(on, 'w') as outfile:
             pass
@@ -52,8 +52,8 @@ def generate_initial_files2(in_name, out_names):
 #
 #   generate_initial_files1
 #___________________________________________________________________________
-@split(1, [workdir +  "/g_name.tmp1", workdir +  "/h_name.tmp1"])
-def generate_initial_files3(in_name, out_names):
+@originate([workdir +  "/g_name.tmp1", workdir +  "/h_name.tmp1"])
+def generate_initial_files3(out_names):
     for on in out_names:
         with open(on, 'w') as outfile:
             pass

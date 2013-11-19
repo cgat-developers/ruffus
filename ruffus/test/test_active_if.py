@@ -8,7 +8,7 @@
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   options        
+#   options
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -46,7 +46,7 @@ logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, option
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   imports        
+#   imports
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -81,7 +81,7 @@ import json
 
 
 def helper (infiles, outfiles):
-    if not isinstance(infiles, tuple) and not isinstance(infiles, list):
+    if not isinstance(infiles, (tuple, list)):
         infiles = [infiles]
     if not isinstance(outfiles, list):
         outfiles = [outfiles]
@@ -114,12 +114,12 @@ pipeline_active_if = True
 #    task1
 #
 @follows(mkdir("test_active_if"))
-@split(None, ['test_active_if/a.1', 'test_active_if/b.1'])
-def task1(infile, outfiles):
+@originate(['test_active_if/a.1', 'test_active_if/b.1'])
+def task1(outfiles):
     """
     First task
     """
-    helper (infile, outfiles)
+    helper (None, outfiles)
 
 
 
@@ -190,7 +190,7 @@ null -> "test_active_if/b.1"
             "test_active_if/b.4" -> "test_active_if/summary.5"
 """
 
-# 
+#
 #   Necessary to protect the "entry point" of the program under windows.
 #       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 #
