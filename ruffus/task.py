@@ -316,6 +316,9 @@ class transform(task_decorator):
 class subdivide(task_decorator):
     pass
 
+class originate(task_decorator):
+    pass
+
 class merge(task_decorator):
     pass
 
@@ -488,7 +491,7 @@ def job_wrapper_generic(param, user_defined_work_func, register_cleanup, touch_f
 #   job wrapper for all that deal with i/o files
 
 #_________________________________________________________________________________________
-def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_files_only):
+def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_files_only, output_files_only = False):
     """
     run func on any i/o if not up to date
     """
@@ -498,8 +501,16 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
     job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
 
     if not touch_files_only:
-        ret_val = user_defined_work_func(*param)
+        # @originate only uses output files
+        if output_files_only:
+            ret_val = user_defined_work_func(*(param[1:]))
+        # all other decorators
+        else:
+            ret_val = user_defined_work_func(*param)
     else:
+        #
+        #   touch files only
+        #
         for f in get_strings_in_nested_sequence(o):
             if not os.path.exists(f):
                 open(f, 'w')
@@ -521,6 +532,18 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
 
 #_________________________________________________________________________________________
 
+#   job wrapper for all that only deals with output files
+
+#_________________________________________________________________________________________
+def job_wrapper_output_files(param, user_defined_work_func, register_cleanup, touch_files_only):
+    """
+    run func on any output file if not up to date
+    """
+    job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_files_only, output_files_only = True)
+
+
+#_________________________________________________________________________________________
+
 #   job wrapper for mkdir
 
 #_________________________________________________________________________________________
@@ -537,7 +560,7 @@ def job_wrapper_mkdir(param, user_defined_work_func, register_cleanup, touch_fil
     if len(param) == 1:
         dirs = param[0]
 
-    # if there are two parameters, they are i/o, and the directories to be created are the output 
+    # if there are two parameters, they are i/o, and the directories to be created are the output
     elif len(param) == 2:
         dirs = param[1]
     else:
@@ -728,6 +751,7 @@ class _task (node):
                     "task_combinations",
                     "task_combinations_with_replacement",
                     "task_subdivide",
+                    "task_originate",
                     ]
     action_unspecified                          =  0
     action_task                                 =  1
@@ -746,6 +770,7 @@ class _task (node):
     action_task_combinations                    = 14
     action_task_combinations_with_replacement   = 15
     action_task_subdivide                       = 16
+    action_task_originate                       = 17
 
 
 
@@ -1411,33 +1436,75 @@ class _task (node):
 
 
     #8888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+    #_________________________________________________________________________________________
 
+    #   do_task_subdivide
+
+    #_________________________________________________________________________________________
+    def do_task_subdivide (self, orig_args, decorator_name, error_type):
+        """
+            @subdivide and @split are synonyms
+            Common code here
+        """
+
+        if len(orig_args) < 3:
+            raise error_type(self, "Too few arguments for %s" % decorator_name)
+
+
+
+
+        #
+        # replace function / function names with tasks
+        #
+        input_files_task_globs = self.handle_tasks_globs_in_inputs(orig_args[0])
+
+        #   allows split to take a single file or task
+        input_files_task_globs.single_file_to_list()
+
+        # how to transform input to output file name
+        file_names_transform = self.choose_file_names_transform (orig_args[1], error_type, decorator_name)
+
+        orig_args = orig_args[2:]
+
+        #   inputs can also be defined by pattern match
+        extra_inputs, replace_inputs, output_pattern, extra_params = self.get_extra_inputs_outputs_extra (orig_args, error_type, decorator_name)
+
+        #
+        #   output globs will be replaced with files. But there should not be tasks here!
+        #
+        output_files_task_globs = self.handle_tasks_globs_in_inputs(output_pattern)
+        if len(output_files_task_globs.tasks):
+            raise error_type(self, ("%s cannot output to another task. "
+                                          "Do not include tasks in output parameters.") % decorator_name)
+
+
+
+        self.param_generator_func = subdivide_param_factory (   input_files_task_globs,
+                                                                False, # flatten input
+                                                                file_names_transform,
+                                                                extra_inputs,
+                                                                replace_inputs,
+                                                                output_files_task_globs,
+                                                                *extra_params)
+        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
+        self.job_wrapper          = job_wrapper_io_files
+        #self.job_descriptor       = io_files_job_descriptor # (orig_args[0], output_runtime_data_names)
+        self.job_descriptor       = io_files_one_to_many_job_descriptor
+
+        # output is a glob
+        self.indeterminate_output = 2
+        self.single_multi_io       = self.many_to_many
 
     #_________________________________________________________________________________________
 
     #   task_split
 
     #_________________________________________________________________________________________
-    def task_split (self, orig_args):
-        """
-        Splits a single set of input files into multiple output file names,
-            where the number of output files may not be known beforehand.
-        """
-        if isinstance(orig_args[1], regex):
-            #
-            #   This is actually @subdivide
-            #
-            decorator_name  = "@split"
-            error_type      = error_task_split
-            self.set_action_type (_task.action_task_split)
-            do_task_subdivide(orig_args, decorator_name, error_type)
-            return
+    def do_task_simple_split (self, orig_args, decorator_name, error_type):
 
         #check enough arguments
         if len(orig_args) < 2:
-            raise error_task_split(self, "Too few arguments for @split")
-
-        self.set_action_type (_task.action_task_split)
+            raise error_type(self, "Too few arguments for %s" % decorator_name)
 
         #
         # replace function / function names with tasks
@@ -1449,8 +1516,8 @@ class _task (node):
         #
         output_files_task_globs = self.handle_tasks_globs_in_inputs(orig_args[1])
         if len(output_files_task_globs.tasks):
-            raise error_task_split(self, "@split cannot output to another task. "
-                                            "Do not include tasks in output parameters.")
+            raise error_type(self, ("%s cannot output to another task. "
+                                    "Do not include tasks in output parameters.") % decorator_name)
 
         extra_params = orig_args[2:]
         self.param_generator_func = split_param_factory (input_files_task_globs, output_files_task_globs, *extra_params)
@@ -1464,6 +1531,68 @@ class _task (node):
         # output is a glob
         self.indeterminate_output = 1
         self.single_multi_io       = self.one_to_many
+
+
+
+    #_________________________________________________________________________________________
+
+    #   task_split
+
+    #_________________________________________________________________________________________
+    def task_split (self, orig_args):
+        """
+        Splits a single set of input files into multiple output file names,
+            where the number of output files may not be known beforehand.
+        """
+        decorator_name  = "@split"
+        error_type      = error_task_split
+        self.set_action_type (_task.action_task_split)
+
+        #
+        #   This is actually @subdivide
+        #
+        if isinstance(orig_args[1], regex):
+            self.do_task_subdivide(orig_args, decorator_name, error_type)
+
+        #
+        #   This is actually @split
+        #
+        else:
+            self.do_task_simple_split(orig_args, decorator_name, error_type)
+
+
+
+    #_________________________________________________________________________________________
+
+    #   task_originate
+
+    #_________________________________________________________________________________________
+    def task_originate (self, orig_args):
+        """
+        Splits out multiple output file names,
+            where the number of output files may or may not be known beforehand.
+            This is a synonym for @split(None,...)
+        """
+        decorator_name  = "@originate"
+        error_type      = error_task_originate
+        self.set_action_type (_task.action_task_originate)
+        self.do_task_simple_split((None,) + orig_args, decorator_name, error_type)
+        self.job_wrapper          = job_wrapper_output_files
+
+    #_________________________________________________________________________________________
+
+    #   task_subdivide
+
+    #_________________________________________________________________________________________
+    def task_subdivide (self, orig_args):
+        """
+        Splits a single set of input files into multiple output file names,
+            where the number of output files may not be known beforehand.
+        """
+        decorator_name  = "@subdivide"
+        error_type      = error_task_subdivide
+        self.set_action_type (_task.action_task_subdivide)
+        do_task_subdivide(orig_args, decorator_name, error_type)
 
     #_________________________________________________________________________________________
 
@@ -1541,79 +1670,6 @@ class _task (node):
 
         raise error_type(self, "%s expects one of as the second argument" % (decorator_name, ", ".join(valid_tag_names)))
 
-    #_________________________________________________________________________________________
-
-    #   do_task_subdivide
-
-    #_________________________________________________________________________________________
-    def do_task_subdivide (self, orig_args, decorator_name, error_type):
-        """
-            @subdivide and @split are synonyms
-            Common code here
-        """
-
-        if len(orig_args) < 3:
-            raise error_type(self, "Too few arguments for %s" % decorator_name)
-
-
-
-
-        #
-        # replace function / function names with tasks
-        #
-        input_files_task_globs = self.handle_tasks_globs_in_inputs(orig_args[0])
-
-        #   allows split to take a single file or task
-        input_files_task_globs.single_file_to_list()
-
-        # how to transform input to output file name
-        file_names_transform = self.choose_file_names_transform (orig_args[1], error_type, decorator_name)
-
-        orig_args = orig_args[2:]
-
-        #   inputs can also be defined by pattern match
-        extra_inputs, replace_inputs, output_pattern, extra_params = self.get_extra_inputs_outputs_extra (orig_args, error_type, decorator_name)
-
-        #
-        #   output globs will be replaced with files. But there should not be tasks here!
-        #
-        output_files_task_globs = self.handle_tasks_globs_in_inputs(output_pattern)
-        if len(output_files_task_globs.tasks):
-            raise error_type(self, ("%s cannot output to another task. "
-                                          "Do not include tasks in output parameters.") % decorator_name)
-
-
-
-        self.param_generator_func = subdivide_param_factory (   input_files_task_globs,
-                                                                False, # flatten input
-                                                                file_names_transform,
-                                                                extra_inputs,
-                                                                replace_inputs,
-                                                                output_files_task_globs,
-                                                                *extra_params)
-        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
-        self.job_wrapper          = job_wrapper_io_files
-        #self.job_descriptor       = io_files_job_descriptor # (orig_args[0], output_runtime_data_names)
-        self.job_descriptor       = io_files_one_to_many_job_descriptor
-
-        # output is a glob
-        self.indeterminate_output = 2
-        self.single_multi_io       = self.many_to_many
-
-    #_________________________________________________________________________________________
-
-    #   task_subdivide
-
-    #_________________________________________________________________________________________
-    def task_subdivide (self, orig_args):
-        """
-        Splits a single set of input files into multiple output file names,
-            where the number of output files may not be known beforehand.
-        """
-        decorator_name  = "@split"
-        error_type      = error_task_split
-        self.set_action_type (_task.action_task_subdivide)
-        do_task_subdivide(orig_args, decorator_name, error_type)
 
     #_________________________________________________________________________________________
 
@@ -3088,7 +3144,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                  gnu_make_maximal_rebuild_mode  = True, verbose = 1,
                  runtime_data = None, one_second_per_job = True, touch_files_only = False,
                  exceptions_terminate_immediately = False, log_exceptions = False,
-                 checksum_level=1, use_multi_threading = False):
+                 checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, use_multi_threading = False):
                  # Remember to add further extra parameters here to "extra_pipeline_run_options" inside cmdline.py
                  # This will forward extra parameters from the command line to pipeline_run
     """
@@ -3349,7 +3405,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                     output_file_name = job_result.params[1]
                     if not isinstance(output_file_name, list): # some have multiple outputs from one job
                         output_file_name = [output_file_name]
-                    # 
+                    #
                     # N.B. output parameters are not necessary all strings
                     #
                     for o_f_n in get_strings_in_nested_sequence(output_file_name):
