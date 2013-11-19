@@ -28,11 +28,11 @@ Bernie Pope hack: truncate file to zero, preserving modification times
                     os.utime(file,(timeInfo.st_atime, timeInfo.st_mtime))
 
 ***************************************
-@active_if
+``@active_if``
 ***************************************
 
 ***************************************
-Pipeline_run and exceptions
+``pipeline_run(...)`` and exceptions
 ***************************************
     * Optionally terminate pipeline after first exception
         To have all exceptions interrupt immediately::
@@ -135,8 +135,6 @@ drmaa
 ***************************************
 git hub docs
 ***************************************
-
-
 
 
 ##########################################
