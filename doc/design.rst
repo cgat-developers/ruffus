@@ -301,30 +301,4 @@ Acknowledgements
     ever simpler syntax.
 
 
-.. index::
-    pair: Ruffus; Etymology
-    pair: Ruffus; Name origins
-
-.. _design.why_ruffus:
-
-###############################
-Why *Ruffus*?
-###############################
-
-.. image:: images/wikimedia_cyl_ruffus.jpg
-
-**Cylindrophis ruffus** is the name of the
-`red-tailed pipe snake <http://en.wikipedia.org/wiki/Cylindrophis_ruffus>`_ (bad python-y pun)
-which can be found in `Hong Kong <http://www.discoverhongkong.com/eng/index.html>`_ where the original author comes from.
-Be careful not to step on one when running down country park lanes at full speed
-in Hong Kong: this snake is a `rare breed <http://www.hkras.org/eng/info/hkspp.htm>`_!
-
-*Ruffus* is a shy creature, and pretends to be a cobra by putting up its red tail and ducking its
-head in its coils when startled. It is not venomous and is
-`Mostly Harmless <http://en.wikipedia.org/wiki/Mostly_Harmless>`_.
-*Ruffus* does most of its work at night and sleeps during the day:
-typical of many (but alas not all) python programmers!
-
-
-The original image is from `wikimedia <http://upload.wikimedia.org/wikipedia/commons/a/a1/Cyl_ruffus_061212_2025_tdp.jpg>`_
 
