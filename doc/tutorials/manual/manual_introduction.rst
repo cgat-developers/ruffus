@@ -1,9 +1,9 @@
 .. include:: ../../global.inc
 .. _manual.introduction:
 
-.. index:: 
+.. index::
     pair: manual; introduction
-    
+
 
 ####################################################################
 **Ruffus** Manual
@@ -19,99 +19,69 @@ or elaborated on, by this manual.
 
 
 ***************************************
-**Ruffus** Manual: Table of Contents:
-***************************************
-
-.. toctree::
-    :maxdepth: 1
-
-    follows.rst                            
-    tasks_as_recipes.rst                   
-    files.rst                              
-    tasks_and_globs_in_inputs.rst
-    tracing_pipeline_parameters.rst
-    parallel_processing.rst                
-    split.rst                              
-    transform.rst                          
-    merge.rst                              
-    posttask.rst
-    jobs_limit.rst
-    dependencies.rst
-    onthefly.rst
-    collate.rst
-    advanced_transform.rst
-    parallel.rst
-    check_if_uptodate.rst
-    exceptions.rst
-    logging.rst
-    files_re.rst
-
-
-
-***************************************
 Introduction
 ***************************************
 
     The **Ruffus** module is a lightweight way to run computational pipelines.
-    
+
     Computational pipelines often become quite simple
     if we breakdown the process into simple stages.
-    
+
     .. note::
-        
+
         Ruffus refers to each stage of your pipeline as a :term:`task`.
 
-    | Let us start with the usual "Hello World". 
+    | Let us start with the usual "Hello World".
     | We have the following two python functions which
       we would like to turn into an automatic pipeline:
-      
-    
+
+
         .. image:: ../../images/simple_tutorial_hello_world.png
 
     .. ::
-    
+
         ::
-        
+
             def first_task():
                 print "Hello "
-        
+
             def second_task():
                 print "world"
 
-    
+
     The simplest **Ruffus** pipeline would look like this:
-    
+
         .. image:: ../../images/simple_tutorial_intro_follows.png
-    
+
     .. ::
-    
+
         ::
-        
+
             from ruffus import *
-            
+
             def first_task():
                 print "Hello "
-        
+
             @follows(first_task)
             def second_task():
                 print "world"
-    
+
             pipeline_run([second_task])
 
-    
+
     The functions which do the actual work of each stage of the pipeline remain unchanged.
-    The role of **Ruffus** is to make sure these functions are called in the right order, 
+    The role of **Ruffus** is to make sure these functions are called in the right order,
     with the right parameters, running in parallel using multiprocessing if desired.
-        
+
     There are three simple parts to building a **ruffus** pipeline
 
         #. importing ruffus
         #. "Decorating" functions which are part of the pipeline
         #. Running the pipeline!
-    
+
 .. _manual.introduction.import:
 
-.. index:: 
+.. index::
     single: importing ruffus
 
 
@@ -120,28 +90,28 @@ Importing ruffus
 ****************************
 
     The most convenient way to use ruffus is to import the various names directly:
-    
+
         ::
-        
+
             from ruffus import *
 
     This will allow **ruffus** terms to be used directly in your code. This is also
     the style we have adopted for this manual.
-    
-    .. csv-table:: 
+
+    .. csv-table::
        :header: "Category", "Terms"
        :stub-columns: 1
 
        "*Pipeline functions*", "
        ::
-       
+
          pipeline_printout
          pipeline_printout_graph
          pipeline_run
          register_cleanup"
        "*Decorators*", "
        ::
-       
+
         @follows
         @files
         @split
@@ -160,7 +130,7 @@ Importing ruffus
          black_hole_logger"
        "*Parameter disambiguating Indicators*", "
        ::
-       
+
          suffix
          regex
          inputs
@@ -168,16 +138,16 @@ Importing ruffus
          combine
          mkdir
          output_from"
-            
+
 If any of these clash with names in your code, you can use qualified names instead:
         ::
-        
-            import ruffus
-            
-            ruffus.pipeline_printout("...")
-            
 
-.. index:: 
+            import ruffus
+
+            ruffus.pipeline_printout("...")
+
+
+.. index::
     pair: decorators; Manual
 
 .. _manual.introduction.decorators:
@@ -188,29 +158,29 @@ If any of these clash with names in your code, you can use qualified names inste
 
     You need to tag or :term:`decorator` existing code to tell **Ruffus** that they are part
     of the pipeline.
-    
+
     .. note::
-        
-        :term:`decorator`\ s are ways to tag or mark out functions. 
+
+        :term:`decorator`\ s are ways to tag or mark out functions.
 
         They start with an ``@`` prefix and take a number of parameters in parenthesis.
 
         .. image:: ../../images/simple_tutorial_decorator_syntax.png
-                
+
     The **ruffus** decorator :ref:`@follows <decorators.follows>` makes sure that
     ``second_task`` follows ``first_task``.
-    
+
 
     | Multiple :term:`decorator`\ s can be used for each :term:`task` function to add functionality
-      to *Ruffus* pipeline functions. 
+      to *Ruffus* pipeline functions.
     | However, the decorated python functions can still be
       called normally, outside of *Ruffus*.
     | *Ruffus* :term:`decorator`\ s can be added to (stacked on top of) any function in any order.
 
-    * :ref:`More on @follows in |manual.follows.chapter_num| <manual.follows>` 
+    * :ref:`More on @follows in |manual.follows.chapter_num| <manual.follows>`
     * :ref:`@follows syntax in detail <decorators.follows>`
 
-.. index:: 
+.. index::
     pair: Running the pipeline; Manual
     pair: pipeline_run; Manual
 
@@ -227,18 +197,18 @@ Running the pipeline
     In our example above, because ``second_task`` depends on ``first_task``, both functions are executed in order.
 
         ::
-            
+
             >>> pipeline_run([second_task], verbose = 1)
-        
-    **Ruffus** by default prints out the ``verbose`` progress through your pipeline, 
+
+    **Ruffus** by default prints out the ``verbose`` progress through your pipeline,
     interleaved with our ``Hello`` and ``World``.
-    
+
         .. image:: ../../images/simple_tutorial_hello_world_output.png
 
     .. ::
-    
+
         ::
-            
+
             >>> pipeline_run([second_task], verbose = 1)
             Start Task = first_task
             Hello
@@ -248,7 +218,5 @@ Running the pipeline
             world
                 Job completed
             Completed Task = second_task
-    
-    
 
 

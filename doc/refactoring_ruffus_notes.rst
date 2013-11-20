@@ -1,35 +1,58 @@
 ##########################################
-To be done: Refactoring Ruffus Docs
+In progress: Refactoring Ruffus Docs
 ##########################################
 
     Remember to cite Jake Biesinger and see if he is interested to be a co-author if we ever resubmit the drastically changed version...
 
+
 ***************************************
+New order of Topics in the tutorial
+***************************************
+
+    * ``@transform`` as the paradigm for Ruffus
+    * ``@originate`` to start the pipeline
+    * Discussion of tasks and jobs, and parallelism, task completion monitoring
+    * ``pipeline_run``, ``pipeline_printout``, ``pipeline_printout_graph`` and ``cmdline``
+    * ``@split``
+    * ``@merge``
+    * ``@posttask``
+
+***************************************
+New order of Topics in the manual
+***************************************
+
+    * Tasks as recipes and jobs
+    * ``@transform``
+    * ``@originate``
+    * ``suffix`` and ``formatter``
+    * chaining tasks ``output_from``, Reusing pipeline code in modules
+    * ``pipeline_run``, ``pipeline_printout``, ``pipeline_printout_graph`` and ``cmdline``
+    * exceptions (``JobSignalledBreak``) and logging ``stderr_logger`` and ``black_hole_logger``
+    * Job completion monitoring
+    * ``@split``
+    * ``@merge``
+    * ``@subdivide``
+    * ``@collate``
+    * ``@posttask``
+    * ``@mkdir``
+    * Running in parallel: ``@jobs_limit``, ``pipeline_run(..., multi_thread | multi_process,...)`` ``@active_if`` and ``drmaa``
+    * ``combinatorics`` module: ``@product``, ``@permutations``, ``@combinations``, ``@combinations_with_replacement``
+    * ``add_inputs``, ``inputs``
+
+Esoteric
+    * ``@follows`` ``touch_file``
+    * ``@parallel``
+    * ``@check_if_uptodate``
+
+Legacy and deprecated
+    * ``@files``
+    * ``@files_re``
+    * ``regex``
+    * ``@split(...,regex(),...)``
+
+
 Best Practices
-***************************************
-==============================================================================
-Bernie Pope hack: truncate file to zero, preserving modification times
-==============================================================================
-
-    .. code-block:: python
-
-        def zeroFile(file):
-            if os.path.exists(file):
-                # save the current time of the file
-                timeInfo = os.stat(file)
-                try:
-                    f = open(file,'w')
-                except IOError:
-                    pass
-                else:
-                    f.truncate(0)
-                    f.close()
-                    # change the time of the file back to what it was
-                    os.utime(file,(timeInfo.st_atime, timeInfo.st_mtime))
-
-***************************************
-``@active_if``
-***************************************
+    *
 
 ***************************************
 ``pipeline_run(...)`` and exceptions
@@ -56,85 +79,20 @@ Bernie Pope hack: truncate file to zero, preserving modification times
         The default logger prints to sys.stderr, but this can be changed to any class from the logging module or compatible object via ``pipeline_run(..., logger = ???)``
 
 ***************************************
-Removing references to "legacy" methods
-***************************************
-
-    e.g., ``@files``
-
-
-***************************************
-Reusing pipeline code in modules
-***************************************
-
-***************************************
 New features
 ***************************************
 
-==============================================================================
-Job completion monitoring
-==============================================================================
-    ``pipeline_run(..., checksum_level=CHECKSUM_FILE_TIMESTAMPS, ...)``
-
-==============================================================================
-``@originate()``
-==============================================================================
-    Make new files (jobs) ab nihilo
-
-
-==============================================================================
-``@subdivide`` / ``@split(..., regex(), ...)``
-==============================================================================
-
-    synonym for ``@split``
-
-==============================================================================
-formatter
-==============================================================================
-
-    with regular expression or not
-
-==============================================================================
-``@product``
-==============================================================================
-
-    with ``formatter()``
-
-==============================================================================
-``@permutations``
-==============================================================================
-
-    with ``formatter()``
-
-==============================================================================
-``@combinations``
-==============================================================================
-
-    with ``formatter()``
-
-==============================================================================
-``@combinations_with_replacement``
-==============================================================================
-
-    with ``formatter()``
-
-==============================================================================
-``@active_if``
-==============================================================================
-
-
-==============================================================================
-command line
-==============================================================================
-
-    new minimal code template
-
-==============================================================================
-drmaa
-==============================================================================
-
-***************************************
-git hub docs
-***************************************
+    # Job completion monitoring: ``pipeline_run(..., checksum_level=CHECKSUM_FILE_TIMESTAMPS, ...)``
+    # ``@originate()``: Make new files (jobs) ab nihilo
+    # ``@subdivide`` / ``@split(..., regex(), ...)``
+    # ``formatter`` : with regular expression or not. More flexible replacement for regex
+    # ``@combinatorics.product``
+    # ``@combinatorics.permutations``
+    # ``@combinatorics.combinations``
+    # ``@combinatorics.combinations_with_replacement``
+    # ``@active_if``
+    # ``cmdline`` module to cut down boilerplate code
+    # ``drmaa`` module to help running on a cluster
 
 
 ##########################################
@@ -649,7 +607,7 @@ Better error messages for ``formatter()``, ``suffix()`` and ``regex()`` for ``pi
 ********************************************
 
     * Put all new generators in an ``combinatorics`` submodule namespace to avoid breaking user code. (They can imported if necessary.)
-    * Only ``formatter([OPTIONAl_REGEX])`` provides the necessary flexibility to construct the output so we won't bother with suffix and regex
+    * Only ``formatter([OPTIONAl_REGEX])`` provides the necessary flexibility to construct the output so we won't bother with ``suffix`` and ``regex``
     * test code in test/test_combinatorics.py
 
 ============================================================================================================================================================
@@ -746,9 +704,9 @@ Implementation
 
         * ``ruffus_uilility.swap_doubly_nested_order()`` makes the syntax / implementation very orthogonal
 
-******************************************************************************
+******************************************************************************************
 ``@permutations(...),`` ``@combinations(...),`` ``@combinations_with_replacement(...)``
-******************************************************************************
+******************************************************************************************
 
     * Put all new generators in an ``combinatorics`` submodule namespace to avoid breaking user code. (They can imported if necessary.)
     * Only ``formatter([OPTIONAl_REGEX])`` provides the necessary flexibility to construct the output so we won't bother with suffix and regex
@@ -821,6 +779,7 @@ Implementation
     * prints as such:
 
         .. code-block:: bash
+
            Task = generate_initial_files
                Job  = [None
                      -> a.tmp1
