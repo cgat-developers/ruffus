@@ -1592,7 +1592,7 @@ class _task (node):
         decorator_name  = "@subdivide"
         error_type      = error_task_subdivide
         self.set_action_type (_task.action_task_subdivide)
-        do_task_subdivide(orig_args, decorator_name, error_type)
+        self.do_task_subdivide(orig_args, decorator_name, error_type)
 
     #_________________________________________________________________________________________
 
