@@ -154,10 +154,18 @@ def path_decomposition (orig_path):
     #
     if not len(orig_path):
         return {'path': [], 'basename': '', 'ext': '', 'subdir': []}
-    a_path = os.path.normpath(orig_path)
-    # stop normpath from removing terminal slash, turning paths into filenames
-    if orig_path[-1] == "/":
-        a_path += "/"
+
+    # stop normpath from being too clever and removing initial ./ and terminal slash, turning paths into filenames
+    if orig_path in [ "./", "/."]:
+        a_path = orig_path
+    else:
+        a_path = os.path.normpath(orig_path)
+        if orig_path[0:2] == "./" and a_path[0:2] != "./":
+            a_path = "./" + a_path
+
+        if orig_path[-1] == "/" and a_path[-1:] != "/":
+            a_path += "/"
+
     path_part, file_part = os.path.split(a_path)
     file_part, ext_part = os.path.splitext(file_part)
     subpaths, subdirs = recursive_split (path_part)
