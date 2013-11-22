@@ -407,6 +407,8 @@ class t_regex_replace(object):
 class t_formatter_replace(object):
     def __init__ (self, filenames, regex_str, compiled_regex = None):
         self.filenames = filenames
+        # get the full absolute, normalised paths
+        filenames = [os.path.abspath(f) for f in filenames]
         self.path_regex_components = get_all_paths_components(filenames, compiled_regex)
         self.regex_str = "'" + regex_str + "'" if regex_str else ""
 
@@ -439,6 +441,8 @@ class t_nested_formatter_replace(object):
         if len(filenames) != len(regex_strings) or len(filenames) != len(compiled_regexes):
             raise Exception("Logic Error.")
         self.filenames = filenames
+        # get the full absolute, normalised paths
+        filenames = [[os.path.abspath(f) for f in filegroups] for filegroups in filenames]
         self.path_regex_components = [get_all_paths_components(f, r) for (f,r) in zip(filenames, compiled_regexes)]
         self.regex_strings = regex_strings
 

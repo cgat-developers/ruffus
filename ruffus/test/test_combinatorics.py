@@ -14,6 +14,7 @@ import sys
 import shutil
 from StringIO import StringIO
 import time
+import re
 
 exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
 sys.path.insert(0, os.path.abspath(os.path.join(exe_path,"..", "..")))
@@ -329,14 +330,13 @@ class TestCombinatorics(unittest.TestCase):
     def test_product_printout(self):
         """Input file exists, output doesn't exist"""
         cleanup_tmpdir()
-
         s = StringIO()
         pipeline_printout(s, [test_product_merged_task], verbose=5, wrap_width = 10000)
-        self.assertIn('Job needs update: Missing files '
-                      '[tmp_test_combinatorics/a_name.tmp1, '
-                      'tmp_test_combinatorics/e_name.tmp1, '
-                      'tmp_test_combinatorics/h_name.tmp1, '
-                      'tmp_test_combinatorics/a_name.e_name.h_name.tmp2]', s.getvalue())
+        self.assertTrue(re.search('Job needs update: Missing files '
+                      '\[.*tmp_test_combinatorics/a_name.tmp1, '
+                      '.*tmp_test_combinatorics/e_name.tmp1, '
+                      '.*tmp_test_combinatorics/h_name.tmp1, '
+                      '.*tmp_test_combinatorics/a_name.e_name.h_name.tmp2\]', s.getvalue()))
 
     def test_product_run(self):
         """Run product"""
@@ -361,6 +361,7 @@ class TestCombinatorics(unittest.TestCase):
         s = StringIO()
         pipeline_printout(s, [test_product_misspelt_capture_error_task], verbose=3, wrap_width = 10000)
         self.assertIn("Warning: File match failure: Unmatched field 'FILEPART'", s.getvalue())
+
 
     def test_product_out_of_range_formatter_ref_error(self):
         """
@@ -396,9 +397,11 @@ class TestCombinatorics(unittest.TestCase):
 
         s = StringIO()
         pipeline_printout(s, [test_combinations2_merged_task], verbose=5, wrap_width = 10000)
-        self.assertIn('[tmp_test_combinatorics/a_name.tmp1, '
-                      'tmp_test_combinatorics/b_name.tmp1, '
-                      'tmp_test_combinatorics/a_name.b_name.tmp2]', s.getvalue())
+        self.assertTrue(re.search('Job needs update: Missing files '
+                      '\[.*tmp_test_combinatorics/a_name.tmp1, '
+                        '.*tmp_test_combinatorics/b_name.tmp1, '
+                        '.*tmp_test_combinatorics/a_name.b_name.tmp2\]', s.getvalue()))
+
 
     def test_combinations2_run(self):
         """Run product"""
@@ -418,10 +421,11 @@ class TestCombinatorics(unittest.TestCase):
 
         s = StringIO()
         pipeline_printout(s, [test_combinations3_merged_task], verbose=5, wrap_width = 10000)
-        self.assertIn('[tmp_test_combinatorics/a_name.tmp1, '
-                       'tmp_test_combinatorics/b_name.tmp1, '
-                       'tmp_test_combinatorics/c_name.tmp1, '
-                       'tmp_test_combinatorics/a_name.b_name.c_name.tmp2]', s.getvalue())
+        self.assertTrue(re.search(
+                       '\[.*tmp_test_combinatorics/a_name.tmp1, '
+                       '.*tmp_test_combinatorics/b_name.tmp1, '
+                       '.*tmp_test_combinatorics/c_name.tmp1, '
+                       '.*tmp_test_combinatorics/a_name.b_name.c_name.tmp2\]', s.getvalue()))
 
     def test_combinations3_run(self):
         """Run product"""
@@ -442,9 +446,9 @@ class TestCombinatorics(unittest.TestCase):
 
         s = StringIO()
         pipeline_printout(s, [test_permutations2_merged_task], verbose=5, wrap_width = 10000)
-        self.assertIn('[tmp_test_combinatorics/a_name.tmp1, '
-                      'tmp_test_combinatorics/b_name.tmp1, '
-                      'tmp_test_combinatorics/a_name.b_name.tmp2]', s.getvalue())
+        self.assertTrue(re.search('\[.*tmp_test_combinatorics/a_name.tmp1, '
+                      '.*tmp_test_combinatorics/b_name.tmp1, '
+                      '.*tmp_test_combinatorics/a_name.b_name.tmp2\]', s.getvalue()))
 
     def test_permutations2_run(self):
         """Run product"""
@@ -464,10 +468,10 @@ class TestCombinatorics(unittest.TestCase):
 
         s = StringIO()
         pipeline_printout(s, [test_permutations3_merged_task], verbose=5, wrap_width = 10000)
-        self.assertIn('[tmp_test_combinatorics/a_name.tmp1, '
-                       'tmp_test_combinatorics/b_name.tmp1, '
-                       'tmp_test_combinatorics/c_name.tmp1, '
-                       'tmp_test_combinatorics/a_name.b_name.c_name.tmp2]', s.getvalue())
+        self.assertTrue(re.search('\[.*tmp_test_combinatorics/a_name.tmp1, '
+                       '.*tmp_test_combinatorics/b_name.tmp1, '
+                       '.*tmp_test_combinatorics/c_name.tmp1, '
+                       '.*tmp_test_combinatorics/a_name.b_name.c_name.tmp2\]', s.getvalue()))
 
     def test_permutations3_run(self):
         """Run product"""
@@ -488,9 +492,9 @@ class TestCombinatorics(unittest.TestCase):
 
         s = StringIO()
         pipeline_printout(s, [test_combinations_with_replacement2_merged_task], verbose=5, wrap_width = 10000)
-        self.assertIn('[tmp_test_combinatorics/a_name.tmp1, '
-                      'tmp_test_combinatorics/b_name.tmp1, '
-                      'tmp_test_combinatorics/a_name.b_name.tmp2]', s.getvalue())
+        self.assertTrue(re.search('\[.*tmp_test_combinatorics/a_name.tmp1, '
+                      '.*tmp_test_combinatorics/b_name.tmp1, '
+                      '.*tmp_test_combinatorics/a_name.b_name.tmp2\]', s.getvalue()))
 
     def test_combinations_with_replacement2_run(self):
         """Run product"""
@@ -510,10 +514,10 @@ class TestCombinatorics(unittest.TestCase):
 
         s = StringIO()
         pipeline_printout(s, [test_combinations_with_replacement3_merged_task], verbose=5, wrap_width = 10000)
-        self.assertIn('[tmp_test_combinatorics/a_name.tmp1, '
-                       'tmp_test_combinatorics/b_name.tmp1, '
-                       'tmp_test_combinatorics/c_name.tmp1, '
-                       'tmp_test_combinatorics/a_name.b_name.c_name.tmp2]', s.getvalue())
+        self.assertTrue(re.search('\[.*tmp_test_combinatorics/a_name.tmp1, '
+                       '.*tmp_test_combinatorics/b_name.tmp1, '
+                       '.*tmp_test_combinatorics/c_name.tmp1, '
+                       '.*tmp_test_combinatorics/a_name.b_name.c_name.tmp2\]', s.getvalue()))
 
     def test_combinations_with_replacement3_run(self):
         """Run product"""

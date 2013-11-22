@@ -63,13 +63,12 @@ except ImportError:
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-tempdir = "temp_filesre_split_and_combine/"
+tempdir = "temp_filesre_split_and_combine"
 
 #
 #   Three starting files
 #
-original_files = [tempdir  + "original_%d.fa" % d for d in range(3)]
-
+original_files = [tempdir  + "/original_%d.fa" % d for d in range(3)]
 
 
 
@@ -79,6 +78,7 @@ original_files = [tempdir  + "original_%d.fa" % d for d in range(3)]
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+@mkdir(tempdir)
 @originate(original_files)
 def generate_initial_files(out_names):
     for on in out_names:
@@ -90,11 +90,11 @@ def generate_initial_files(out_names):
 #    split_fasta_file
 #
 
-@posttask(lambda: sys.stderr.write("Split into %d files each\n" % JOBS_PER_TASK))
+@posttask(lambda: sys.stderr.write("\tSplit into %d files each\n" % JOBS_PER_TASK))
 @subdivide(generate_initial_files,
        regex(r".*\/original_(\d+).fa"),                               # match original files
-       [tempdir + r"files.split.\1.success",                         # flag file for each original file
-        tempdir + r"files.split.\1.*.fa"],                           # glob pattern
+       [tempdir + r"/files.split.\1.success",                         # flag file for each original file
+        tempdir + r"/files.split.\1.*.fa"],                           # glob pattern
        r"\1")                                                        # index of original file
 def split_fasta_file (input_file, outputs, original_index):
 
@@ -110,7 +110,7 @@ def split_fasta_file (input_file, outputs, original_index):
     # create as many files as we are simulating in JOBS_PER_TASK
     #
     for i in range(JOBS_PER_TASK):
-        open(tempdir + "files.split.%s.%03d.fa" % (original_index, i), "w")
+        open(tempdir + "/files.split.%s.%03d.fa" % (original_index, i), "w")
 
     open(success_flag,  "w")
 
@@ -119,7 +119,7 @@ def split_fasta_file (input_file, outputs, original_index):
 #
 #    align_sequences
 #
-@posttask(lambda: sys.stderr.write("Sequences aligned\n"))
+@posttask(lambda: sys.stderr.write("\tSequences aligned\n"))
 @transform(split_fasta_file, suffix(".fa"), ".aln")                     # fa -> aln
 def align_sequences (input_file, output_filename):
     open(output_filename, "w").write("%s\n" % output_filename)
@@ -130,7 +130,7 @@ def align_sequences (input_file, output_filename):
 #
 #    percentage_identity
 #
-@posttask(lambda: sys.stderr.write("%Identity calculated\n"))
+@posttask(lambda: sys.stderr.write("\t%Identity calculated\n"))
 @transform(align_sequences,             # find all results from align_sequences
             suffix(".aln"),             # replace suffix with:
             [r".pcid",                  #   .pcid suffix for the result
@@ -146,10 +146,10 @@ def percentage_identity (input_file, output_files):
 #
 #    combine_results
 #
-@posttask(lambda: sys.stderr.write("Results recombined\n"))
+@posttask(lambda: sys.stderr.write("\tResults recombined\n"))
 @collate(percentage_identity, regex(r".*files.split\.(\d+)\.\d+.pcid"),
-         [tempdir + r"\1.all.combine_results",
-          tempdir + r"\1.all.combine_results_success"])
+         [tempdir + r"/\1.all.combine_results",
+          tempdir + r"/\1.all.combine_results_success"])
 def combine_results (input_files, output_files):
     """
     Combine all
@@ -166,10 +166,12 @@ def combine_results (input_files, output_files):
 class Test_split_regex_and_collate(unittest.TestCase):
     def setUp(self):
         import os
-        shutil.rmtree(tempdir)
+        try:
+            shutil.rmtree(tempdir)
+        except:
+            pass
         os.makedirs(tempdir)
         for f in original_files:
-            print f
             with open(f, "w") as p: pass
 
     def cleanup_tmpdir(self):
@@ -185,16 +187,15 @@ class Test_split_regex_and_collate(unittest.TestCase):
         s = StringIO()
         pipeline_printout(s, [combine_results], verbose=5, wrap_width = 10000)
         self.assertIn('Job needs update: Missing files ', s.getvalue())
-        print s.getvalue()
+        #print s.getvalue()
 
-        pipeline_run([combine_results])
+        pipeline_run([combine_results], verbose=0)
 
     #___________________________________________________________________________
     #
     #   cleanup
     #___________________________________________________________________________
     def tearDown(self):
-        return
         shutil.rmtree(tempdir)
 
 #
@@ -202,6 +203,6 @@ class Test_split_regex_and_collate(unittest.TestCase):
 #       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 #
 if __name__ == '__main__':
-    #pipeline_printout(sys.stdout, [test_product_task], verbose = 5)
+#    pipeline_printout(sys.stdout, [combine_results], verbose = 5)
     unittest.main()
 
