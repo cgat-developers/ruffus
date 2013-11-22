@@ -42,7 +42,6 @@
 """
 
 import sys, os
-import drmaa
 import stat
 #
 #   tempfile for drmaa scripts
@@ -190,6 +189,7 @@ def run_job_using_drmaa (cmd_str, job_queue_name = None, job_queue_priority = No
     Runs specified command remotely using drmaa,
     either with the specified session, or the module shared drmaa session
     """
+    import drmaa
 
     #
     #   used specified session else module session
