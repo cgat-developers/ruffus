@@ -370,8 +370,12 @@ def check_input_files_exist (*params):
         input_files = params[0]
         for f in get_strings_in_nested_sequence(input_files):
             if not os.path.exists(f):
-                raise MissingInputFileError("No way to run job: "+
-                                            "Input file ['%s'] does not exist" % f)
+                if os.path.lexists(f):
+                    raise MissingInputFileError("No way to run job: "+
+                                                "Input file '%s' is a broken symbolic link." % f)
+                else:
+                    raise MissingInputFileError("No way to run job: "+
+                                            "Input file '%s' does not exist" % f)
 
 
 #_________________________________________________________________________________________
