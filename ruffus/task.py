@@ -952,7 +952,7 @@ class _task (node):
 
     #_________________________________________________________________________________________
 
-    #   get_job_name
+    #   get_task_name
 
     #_________________________________________________________________________________________
     def get_task_name(self, in_func_format = False):
@@ -968,6 +968,34 @@ class _task (node):
             return "def %s(...):" % task_name
         else:
             return task_name
+
+
+
+    #_________________________________________________________________________________________
+
+    #   update_active_state
+
+    #_________________________________________________________________________________________
+    def update_active_state (self):
+        #
+        #   If has an @active_if decorator, check if the task needs to be run
+        #       @active_if parameters may be call back functions or booleans
+        #
+        if (self.active_if_checks != None and
+            any( not arg() if isinstance(arg, collections.Callable) else not arg
+                     for arg in self.active_if_checks)):
+                # flip is active to false. 
+                #   ( get_output_files() will return empty if inactive )
+                #   Remember each iteration of pipeline_printout pipeline_run will have 
+                #   another bite at changing this value
+                self.is_active = False
+        else:
+            # flip is active to True so that downstream dependencies will be correct 
+            #   ( get_output_files() will return empty if inactive )
+            #   Remember each iteration of pipeline_printout pipeline_run will have 
+            #   another bite at changing this value
+            self.is_active = True
+
 
 
     #_________________________________________________________________________________________
@@ -1032,14 +1060,12 @@ class _task (node):
         #   If has an @active_if decorator, check if the task needs to be run
         #       @active_if parameters may be call back functions or booleans
         #
-        if (self.active_if_checks != None and
-            any( not arg() if isinstance(arg, collections.Callable) else not arg
-                     for arg in self.active_if_checks)):
                 if verbose <= 3:
                     return messages
                 messages.append(indent_str + "Task is inactive")
+                # add spacer line
+                messages.append("")
                 return messages
-
 
         #
         #   No parameters: just call task function
@@ -1260,7 +1286,6 @@ class _task (node):
         #   self.is_active is not used anywhere else
         #
         if (not self.is_active):
-            #print >>sys.stderr, "    Removing all outputs from " + self._name.replace('__main__.', '')
             return []
 
         #
@@ -2565,6 +2590,24 @@ def update_checksum_level_on_tasks (checksum_level):
     for n in node._all_nodes:
         n.checksum_level = checksum_level
 
+
+#_________________________________________________________________________________________
+
+#   update_active_states_for_all_tasks
+
+#_________________________________________________________________________________________
+def update_active_states_for_all_tasks ():
+    """
+    
+    @active_if decorated tasks can change their active state every time 
+      pipeline_run / pipeline_printout / pipeline_printout_graph is called
+    
+    update_active_states_for_all_tasks ()
+
+    """
+    for n in node._all_nodes:
+        n.update_active_state()
+
 #_________________________________________________________________________________________
 
 #   task_names_to_tasks
@@ -2662,6 +2705,12 @@ def pipeline_printout_graph (stream,
 
     link_task_names_to_functions ()
     update_checksum_level_on_tasks (checksum_level)
+
+    #
+    # @active_if decorated tasks can change their active state every time 
+    #   pipeline_run / pipeline_printout / pipeline_printout_graph is called
+    #
+    update_active_states_for_all_tasks ()
 
     #
     #   run time data
@@ -2764,6 +2813,12 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
 
     link_task_names_to_functions ()
     update_checksum_level_on_tasks(checksum_level)
+
+    # 
+    # @active_if decorated tasks can change their active state every time 
+    #   pipeline_run / pipeline_printout / pipeline_printout_graph is called
+    #
+    update_active_states_for_all_tasks ()
 
     #
     #   target jobs
@@ -2908,9 +2963,9 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     #
                     #   If no parameters: just call task function (empty list)
                     #
-                    if (t.active_if_checks != None):
-                        t.is_active = all(arg() if isinstance(arg, collections.Callable) else arg
-                                            for arg in t.active_if_checks)
+                    #if (t.active_if_checks != None):
+                    #    t.is_active = all(arg() if isinstance(arg, collections.Callable) else arg
+                    #                        for arg in t.active_if_checks)
                     if not t.is_active:
                         parameters = []
 
@@ -3200,6 +3255,14 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
 
     link_task_names_to_functions ()
     update_checksum_level_on_tasks (checksum_level)
+
+    # 
+    # @active_if decorated tasks can change their active state every time 
+    #   pipeline_run / pipeline_printout / pipeline_printout_graph is called
+    #
+    update_active_states_for_all_tasks ()
+
+
     #
     #   target jobs
     #
