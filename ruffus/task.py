@@ -1060,12 +1060,13 @@ class _task (node):
         #   If has an @active_if decorator, check if the task needs to be run
         #       @active_if parameters may be call back functions or booleans
         #
-                if verbose <= 3:
-                    return messages
-                messages.append(indent_str + "Task is inactive")
-                # add spacer line
-                messages.append("")
+        if not self.is_active:
+            if verbose <= 3:
                 return messages
+            messages.append(indent_str + "Task is inactive")
+            # add spacer line
+            messages.append("")
+            return messages
 
         #
         #   No parameters: just call task function
