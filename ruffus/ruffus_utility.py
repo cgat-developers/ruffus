@@ -100,13 +100,42 @@ class JobHistoryChecksum:
         # Don't use func_code alone-- changing the line number of the function,
         # what global variables are available, etc would all change the checksum
         func_code = marshal.dumps(task.user_defined_work_func.func_code.co_code)
-        func_extras = reduce(operator.add, map(pickle.dumps, [
-                            task.user_defined_work_func.func_defaults,
-                            task.user_defined_work_func.func_code.co_argcount,
-                            task.user_defined_work_func.func_code.co_consts,
-                            task.user_defined_work_func.func_code.co_names,
-                            task.user_defined_work_func.func_code.co_nlocals,
-                            task.user_defined_work_func.func_code.co_varnames]))
+
+
+        #
+        #   pickle code very defensively, but hopefully without break Jake Biesinger's pipelines!
+        #
+        attributes_to_pickle = [task.user_defined_work_func.func_defaults,
+                                task.user_defined_work_func.func_code.co_argcount,
+                                task.user_defined_work_func.func_code.co_consts,
+                                task.user_defined_work_func.func_code.co_names,
+                                task.user_defined_work_func.func_code.co_nlocals,
+                                task.user_defined_work_func.func_code.co_varnames]
+
+        pickle_results = []
+        for aa in attributes_to_pickle:
+            # Can't cpickle nested functions: typically blows up with func_code.co_consts
+            try:
+                pickle_results.append(pickle.dumps(aa))
+                continue
+            except:
+                pass
+            # Marshall seems to be less sensitive: try that
+            try:
+                pickle_results.append(marshal.dumps(aa))
+                continue
+            except:
+                pass
+            # Just make a string out of the attribute
+            try:
+                pickle_results.append(str(aa))
+                continue
+            except:
+                pass
+            # OK give up, do nothing: On your head it is
+
+
+        func_extras = reduce(operator.add, pickle_results)
         self.chksum_func = hashlib.md5(func_code + func_extras).hexdigest()
 
 
