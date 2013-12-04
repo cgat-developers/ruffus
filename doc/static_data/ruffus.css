@@ -1,4 +1,4 @@
-/**
+/*
  * Sphinx stylesheet -- default theme
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
@@ -283,6 +283,15 @@ tt {
     font-size: 0.95em;
 }
 
+/*
+
+    Make highlighted background always yellow and text always red
+    Use :nth-of-type(n) pseudo class (which matches everything to prevent the .hll class
+        style from being overridden in the pygments.css
+*/
+
+.highlight .hll:nth-of-type(n)  { background-color: #ffff00; color: red; font-weight: bold }
+.highlight .nd:nth-of-type(n)   { background-color: #ffff88; color: red; font-weight: bold; outline:red dotted thin}
 
 /*
 div.sphinxsidebar h3 {

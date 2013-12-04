@@ -103,7 +103,7 @@ class JobHistoryChecksum:
 
 
         #
-        #   pickle code very defensively, but hopefully without break Jake Biesinger's pipelines!
+        #   pickle code very defensively, but hopefully without breaking Jake Biesinger's pipelines!
         #
         attributes_to_pickle = [task.user_defined_work_func.func_defaults,
                                 task.user_defined_work_func.func_code.co_argcount,
@@ -120,7 +120,7 @@ class JobHistoryChecksum:
                 continue
             except:
                 pass
-            # Marshall seems to be less sensitive: try that
+            # Marshal seems to be less sensitive: try that
             try:
                 pickle_results.append(marshal.dumps(aa))
                 continue

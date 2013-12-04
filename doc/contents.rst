@@ -20,6 +20,11 @@ Start Here:
    6. Calculate partial solutions in parallel <tutorials/simple_tutorial/step6_transform>
    7. Re-combine the partial solutions into the final result <tutorials/simple_tutorial/step7_merge>
    8. Automatically signal the completion of each step of our pipeline <tutorials/simple_tutorial/step8_posttask>
+   1. Chain tasks (functions) together into a pipeline <tutorials/new_tutorial/step1>
+   2. Transforming data in a pipeline <tutorials/new_tutorial/step2>
+   3. step3 <tutorials/new_tutorial/step3>
+   4. step4 <tutorials/new_tutorial/step4>
+   5. step5 <tutorials/new_tutorial/step5>
 
 
 =====================

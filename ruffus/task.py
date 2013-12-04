@@ -1003,7 +1003,7 @@ class _task (node):
     #   printout
 
     #_________________________________________________________________________________________
-    def printout (self, runtime_data, force_rerun, verbose=1, indent = 4):
+    def printout (self, runtime_data, force_rerun, job_history, verbose=1, indent = 4):
         """
         Print out all jobs for this task
 
@@ -1083,7 +1083,7 @@ class _task (node):
                 return messages
 
             if self.needs_update_func == needs_update_check_modify_time:
-                needs_update, msg = self.needs_update_func (task=self)
+                needs_update, msg = self.needs_update_func (task=self, job_history = job_history)
             else:
                 needs_update, msg = self.needs_update_func ()
 
@@ -1109,7 +1109,7 @@ class _task (node):
                     continue
 
                 if self.needs_update_func == needs_update_check_modify_time:
-                    needs_update, msg = self.needs_update_func (*param, task=self)
+                    needs_update, msg = self.needs_update_func (*param, task=self, job_history = job_history)
                 else:
                     needs_update, msg = self.needs_update_func (*param)
 
@@ -1144,20 +1144,21 @@ class _task (node):
     #       returns whether up to date
     #
     #_____________________________________________________________________________________
-    def signal (self, verbose_logger):
+    def signal (self, verbose_logger_job_history):
         """
         If up to date: signal = true
         If true, depth first search will not pass through this node
         """
+        if not verbose_logger_job_history:
+            raise Exception("verbose_logger_job_history is None")
+
+        verbose_logger = verbose_logger_job_history[0]
+        job_history = verbose_logger_job_history[1]
+
         try:
-            if verbose_logger:
-                logger       = verbose_logger.logger
-                verbose      = verbose_logger.verbose
-                runtime_data = verbose_logger.runtime_data
-            else:
-                logger       = None
-                verbose      = 0
-                runtime_data = {}
+            logger       = verbose_logger.logger
+            verbose      = verbose_logger.verbose
+            runtime_data = verbose_logger.runtime_data
             log_at_level (logger, 4, verbose,
                             "  Task = " + self.get_task_name())
 
@@ -1186,7 +1187,7 @@ class _task (node):
             if self.param_generator_func == None:
                 if self.needs_update_func:
                     if self.needs_update_func == needs_update_check_modify_time:
-                        needs_update, msg = self.needs_update_func (task=self)
+                        needs_update, msg = self.needs_update_func (task=self, job_history = job_history)
                     else:
                         needs_update, msg = self.needs_update_func ()
                     log_at_level (logger, 4, verbose,
@@ -1200,7 +1201,7 @@ class _task (node):
                 #
                 for param, descriptive_param in self.param_generator_func(runtime_data):
                     if self.needs_update_func == needs_update_check_modify_time:
-                        needs_update, msg = self.needs_update_func (*param, task=self)
+                        needs_update, msg = self.needs_update_func (*param, task=self, job_history = job_history)
                     else:
                         needs_update, msg = self.needs_update_func (*param)
                     if needs_update:
@@ -2829,13 +2830,17 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
 
     logging_strm = t_verbose_logger(verbose, t_stream_logger(output_stream), runtime_data)
 
+    #
+    # load previous job history if it exists, otherwise create an empty history
+    #
+    job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
 
     (topological_sorted,
     self_terminated_nodes,
     dag_violating_edges,
     dag_violating_nodes) = topologically_sorted_nodes(target_tasks, forcedtorun_tasks,
                                                         gnu_make_maximal_rebuild_mode,
-                                                        extra_data_for_signal = t_verbose_logger(0, None, runtime_data))
+                                                        extra_data_for_signal = [t_verbose_logger(0, None, runtime_data), job_history])
 
 
     #
@@ -2858,7 +2863,8 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
         (all_tasks, ignore_param1, ignore_param2,
          ignore_param3) = topologically_sorted_nodes(target_tasks, True,
                                                      gnu_make_maximal_rebuild_mode,
-                                                     extra_data_for_signal = t_verbose_logger(0, None, runtime_data))
+                                                     extra_data_for_signal = [t_verbose_logger(0, None, runtime_data), job_history])
+
         if len(all_tasks) > len(topological_sorted):
             output_stream.write("\n" + "_" * 40 + "\nTasks which are up-to-date:\n\n")
             pipelined_tasks_to_run = set(topological_sorted)
@@ -2866,13 +2872,13 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
             for t in all_tasks:
                 if t in pipelined_tasks_to_run:
                     continue
-                messages = t.printout(runtime_data, t in forcedtorun_tasks, verbose, indent)
+                messages = t.printout(runtime_data, t in forcedtorun_tasks, job_history, verbose, indent)
                 for m in messages:
                     output_stream.write(textwrap.fill(m, subsequent_indent = wrap_indent, width = wrap_width) + "\n")
 
     output_stream.write("\n" + "_" * 40 + "\nTasks which will be run:\n\n")
     for t in topological_sorted:
-        messages = t.printout(runtime_data, t in forcedtorun_tasks, verbose, indent)
+        messages = t.printout(runtime_data, t in forcedtorun_tasks, job_history, verbose, indent)
         for m in messages:
             output_stream.write(textwrap.fill(m, subsequent_indent = wrap_indent, width = wrap_width) + "\n")
 
@@ -2911,7 +2917,7 @@ def get_semaphore (t, job_limit_semaphores, syncmanager):
 def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forcedtorun_tasks,
                                     count_remaining_jobs, runtime_data, verbose,
                                     syncmanager,
-                                    one_second_per_job, touch_files_only):
+                                    one_second_per_job, touch_files_only, job_history):
 
     inprogress_tasks = set()
     job_limit_semaphores = dict()
@@ -3006,7 +3012,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                                 # extra clunky hack to also pass task info--
                                 # makes sure that there haven't been code or arg changes
                                 if t.needs_update_func == needs_update_check_modify_time:
-                                    needs_update, msg = t.needs_update_func (*param, task=t)
+                                    needs_update, msg = t.needs_update_func (*param, task=t, job_history = job_history)
                                 else:
                                     needs_update, msg = t.needs_update_func (*param)
 
@@ -3258,6 +3264,13 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     update_checksum_level_on_tasks (checksum_level)
 
     #
+    # load previous job history if it exists, otherwise create an empty history
+    #
+    job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
+
+
+
+    #
     # @active_if decorated tasks can change their active state every time
     #   pipeline_run / pipeline_printout / pipeline_printout_graph is called
     #
@@ -3275,7 +3288,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     dag_violating_edges,
     dag_violating_nodes) = topologically_sorted_nodes(  target_tasks, forcedtorun_tasks,
                                                         gnu_make_maximal_rebuild_mode,
-                                                        extra_data_for_signal = t_verbose_logger(verbose, logger, runtime_data))
+                                                        extra_data_for_signal = [t_verbose_logger(verbose, logger, runtime_data), job_history])
 
     if len(dag_violating_nodes):
         dag_violating_tasks = ", ".join(t._name for t in dag_violating_nodes)
@@ -3326,7 +3339,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                                                         runtime_data, verbose,
                                                         syncmanager,
                                                         one_second_per_job,
-                                                        touch_files_only)
+                                                        touch_files_only, job_history)
     job_parameters = parameter_generator()
     fill_queue_with_job_parameters(job_parameters, parameter_q, multiprocess, logger, verbose)
 
@@ -3392,10 +3405,6 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     job_errors = RethrownJobError()
     tasks_with_errors = set()
 
-    #
-    # load previous job history if it exists, otherwise create an empty history
-    #
-    job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
 
     #
     #   job_result.job_name / job_result.return_value
@@ -3416,12 +3425,16 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
 
         # remove failed jobs from history-- their output is bogus now!
         if job_result.state in (JOB_ERROR, JOB_SIGNALLED_BREAK):
-            if len(job_result.params) > 1:  # mkdir has no output
-                outfile = job_result.params[1]
-                if not isinstance(outfile, list):
-                    outfile = [outfile]
-                for o in outfile:
-                    job_history.pop(o, None)  # remove outfile from history if it exists
+
+            if len(job_result.params) > 1:  # some jobs have no outputs
+                output_file_name = job_result.params[1]
+                if not isinstance(output_file_name, list): # some have multiple outputs from one job
+                    output_file_name = [output_file_name]
+                #
+                # N.B. output parameters are not necessary all strings
+                #
+                for o_f_n in get_strings_in_nested_sequence(output_file_name):
+                    job_history.pop(o_f_n, None)  # remove outfile from history if it exists
 
         # only save poolsize number of errors
         if job_result.state == JOB_ERROR:
@@ -3473,6 +3486,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                     # N.B. output parameters are not necessary all strings
                     #
                     for o_f_n in get_strings_in_nested_sequence(output_file_name):
+                        log_at_level (logger, 6, verbose, "   Job History for : " + o_f_n)
                         mtime = os.path.getmtime(o_f_n)
                         chksum = JobHistoryChecksum(o_f_n, mtime, job_result.params[2:], t)
                         job_history[o_f_n] = chksum
