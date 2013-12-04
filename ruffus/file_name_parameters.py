@@ -462,7 +462,13 @@ def needs_update_check_modify_time (*params, **kwargs):
         task = Namespace()
         task.checksum_level = CHECKSUM_FILE_TIMESTAMPS
 
-    job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
+    try:
+        job_history = kwargs['job_history']
+    except KeyError:
+        # allow job_history not to be specified and reopen dbdict file redundantly...
+        #   Either this or fix all the test cases
+        job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
+
 
     # missing output means build
     if len(params) < 2:

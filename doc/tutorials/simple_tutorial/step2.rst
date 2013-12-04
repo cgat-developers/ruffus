@@ -5,7 +5,7 @@
     pair: @transform; Tutorial
 
 ###################################################################
-Step 2: Passing parameters to the pipeline
+Step 2: ``@transform``-ing data in a pipeline
 ###################################################################
 
    * :ref:`Simple tutorial overview <Simple_Tutorial>`
