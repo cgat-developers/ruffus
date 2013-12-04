@@ -186,6 +186,7 @@ def append_to_optparse (parser):
         -j, --jobs
         -n, --just_print
             --flowchart
+            --touch_files_only
             --key_legend_in_graph
             --draw_graph_horizontally
             --flowchart_format
@@ -219,6 +220,9 @@ def append_to_optparse (parser):
     parser.add_option("-n", "--just_print", dest="just_print",
                         action="store_true", default=False,
                         help="Don't actually run any commands; just print the pipeline.")
+    parser.add_option("--touch_files_only", dest="touch_files_only",
+                        action="store_true", default=False,
+                        help="Don't actually run the pipeline; just 'touch' the output for each task to make them appear up to date.")
     parser.add_option("--flowchart", dest="flowchart",
                         metavar="FILE",
                         type="string",
@@ -424,7 +428,7 @@ extra_pipeline_run_options = [
                                 "gnu_make_maximal_rebuild_mode"     ,
                                 "runtime_data"                      ,
                                 "one_second_per_job"                ,
-                                "touch_files_only"                  ,
+                                #"touch_files_only"                  ,
                                 "logger"                            ,
                                 "exceptions_terminate_immediately"  ,
                                 "log_exceptions"                    ,
@@ -483,6 +487,7 @@ def run (options, **extra_options):
                             options.forced_tasks,
                             multiprocess    = options.jobs,
                             verbose         = options.verbose,
+                            touch_files_only= options.touch_files_only,
                             **appropriate_options)
         return True
 
