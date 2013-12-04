@@ -128,6 +128,8 @@ def append_to_argparse (parser):
                                 help="Allow N jobs (commands) to run simultaneously.")
     pipline_options.add_argument("-n", "--just_print", action="store_true",
                                 help="Don't actually run any commands; just print the pipeline.")
+    pipline_options.add_argument("--touch_files_only", action="store_true",
+                                help="Don't actually run the pipeline; just 'touch' the output for each task to make them appear up to date.")
     pipline_options.add_argument("--flowchart", metavar="FILE", type=str,
                                 help="Don't run any commands; just print pipeline as a flowchart.")
 
