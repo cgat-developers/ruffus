@@ -498,7 +498,6 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
     assert(user_defined_work_func)
 
     i,o = param[0:2]
-    job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
 
     if not touch_files_only:
         # @originate only uses output files
@@ -508,18 +507,27 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
         else:
             ret_val = user_defined_work_func(*param)
     else:
+        #job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
+
         #
         #   touch files only
         #
         for f in get_strings_in_nested_sequence(o):
-            if not os.path.exists(f):
-                open(f, 'w')
-                mtime = os.path.getmtime(f)
-            else:
+            #
+            #   race condition still possible...
+            #
+            with file(f, 'a'):
                 os.utime(f, None)
-                mtime = os.path.getmtime(f)
-            chksum = JobHistoryChecksum(f, mtime, param[2:], user_defined_work_func.pipeline_task)
-            job_history[f] = chksum  # update file times and job details in history
+            #if not os.path.exists(f):
+            #    open(f, 'w')
+            #    mtime = os.path.getmtime(f)
+            #else:
+            #    os.utime(f, None)
+            #    mtime = os.path.getmtime(f)
+
+
+            #chksum = JobHistoryChecksum(f, mtime, param[2:], user_defined_work_func.pipeline_task)
+            #job_history[f] = chksum  # update file times and job details in history
 
 
 
