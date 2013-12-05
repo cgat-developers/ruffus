@@ -96,9 +96,9 @@ def get_argparse (*args, **args_dict):
 
     parser = argparse.ArgumentParser(*args, **args_dict)
 
-    return append_to_argparse(parser)
+    return append_to_argparse(parser, **args_dict)
 
-def append_to_argparse (parser):
+def append_to_argparse (parser, **args_dict):
     """
     Common options:
 
@@ -107,12 +107,16 @@ def append_to_argparse (parser):
             --log_file
     """
 
+    if "version" in args_dict:
+        prog_version = args_dict["version"]
+    else:
+        prog_version = "%(prog)s 1.0"
 
 
     common_options = parser.add_argument_group('Common options')
     common_options.add_argument('--verbose', "-v", const=1, default=0, nargs='?', type= int,
                                 help="Print more verbose messages for each additional verbose level.")
-    common_options.add_argument('--version', action='version', version='%(prog)s 1.0')
+    common_options.add_argument('--version', action='version', version=prog_version)
     common_options.add_argument("-L", "--log_file", metavar="FILE", type=str,
                                   help="Name and path of log file")
 
@@ -173,7 +177,7 @@ def get_optparse (*args, **args_dict):
 
     parser = OptionParser(*args, **args_dict)
 
-    return append_to_argparse(parser)
+    return append_to_optparse(parser)
 
 def append_to_optparse (parser):
     """
@@ -195,6 +199,7 @@ def append_to_optparse (parser):
             --forced_tasks
 
     """
+
     #
     #   general options: verbosity / logging
     #
