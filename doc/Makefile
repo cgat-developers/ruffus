@@ -52,8 +52,13 @@ clean:
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
-	#rsync -t --recursive _build/html/* mus:/home/lg/public_html/oss/ruffus
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+htmlsync:
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	@echo
+	rsync -t --delete --recursive _build/html/* mus:/home/lg/public_html/oss/ruffus
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html and copied to the test web directory."
 
 dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
