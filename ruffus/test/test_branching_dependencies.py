@@ -193,13 +193,13 @@ tempdir = "temp_branching_dir/"
 @originate([tempdir + d for d in 'a.1', 'b.1', 'c.1'])
 @follows(mkdir(tempdir))
 @posttask(lambda: open(tempdir + "task.done", "a").write("Task 1 Done\n"))
-def task1(outfiles, *extra_params):
+def task1(outfile, *extra_params):
     """
     First task
     """
-    open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([None, outfiles]))
-    test_job_io(None, outfiles, extra_params)
-    open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([None, outfiles]))
+    open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([None, outfile]))
+    test_job_io(None, outfile, extra_params)
+    open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([None, outfile]))
 
 
 #
@@ -434,3 +434,6 @@ if __name__ == '__main__':
                             logger = stderr_logger if options.verbose else black_hole_logger,
                              gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                             verbose = options.verbose, touch_files_only = options.touch_files_only)
+        import  shutil
+        shutil.rmtree(tempdir)
+
