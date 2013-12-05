@@ -346,12 +346,15 @@ def check_final_output_correct(after_touch_files = False):
 
 
     expected_output = expected_output.replace("        ", "").replace("DIR/", tempdir).split("\n")
+    orig_expected_output = expected_output
     if after_touch_files:
-        expected_output.pop(-2)
+        expected_output.pop(-3)
     final_6_contents = sorted([l.rstrip() for l in open(tempdir + "final.6", "r").readlines()])
     if final_6_contents != expected_output:
-        print >>sys.stderr, final_6_contents
-        print >>sys.stderr, expected_output
+        for ll in final_6_contents:
+            print >>sys.stderr, ll
+        for ll in orig_expected_output:
+            print >>sys.stderr, ll
         for i, (l1, l2) in enumerate(zip(final_6_contents, expected_output)):
             if l1 != l2:
                 sys.stderr.write("%d\n  >%s<\n  >%s<\n" % (i, l1, l2))
