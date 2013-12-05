@@ -891,7 +891,7 @@ argparse
 
             #_____________________________________________________________________________________
 
-            cmdline.run (options)
+            cmdline.run (options, version = "%(prog)s v 1.1")
 
 
     Provides these predefined options:
