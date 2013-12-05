@@ -441,6 +441,4 @@ if __name__ == '__main__':
                              gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                             verbose = options.verbose, touch_files_only = options.touch_files_only)
         print "OK"
-        import  shutil
-        shutil.rmtree(tempdir)
 
