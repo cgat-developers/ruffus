@@ -13,6 +13,8 @@ New order of Topics in the tutorial
     * ``@originate`` to start the pipeline
     * Discussion of tasks and jobs, and parallelism, task completion monitoring
     * ``pipeline_run``, ``pipeline_printout``, ``pipeline_printout_graph`` and ``cmdline``
+    * ``formatter``
+    * ``1-to-many``, ``many-to-many`` etc.
     * ``@split``
     * ``@merge``
     * ``@posttask``
@@ -921,6 +923,9 @@ Comments on: Job completion monitoring
                       mtime = os.path.getmtime(f)
                   chksum = JobHistoryChecksum(f, mtime, param[2:], user_defined_work_func.pipeline_task)
                   job_history[f] = chksum  # update file times and job details in history
+
+
+        **No longer** (refactored)
 
     * Can we get rid of the minimum 1 second delay between jobs now? Does the database have finer granularity in timestamps? Can we use the database timestamps provided they are *later* than the filesystem ones?
 

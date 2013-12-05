@@ -290,8 +290,9 @@ tt {
         style from being overridden in the pygments.css
 */
 
-.highlight .hll:nth-of-type(n)  { background-color: #ffff00; color: red; font-weight: bold }
-.highlight .nd:nth-of-type(n)   { background-color: #ffff88; color: red; font-weight: bold; outline:red dotted thin}
+.highlight .nd:nth-of-type(n)   { background-color: #ffff88; color: red; font-weight: bold; outline:red dotted thin}/**/
+.highlight .hll:nth-of-type(n)   { background-color: #eeffcc; font-weight: bold}
+.highlight .hll .c:nth-of-type(n)    { background-color: #ffffff; color: red; font-weight: bold; font-style: normal;font-size:120%} /* Comment */
 
 /*
 div.sphinxsidebar h3 {
