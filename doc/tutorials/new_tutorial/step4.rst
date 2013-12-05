@@ -66,53 +66,8 @@ Printing out which jobs will be run
 
 
 
-    To see the input and output parameters of each job in the pipeline, we can increase the verbosity from the default (``1``) to ``3``:
-
-     ::
-
-        >>> pipeline_printout(sys.stdout, [second_task], verbose = 3)
-
-        ________________________________________
-        Tasks which will be run:
-
-        Task = create_initial_file_pairs
-               Job  = [None
-                     -> job1.a.start
-                     -> job1.b.start]
-                 Job needs update: Missing files [job1.a.start, job1.b.start]
-               Job  = [None
-                     -> job2.a.start
-                     -> job2.b.start]
-                 Job needs update: Missing files [job2.a.start, job2.b.start]
-               Job  = [None
-                     -> job3.a.start
-                     -> job3.b.start]
-                 Job needs update: Missing files [job3.a.start, job3.b.start]
-
-        Task = first_task
-               Job  = [[job1.a.start, job1.b.start]
-                     -> job1.a.output.1]
-                 Job needs update: Missing files [job1.a.start, job1.b.start, job1.a.output.1]
-               Job  = [[job2.a.start, job2.b.start]
-                     -> job2.a.output.1]
-                 Job needs update: Missing files [job2.a.start, job2.b.start, job2.a.output.1]
-               Job  = [[job3.a.start, job3.b.start]
-                     -> job3.a.output.1]
-                 Job needs update: Missing files [job3.a.start, job3.b.start, job3.a.output.1]
-
-        Task = second_task
-               Job  = [job1.a.output.1
-                     -> job1.a.output.2]
-                 Job needs update: Missing files [job1.a.output.1, job1.a.output.2]
-               Job  = [job2.a.output.1
-                     -> job2.a.output.2]
-                 Job needs update: Missing files [job2.a.output.1, job2.a.output.2]
-               Job  = [job3.a.output.1
-                     -> job3.a.output.2]
-                 Job needs update: Missing files [job3.a.output.1, job3.a.output.2]
-
-        ________________________________________
-
+    To see the input and output parameters of each job in the pipeline, try increasing the verbosity from the default (``1``) to ``3``
+    (see :ref:`example <Simple_Tutorial_4th_step_code>`)
 
     This is very useful for checking that the input and output parameters have been specified
         correctly.
@@ -137,44 +92,14 @@ Determining which jobs are out-of-date or not
             open("job1.a.output.1", "w").close()
 
 
-    At a verbosity of 5, even jobs which are up-to-date will be displayed.
     We can now see that the there is only one job in ``second_task(...)`` which needs to be re-run
     because the modication times for ``job1.a.output.1`` is after that of ``job1.a.output.2`` (highlighted):
 
 
         .. code-block:: pycon
-            :emphasize-lines: 38
+            :emphasize-lines: 9
 
             >>> pipeline_printout(sys.stdout, [second_task], verbose = 5)
-            ________________________________________
-            Tasks which are up-to-date:
-
-            Task = create_initial_file_pairs
-                   Job  = [None
-                         -> job1.a.start
-                         -> job1.b.start]
-                     Job up-to-date
-                   Job  = [None
-                         -> job2.a.start
-                         -> job2.b.start]
-                     Job up-to-date
-                   Job  = [None
-                         -> job3.a.start
-                         -> job3.b.start]
-                     Job up-to-date
-
-            Task = first_task
-                   Job  = [[job1.a.start, job1.b.start]
-                         -> job1.a.output.1]
-                     Job up-to-date
-                   Job  = [[job2.a.start, job2.b.start]
-                         -> job2.a.output.1]
-                     Job up-to-date
-                   Job  = [[job3.a.start, job3.b.start]
-                         -> job3.a.output.1]
-                     Job up-to-date
-
-
             ________________________________________
             Tasks which will be run:
 
@@ -198,9 +123,10 @@ Determining which jobs are out-of-date or not
 
             ________________________________________
 
+    N.B. At a verbosity of 5, even jobs which are up-to-date will be displayed.
 
 ================================================================
-Saving time with ``ruffus.cmdline`` and ``argparse``
+Command line options made easier with ``ruffus.cmdline``
 ================================================================
 
 
@@ -230,30 +156,80 @@ Saving time with ``ruffus.cmdline`` and ``argparse``
                     --forced_tasks
 
 
-    All of this requires adding the following lines of code:
+    This only requires five lines of code:
 
         .. code-block:: python
-            :emphasize-lines: 5
+            :emphasize-lines: 5, 13
 
             from ruffus import *
 
             parser = cmdline.get_argparse(description='WHAT DOES THIS PIPELINE DO?')
 
-            # add your own commands here
-            parser.add_argument("--input_file")
+            #   <<<---- add your own command line options like --input_file here
+            #parser.add_argument("--input_file")
 
             options = parser.parse_args()
 
-            #  logger which can be passed to ruffus tasks
+            #  logger which can be passed to multiprocessing ruffus tasks
             logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
 
-            #_____________________________________________________________________________________
-
-            #   pipelined functions go here
-
-            #_____________________________________________________________________________________
+            #   <<<----  pipelined functions go here
 
             cmdline.run (options)
 
+_____________________________________________________________________________________
+Tracing pipeline progress
+_____________________________________________________________________________________
 
-    The keen eyed may have noticed options for printing flowcharts. Eye-candy is the focus of :ref:`step 5 <Simple_Tutorial_5th_step_graphical>`
+    Now to understand what is happening with your pipeline, what tasks and which
+    jobs are up-to-date etc, call your script with the following options:
+
+        .. code-block:: bash
+
+            myscript -n
+
+            or
+
+            myscript --just_print
+
+
+    Increase levels of verbosity to provide more detailed output
+
+        .. code-block:: bash
+
+            # well-mannered, reserved
+            myscript -n -v
+
+            or
+
+            # extremely loquacious
+            myscript --just_print --verbose 5
+
+
+
+_____________________________________________________________________________________
+Running in parallel
+_____________________________________________________________________________________
+
+    Optionally specify the number of parallel strands of execution and which is the final task is
+
+        .. code-block:: bash
+
+            # run all tasks
+            myscript --j 3 --target_tasks "second_task"
+
+            # force just the first task to rerun even if it is up-to-date
+            myscript --jobs 15 --forced_tasks "first_task"
+
+
+_____________________________________________________________________________________
+Log to a file
+_____________________________________________________________________________________
+
+    Optionally set up logger (as in the example) so that it will log error messages,
+    or anything you want, using the standard python `logging  <http://docs.python.org/2/library/logging.html>`_ module.
+
+        .. code-block:: bash
+
+            # keep tabs on yourself
+            myscript --log_file /var/log/secret.logbook

@@ -46,6 +46,47 @@ Printing out a flowchart of our pipeline
     `Graphviz <http://www.graphviz.org/>`_ is installed.
 
 
+    There are 8 standard colour schemes, but you can further customise all the colours to your satisfaction:
+
+
+        .. image:: ../../images/flowchart_colour_schemes.png
+
+    See :ref:`here <flowchart_colours>` for example code.
+
+================================================================
+Command line options made easier with ``ruffus.cmdline``
+================================================================
+
+
+    If you are using ``ruffus.cmdling``, then you can easily ask for a flowchart from the command line:
+
+        .. code-block:: bash
+
+            your_script.py --flowchart pipeline_flow_chart.png
+
+
+    The output format is deduced from the extension but can be specified manually:
+
+        .. code-block:: bash
+
+            # specify format. Otherwise, deduced from the extension
+            your_script.py --flowchart pipeline_flow_chart.png --flowchart_format png
+
+    Print the flow chart horizontally or vertically...
+
+        .. code-block:: bash
+
+            # flowchart proceeds from left to right , rather than from  top to bottom
+            your_script.py --flowchart pipeline_flow_chart.png --draw_graph_horizontally
+
+    ...with or without a key legend
+
+        .. code-block:: bash
+
+            # Draw key legend
+            your_script.py --flowchart pipeline_flow_chart.png --key_legend_in_graph
+
+
 =============================================
 Horribly complicated pipelines!
 =============================================
@@ -62,25 +103,3 @@ Circular dependency errors in pipelines!
 
 
         .. image:: ../../images/simple_tutorial_complex_flowchart_error.png
-
-
-================================================================
-Saving time with ``ruffus.cmdline`` and ``argparse``
-================================================================
-
-
-    If you are using ``ruffus.cmdling``, then you can easily ask for a flowchart from the command line:
-
-        .. code-block:: bash
-            :emphasize-lines: 3,6,9
-
-            your_script.py --flowchart pipeline_flow_chart.png
-
-            # specify format. Otherwise, deduced from the extension
-            your_script.py --flowchart pipeline_flow_chart.png --flowchart_format png
-
-            # flowchart proceeds from left to right , rather than from  top to bottom
-            your_script.py --flowchart pipeline_flow_chart.png --draw_graph_horizontally
-
-            # Draw key legend
-            your_script.py --flowchart pipeline_flow_chart.png --key_legend_in_graph
