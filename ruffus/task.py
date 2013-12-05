@@ -1306,7 +1306,13 @@ class _task (node):
                     cnt_jobs += 1
                     # skip tasks which don't have output parameters
                     if len(param) >= 2:
-                        self.output_filenames.append(param[1])
+                        # make sure each @split or @subdivide or @originate returns a list of jobs
+                        #   i.e. each @split or @subdivide or @originate is always a ->many operation
+                        #       even if len(many) can be 1 (or zero)
+                        if self.indeterminate_output and not non_str_sequence(param[1]):
+                            self.output_filenames.append([param[1]])
+                        else:
+                            self.output_filenames.append(param[1])
 
 
                 if self._single_job_single_output == self.single_job_single_output:
@@ -1603,8 +1609,40 @@ class _task (node):
         decorator_name  = "@originate"
         error_type      = error_task_originate
         self.set_action_type (_task.action_task_originate)
-        self.do_task_simple_split((None,) + orig_args, decorator_name, error_type)
+
+        if len(orig_args) < 1:
+            raise error_type(self, "%s takes a single argument" % decorator_name)
+
+        output_params = orig_args[0]
+
+        # make sure output_params is a list.
+        # Each of these will be called as an output
+        if not non_str_sequence (output_params):
+            output_params = [output_params]
+
+        #
+        #   output globs will be replaced with files. But there should not be tasks here!
+        #
+        list_output_files_task_globs = [self.handle_tasks_globs_in_inputs(oo) for oo in output_params]
+        for oftg in list_output_files_task_globs:
+            if len(oftg.tasks):
+                raise error_type(self, ("%s cannot output to another task. "
+                                              "Do not include tasks in output parameters.") % decorator_name)
+
+        self.param_generator_func = originate_param_factory (list_output_files_task_globs, orig_args[1:])
+        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper          = job_wrapper_output_files
+        self.job_descriptor       = io_files_one_to_many_job_descriptor
+
+        # output is not a glob
+        self.indeterminate_output = 0
+        self.single_multi_io       = self.many_to_many
+
+
+
+
+
+
 
     #_________________________________________________________________________________________
 
@@ -2733,6 +2771,11 @@ def pipeline_printout_graph (stream,
     if isinstance(stream, basestring):
         stream = open(stream, "w")
 
+    #
+    # load previous job history if it exists, otherwise create an empty history
+    #
+    job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
+
     graph_printout (  stream,
                       output_format,
                       target_tasks,
@@ -2748,8 +2791,7 @@ def pipeline_printout_graph (stream,
                       pipeline_name,
                       size,
                       dpi,
-                      extra_data_for_signal = t_verbose_logger(0, None, runtime_data))
-
+                      extra_data_for_signal = [t_verbose_logger(0, None, runtime_data), job_history])
 
 
 
@@ -3385,9 +3427,12 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     #
     if multithread:
         pool = ThreadPool(multithread)
+        parallelism = multithread
     elif multiprocess > 1:
         pool = Pool(multiprocess)
+        parallelism = multiprocess
     else:
+        parallelism = 1
         pool = None
 
     if pool:
@@ -3438,6 +3483,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
 
         # only save poolsize number of errors
         if job_result.state == JOB_ERROR:
+            log_at_level (logger, 6, verbose, "   Exception caught for %s" % job_result.job_name)
             job_errors.append(job_result.exception)
             tasks_with_errors.add(t)
 
@@ -3445,12 +3491,15 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
             # print to logger immediately
             #
             if log_exceptions:
+                log_at_level (logger, 6, verbose, "   Log Exception")
                 logger.error(job_errors.get_nth_exception_str())
 
             #
             # break if too many errors
             #
-            if len(job_errors) >= multiprocess or exceptions_terminate_immediately:
+            if len(job_errors) >= parallelism or exceptions_terminate_immediately:
+                log_at_level (logger, 6, verbose, "   Break loop %s %s %s " % (exceptions_terminate_immediately, len(job_errors), parallelism) )
+                parameter_q.put(all_tasks_complete())
                 break
 
 
@@ -3484,12 +3533,17 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                         output_file_name = [output_file_name]
                     #
                     # N.B. output parameters are not necessary all strings
+                    #       and not all files have been successfully created,
+                    #       even though the task apparently completed properly!
                     #
                     for o_f_n in get_strings_in_nested_sequence(output_file_name):
-                        log_at_level (logger, 6, verbose, "   Job History for : " + o_f_n)
-                        mtime = os.path.getmtime(o_f_n)
-                        chksum = JobHistoryChecksum(o_f_n, mtime, job_result.params[2:], t)
-                        job_history[o_f_n] = chksum
+                        try:
+                            log_at_level (logger, 6, verbose, "   Job History for : " + o_f_n)
+                            mtime = os.path.getmtime(o_f_n)
+                            chksum = JobHistoryChecksum(o_f_n, mtime, job_result.params[2:], t)
+                            job_history[o_f_n] = chksum
+                        except:
+                            pass
 
                 ##for output_file_name in t.output_filenames:
                 ##    # could use current time instead...
@@ -3516,21 +3570,19 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
             #if len(job_errors) == 1 and not parameter_q._closed:
             parameter_q.put(all_tasks_complete())
         else:
-            fill_queue_with_job_parameters(job_parameters, parameter_q, multiprocess, logger, verbose)
+            fill_queue_with_job_parameters(job_parameters, parameter_q, parallelism, logger, verbose)
 
 
+    syncmanager.shutdown()
+
+
+    if pool:
+        pool.close()
+        pool.terminate()
 
 
     if len(job_errors):
         raise job_errors
-
-    syncmanager.shutdown()
-
-    if pool:
-        pool.close()
-        pool.join()
-
-
 
 
 
