@@ -1309,5 +1309,21 @@ def merge_param_factory (input_files_task_globs,
     return iterator
 
 
+#_________________________________________________________________________________________
 
+#   originate_param_factory
+
+#_________________________________________________________________________________________
+def originate_param_factory (list_output_files_task_globs, extras):
+    """
+    Factory for task_originate
+    """
+    #
+    def iterator(runtime_data):
+        for output_files_task_globs in list_output_files_task_globs:
+            output_param         = file_names_from_tasks_globs(output_files_task_globs,                    runtime_data)
+            output_param_logging = file_names_from_tasks_globs(output_files_task_globs.unexpanded_globs(), runtime_data)
+            yield (None, output_param) + tuple(extras), (None, output_param_logging) + tuple(extras)
+
+    return iterator
 
