@@ -160,14 +160,13 @@ helpstr = f.getvalue()
 #    task1
 #
 @originate(['a.1'] + options.runtime_files)
-def task1(outfiles):
+def task1(outfile):
     """
     First task
     """
     output_text  = ""
-    output_text += "    -> " + json.dumps(outfiles) + "\n"
-    for outfile in outfiles:
-        open(outfile, "w").write(output_text)
+    output_text += "    -> " + json.dumps(outfile) + "\n"
+    open(outfile, "w").write(output_text)
 
 
 

@@ -80,10 +80,9 @@ original_files = [tempdir  + "/original_%d.fa" % d for d in range(3)]
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 @mkdir(tempdir)
 @originate(original_files)
-def generate_initial_files(out_names):
-    for on in out_names:
-        with open(on, 'w') as outfile:
-            pass
+def generate_initial_files(out_name):
+    with open(out_name, 'w') as outfile:
+        pass
 
 
 #

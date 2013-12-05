@@ -115,11 +115,11 @@ pipeline_active_if = True
 #
 @follows(mkdir("test_active_if"))
 @originate(['test_active_if/a.1', 'test_active_if/b.1'])
-def task1(outfiles):
+def task1(outfile):
     """
     First task
     """
-    helper (None, outfiles)
+    helper (None, outfile)
 
 
 

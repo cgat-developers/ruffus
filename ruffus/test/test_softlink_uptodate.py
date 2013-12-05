@@ -61,10 +61,9 @@ mutex_proxy = manager.Lock()
 #   First task
 #
 @originate(["a.1", "b.1"], executed_tasks_proxy, mutex_proxy)
-def start_task(output_file_names, executed_tasks_proxy, mutex_proxy):
-    for output_file_name in output_file_names:
-        with open(output_file_name,  "w") as f:
-            pass
+def start_task(output_file_name, executed_tasks_proxy, mutex_proxy):
+    with open(output_file_name,  "w") as f:
+        pass
     with mutex_proxy:
         executed_tasks_proxy["start_task"] = 1
 
