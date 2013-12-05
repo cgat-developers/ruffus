@@ -13,7 +13,7 @@ New order of Topics in the tutorial
     * ``@originate`` to start the pipeline
     * Discussion of tasks and jobs, and parallelism, task completion monitoring
     * ``pipeline_run``, ``pipeline_printout``, ``pipeline_printout_graph`` and ``cmdline``
-    * ``formatter``
+    * ``suffix`` and ``formatter``
     * ``1-to-many``, ``many-to-many`` etc.
     * ``@split``
     * ``@merge``
@@ -29,7 +29,7 @@ New order of Topics in the manual
     * ``suffix`` and ``formatter``
     * chaining tasks ``output_from``, Reusing pipeline code in modules
     * ``pipeline_run``, ``pipeline_printout``, ``pipeline_printout_graph`` and ``cmdline``
-    * exceptions (``JobSignalledBreak``) and logging ``stderr_logger`` and ``black_hole_logger``
+    * exceptions (``JobSignalledBreak``), early termination and logging ``stderr_logger`` and ``black_hole_logger``
     * Job completion monitoring
     * ``@split``
     * ``@merge``
