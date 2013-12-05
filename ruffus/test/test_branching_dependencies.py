@@ -333,16 +333,16 @@ def check_final_output_correct(after_touch_files = False):
         ["DIR/c.1"] -> ["DIR/c.2"]
         ["DIR/c.1"] -> ["DIR/c.4"]
         ["DIR/c.2", "DIR/a.1"] -> ["DIR/c.3"]
-        [] -> ["DIR/a.1", "DIR/b.1", "DIR/c.1"]
-        [] -> ["DIR/a.1", "DIR/b.1", "DIR/c.1"]
-        [] -> ["DIR/a.1", "DIR/b.1", "DIR/c.1"]
-        [] -> ["DIR/a.1", "DIR/b.1", "DIR/c.1"]
-        [] -> ["DIR/a.1", "DIR/b.1", "DIR/c.1"]
-        [] -> ["DIR/a.1", "DIR/b.1", "DIR/c.1"]
-        [] -> ["DIR/a.1", "DIR/b.1", "DIR/c.1"]
-        [] -> ["DIR/a.1", "DIR/b.1", "DIR/c.1"]
-        [] -> ["DIR/a.1", "DIR/b.1", "DIR/c.1"]
-        [] -> ["DIR/a.5"]"""
+        [] -> ["DIR/a.1"]
+        [] -> ["DIR/a.1"]
+        [] -> ["DIR/a.1"]
+        [] -> ["DIR/a.1"]
+        [] -> ["DIR/a.1"]
+        [] -> ["DIR/a.5"]
+        [] -> ["DIR/b.1"]
+        [] -> ["DIR/b.1"]
+        [] -> ["DIR/c.1"]
+        [] -> ["DIR/c.1"]"""
 
 
     expected_output = expected_output.replace("        ", "").replace("DIR/", tempdir).split("\n")
@@ -350,6 +350,8 @@ def check_final_output_correct(after_touch_files = False):
         expected_output.pop(-2)
     final_6_contents = sorted([l.rstrip() for l in open(tempdir + "final.6", "r").readlines()])
     if final_6_contents != expected_output:
+        print >>sys.stderr, final_6_contents
+        print >>sys.stderr, expected_output
         for i, (l1, l2) in enumerate(zip(final_6_contents, expected_output)):
             if l1 != l2:
                 sys.stderr.write("%d\n  >%s<\n  >%s<\n" % (i, l1, l2))
@@ -427,13 +429,15 @@ if __name__ == '__main__':
 
 
 
-        os.system("rm -rf %s" % tempdir)
-        print "OK"
+            print "OK"
+        import  shutil
+        shutil.rmtree(tempdir)
     else:
         pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
                             logger = stderr_logger if options.verbose else black_hole_logger,
                              gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                             verbose = options.verbose, touch_files_only = options.touch_files_only)
+        print "OK"
         import  shutil
         shutil.rmtree(tempdir)
 
