@@ -244,7 +244,7 @@ def task4(infiles, outfiles, *extra_params):
     Fourth task is extra slow
     """
     open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
-    time.sleep(1.1)
+    time.sleep(0.1)
     test_job_io(infiles, outfiles, extra_params)
     open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
 

@@ -161,7 +161,6 @@ def task1(infile, outfile):
     output_text  = ""
     output_text += json.dumps(infile) + " -> " + json.dumps(outfile) + "\n"
     open(outfile, "w").write(output_text)
-    time.sleep(1)
 
 
 
@@ -176,7 +175,6 @@ def task2(infile, outfile):
     output_text  = open(infile).read() if infile else ""
     output_text += json.dumps(infile) + " -> " + json.dumps(outfile) + "\n"
     open(outfile, "w").write(output_text)
-    time.sleep(1)
 
 
 
@@ -191,7 +189,6 @@ def task3(infile, outfile):
     output_text  = open(infile).read() if infile else ""
     output_text += json.dumps(infile) + " -> " + json.dumps(outfile) + "\n"
     open(outfile, "w").write(output_text)
-    time.sleep(1)
 
 
 
@@ -206,7 +203,6 @@ def task4(infile, outfile):
     output_text  = open(infile).read() if infile else ""
     output_text += json.dumps(infile) + " -> " + json.dumps(outfile) + "\n"
     open(outfile, "w").write(output_text)
-    time.sleep(1)
 
 #
 #   Necessary to protect the "entry point" of the program under windows.
