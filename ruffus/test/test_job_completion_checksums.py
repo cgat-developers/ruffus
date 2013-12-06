@@ -120,7 +120,7 @@ class TestJobCompletion(unittest.TestCase):
         cleanup_tmpdir()
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
-        time.sleep(1)
+        time.sleep(0.1)
         with open(transform1_out, 'w') as outfile:
             outfile.write('testme')
 
