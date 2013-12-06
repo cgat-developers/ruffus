@@ -18,10 +18,10 @@ data sets.
 Documentation
 ***************************************
 
-Ruffus documentation can be found `here <http://wwwfgu.anat.ox.ac.uk/~lg/oss/ruffus/index.html>`_ ,
-with an `download notes <http://wwwfgu.anat.ox.ac.uk/~lg/oss/ruffus/installation.html>`_ ,
-a `short tutorial <http://wwwfgu.anat.ox.ac.uk/~lg/oss/ruffus/tutorials/simple_tutorial/simple_tutorial.html>`_ and
-an `in-depth tutorial <http://wwwfgu.anat.ox.ac.uk/~lg/oss/ruffus/tutorials/manual/manual_introduction.html>`_ .
+Ruffus documentation can be found `here <http://www.ruffus.org.uk/>`_ ,
+with an `download notes <http://www.ruffus.org.uk/installation.html>`_ ,
+a `short tutorial <http://www.ruffus.org.uk/tutorials/simple_tutorial/simple_tutorial.html>`_ and
+an `in-depth manual <http://www.ruffus.org.uk/tutorials/manual/manual_introduction.html>`_ .
 
 
 ***************************************
@@ -64,26 +64,33 @@ Automatic support for
 A Simple example
 ***************************************
 
-Use the **@follows(...)** python decorator before the function definitions::
+Use the **@transform(...)** python decorator before the function definitions::
 
     from ruffus import *
-    import sys
+    
+    # make 10 dummy DNA data files
+    data_files = [(prefix + ".fastq") for prefix in range("abcdefghij")]
+    for df in data_files:
+        open(df, "w").close()
+    
 
-    def first_task():
-        print "First task"
+    @transform(data_files, suffix(".fastq"), ".bam")
+    def run_bwa(input_file, output_file):
+        print "Align DNA sequences in %s to a genome -> %s " % (input_file, output_file)
+        # make dummy output file
+        open(output_file, "w").close()
+        
 
-    @follows(first_task)
-    def second_task():
-        print "Second task"
+    @transform(run_bwa, suffix(".bam"), ".sorted.bam")
+    def sort_bam(input_file, output_file):
+        print "Sort DNA sequences in %s -> %s " % (input_file, output_file)
+        # make dummy output file
+        open(output_file, "w").close()
 
-    @follows(second_task)
-    def final_task():
-        print "Final task"
-
-
+    pipeline_run([sort_bam], multithread = 5)
 
 
-the ``@follows`` decorator indicate that the ``first_task`` function precedes ``second_task`` in
+the ``@transform`` decorator indicate that the data flows from the ``run_bwa`` function to ``run_bwa`` down
 the pipeline.
 
 ********
@@ -104,17 +111,15 @@ Each python function can be called in parallel to run multiple **jobs**.
 
     - For a graphical flowchart in ``jpg``, ``svg``, ``dot``, ``png``, ``ps``, ``gif`` formats::
 
-        graph_printout ( open("flowchart.svg", "w"),
-                         "svg",
-                         list_of_target_tasks)
+        pipeline_printout_graph ("flowchart.svg")
 
     This requires ``dot`` to be installed
 
     - For a text printout of all jobs ::
 
-        pipeline_printout(sys.stdout, list_of_target_tasks)
+        pipeline_printout(sys.stdout)
 
 
 3. Run the pipeline::
 
-    pipeline_run(list_of_target_tasks, [list_of_tasks_forced_to_rerun, multiprocess = N_PARALLEL_JOBS])
+    pipeline_run(list_of_target_tasks, verbose = NNN, [multithread | multiprocess = NNN])
