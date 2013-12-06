@@ -2706,6 +2706,35 @@ def task_names_to_tasks (task_description, task_names):
 
 #_________________________________________________________________________________________
 
+#   open_job_history
+
+#_________________________________________________________________________________________
+def get_default_history_file_name ():
+    history_file = RUFFUS_HISTORY_FILE
+    #
+    #   try path expansion using the main script name
+    #
+    try:
+        import __main__ as main
+        path_parts = path_decomposition (os.path.abspath(main.__file__))
+        history_file = history_file.format(**path_parts)
+    except Exception as err:
+        pass
+    return history_file
+
+def open_job_history (history_file):
+    """
+    Given a history file name, opens the correspond sqllite db file and returns the handle
+    """
+    if not history_file:
+        history_file = get_default_history_file_name ()
+
+    return dbdict.open(history_file, picklevalues=True)
+
+
+
+#_________________________________________________________________________________________
+
 #   pipeline_printout_in_dot_format
 
 #_________________________________________________________________________________________
@@ -2725,7 +2754,8 @@ def pipeline_printout_graph (stream,
                              size                           = (11,8),
                              dpi                            = 120,
                              runtime_data                   = None,
-                             checksum_level                 = 1):
+                             checksum_level                 = 1,
+                             history_file                   = None):
                              # Remember to add further extra parameters here to "extra_pipeline_printout_graph_options" inside cmdline.py
                              # This will forward extra parameters from the command line to pipeline_printout_graph
     """
@@ -2782,7 +2812,8 @@ def pipeline_printout_graph (stream,
     #
     # load previous job history if it exists, otherwise create an empty history
     #
-    job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
+    job_history = open_job_history (history_file)
+
 
     graph_printout (  stream,
                       output_format,
@@ -2808,9 +2839,16 @@ def pipeline_printout_graph (stream,
 #   pipeline_printout
 
 #_________________________________________________________________________________________
-def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbose=1, indent = 4,
-                                    gnu_make_maximal_rebuild_mode  = True, wrap_width = 100,
-                                    runtime_data= None, checksum_level=1):
+def pipeline_printout(  output_stream,
+                        target_tasks,
+                        forcedtorun_tasks               = [],
+                        verbose                         = 1,
+                        indent                          = 4,
+                        gnu_make_maximal_rebuild_mode   = True,
+                        wrap_width                      = 100,
+                        runtime_data                    = None,
+                        checksum_level                  = 1,
+                        history_file                    = None):
                       # Remember to add further extra parameters here to "extra_pipeline_printout_options" inside cmdline.py
                       # This will forward extra parameters from the command line to pipeline_printout
     """
@@ -2883,7 +2921,7 @@ def pipeline_printout(output_stream, target_tasks, forcedtorun_tasks = [], verbo
     #
     # load previous job history if it exists, otherwise create an empty history
     #
-    job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
+    job_history = open_job_history (history_file)
 
     (topological_sorted,
     self_terminated_nodes,
@@ -3256,7 +3294,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                  gnu_make_maximal_rebuild_mode  = True, verbose = 1,
                  runtime_data = None, one_second_per_job = True, touch_files_only = False,
                  exceptions_terminate_immediately = False, log_exceptions = False,
-                 checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, multithread = 0):
+                 checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, multithread = 0, history_file = None):
                  # Remember to add further extra parameters here to "extra_pipeline_run_options" inside cmdline.py
                  # This will forward extra parameters from the command line to pipeline_run
     """
@@ -3313,10 +3351,8 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     link_task_names_to_functions ()
     update_checksum_level_on_tasks (checksum_level)
 
-    #
-    # load previous job history if it exists, otherwise create an empty history
-    #
-    job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
+    job_history = open_job_history (history_file)
+
 
 
 

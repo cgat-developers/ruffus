@@ -413,6 +413,9 @@ def setup_logging_factory (logger_name, args):
 
 
 
+#
+#   valid arguments to each function which are not exposed by any options in the command line
+#
 extra_pipeline_printout_graph_options = [
                                             "ignore_upstream_of_target"      ,
                                             "skip_uptodate_tasks"            ,
@@ -431,11 +434,14 @@ extra_pipeline_printout_options   = [
                                             "wrap_width"                    ,
                                             "runtime_data"]
 
+
 extra_pipeline_run_options = [
                                 "gnu_make_maximal_rebuild_mode"     ,
                                 "runtime_data"                      ,
                                 "one_second_per_job"                ,
+                                # exposed directly in command line
                                 #"touch_files_only"                  ,
+                                "history_file"                      ,
                                 "logger"                            ,
                                 "exceptions_terminate_immediately"  ,
                                 "log_exceptions"                    ,

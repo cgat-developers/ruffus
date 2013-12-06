@@ -19,6 +19,7 @@ exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
 sys.path.insert(0, os.path.abspath(os.path.join(exe_path,"..", "..")))
 from ruffus import (pipeline_run, pipeline_printout, suffix, transform, split,
                     merge, dbdict)
+from ruffus.task import get_default_history_file_name
 from ruffus.ruffus_utility import (RUFFUS_HISTORY_FILE,
                                    CHECKSUM_FILE_TIMESTAMPS,
                                    CHECKSUM_HISTORY_TIMESTAMPS,
@@ -69,7 +70,7 @@ def merge2(in_names, out_name):
 
 
 def cleanup_tmpdir():
-    os.system('rm -f %s %s' % (os.path.join(workdir, '*'), RUFFUS_HISTORY_FILE))
+    os.system('rm -f %s %s' % (os.path.join(workdir, '*'), get_default_history_file_name()))
 
 
 class TestJobCompletion(unittest.TestCase):
@@ -266,7 +267,7 @@ class TestJobCompletion(unittest.TestCase):
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
         pipeline_run([split1], verbose=0)
-        job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
+        job_history = dbdict.open(get_default_history_file_name(), picklevalues=True)
         del job_history[split1_outputs[0]]
 
         for chksm in possible_chksms:
@@ -286,7 +287,7 @@ class TestJobCompletion(unittest.TestCase):
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
         pipeline_run([split1], verbose=0)
-        job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
+        job_history = dbdict.open(get_default_history_file_name(), picklevalues=True)
         del job_history[split1_outputs[0]]
 
         for chksm in possible_chksms:
