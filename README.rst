@@ -64,7 +64,9 @@ Automatic support for
 A Simple example
 ***************************************
 
-Use the **@transform(...)** python decorator before the function definitions::
+Use the **@transform(...)** python decorator before the function definitions:
+
+  .. code-block:: python
 
     from ruffus import *
 
