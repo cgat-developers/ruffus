@@ -45,4 +45,20 @@ python ./test_active_if.py -j2 -v                                               
 echo Running test_softlink_uptodate.py                                              && \
 python ./test_softlink_uptodate.py -j2 -v                                           && \
 echo Running test_job_completion_checksums.py                                       && \
-python -m unittest test_job_completion_checksums
+python -m unittest test_job_completion_checksums                                    && \
+echo Running test_transform_add_inputs.py                                           && \
+python test_transform_add_inputs.py                                                 && \
+echo Running test_combinatorics.py                                                  && \
+python -m unittest test_combinatorics                                               && \
+echo Running test_job_history_with_exceptions.py                                    && \
+python -m unittest test_job_history_with_exceptions                                 && \
+echo Running test_mkdir.py                                                          && \
+python -m unittest test_mkdir                                                       && \
+echo Running test_regex_error_messages.py                                           && \
+python -m unittest test_regex_error_messages                                        && \
+echo test_split_regex_and_collate.py                                                && \
+python test_split_regex_and_collate.py                                              && \
+echo test_tutorial7.py                                                              && \
+python test_tutorial7.py                                                            && \
+echo test_files_post_merge.py                                                       && \
+python test_files_post_merge.py --debug

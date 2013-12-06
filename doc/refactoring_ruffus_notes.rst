@@ -86,15 +86,12 @@ Best Practices
 In progress: Refactoring Ruffus
 ##########################################
 
+    All in progress items completed
 
 
-***************************************************************************************************************
-set job_history file name set to "nothing" if checksum_level=CHECKSUM_FILE_TIMESTAMPS
-***************************************************************************************************************
-
-    set file name to ``':memory:'``
-
-
+##########################################
+Future / Planned Improvements to  Ruffus
+##########################################
 
 ****************************************************
 Todo: Running python jobs remotely on cluster nodes
@@ -135,9 +132,6 @@ Todo: Running python jobs remotely on cluster nodes
        * process recycling: run successive jobs on the same remote process for reduced overhead, until exceeds max number of jobs on the same process, min/max time on the same process
        * resubmit if die (Don't do sophisticated stuff like libpythongrid).
 
-##########################################
-Future / Planned Improvements to  Ruffus
-##########################################
 
 ***************************************
 Notes on how to write new decorators
@@ -495,10 +489,26 @@ set history_file  as a parameter to ``pipeline_run``, ``pipeline_printout``, ``p
             export DEFAULT_RUFFUS_HISTORY_FILE=/common/path/for/job_history/{path}/.{basename}.ruffus_history.sqlite
 
             /test/bin/scripts/run.me.py
-                -> /common/path/for/job_history/test/bin/scripts/.run.me.ruffus_history.sqlite``
+                -> /common/path/for/job_history/test/bin/scripts/.run.me.ruffus_history.sqlite
 
 
         Just make sure that the requisite destination directories exist...
+
+***************************************************************************************************************
+set job_history file name set to "nothing" if checksum_level=CHECKSUM_FILE_TIMESTAMPS
+***************************************************************************************************************
+
+    If we aren't using checksums (``pipeline_run(..., checksum_level=CHECKSUM_FILE_TIMESTAMPS, ...) ``,
+    and ``history_file`` hasn't been specified, we might be a bit surprised to find Ruffus
+    writing to a sqlite db anyway.
+
+    Let us just use an in-memory db which will be thrown away
+
+    Of course, if history_file is specified, we presume you know what you are doing:
+    Don't *check* the sqlite db but make sure it is up to date
+
+    This also means to recreate a checksum file, you can just run the pipeline normally in CHECKSUM_FILE_TIMESTAMPS but
+    with the history_file specified.
 
 
 

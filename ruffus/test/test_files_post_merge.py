@@ -12,14 +12,14 @@
 
             -j N / --jobs N       to speify multitasking
             -v                    to see the jobs in action
-            -n / --just_print     to see what jobs would run               
+            -n / --just_print     to see what jobs would run
 
 """
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   options        
+#   options
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -52,7 +52,7 @@ parser.add_option("-s", "--start_again", dest="start_again",
                             "pipeline from scratch.")
 parser.add_option("--jobs_per_task", dest="jobs_per_task",
                       default=3,
-                      metavar="N", 
+                      metavar="N",
                       type="int",
                       help="Simulates tasks with N numbers of files per task.")
 
@@ -60,18 +60,18 @@ parser.add_option("--jobs_per_task", dest="jobs_per_task",
 parser.add_option("-t", "--target_tasks", dest="target_tasks",
                   action="append",
                   default = list(),
-                  metavar="JOBNAME", 
+                  metavar="JOBNAME",
                   type="string",
                   help="Target task(s) of pipeline.")
 parser.add_option("-f", "--forced_tasks", dest="forced_tasks",
                   action="append",
                   default = list(),
-                  metavar="JOBNAME", 
+                  metavar="JOBNAME",
                   type="string",
                   help="Pipeline task(s) which will be included even if they are up to date.")
 parser.add_option("-j", "--jobs", dest="jobs",
                   default=1,
-                  metavar="jobs", 
+                  metavar="jobs",
                   type="int",
                   help="Specifies  the number of jobs (commands) to run simultaneously.")
 parser.add_option("-v", "--verbose", dest = "verbose",
@@ -79,12 +79,12 @@ parser.add_option("-v", "--verbose", dest = "verbose",
                   help="Print more verbose messages for each additional verbose level.")
 parser.add_option("-d", "--dependency", dest="dependency_file",
                   #default="simple.svg",
-                  metavar="FILE", 
+                  metavar="FILE",
                   type="string",
                   help="Print a dependency graph of the pipeline that would be executed "
                         "to FILE, but do not execute it.")
 parser.add_option("-F", "--dependency_graph_format", dest="dependency_graph_format",
-                  metavar="FORMAT", 
+                  metavar="FORMAT",
                   type="string",
                   default = 'svg',
                   help="format of dependency graph file. Can be 'ps' (PostScript), "+
@@ -105,7 +105,7 @@ parser.add_option("-H", "--draw_graph_horizontally", dest="draw_horizontally",
                     action="store_true", default=False,
                     help="Draw horizontal dependency graph.")
 
-parameters = [  
+parameters = [
                 ]
 
 
@@ -116,7 +116,7 @@ parameters = [
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   imports        
+#   imports
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -177,16 +177,16 @@ else:
 @split(tempdir  + "original.fa", [tempdir  + "files.split.success", tempdir + "files.split.*.fa"])
 def split_fasta_file (input_file, outputs):
 
-    # 
+    #
     # remove previous fasta files
-    # 
+    #
     success_flag = outputs[0]
     output_file_names = outputs[1:]
     for f in output_file_names:
         os.unlink(f)
 
-    # 
-    # create as many files as we are simulating in jobs_per_task    
+    #
+    # create as many files as we are simulating in jobs_per_task
     #
     for i in range(options.jobs_per_task):
         open(tempdir + "files.split.%03d.fa" % i, "w")
@@ -229,7 +229,7 @@ def percentage_identity (input_file, output_files):
 @merge(percentage_identity, tempdir + "all.combine_results")
 def combine_results (input_files, output_files):
     """
-    Combine all 
+    Combine all
     """
     (output_filename) = output_files
     out = open(output_filename, "w")
@@ -246,7 +246,7 @@ def post_merge_check (input_filename, output_filename):
     open(output_filename, "w").write(open(input_filename).read())
 
 @files(post_merge_check, "check_all_is.weller")
-def post_post_merge_check (input_files, output_files):
+def post_post_merge_check (input_filename, output_filename):
     """
     check that @files forwards a single file on when given a single file
     """

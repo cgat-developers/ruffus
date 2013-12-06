@@ -467,6 +467,7 @@ def needs_update_check_modify_time (*params, **kwargs):
         # allow job_history not to be specified and reopen dbdict file redundantly...
         #   Either this or fix all the test cases
         #job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
+        print >>sys.stderr, "Oops: Should only appear in test code"
         job_history = open_job_history (None)
 
 

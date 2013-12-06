@@ -26,7 +26,6 @@ from ruffus.ruffus_utility import (RUFFUS_HISTORY_FILE,
 
 workdir = 'tmp_test_mkdir'
 #sub-1s resolution in system?
-one_second_per_job = True
 #___________________________________________________________________________
 #
 #   generate_initial_files1
@@ -81,7 +80,6 @@ class Testmkdir(unittest.TestCase):
 
         s = StringIO()
         pipeline_printout(s, [test_transform, test_transform2], verbose=5, wrap_width = 10000)
-        print s.getvalue()
         #self.assertIn('Job needs update: Missing files '
         #              '[tmp_test_mkdir/a_name.tmp1, '
         #              'tmp_test_mkdir/e_name.tmp1, '
@@ -92,7 +90,7 @@ class Testmkdir(unittest.TestCase):
         """Run mkdir"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_transform, test_transform2], verbose=0, multiprocess = 2, one_second_per_job = one_second_per_job)
+        pipeline_run([test_transform, test_transform2], verbose=0, multiprocess = 2)
 
 
 
