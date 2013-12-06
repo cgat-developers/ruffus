@@ -20,12 +20,12 @@ import glob
 
 
 #---------------------------------------------------------------
-# 
+#
 #   make sure tasks take long enough to register as separate
 #       entries in the file system
-# 
+#
 def sleep_a_while ():
-    time.sleep(1)
+    time.sleep(.1)
 
 
 #---------------------------------------------------------------

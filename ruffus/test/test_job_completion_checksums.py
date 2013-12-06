@@ -100,7 +100,7 @@ class TestJobCompletion(unittest.TestCase):
         cleanup_tmpdir()
         with open(transform1_out, 'w') as outfile:
             outfile.write('testme')
-        time.sleep(1)
+        time.sleep(0.1)
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
 
@@ -268,7 +268,7 @@ class TestJobCompletion(unittest.TestCase):
             outfile.write('testme')
         pipeline_run([split1], verbose=0)
         job_history = dbdict.open(get_default_history_file_name(), picklevalues=True)
-        del job_history[split1_outputs[0]]
+        del job_history[os.path.relpath(split1_outputs[0])]
 
         for chksm in possible_chksms:
             s = StringIO()
@@ -288,7 +288,7 @@ class TestJobCompletion(unittest.TestCase):
             outfile.write('testme')
         pipeline_run([split1], verbose=0)
         job_history = dbdict.open(get_default_history_file_name(), picklevalues=True)
-        del job_history[split1_outputs[0]]
+        del job_history[os.path.relpath(split1_outputs[0])]
 
         for chksm in possible_chksms:
             s = StringIO()

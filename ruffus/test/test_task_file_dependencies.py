@@ -59,7 +59,7 @@ class Test_needs_update_check_modify_time(unittest.TestCase):
             fh, temp_file_name = tempfile.mkstemp(suffix='.dot')
             self.files.append (temp_file_name)
             os.fdopen(fh, "w").close()
-            time.sleep(1.1)
+            time.sleep(0.1)
 
     def tearDown (self):
         """

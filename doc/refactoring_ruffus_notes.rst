@@ -86,54 +86,6 @@ Best Practices
 In progress: Refactoring Ruffus
 ##########################################
 
-******************************************************************************************************************
-set history_file  as a parameter to ``pipeline_run``, ``pipeline_printout``, ``pipeline_printout_graph``
-******************************************************************************************************************
-
-    * try using ``pipeline_run(.., history_file = "XXX", ...)``
-    * If that is missing use default from ``ruffus.ruffus_utility`` if missing.
-
-    Default is ``.ruffus_history.sqlite`` (i.e. in the current working directory)
-    But can be overridden by the environment variable DEFAULT_RUFFUS_HISTORY_FILE
-
-    There is also path expansion using the main script name.
-
-        So if the environment variable is:
-
-        ::
-
-            export DEFAULT_RUFFUS_HISTORY_FILE=.{basename}.ruffus_history.sqlite
-
-        Then the job history database for ``run.me.py`` will be ``.run.me.ruffus_history.sqlite``
-
-        All the scripts can be set to a single directory by using:
-
-        ::
-
-            export DEFAULT_RUFFUS_HISTORY_FILE=/common/path/for/job_history/.{basename}.ruffus_history.sqlite
-
-        If you are really paranoid about name clashes, you can use:
-
-        ::
-
-            export DEFAULT_RUFFUS_HISTORY_FILE=/common/path/for/job_history/{subdir[0]}/.{basename}.ruffus_history.sqlite
-
-            /test/bin/scripts/run.me.py
-                -> /common/path/for/job_history/scripts/.run.me.ruffus_history.sqlite
-
-
-        or even:
-
-        ::
-
-            export DEFAULT_RUFFUS_HISTORY_FILE=/common/path/for/job_history/{path}/.{basename}.ruffus_history.sqlite
-
-            /test/bin/scripts/run.me.py
-                -> /common/path/for/job_history/test/bin/scripts/.run.me.ruffus_history.sqlite``
-
-
-        Just make sure that the requisite destination directories exist...
-
 
 
 ***************************************************************************************************************
@@ -498,6 +450,57 @@ Comments on: Job completion monitoring
         * If we should ever want to abstract out ``dbdict``, we need to have a similar key-value store class,
           and make sure that a single instance of ``dbdict`` is used through ``pipeline_run`` which is passed up
           and down the function call chain. ``dbdict`` would then be drop-in replaceable by our custom (e.g. flat-file-based) dbdict alternative.
+
+
+============================================================================================================================================================
+set history_file  as a parameter to ``pipeline_run``, ``pipeline_printout``, ``pipeline_printout_graph``
+============================================================================================================================================================
+
+    * try using ``pipeline_run(.., history_file = "XXX", ...)``
+    * If that is missing use default from ``ruffus.ruffus_utility``.
+
+    Default is ``.ruffus_history.sqlite`` (i.e. in the current working directory)
+    But can be overridden by the environment variable DEFAULT_RUFFUS_HISTORY_FILE
+
+    There is also path expansion using the main script name.
+
+        So if the environment variable is:
+
+        ::
+
+            export DEFAULT_RUFFUS_HISTORY_FILE=.{basename}.ruffus_history.sqlite
+
+        Then the job history database for ``run.me.py`` will be ``.run.me.ruffus_history.sqlite``
+
+        All the scripts can be set to a single directory by using:
+
+        ::
+
+            export DEFAULT_RUFFUS_HISTORY_FILE=/common/path/for/job_history/.{basename}.ruffus_history.sqlite
+
+        If you are really paranoid about name clashes, you can use:
+
+        ::
+
+            export DEFAULT_RUFFUS_HISTORY_FILE=/common/path/for/job_history/{subdir[0]}/.{basename}.ruffus_history.sqlite
+
+            /test/bin/scripts/run.me.py
+                -> /common/path/for/job_history/scripts/.run.me.ruffus_history.sqlite
+
+
+        or even:
+
+        ::
+
+            export DEFAULT_RUFFUS_HISTORY_FILE=/common/path/for/job_history/{path}/.{basename}.ruffus_history.sqlite
+
+            /test/bin/scripts/run.me.py
+                -> /common/path/for/job_history/test/bin/scripts/.run.me.ruffus_history.sqlite``
+
+
+        Just make sure that the requisite destination directories exist...
+
+
 
 ***************************************
 pipeline_run(..., multithread= N, ...)
