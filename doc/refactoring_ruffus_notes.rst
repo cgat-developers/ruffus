@@ -1,32 +1,58 @@
 ##########################################
+New features in the next release
+##########################################
+***************************************
+New features
+***************************************
+
+    #. Job completion monitoring: ``pipeline_run(..., checksum_level=CHECKSUM_FILE_TIMESTAMPS, ...)``
+    #. ``@originate()``: Make new files (jobs) ab nihilo
+    #. ``@subdivide`` / ``@split(..., regex(), ...)``
+    #. ``formatter`` : with regular expression or not. More flexible replacement for regex
+    #. ``@combinatorics.product``
+    #. ``@combinatorics.permutations``
+    #. ``@combinatorics.combinations``
+    #. ``@combinatorics.combinations_with_replacement``
+    #. ``@active_if``
+    #. ``cmdline`` module to cut down boilerplate code
+    #. ``drmaa`` module to help running on a cluster
+
+
+##########################################
 In progress: Refactoring Ruffus Docs
 ##########################################
 
     Remember to cite Jake Biesinger and see if he is interested to be a co-author if we ever resubmit the drastically changed version...
+
+    One Table of Contents to rule them all. The current scattered TOCs break rest particularly for pdf builds.
+
+    Tutorial in process at www.well.ox.ac.uk/~lg/oss/ruffus/doc/_build/html/tutorials/new_tutorial/step1.html
 
 
 ***************************************
 New order of Topics in the tutorial
 ***************************************
 
-    * ``@transform`` as the paradigm for Ruffus
-    * ``@originate`` to start the pipeline
-    * Discussion of tasks and jobs, and parallelism, task completion monitoring
-    * ``pipeline_run``, ``pipeline_printout``, ``pipeline_printout_graph`` and ``cmdline``
-    * ``suffix`` and ``formatter``
-    * ``1-to-many``, ``many-to-many`` etc.
-    * ``@split``
-    * ``@merge``
-    * ``@posttask``
+    1. introduction to decorators, taks and jobs
+    2. ``@transform`` as the paradigm for Ruffus
+    3. more ``@transform`` (``multiprocess``) and ``@originate`` to start the pipeline
+    4. task completion monitoring and exceptions
+    5. ``pipeline_printout``and ``cmdline``
+    6. ``pipeline_printout_graph``
+    7. ``suffix`` and ``formatter`` to generate output file names from input file names
+    8. A bestiary of the different decorators and how they determine the jobs topology of the pipeline: ``1-to-many``, ``many-to-1`` , ``1-to-1``, ``many-to-many-more``, ``many-to-fewer``, i.e. ``@split``, ``@merge``, ``@transform``, ``@subdivide``, ``@collate``.
+    9. ``@split``
+    10. ``@merge``
+    11. ``@posttask``
 
 ***************************************
 New order of Topics in the manual
 ***************************************
+    Should not cover the same material as the tutorial. Assumes the reader has read the tutorial first.
 
     * Tasks as recipes and jobs
     * ``@transform``
     * ``@originate``
-    * ``suffix`` and ``formatter``
     * chaining tasks ``output_from``, Reusing pipeline code in modules
     * ``pipeline_run``, ``pipeline_printout``, ``pipeline_printout_graph`` and ``cmdline``
     * exceptions (``JobSignalledBreak``), early termination and logging ``stderr_logger`` and ``black_hole_logger``
@@ -56,83 +82,59 @@ Legacy and deprecated
 Best Practices
     *
 
-***************************************
-``pipeline_run(...)`` and exceptions
-***************************************
-    * Optionally terminate pipeline after first exception
-        To have all exceptions interrupt immediately::
-
-                pipeline_run(..., exceptions_terminate_immediately = True)
-
-        By default ruffus accumulates ``NN`` errors before interrupting the pipeline prematurely. ``NN`` is the specified parallelism for ``pipeline_run(..., multiprocess = NN)``.
-
-        Otherwise, a pipeline will only be interrupted immediately if exceptions of type ``ruffus.JobSignalledBreak`` are thrown.
-
-    * Display exceptions without delay
-
-        By default, Ruffus re-throws exceptions in ensemble after pipeline termination.
-
-        To see exceptions as they occur::
-
-                pipeline_run(..., log_exceptions = True)
-
-        ``logger.error(...)`` will be invoked with the string representation of the each exception, and associated stack trace.
-
-        The default logger prints to sys.stderr, but this can be changed to any class from the logging module or compatible object via ``pipeline_run(..., logger = ???)``
-
-***************************************
-New features
-***************************************
-
-    # Job completion monitoring: ``pipeline_run(..., checksum_level=CHECKSUM_FILE_TIMESTAMPS, ...)``
-    # ``@originate()``: Make new files (jobs) ab nihilo
-    # ``@subdivide`` / ``@split(..., regex(), ...)``
-    # ``formatter`` : with regular expression or not. More flexible replacement for regex
-    # ``@combinatorics.product``
-    # ``@combinatorics.permutations``
-    # ``@combinatorics.combinations``
-    # ``@combinatorics.combinations_with_replacement``
-    # ``@active_if``
-    # ``cmdline`` module to cut down boilerplate code
-    # ``drmaa`` module to help running on a cluster
-
-
 ##########################################
 In progress: Refactoring Ruffus
 ##########################################
 
-********************************************************************************
-Job completion should pass ``job_history`` down call chain
-********************************************************************************
-
-    ::
-
-        pipeline_run()
-            ->make_job_parameter_generator()
-
-        pipeline_printout()
-            ->printout()
-
-        pipeline_printout()
-        pipeline_run()
-            ->topologically_sorted_nodes()
-                ->signal
-                    -> needs_update_func()
-
-
-    ``file_name_parameters.needs_update_check_modify_time (*params, **kwargs)``
-
-        does not necessarily get the extra ``job_history`` (or ``task``) parameters in test code.
-        Can we fix this? A hack recreates ``job_history`` if it is missing as a parameter but this hack
-        will hide problems later on...
-
 ******************************************************************************************************************
-set job_history_file_name  as a parameter to ``pipeline_run``, ``pipeline_printout``, ``pipeline_printout_graph``
+set history_file  as a parameter to ``pipeline_run``, ``pipeline_printout``, ``pipeline_printout_graph``
 ******************************************************************************************************************
 
-    Use default from ``ruffus.ruffus_utility`` if missing.
+    * try using ``pipeline_run(.., history_file = "XXX", ...)``
+    * If that is missing use default from ``ruffus.ruffus_utility`` if missing.
 
-    In ``ruffus.ruffus_utility``, construct default name using environment variables for default directory
+    Default is ``.ruffus_history.sqlite`` (i.e. in the current working directory)
+    But can be overridden by the environment variable DEFAULT_RUFFUS_HISTORY_FILE
+
+    There is also path expansion using the main script name.
+
+        So if the environment variable is:
+
+        ::
+
+            export DEFAULT_RUFFUS_HISTORY_FILE=.{basename}.ruffus_history.sqlite
+
+        Then the job history database for ``run.me.py`` will be ``.run.me.ruffus_history.sqlite``
+
+        All the scripts can be set to a single directory by using:
+
+        ::
+
+            export DEFAULT_RUFFUS_HISTORY_FILE=/common/path/for/job_history/.{basename}.ruffus_history.sqlite
+
+        If you are really paranoid about name clashes, you can use:
+
+        ::
+
+            export DEFAULT_RUFFUS_HISTORY_FILE=/common/path/for/job_history/{subdir[0]}/.{basename}.ruffus_history.sqlite
+
+            /test/bin/scripts/run.me.py
+                -> /common/path/for/job_history/scripts/.run.me.ruffus_history.sqlite
+
+
+        or even:
+
+        ::
+
+            export DEFAULT_RUFFUS_HISTORY_FILE=/common/path/for/job_history/{path}/.{basename}.ruffus_history.sqlite
+
+            /test/bin/scripts/run.me.py
+                -> /common/path/for/job_history/test/bin/scripts/.run.me.ruffus_history.sqlite``
+
+
+        Just make sure that the requisite destination directories exist...
+
+
 
 ***************************************************************************************************************
 set job_history file name set to "nothing" if checksum_level=CHECKSUM_FILE_TIMESTAMPS
@@ -140,38 +142,15 @@ set job_history file name set to "nothing" if checksum_level=CHECKSUM_FILE_TIMES
 
     set file name to ``':memory:'``
 
-***************************************************************************************************************
-remove job_history updates when ``touching``
-***************************************************************************************************************
-    .. code-block:: python
-
-      def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_files_only):
-          #
-          #   touch files only
-          #
-          for f in get_strings_in_nested_sequence(o):
-              if not os.path.exists(f):
-                  open(f, 'w')
-                  mtime = os.path.getmtime(f)
-              else:
-                  os.utime(f, None)
-                  mtime = os.path.getmtime(f)
-              chksum = JobHistoryChecksum(f, mtime, param[2:], user_defined_work_func.pipeline_task)
-              job_history[f] = chksum  # update file times and job details in history
-
-
-    * How easy is it to abstract out the database?
-
-        * The database is Jacob Sondergaard's ``dbdict`` which is a nosql / key-value store wrapper around sqlite
-            .. code-block:: python
-
-
-
 
 
 ****************************************************
 Todo: Running python jobs remotely on cluster nodes
 ****************************************************
+
+    Might wait until next release.
+
+    Will bump Ruffus to v.3.0 if can run python jobs transparently on a cluster!
 
     abstract out ``task.run_pooled_job_without_exceptions()`` as a function which can be supplied to ``pipeline_run``
 
@@ -205,7 +184,7 @@ Todo: Running python jobs remotely on cluster nodes
        * resubmit if die (Don't do sophisticated stuff like libpythongrid).
 
 ##########################################
-Planned Changes to  Ruffus
+Future / Planned Improvements to  Ruffus
 ##########################################
 
 ***************************************
@@ -245,24 +224,32 @@ New decorators
 Planned: ``@split`` / ``@subdivide``
 ==============================================================================
 
-    ``yield`` file names so that we can stop using wild cards
+    Return output parameters so that we can stop using wild cards, and the whole
+    things become so much cleaner
 
-    How does this work across process / machine boundaries?
+
+==============================================================================
+Planned: ``@originate``
+==============================================================================
+
+    Each (serial) invocation returns lists of output parameters until returns
+    None. (Empty list = ``continue``, None = ``break``).
+
 
 
 ==============================================================================
 Planned: ``@recombine``
 ==============================================================================
 
-    Like ``@collate`` but automatically regroups jobs which were a result of a previous ``@subdivide`` (even after intervening ``@transform`` )
+    Like ``@collate`` but automatically regroups jobs which were a result of a previous ``@subdivide`` / ``@split`` (even after intervening ``@transform`` )
 
     This is the only way job trickling can work without stalling the pipeline: We would know
-    how many jobs were pending for each ``@recombine`` job
+    how many jobs were pending for each ``@recombine`` job and which jobs go together.
 
 
-****************************************
-Planned: Job Trickling
-****************************************
+********************************************
+Planned: Job Trickling brain storming Notes
+********************************************
 
     * allows depth first iteration of tree
     * ``@recombine`` is the necessary step, otherwise all ``@split`` + ``@merge`` / ``@collate`` end in a pipeline stall and we are back to running breadth first rather than depth first. Might as well not bother...
@@ -297,7 +284,11 @@ Planned: Custom parameter generator
     * Gets passed an iterator where you can do a for loop to get input parameters / a flattened list of files
     * Other parameters are forwarded as is
     * The duty of the function is to ``yield`` input, output, extra parameters
-    * Simple to do but how do we prevent this from being a job-trickling barrier?
+
+
+    Simple to do but how do we prevent this from being a job-trickling barrier?
+
+    Postpone until we have an initial design for job-trickling: Ruffus v.4 ;-(
 
 
 
@@ -309,7 +300,7 @@ Desired!: Ruffus GUI interface.
 
 
 ****************************************************************************
-find contributions for!: Extending graphviz output
+Find contributions for!: Extending graphviz output
 ****************************************************************************
 
 ****************************************
@@ -321,12 +312,36 @@ Desired!: Registering jobs for clean up
 ****************************************
 
 
-
 ##########################################
-Updated Docs
+Ruffus documentation Notes
 ##########################################
 
-    To be done!!
+***************************************
+``pipeline_run(...)`` and exceptions
+***************************************
+    * Optionally terminate pipeline after first exception
+        To have all exceptions interrupt immediately::
+
+                pipeline_run(..., exceptions_terminate_immediately = True)
+
+        By default ruffus accumulates ``NN`` errors before interrupting the pipeline prematurely. ``NN`` is the specified parallelism for ``pipeline_run(..., multiprocess = NN)``.
+
+        Otherwise, a pipeline will only be interrupted immediately if exceptions of type ``ruffus.JobSignalledBreak`` are thrown.
+
+    * Display exceptions without delay
+
+        By default, Ruffus re-throws exceptions in ensemble after pipeline termination.
+
+        To see exceptions as they occur::
+
+                pipeline_run(..., log_exceptions = True)
+
+        ``logger.error(...)`` will be invoked with the string representation of the each exception, and associated stack trace.
+
+        The default logger prints to sys.stderr, but this can be changed to any class from the logging module or compatible object via ``pipeline_run(..., logger = ???)``
+
+
+
 
 
 ##########################################
@@ -352,6 +367,137 @@ Task completion monitoring
            level 1 : above, plus timestamp of successful job completion
            level 2 : above, plus a checksum of the pipeline function body
            level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
+
+
+======================================================================
+What happens when code pickling fails
+======================================================================
+
+    People "out there" have a lot of unpicklable stuff in their functions:
+    e.g. nested functions, lambdas, dynamic objects, globals
+
+    Added graceful fallback mode so that Ruffus continues to chug along under provocation.
+    Don't know how to inform the user when this happens
+
+
+======================================================================
+Job completion should pass ``job_history`` down call chain
+======================================================================
+    ::
+
+        pipeline_run()
+            ->make_job_parameter_generator()
+
+        pipeline_printout()
+            ->printout()
+
+        pipeline_printout()
+        pipeline_run()
+            ->topologically_sorted_nodes()
+                ->signal
+                    -> needs_update_func()
+
+
+    ``file_name_parameters.needs_update_check_modify_time (*params, **kwargs)``
+
+        does not necessarily get the extra ``job_history`` (or ``task``) parameters in test code.
+        Can we fix this? A hack recreates ``job_history`` if it is missing as a parameter but this hack
+        will hide problems later on...
+
+======================================================================
+remove job_history updates when ``touching``
+======================================================================
+    .. code-block:: python
+
+      def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_files_only):
+          #
+          #   touch files only
+          #
+          for f in get_strings_in_nested_sequence(o):
+              if not os.path.exists(f):
+                  open(f, 'w')
+                  mtime = os.path.getmtime(f)
+              else:
+                  os.utime(f, None)
+                  mtime = os.path.getmtime(f)
+              chksum = JobHistoryChecksum(f, mtime, param[2:], user_defined_work_func.pipeline_task)
+              job_history[f] = chksum  # update file times and job details in history
+
+
+    * How easy is it to abstract out the database?
+
+        * The database is Jacob Sondergaard's ``dbdict`` which is a nosql / key-value store wrapper around sqlite
+            .. code-block:: python
+
+
+======================================================================
+Comments on: Job completion monitoring
+======================================================================
+
+    * On by default?
+
+            * yes: ``CHECKSUM_HISTORY_TIMESTAMPS``.
+            * Use ``pipeline_run(..., checksum_level=CHECKSUM_FILE_TIMESTAMPS, ...)`` for classic mode
+            * N.B. Even in classic mode, a ``.ruffus_history.sqlite`` file gets created and updated.
+            * Can we have a **nothing** mode using ``dbdict.open(':memory:')``?
+
+    * How resistant is it to corruption?
+
+        Very. Sqlite!
+
+    * Can we query the database, get Job history / stats?
+
+        Yes, if we write a function to read and dump the entire database but this is only useful with timestamps and task names. See below
+
+    * Can we log task names and dispatch / completion timestamps to the same database?
+
+        See ``ruffus_utility.JobHistoryChecksum``
+
+    * What are the run time performance implications?
+
+        * Normally a single instance of dbdict / database connections is created and used inside ``pipeline_run``
+        * Each call to ``file_name_parameters.py.needs_update_check_modify_time()`` also opens a connection to the database.
+        * We can pass the dbdict connection as an extra parameter to reduce overhead
+
+    * Why is  ``touch``-ing files ( ``pipeline_run(..., touch_files_only = True, ...)`` ) handled directly (and across the multiprocessor boundary) in ``task.job_wrapper_io_files()`` ?
+
+        .. code-block:: python
+
+          def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_files_only):
+              #
+              #   touch files only
+              #
+              for f in get_strings_in_nested_sequence(o):
+                  if not os.path.exists(f):
+                      open(f, 'w')
+                      mtime = os.path.getmtime(f)
+                  else:
+                      os.utime(f, None)
+                      mtime = os.path.getmtime(f)
+                  chksum = JobHistoryChecksum(f, mtime, param[2:], user_defined_work_func.pipeline_task)
+                  job_history[f] = chksum  # update file times and job details in history
+
+
+        **No longer** (refactored)
+
+    * Can we get rid of the minimum 1 second delay between jobs now? Does the database have finer granularity in timestamps? Can we use the database timestamps provided they are *later* than the filesystem ones?
+
+        * Not at the moment. The database records the file modification time on disk. Is this to be paranoid (careful!)?
+        * We can change to a disk-less mode and use the system time, recording output files *after* the job returns.
+
+
+    * How easy is it to abstract out the database?
+
+        * The database is Jacob Sondergaard's ``dbdict`` which is a nosql / key-value store wrapper around sqlite
+            .. code-block:: python
+
+                job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
+
+        * The key is the output file name, so it is important not to confuse Ruffus by having different tasks generate the same output file!
+        * Is it possible to abstract this so that **jobs** get timestamped as well?
+        * If we should ever want to abstract out ``dbdict``, we need to have a similar key-value store class,
+          and make sure that a single instance of ``dbdict`` is used through ``pipeline_run`` which is passed up
+          and down the function call chain. ``dbdict`` would then be drop-in replaceable by our custom (e.g. flat-file-based) dbdict alternative.
 
 ***************************************
 pipeline_run(..., multithread= N, ...)
@@ -877,72 +1023,4 @@ optparse (deprecated)
     Example code in  ``test/test_split_regex_and_collate.py``
 
 
-******************************************
-Comments on: Job completion monitoring
-******************************************
-
-    * On by default?
-
-            * yes: ``CHECKSUM_HISTORY_TIMESTAMPS``.
-            * Use ``pipeline_run(..., checksum_level=CHECKSUM_FILE_TIMESTAMPS, ...)`` for classic mode
-            * N.B. Even in classic mode, a ``.ruffus_history.sqlite`` file gets created and updated.
-            * Can we have a **nothing** mode using ``dbdict.open(':memory:')``?
-
-    * How resistant is it to corruption?
-
-        Very. Sqlite!
-
-    * Can we query the database, get Job history / stats?
-
-        Yes, if we write a function to read and dump the entire database but this is only useful with timestamps and task names. See below
-
-    * Can we log task names and dispatch / completion timestamps to the same database?
-
-        See ``ruffus_utility.JobHistoryChecksum``
-
-    * What are the run time performance implications?
-
-        * Normally a single instance of dbdict / database connections is created and used inside ``pipeline_run``
-        * Each call to ``file_name_parameters.py.needs_update_check_modify_time()`` also opens a connection to the database.
-        * We can pass the dbdict connection as an extra parameter to reduce overhead
-
-    * Why is  ``touch``-ing files ( ``pipeline_run(..., touch_files_only = True, ...)`` ) handled directly (and across the multiprocessor boundary) in ``task.job_wrapper_io_files()`` ?
-
-        .. code-block:: python
-
-          def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_files_only):
-              #
-              #   touch files only
-              #
-              for f in get_strings_in_nested_sequence(o):
-                  if not os.path.exists(f):
-                      open(f, 'w')
-                      mtime = os.path.getmtime(f)
-                  else:
-                      os.utime(f, None)
-                      mtime = os.path.getmtime(f)
-                  chksum = JobHistoryChecksum(f, mtime, param[2:], user_defined_work_func.pipeline_task)
-                  job_history[f] = chksum  # update file times and job details in history
-
-
-        **No longer** (refactored)
-
-    * Can we get rid of the minimum 1 second delay between jobs now? Does the database have finer granularity in timestamps? Can we use the database timestamps provided they are *later* than the filesystem ones?
-
-        * Not at the moment. The database records the file modification time on disk. Is this to be paranoid (careful!)?
-        * We can change to a disk-less mode and use the system time, recording output files *after* the job returns.
-
-
-    * How easy is it to abstract out the database?
-
-        * The database is Jacob Sondergaard's ``dbdict`` which is a nosql / key-value store wrapper around sqlite
-            .. code-block:: python
-
-                job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
-
-        * The key is the output file name, so it is important not to confuse Ruffus by having different tasks generate the same output file!
-        * Is it possible to abstract this so that **jobs** get timestamped as well?
-        * If we should ever want to abstract out ``dbdict``, we need to have a similar key-value store class,
-          and make sure that a single instance of ``dbdict`` is used through ``pipeline_run`` which is passed up
-          and down the function call chain. ``dbdict`` would then be drop-in replaceable by our custom (e.g. flat-file-based) dbdict alternative.
 
