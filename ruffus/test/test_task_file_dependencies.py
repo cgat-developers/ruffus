@@ -42,6 +42,10 @@ if __name__ != '__main__':
 exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
 sys.path.insert(0, os.path.abspath(os.path.join(exe_path,"..", "..")))
 from ruffus import *
+from ruffus.ruffus_utility import open_job_history
+
+history_file = ':memory:'
+history_file = None
 
 class Test_needs_update_check_modify_time(unittest.TestCase):
 
@@ -74,44 +78,54 @@ class Test_needs_update_check_modify_time(unittest.TestCase):
         #   lists of files
         #
         self.assert_(not task.needs_update_check_modify_time (self.files[0:2],
-                                                              self.files[2:6])[0])
+                                                              self.files[2:6],
+                                                              job_history = open_job_history(history_file))[0])
         self.assert_(    task.needs_update_check_modify_time (self.files[2:6],
-                                                              self.files[0:2])[0])
+                                                              self.files[0:2],
+                                                              job_history = open_job_history(history_file))[0])
         #
         #   singletons and lists of files
         #
         self.assert_(not task.needs_update_check_modify_time (self.files[0],
-                                                              self.files[2:6])[0])
+                                                              self.files[2:6],
+                                                              job_history = open_job_history(history_file))[0])
         self.assert_(    task.needs_update_check_modify_time (self.files[2:6],
-                                                              self.files[0])[0])
+                                                              self.files[0],
+                                                              job_history = open_job_history(history_file))[0])
         #
         #   singletons
         #
         self.assert_(    task.needs_update_check_modify_time (self.files[3],
-                                                              self.files[0])[0])
+                                                              self.files[0],
+                                                              job_history = open_job_history(history_file))[0])
         # self -self = no update
         self.assert_(not task.needs_update_check_modify_time (self.files[0],
-                                                              self.files[0])[0])
+                                                              self.files[0],
+                                                              job_history = open_job_history(history_file))[0])
 
         #
         #   missing files means need update
         #
         self.assert_(    task.needs_update_check_modify_time (self.files[0:2] +
                                                                         ["uncreated"],
-                                                              self.files[3:6])[0])
+                                                              self.files[3:6],
+                                                              job_history = open_job_history(history_file))[0])
         self.assert_(    task.needs_update_check_modify_time (self.files[0:2],
                                                               self.files[3:6] +
-                                                                        ["uncreated"])[0])
+                                                                        ["uncreated"],
+                                                              job_history = open_job_history(history_file))[0])
         #
         #   None means need update
         #
         self.assert_(    task.needs_update_check_modify_time (self.files[0:2],
-                                                              None)[0])
+                                                              None,
+                                                              job_history = open_job_history(history_file))[0])
         #
         #   None input means need update only if do not exist
         #
         self.assert_( not task.needs_update_check_modify_time (None,
-                                                              self.files[3:6])[0])
+                                                              self.files[3:6],
+                                                              job_history = open_job_history(history_file))[0])
 
 
         #
@@ -119,10 +133,12 @@ class Test_needs_update_check_modify_time(unittest.TestCase):
         #
         self.assert_(    task.needs_update_check_modify_time (self.files[0:2] +
                                                                         ["uncreated"],
-                                                              None)[0])
+                                                              None,
+                                                              job_history = open_job_history(history_file))[0])
         self.assert_(    task.needs_update_check_modify_time (None,
                                                               self.files[3:6] +
-                                                                        ["uncreated"])[0])
+                                                                        ["uncreated"],
+                                                              job_history = open_job_history(history_file))[0])
 
 
 

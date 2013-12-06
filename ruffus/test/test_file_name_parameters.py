@@ -56,6 +56,8 @@ import ruffus
 from ruffus import *
 from ruffus.file_name_parameters import *
 #print ruffus.__version__
+history_file = ':memory:'
+history_file = None
 
 # use simplejson in place of json for python < 2.6
 try:
@@ -268,7 +270,8 @@ class Test_files_re_param_factory(unittest.TestCase):
         """
         it, task = self.get_param_iterator(*old_args)
         #print >> sys.stderr, [p for (p, param2) in it(None)], "??"
-        return [needs_update_check_modify_time (*p, task=task) for (p, param2) in it(None)]
+        return [needs_update_check_modify_time (*p, task=task,
+                                                job_history = open_job_history(history_file)) for (p, param2) in it(None)]
 
 
     def test_combine(self):

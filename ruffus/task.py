@@ -2727,7 +2727,7 @@ def pipeline_printout_graph (stream,
                              size                           = (11,8),
                              dpi                            = 120,
                              runtime_data                   = None,
-                             checksum_level                 = 1,
+                             checksum_level                 = CHECKSUM_HISTORY_TIMESTAMPS,
                              history_file                   = None):
                              # Remember to add further extra parameters here to "extra_pipeline_printout_graph_options" inside cmdline.py
                              # This will forward extra parameters from the command line to pipeline_printout_graph
@@ -2783,6 +2783,15 @@ def pipeline_printout_graph (stream,
         stream = open(stream, "w")
 
     #
+    #   If we aren't using checksums, and history file hasn't been specified,
+    #       we might be a bit surprised to find Ruffus writing to a sqlite db anyway.
+    #       Let us just use a in memory db which will be thrown away
+    #   Of course, if history_file is specified, we presume you know what you are doing
+    #
+    if checksum_level == CHECKSUM_FILE_TIMESTAMPS and history_file == None:
+        history_file = ':memory:'
+
+    #
     # load previous job history if it exists, otherwise create an empty history
     #
     job_history = open_job_history (history_file)
@@ -2820,7 +2829,7 @@ def pipeline_printout(  output_stream,
                         gnu_make_maximal_rebuild_mode   = True,
                         wrap_width                      = 100,
                         runtime_data                    = None,
-                        checksum_level                  = 1,
+                        checksum_level                  = CHECKSUM_HISTORY_TIMESTAMPS,
                         history_file                    = None):
                       # Remember to add further extra parameters here to "extra_pipeline_printout_options" inside cmdline.py
                       # This will forward extra parameters from the command line to pipeline_printout
@@ -2890,6 +2899,15 @@ def pipeline_printout(  output_stream,
     forcedtorun_tasks = task_names_to_tasks ("Forced to run", forcedtorun_tasks)
 
     logging_strm = t_verbose_logger(verbose, t_stream_logger(output_stream), runtime_data)
+
+    #
+    #   If we aren't using checksums, and history file hasn't been specified,
+    #       we might be a bit surprised to find Ruffus writing to a sqlite db anyway.
+    #       Let us just use a in memory db which will be thrown away
+    #   Of course, if history_file is specified, we presume you know what you are doing
+    #
+    if checksum_level == CHECKSUM_FILE_TIMESTAMPS and history_file == None:
+        history_file = ':memory:'
 
     #
     # load previous job history if it exists, otherwise create an empty history
@@ -3265,11 +3283,20 @@ def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE, logg
 #   pipeline_run
 
 #_________________________________________________________________________________________
-def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, logger = stderr_logger,
-                 gnu_make_maximal_rebuild_mode  = True, verbose = 1,
-                 runtime_data = None, one_second_per_job = None, touch_files_only = False,
-                 exceptions_terminate_immediately = False, log_exceptions = False,
-                 checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, multithread = 0, history_file = None):
+def pipeline_run(target_tasks                     = [],
+                 forcedtorun_tasks                = [],
+                 multiprocess                     = 1,
+                 logger                           = stderr_logger,
+                 gnu_make_maximal_rebuild_mode    = True,
+                 verbose                          = 1,
+                 runtime_data                     = None,
+                 one_second_per_job               = None,
+                 touch_files_only                 = False,
+                 exceptions_terminate_immediately = False,
+                 log_exceptions                   = False,
+                 checksum_level                    = CHECKSUM_HISTORY_TIMESTAMPS,
+                 multithread                      = 0,
+                 history_file                     = None):
                  # Remember to add further extra parameters here to "extra_pipeline_run_options" inside cmdline.py
                  # This will forward extra parameters from the command line to pipeline_run
     """
@@ -3320,13 +3347,12 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     #       we don't need to default to adding 1 second delays between jobs
     #
     if one_second_per_job == None:
-         if checksum_level < CHECKSUM_HISTORY_TIMESTAMPS:
+         if checksum_level == CHECKSUM_FILE_TIMESTAMPS:
                 runtime_data["ONE_SECOND_PER_JOB"] = True
          else:
                 runtime_data["ONE_SECOND_PER_JOB"] = False
     else:
         runtime_data["ONE_SECOND_PER_JOB"] = one_second_per_job
-
 
 
     if verbose == 0:
@@ -3340,6 +3366,15 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
 
     link_task_names_to_functions ()
     update_checksum_level_on_tasks (checksum_level)
+
+    #
+    #   If we aren't using checksums, and history file hasn't been specified,
+    #       we might be a bit surprised to find Ruffus writing to a sqlite db anyway.
+    #       Let us just use a in-memory db which will be thrown away
+    #   Of course, if history_file is specified, we presume you know what you are doing
+    #
+    if checksum_level == CHECKSUM_FILE_TIMESTAMPS and history_file == None:
+        history_file = ':memory:'
 
     job_history = open_job_history (history_file)
 
