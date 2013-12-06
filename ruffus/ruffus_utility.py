@@ -66,6 +66,7 @@ import marshal
 import cPickle as pickle
 from itertools import izip
 import operator
+import dbdict
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -88,6 +89,34 @@ CHECKSUM_FILE_TIMESTAMPS      = 0     # only rerun when the file timestamps are 
 CHECKSUM_HISTORY_TIMESTAMPS   = 1     # also rerun when the history shows a job as being out of date
 CHECKSUM_FUNCTIONS            = 2     # also rerun when function body has changed
 CHECKSUM_FUNCTIONS_AND_PARAMS = 3     # also rerun when function parameters or function body change
+
+
+#_________________________________________________________________________________________
+
+#   open_job_history
+
+#_________________________________________________________________________________________
+def get_default_history_file_name ():
+    history_file = RUFFUS_HISTORY_FILE
+    #
+    #   try path expansion using the main script name
+    #
+    try:
+        import __main__ as main
+        path_parts = path_decomposition (os.path.abspath(main.__file__))
+        history_file = history_file.format(**path_parts)
+    except Exception as err:
+        pass
+    return history_file
+
+def open_job_history (history_file):
+    """
+    Given a history file name, opens the correspond sqllite db file and returns the handle
+    """
+    if not history_file:
+        history_file = get_default_history_file_name ()
+
+    return dbdict.open(history_file, picklevalues=True)
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888

@@ -27,6 +27,7 @@ sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
 
 
 from ruffus import *
+import ruffus.dbdict as dbdict
 
 parser = cmdline.get_argparse(   description='Test soft link up to date?')
 options = parser.parse_args()

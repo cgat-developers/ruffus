@@ -202,7 +202,7 @@ class Test_files_re_param_factory(unittest.TestCase):
         open("%s/f%d.output" % (test_path, 0), "w")
         for i in range(3):
             open("%s/f%d.test" % (test_path, i), "w")
-        time.sleep(1)
+        time.sleep(0.1)
         open("%s/f%d.output" % (test_path, 1), "w")
         open("%s/f%d.output" % (test_path, 2), "w")
 
@@ -424,7 +424,7 @@ class Test_split_param_factory(unittest.TestCase):
         open("%s/f%d.output" % (test_path, 0), "w")
         for i in range(3):
             open("%s/f%d.test" % (test_path, i), "w")
-        time.sleep(1)
+        time.sleep(0.1)
         open("%s/f%d.output" % (test_path, 1), "w")
         open("%s/f%d.output" % (test_path, 2), "w")
 
@@ -561,7 +561,7 @@ class Test_merge_param_factory(unittest.TestCase):
         open("%s/f%d.output" % (test_path, 0), "w")
         for i in range(3):
             open("%s/f%d.test" % (test_path, i), "w")
-        time.sleep(1)
+        time.sleep(0.1)
         open("%s/f%d.output" % (test_path, 1), "w")
         open("%s/f%d.output" % (test_path, 2), "w")
 
@@ -696,7 +696,7 @@ class Test_transform_param_factory(unittest.TestCase):
         open("%s/f%d.output" % (test_path, 0), "w")
         for i in range(3):
             open("%s/f%d.test" % (test_path, i), "w")
-        time.sleep(1)
+        time.sleep(0.1)
         open("%s/f%d.output" % (test_path, 1), "w")
         open("%s/f%d.output" % (test_path, 2), "w")
 
@@ -927,7 +927,7 @@ class Test_collate_param_factory(unittest.TestCase):
             open("%s/f%d.test" % (test_path, i), "w")
         for i in range(3):
             open("%s/e%d.test" % (test_path, i), "w")
-        time.sleep(1)
+        time.sleep(0.1)
         open("%s/f%d.output" % (test_path, 1), "w")
         open("%s/f%d.output" % (test_path, 2), "w")
         open("%s/e%d.output" % (test_path, 1), "w")
@@ -1184,7 +1184,7 @@ class Test_files_param_factory(unittest.TestCase):
         open("%s/f%d.output" % (test_path, 0), "w")
         for i in range(3):
             open("%s/f%d.test" % (test_path, i), "w")
-        time.sleep(1)
+        time.sleep(0.1)
         open("%s/f%d.output" % (test_path, 1), "w")
         open("%s/f%d.output" % (test_path, 2), "w")
 
@@ -1388,13 +1388,12 @@ class Test_product_param_factory(unittest.TestCase):
         open("%s/b.testwhat1" % (test_path), "w")
         open("%s/c.testwhat2" % (test_path), "w")
         open("%s/d.testwhat2" % (test_path), "w")
-
+        time.sleep(0.1)
         open("%s/a.b.output" % (test_path), "w")
         open("%s/a.c.output" % (test_path), "w")
         open("%s/b.c.output" % (test_path), "w")
         open("%s/b.d.output" % (test_path), "w")
 
-        time.sleep(1)
         self.tasks = [t1, t2, t3, t4, t5]
         self.maxDiff = None
 
@@ -1451,12 +1450,12 @@ class Test_product_param_factory(unittest.TestCase):
         #
         # simple 1 input, 1 output
         #
-        paths = self.do_task_product([test_path + "/a.test1", test_path + "/b.test1"],                          task.formatter("(?P<ID>\w+)\.(.+)"),  
-                                     [test_path + "/c.test2", test_path + "/d.test2", test_path + "/e.ignore"], task.formatter("(?P<ID>\w+)\.(test2)"),  
+        paths = self.do_task_product([test_path + "/a.test1", test_path + "/b.test1"],                          task.formatter("(?P<ID>\w+)\.(.+)"),
+                                     [test_path + "/c.test2", test_path + "/d.test2", test_path + "/e.ignore"], task.formatter("(?P<ID>\w+)\.(test2)"),
                                      r"{path[0][0]}/{ID[0][0]}.{1[1][0]}.output")
 
         self.assertEqual(recursive_replace(paths, test_path, "DIR"),
-                         [  
+                         [
                             (('DIR/a.test1','DIR/c.test2'),'DIR/a.c.output'),
                             (('DIR/a.test1','DIR/d.test2'),'DIR/a.d.output'),
                             (('DIR/b.test1','DIR/c.test2'),'DIR/b.c.output'),
@@ -1472,13 +1471,13 @@ class Test_product_param_factory(unittest.TestCase):
         # (replace) inputs
         #
         #
-        paths = self.do_task_product([test_path + "/a.test1", test_path + "/b.test1"],                          task.formatter("(?P<ID>\w+)\.(.+)"),  
-                                     [test_path + "/c.test2", test_path + "/d.test2", test_path + "/e.ignore"], task.formatter("(?P<ID>\w+)\.(test2)"),  
+        paths = self.do_task_product([test_path + "/a.test1", test_path + "/b.test1"],                          task.formatter("(?P<ID>\w+)\.(.+)"),
+                                     [test_path + "/c.test2", test_path + "/d.test2", test_path + "/e.ignore"], task.formatter("(?P<ID>\w+)\.(test2)"),
                                      task.inputs(("{path[0][0]}/{basename[0][0]}.testwhat1", "{path[1][0]}/{basename[1][0]}.testwhat2") ),
                                      r"{path[0][0]}/{ID[0][0]}.{1[1][0]}.output")
         paths = recursive_replace(paths, test_path, "DIR")
         self.assertEqual(paths,
-                         [  
+                         [
                             (('DIR/a.testwhat1','DIR/c.testwhat2'),'DIR/a.c.output'),
                             (('DIR/a.testwhat1','DIR/d.testwhat2'),'DIR/a.d.output'),
                             (('DIR/b.testwhat1','DIR/c.testwhat2'),'DIR/b.c.output'),
@@ -1489,14 +1488,14 @@ class Test_product_param_factory(unittest.TestCase):
         # add inputs
         #
         #
-        paths = self.do_task_product([test_path + "/a.test1", test_path + "/b.test1"],                          task.formatter("(?P<ID>\w+)\.(.+)"),  
-                                     [test_path + "/c.test2", test_path + "/d.test2", test_path + "/e.ignore"], task.formatter("(?P<ID>\w+)\.(test2)"),  
+        paths = self.do_task_product([test_path + "/a.test1", test_path + "/b.test1"],                          task.formatter("(?P<ID>\w+)\.(.+)"),
+                                     [test_path + "/c.test2", test_path + "/d.test2", test_path + "/e.ignore"], task.formatter("(?P<ID>\w+)\.(test2)"),
                                      task.add_inputs("{path[0][0]}/{basename[0][0]}.testwhat1", "{path[1][0]}/{basename[1][0]}.testwhat2", ),
                                      r"{path[0][0]}/{ID[0][0]}.{1[1][0]}.output")
 
         paths = recursive_replace(paths, test_path, "DIR")
         self.assertEqual(paths,
-                         [  
+                         [
                             ((('DIR/a.test1','DIR/c.test2'), 'DIR/a.testwhat1','DIR/c.testwhat2'),'DIR/a.c.output'),
                             ((('DIR/a.test1','DIR/d.test2'), 'DIR/a.testwhat1','DIR/d.testwhat2'),'DIR/a.d.output'),
                             ((('DIR/b.test1','DIR/c.test2'), 'DIR/b.testwhat1','DIR/c.testwhat2'),'DIR/b.c.output'),

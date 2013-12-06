@@ -2,24 +2,24 @@
 """
 
     branching.py
-    
+
         test branching dependencies
-        
+
         use :
             --debug               to test automatically
             --start_again         the first time you run the file
             --jobs_per_task N     to simulate tasks with N numbers of files per task
-                                  
+
             -j N / --jobs N       to speify multitasking
             -v                    to see the jobs in action
-            -n / --just_print     to see what jobs would run               
+            -n / --just_print     to see what jobs would run
 
 """
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   options        
+#   options
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -52,7 +52,7 @@ parser.add_option("-s", "--start_again", dest="start_again",
                             "pipeline from scratch.")
 parser.add_option("--jobs_per_task", dest="jobs_per_task",
                       default=50,
-                      metavar="N", 
+                      metavar="N",
                       type="int",
                       help="Simulates tasks with N numbers of files per task.")
 
@@ -60,18 +60,18 @@ parser.add_option("--jobs_per_task", dest="jobs_per_task",
 parser.add_option("-t", "--target_tasks", dest="target_tasks",
                   action="append",
                   default = list(),
-                  metavar="JOBNAME", 
+                  metavar="JOBNAME",
                   type="string",
                   help="Target task(s) of pipeline.")
 parser.add_option("-f", "--forced_tasks", dest="forced_tasks",
                   action="append",
                   default = list(),
-                  metavar="JOBNAME", 
+                  metavar="JOBNAME",
                   type="string",
                   help="Pipeline task(s) which will be included even if they are up to date.")
 parser.add_option("-j", "--jobs", dest="jobs",
                   default=1,
-                  metavar="jobs", 
+                  metavar="jobs",
                   type="int",
                   help="Specifies  the number of jobs (commands) to run simultaneously.")
 parser.add_option("-v", "--verbose", dest = "verbose",
@@ -79,12 +79,12 @@ parser.add_option("-v", "--verbose", dest = "verbose",
                   help="Print more verbose messages for each additional verbose level.")
 parser.add_option("-d", "--dependency", dest="dependency_file",
                   #default="simple.svg",
-                  metavar="FILE", 
+                  metavar="FILE",
                   type="string",
                   help="Print a dependency graph of the pipeline that would be executed "
                         "to FILE, but do not execute it.")
 parser.add_option("-F", "--dependency_graph_format", dest="dependency_graph_format",
-                  metavar="FORMAT", 
+                  metavar="FORMAT",
                   type="string",
                   default = 'svg',
                   help="format of dependency graph file. Can be 'ps' (PostScript), "+
@@ -94,10 +94,6 @@ parser.add_option("-n", "--just_print", dest="just_print",
                     action="store_true", default=False,
                     help="Print a description of the jobs that would be executed, "
                         "but do not execute them.")
-parser.add_option("-M", "--minimal_rebuild_mode", dest="minimal_rebuild_mode",
-                    action="store_true", default=False,
-                    help="Rebuild a minimum of tasks necessary for the target. "
-                    "Ignore upstream out of date tasks if intervening tasks are fine.")
 parser.add_option("-K", "--no_key_legend_in_graph", dest="no_key_legend_in_graph",
                     action="store_true", default=False,
                     help="Do not print out legend and key for dependency graph.")
@@ -105,7 +101,7 @@ parser.add_option("-H", "--draw_graph_horizontally", dest="draw_horizontally",
                     action="store_true", default=False,
                     help="Draw horizontal dependency graph.")
 
-parameters = [  
+parameters = [
                 ]
 
 
@@ -116,7 +112,7 @@ parameters = [
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   imports        
+#   imports
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -159,7 +155,7 @@ helpstr = f.getvalue()
 tempdir = "temp_filesre_split_and_combine/"
 
 
-    
+
 if options.verbose:
     verbose_output = sys.stderr
 else:
@@ -176,21 +172,21 @@ else:
 @posttask(lambda: verbose_output.write("Split into %d files\n" % options.jobs_per_task))
 @split(tempdir  + "original.fa", [tempdir  + "files.split.success", tempdir + "files.split.*.fa"])
 def split_fasta_file (input_file, outputs):
-    
-    # 
+
+    #
     # remove previous fasta files
-    # 
+    #
     success_flag = outputs[0]
     output_file_names = outputs[1:]
     for f in output_file_names:
         os.unlink(f)
-    
-    # 
-    # create as many files as we are simulating in jobs_per_task    
+
+    #
+    # create as many files as we are simulating in jobs_per_task
     #
     for i in range(options.jobs_per_task):
         open(tempdir + "files.split.%03d.fa" % i, "w")
-        
+
     open(success_flag,  "w")
 
 
@@ -219,18 +215,18 @@ def percentage_identity (input_file, output_files):
     open(output_filename, "w").write("%s\n" % output_filename)
     open(success_flag_filename, "w")
 
-    
-    
+
+
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 #
 #    combine_results
 #
 @posttask(lambda: verbose_output.write("Results recombined\n"))
-@merge(percentage_identity, [tempdir + "all.combine_results", 
+@merge(percentage_identity, [tempdir + "all.combine_results",
                              tempdir + "all.combine_results_success"])
 def combine_results (input_files, output_files):
     """
-    Combine all 
+    Combine all
     """
     (output_filename, success_flag_filename) = output_files
     out = open(output_filename, "w")
@@ -255,8 +251,7 @@ if __name__ == '__main__':
         start_pipeline_afresh()
     if options.just_print:
         pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
-                            verbose = options.verbose,
-                            gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode)
+                            verbose = options.verbose)
 
     elif options.dependency_file:
         pipeline_printout_graph (     open(options.dependency_file, "w"),
@@ -264,19 +259,16 @@ if __name__ == '__main__':
                              options.target_tasks,
                              options.forced_tasks,
                              draw_vertically = not options.draw_horizontally,
-                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                              no_key_legend  = options.no_key_legend_in_graph)
     elif options.debug:
         start_pipeline_afresh()
         pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
                             logger = stderr_logger if options.verbose else black_hole_logger,
-                            gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                             verbose = options.verbose)
         os.system("rm -rf %s" % tempdir)
         print "OK"
     else:
         pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
                             logger = stderr_logger if options.verbose else black_hole_logger,
-                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                             verbose = options.verbose)
 

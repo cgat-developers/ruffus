@@ -25,7 +25,7 @@ from ruffus.ruffus_utility import (RUFFUS_HISTORY_FILE)
 
 workdir = 'tmp_test_regex_error_messages'
 #sub-1s resolution in system?
-one_second_per_job = True
+one_second_per_job = None
 parallelism = 1
 #___________________________________________________________________________
 #

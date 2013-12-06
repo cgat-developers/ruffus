@@ -669,7 +669,7 @@ def run_pooled_job_without_exceptions (process_parameters):
     """
 
     (param, task_name, job_name, job_wrapper, user_defined_work_func,
-            job_limit_semaphore, one_second_per_job, touch_files_only) = process_parameters
+            job_limit_semaphore, touch_files_only) = process_parameters
 
     ##job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
     ##outfile = param[1] if len(param) > 1 else None   # mkdir has no output
@@ -2704,33 +2704,6 @@ def task_names_to_tasks (task_description, task_names):
     return task_nodes
 
 
-#_________________________________________________________________________________________
-
-#   open_job_history
-
-#_________________________________________________________________________________________
-def get_default_history_file_name ():
-    history_file = RUFFUS_HISTORY_FILE
-    #
-    #   try path expansion using the main script name
-    #
-    try:
-        import __main__ as main
-        path_parts = path_decomposition (os.path.abspath(main.__file__))
-        history_file = history_file.format(**path_parts)
-    except Exception as err:
-        pass
-    return history_file
-
-def open_job_history (history_file):
-    """
-    Given a history file name, opens the correspond sqllite db file and returns the handle
-    """
-    if not history_file:
-        history_file = get_default_history_file_name ()
-
-    return dbdict.open(history_file, picklevalues=True)
-
 
 
 #_________________________________________________________________________________________
@@ -3005,7 +2978,7 @@ def get_semaphore (t, job_limit_semaphores, syncmanager):
 def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forcedtorun_tasks,
                                     count_remaining_jobs, runtime_data, verbose,
                                     syncmanager,
-                                    one_second_per_job, touch_files_only, job_history):
+                                    touch_files_only, job_history):
 
     inprogress_tasks = set()
     job_limit_semaphores = dict()
@@ -3118,9 +3091,12 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                             check_input_files_exist (*param)
 
                         # pause for one second before first job of each tasks
-                        if one_second_per_job and cnt_jobs_created == 0:
-                            log_at_level (logger, 10, verbose, "   1 second PAUSE in job_parameter_generator\n\n\n")
-                            time.sleep(1.01)
+                        if cnt_jobs_created == 0:
+                            if "ONE_SECOND_PER_JOB" in runtime_data and runtime_data["ONE_SECOND_PER_JOB"]:
+                                log_at_level (logger, 10, verbose, "   1 second PAUSE in job_parameter_generator\n\n\n")
+                                time.sleep(1.01)
+                            else:
+                                time.sleep(0.1)
 
 
                         count_remaining_jobs[t] += 1
@@ -3132,7 +3108,6 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                                 t.job_wrapper,
                                 t.user_defined_work_func,
                                 get_semaphore (t, job_limit_semaphores, syncmanager),
-                                one_second_per_job,
                                 touch_files_only)
 
                     # if no job came from this task, this task is complete
@@ -3292,7 +3267,7 @@ def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE, logg
 #_________________________________________________________________________________________
 def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, logger = stderr_logger,
                  gnu_make_maximal_rebuild_mode  = True, verbose = 1,
-                 runtime_data = None, one_second_per_job = True, touch_files_only = False,
+                 runtime_data = None, one_second_per_job = None, touch_files_only = False,
                  exceptions_terminate_immediately = False, log_exceptions = False,
                  checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, multithread = 0, history_file = None):
                  # Remember to add further extra parameters here to "extra_pipeline_run_options" inside cmdline.py
@@ -3315,7 +3290,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                     level 5 : logs job names for all jobs whether up-to-date or not
                     level 10: logs messages useful only for debugging ruffus pipeline code
     :param runtime_data: Experimental feature for passing data to tasks at run time
-    :param one_second_per_job: Defaults to (true) forcing jobs to take a minimum of 1 second to complete
+    :param one_second_per_job: Defaults to True if checksum_level is 0 forcing jobs to take a minimum of 1 second to complete
     :param touch_file_only: Create or update input/output files only to simulate running the pipeline. Do not run jobs
     :param exceptions_terminate_immediately: Exceptions cause immediate termination
                         rather than waiting for N jobs to finish where N = multiprocess
@@ -3330,6 +3305,7 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     :param multithread: The number of multithreaded jobs. If > 1, ruffus will use multithreading *instead of* multiprocessing (and ignore the multiprocess parameter)
 
     """
+
     syncmanager = multiprocessing.Manager()
 
     if runtime_data == None:
@@ -3337,6 +3313,20 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
     if not isinstance(runtime_data, dict):
         raise Exception("pipeline_run parameter runtime_data should be a dictionary of "
                         "values passes to jobs at run time.")
+
+
+    #
+    #   Supplement mtime with system clock if using CHECKSUM_HISTORY_TIMESTAMPS
+    #       we don't need to default to adding 1 second delays between jobs
+    #
+    if one_second_per_job == None:
+         if checksum_level < CHECKSUM_HISTORY_TIMESTAMPS:
+                runtime_data["ONE_SECOND_PER_JOB"] = True
+         else:
+                runtime_data["ONE_SECOND_PER_JOB"] = False
+    else:
+        runtime_data["ONE_SECOND_PER_JOB"] = one_second_per_job
+
 
 
     if verbose == 0:
@@ -3424,7 +3414,6 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                                                         count_remaining_jobs,
                                                         runtime_data, verbose,
                                                         syncmanager,
-                                                        one_second_per_job,
                                                         touch_files_only, job_history)
     job_parameters = parameter_generator()
     fill_queue_with_job_parameters(job_parameters, parameter_q, multiprocess, logger, verbose)
@@ -3504,12 +3493,8 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
         t = node.lookup_node_from_name(job_result.task_name)
         count_remaining_jobs[t] = count_remaining_jobs[t] - 1
 
-        last_job_in_task = False
-        if count_remaining_jobs[t] == 0:
-            incomplete_tasks.remove(t)
-            last_job_in_task = True
 
-        elif count_remaining_jobs[t] < 0:
+        if count_remaining_jobs[t] < 0:
             raise Exception("Task [%s] job count < 0" % t._name)
 
         # remove failed jobs from history-- their output is bogus now!
@@ -3523,6 +3508,10 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                 # N.B. output parameters are not necessary all strings
                 #
                 for o_f_n in get_strings_in_nested_sequence(output_file_name):
+                    #
+                    # use paths relative to working directory
+                    #
+                    o_f_n = os.path.relpath(o_f_n)
                     job_history.pop(o_f_n, None)  # remove outfile from history if it exists
 
         # only save poolsize number of errors
@@ -3581,9 +3570,27 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
                     #       even though the task apparently completed properly!
                     #
                     for o_f_n in get_strings_in_nested_sequence(output_file_name):
+                        #
+                        # use paths relative to working directory
+                        #
+                        o_f_n = os.path.relpath(o_f_n)
                         try:
                             log_at_level (logger, 6, verbose, "   Job History for : " + o_f_n)
                             mtime = os.path.getmtime(o_f_n)
+                            #
+                            #   use probably higher resolution time.time() over mtime
+                            #       which might have 1 or 2s resolutions, unless there is
+                            #       clock skew and the filesystem time > system time
+                            #       (e.g. for networks)
+                            #
+                            epoch_seconds = time.time()
+                            # Aargh. go back to insert one second between jobs
+                            if epoch_seconds < mtime:
+                                if one_second_per_job == None and not runtime_data["ONE_SECOND_PER_JOB"]:
+                                    log_at_level (logger, 6, verbose, "   Switch to one second per job")
+                                    runtime_data["ONE_SECOND_PER_JOB"] = True
+                            elif  epoch_seconds - mtime < 1.1:
+                                mtime = epoch_seconds
                             chksum = JobHistoryChecksum(o_f_n, mtime, job_result.params[2:], t)
                             job_history[o_f_n] = chksum
                         except:
@@ -3600,11 +3607,16 @@ def pipeline_run(target_tasks = [], forcedtorun_tasks = [], multiprocess = 1, lo
 
 
         #
-        # Current Task completed
+        #   Current Task completed
+        #       Not called if Exception (break loop before)
+        #       Triggers make_job_parameter_generator() to make children jobs
+        #           Do this after we save checksums
         #
-        if last_job_in_task:
-
+        if count_remaining_jobs[t] == 0:
+            incomplete_tasks.remove(t)
             t.completed (logger)
+
+
 
 
         # make sure queue is still full after each job is retired

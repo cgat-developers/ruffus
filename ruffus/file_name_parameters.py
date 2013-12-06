@@ -120,7 +120,6 @@ def epoch_seconds_to_str (epoch_seconds):
     """
     #   returns 24 char long  25 May 2011 23:37:40.12
     time_str = strftime("%d %b %Y %H:%M:%S", gmtime(epoch_seconds))
-
     #
     fraction_of_second_as_str = ("%.2f" % (epoch_seconds - int(epoch_seconds)))[1:]
     #   or fraction = ("%.2f" % (divmod(epoch_seconds, 1)[1]))[1:]
@@ -467,7 +466,8 @@ def needs_update_check_modify_time (*params, **kwargs):
     except KeyError:
         # allow job_history not to be specified and reopen dbdict file redundantly...
         #   Either this or fix all the test cases
-        job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
+        #job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
+        job_history = open_job_history (None)
 
 
     # missing output means build
@@ -510,15 +510,16 @@ def needs_update_check_modify_time (*params, **kwargs):
             return True, "Previous incomplete run leftover%s: [%s]" % ("s" if len(incomplete_files) > 1 else "",
                                                 ", ".join(incomplete_files))
         # check if function that generated our output file has changed
-        for p in o:
-            old_chksum = job_history[p]
-            new_chksum = JobHistoryChecksum(p, None, params[2:], task)
+        for o_f_n in o:
+            rel_o_f_n = os.path.relpath(o_f_n)
+            old_chksum = job_history[rel_o_f_n]
+            new_chksum = JobHistoryChecksum(rel_o_f_n, None, params[2:], task)
             if task.checksum_level >= CHECKSUM_FUNCTIONS_AND_PARAMS and \
                             new_chksum.chksum_params != old_chksum.chksum_params:
-                param_changed_files.append(p)
+                param_changed_files.append(rel_o_f_n)
             elif task.checksum_level >= CHECKSUM_FUNCTIONS and \
                             new_chksum.chksum_func != old_chksum.chksum_func:
-                func_changed_files.append(p)
+                func_changed_files.append(rel_o_f_n)
 
         if len(func_changed_files):
             return True, "Pipeline function has changed: [%s]" % (", ".join(func_changed_files))
@@ -590,9 +591,10 @@ def needs_update_check_modify_time (*params, **kwargs):
     #   Symbolic links followed
     real_input_file_names = set()
     for input_file_name in i:
+        rel_input_file_name = os.path.relpath(input_file_name)
         real_input_file_names.add(os.path.realpath(input_file_name))
-        if task.checksum_level >= CHECKSUM_HISTORY_TIMESTAMPS and input_file_name in job_history:
-            mtime = max(os.path.getmtime(input_file_name), job_history[input_file_name].mtime)
+        if task.checksum_level >= CHECKSUM_HISTORY_TIMESTAMPS and rel_input_file_name in job_history:
+            mtime = max(os.path.getmtime(input_file_name), job_history[rel_input_file_name].mtime)
         else:
             mtime = os.path.getmtime(input_file_name)
         filename_to_times[0].append((mtime, input_file_name))
@@ -602,9 +604,10 @@ def needs_update_check_modify_time (*params, **kwargs):
     # for output files, we need to check modification time *in addition* to
     # function and argument checksums...
     for output_file_name in o:
+        rel_output_file_name = os.path.relpath(output_file_name)
         real_file_name = os.path.realpath(output_file_name)
         if task.checksum_level >= CHECKSUM_HISTORY_TIMESTAMPS:
-            old_chksum = job_history[output_file_name]
+            old_chksum = job_history[rel_output_file_name]
             mtime = min(os.path.getmtime(output_file_name), old_chksum.mtime)
         else:
             mtime = os.path.getmtime(output_file_name)

@@ -28,7 +28,7 @@ from ruffus.ruffus_utility import (RUFFUS_HISTORY_FILE,
 
 workdir = 'tmp_test_job_history_with_exceptions'
 #sub-1s resolution in system?
-one_second_per_job = True 
+one_second_per_job = None
 throw_exception = False
 #___________________________________________________________________________
 #
@@ -70,11 +70,11 @@ def generate_initial_files4(on):
 #
 #   test_task2
 #___________________________________________________________________________
-@collate([generate_initial_files1, generate_initial_files2, generate_initial_files3, 
+@collate([generate_initial_files1, generate_initial_files2, generate_initial_files3,
             generate_initial_files4],
          formatter(),
          "{path[0]}/all.tmp2")
-#@transform([generate_initial_files1, generate_initial_files2, generate_initial_files3, 
+#@transform([generate_initial_files1, generate_initial_files2, generate_initial_files3,
 #            generate_initial_files4],
 #            formatter( ),
 #            "{path[0]}/{basename[0]}.tmp2")
@@ -136,8 +136,8 @@ class Test_job_history_with_exceptions(unittest.TestCase):
             # output is up to date, but function body changed (e.g., source different)
             cleanup_tmpdir()
             try:
-                pipeline_run([test_task4], verbose = 0, 
-                             #multithread = 2, 
+                pipeline_run([test_task4], verbose = 0,
+                             #multithread = 2,
                              one_second_per_job = one_second_per_job)
             except:
                 pass

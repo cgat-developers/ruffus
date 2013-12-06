@@ -2,7 +2,7 @@
 """
 
     test_pausing.py
-    
+
         test time.sleep keeping input files and output file times correct
 
 """
@@ -10,7 +10,7 @@
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   options        
+#   options
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -40,18 +40,18 @@ parser.add_option("-D", "--debug", dest="debug",
 parser.add_option("-t", "--target_tasks", dest="target_tasks",
                   action="append",
                   default = list(),
-                  metavar="JOBNAME", 
+                  metavar="JOBNAME",
                   type="string",
                   help="Target task(s) of pipeline.")
 parser.add_option("-f", "--forced_tasks", dest="forced_tasks",
                   action="append",
                   default = list(),
-                  metavar="JOBNAME", 
+                  metavar="JOBNAME",
                   type="string",
                   help="Pipeline task(s) which will be included even if they are up to date.")
 parser.add_option("-j", "--jobs", dest="jobs",
                   default=1,
-                  metavar="jobs", 
+                  metavar="jobs",
                   type="int",
                   help="Specifies  the number of jobs (commands) to run simultaneously.")
 parser.add_option("-v", "--verbose", dest = "verbose",
@@ -59,12 +59,12 @@ parser.add_option("-v", "--verbose", dest = "verbose",
                   help="Do not echo to shell but only print to log.")
 parser.add_option("-d", "--dependency", dest="dependency_file",
                   #default="simple.svg",
-                  metavar="FILE", 
+                  metavar="FILE",
                   type="string",
                   help="Print a dependency graph of the pipeline that would be executed "
                         "to FILE, but do not execute it.")
 parser.add_option("-F", "--dependency_graph_format", dest="dependency_graph_format",
-                  metavar="FORMAT", 
+                  metavar="FORMAT",
                   type="string",
                   default = 'svg',
                   help="format of dependency graph file. Can be 'ps' (PostScript), "+
@@ -85,7 +85,7 @@ parser.add_option("-H", "--draw_graph_horizontally", dest="draw_horizontally",
                     action="store_true", default=False,
                     help="Draw horizontal dependency graph.")
 
-parameters = [  
+parameters = [
                 ]
 
 
@@ -96,7 +96,7 @@ parameters = [
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   imports        
+#   imports
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -133,7 +133,7 @@ def test_job_io(infiles, outfiles, extra_params):
     """
     # dump parameters
     params = (infiles, outfiles) + extra_params
-    
+
     if isinstance(infiles, str):
         infiles = [infiles]
     elif infiles == None:
@@ -148,7 +148,7 @@ def test_job_io(infiles, outfiles, extra_params):
     for f in outfiles:
         open(f, "w").write(output_text)
 
-    
+
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -178,10 +178,10 @@ helpstr = f.getvalue()
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 #
-#   1   ->  2   ->  3   ->    
+#   1   ->  2   ->  3   ->
 #       ->  4           ->
 #                   5   ->    6
-# 
+#
 
 tempdir = "test_pausing_dir/"
 #
@@ -257,7 +257,7 @@ def task5(infiles, outfiles, *extra_params):
     open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
     test_job_io(infiles, outfiles, extra_params)
     open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
-    
+
 #
 #    task6
 #
@@ -272,25 +272,25 @@ def task6(infiles, outfiles, *extra_params):
     open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
     test_job_io(infiles, outfiles, extra_params)
     open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
-    
-    
-    
-    
-    
+
+
+
+
+
 def check_job_order_correct(filename):
     """
-       1   ->  2   ->  3   ->    
+       1   ->  2   ->  3   ->
            ->  4           ->
                        5   ->    6
     """
-    
+
     precedence_rules = [[1, 2],
                         [2, 3],
                         [1, 4],
                         [5, 6],
                         [3, 6],
                         [4, 6]]
-    
+
     index_re = re.compile(r'.*\.([0-9])["\]\n]*$')
     job_indices = defaultdict(list)
     for linenum, l in enumerate(open(filename)):
@@ -298,19 +298,19 @@ def check_job_order_correct(filename):
         if not m:
             raise "Non-matching line in [%s]" % filename
         job_indices[int(m.group(1))].append(linenum)
-        
+
     for job_index in job_indices:
         job_indices[job_index].sort()
-        
+
     for before, after in precedence_rules:
         if job_indices[before][-1] >= job_indices[after][0]:
             raise ("Precedence violated for job %d [line %d] and job %d [line %d] of [%s]"
                                 % ( before, job_indices[before][-1],
                                     after,  job_indices[after][0],
                                     filename))
-        
-    
-    
+
+
+
 def check_final_output_correct():
     """
     check if the final output in final.6 is as expected
@@ -343,42 +343,42 @@ def check_final_output_correct():
             if l1 != l2:
                 sys.stderr.write("%d\n  >%s<\n  >%s<\n" % (i, l1, l2))
         raise Exception ("Final.6 output is not as expected\n")
-    
-        
-# 
+
+
+#
 #   Necessary to protect the "entry point" of the program under windows.
 #       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 #
 if __name__ == '__main__':
     if options.just_print:
-        pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks, 
-                            long_winded=True, 
+        pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
+                            long_winded=True,
                             gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode)
-    
+
     elif options.dependency_file:
         pipeline_printout_graph (     open(options.dependency_file, "w"),
                              options.dependency_graph_format,
-                             options.target_tasks, 
+                             options.target_tasks,
                              options.forced_tasks,
                              draw_vertically = not options.draw_horizontally,
                              gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                              no_key_legend  = options.no_key_legend_in_graph)
-    elif options.debug:    
+    elif options.debug:
         import os
         os.system("rm -rf %s" % tempdir)
-        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, 
+        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
                             logger = stderr_logger if options.verbose else black_hole_logger,
                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                             verbose = options.verbose)
 
-        
+
         check_final_output_correct()
         check_job_order_correct(tempdir + "jobs.start")
         check_job_order_correct(tempdir + "jobs.finish")
         os.system("rm -rf %s" % tempdir)
         print "OK"
     else:
-        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, 
+        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
                             logger = stderr_logger if options.verbose else black_hole_logger,
                              gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                             verbose = options.verbose)
