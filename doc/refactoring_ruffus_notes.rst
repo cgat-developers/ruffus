@@ -494,9 +494,9 @@ set history_file  as a parameter to ``pipeline_run``, ``pipeline_printout``, ``p
 
         Just make sure that the requisite destination directories exist...
 
-***************************************************************************************************************
+============================================================================================================================================================
 set job_history file name set to "nothing" if checksum_level=CHECKSUM_FILE_TIMESTAMPS
-***************************************************************************************************************
+============================================================================================================================================================
 
     If we aren't using checksums (``pipeline_run(..., checksum_level=CHECKSUM_FILE_TIMESTAMPS, ...) ``,
     and ``history_file`` hasn't been specified, we might be a bit surprised to find Ruffus
@@ -510,6 +510,13 @@ set job_history file name set to "nothing" if checksum_level=CHECKSUM_FILE_TIMES
     This also means to recreate a checksum file, you can just run the pipeline normally in CHECKSUM_FILE_TIMESTAMPS but
     with the history_file specified.
 
+
+============================================================================================================================================================
+regenerate job_history from extant i/o files (from a previous run)
+============================================================================================================================================================
+
+
+   If pipeline(touch_files_only = CHECKSUM_REGENERATE, ...) will regenerate the checksum history file to reflect the existing i/o files on disk.
 
 
 ***************************************

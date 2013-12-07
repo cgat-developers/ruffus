@@ -195,7 +195,6 @@ class Test_job_history_with_exceptions(unittest.TestCase):
                      multithread = 1,
                      verbose = 0,
                      touch_files_only = 2,
-                     forcedtorun_tasks = ["generate_initial_files1", "generate_initial_files2", "generate_initial_files3", "generate_initial_files4"],
                      one_second_per_job = one_second_per_job)
         #   
         # print "printout expecting sqlite file"
