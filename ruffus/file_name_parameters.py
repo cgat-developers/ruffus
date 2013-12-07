@@ -505,7 +505,7 @@ def needs_update_check_modify_time (*params, **kwargs):
         #        if p not in job_history:
         #            incomplete_files.append(p)
         for p in o:
-            if p not in job_history:
+            if os.path.relpath(p) not in job_history:
                 incomplete_files.append(p)
         if len(incomplete_files):
             return True, "Previous incomplete run leftover%s: [%s]" % ("s" if len(incomplete_files) > 1 else "",
