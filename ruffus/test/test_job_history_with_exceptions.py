@@ -24,7 +24,8 @@ from ruffus import (pipeline_run, pipeline_printout, suffix, transform, split,
 #from ruffus.combinatorics import *
 from ruffus.ruffus_exceptions import RethrownJobError
 from ruffus.ruffus_utility import (RUFFUS_HISTORY_FILE,
-                                   CHECKSUM_FILE_TIMESTAMPS)
+                                   CHECKSUM_FILE_TIMESTAMPS,
+                                    get_default_history_file_name)
 
 workdir = 'tmp_test_job_history_with_exceptions'
 #sub-1s resolution in system?
@@ -81,6 +82,7 @@ def generate_initial_files4(on):
 def test_task2( infiles, outfile):
     with open(outfile, "w") as p:
         pass
+    #print >>sys.stderr, "8" * 80, "\n", "    task2 :%s %s " % (infiles, outfile)
 
 #___________________________________________________________________________
 #
@@ -89,7 +91,8 @@ def test_task2( infiles, outfile):
 @transform(test_task2, suffix(".tmp2"), ".tmp3")
 def test_task3( infile, outfile):
     global throw_exception
-    throw_exception = not throw_exception
+    if throw_exception != None:
+        throw_exception = not throw_exception
     if throw_exception:
         #print >>sys.stderr, "Throw exception for ", infile, outfile
         raise Exception("oops")
@@ -97,6 +100,7 @@ def test_task3( infile, outfile):
         #print >>sys.stderr, "No throw exception for ", infile, outfile
         pass
     with open(outfile, "w") as p: pass
+    #print >>sys.stderr, "8" * 80, "\n", "    task3 :%s %s " % (infile, outfile)
 
 #___________________________________________________________________________
 #
@@ -105,6 +109,7 @@ def test_task3( infile, outfile):
 @transform(test_task3, suffix(".tmp3"), ".tmp4")
 def test_task4( infile, outfile):
     with open(outfile, "w") as p: pass
+    #print >>sys.stderr, "8" * 80, "\n", "    task4 :%s %s " % (infile, outfile)
 
 
 
@@ -133,7 +138,6 @@ class Test_job_history_with_exceptions(unittest.TestCase):
     def test_job_history_with_exceptions_run(self):
         """Run"""
         for i in range(1):
-            # output is up to date, but function body changed (e.g., source different)
             cleanup_tmpdir()
             try:
                 pipeline_run([test_task4], verbose = 0,
@@ -156,12 +160,58 @@ class Test_job_history_with_exceptions(unittest.TestCase):
 
 
 
+    def test_recreate_job_history(self):
+        """Run"""
+        global throw_exception
+        throw_exception = None
+        cleanup_tmpdir()
+
+        #
+        #      print "Initial run without creating sqlite file"
+        #
+        pipeline_run([test_task4], verbose = 0,
+                     checksum_level = CHECKSUM_FILE_TIMESTAMPS,
+                     multithread = 10,
+                     one_second_per_job = one_second_per_job)
+
+        #
+        #   print "printout without sqlite"
+        #
+        s = StringIO()
+        pipeline_printout(s, [test_task4], checksum_level = CHECKSUM_FILE_TIMESTAMPS)
+        self.assertTrue(not re.search('Tasks which will be run:.*\n(.*\n)*Task = ', s.getvalue()))
+        #
+        # print "printout expecting sqlite file"
+        #
+        s = StringIO()
+        pipeline_printout(s, [test_task4])
+        self.assertTrue(re.search('Tasks which will be run:.*\n(.*\n)*Task = ', s.getvalue()))
+        #
+        #   print "Regenerate sqlite file"
+        #
+        pipeline_run([test_task4],
+                     checksum_level = CHECKSUM_FILE_TIMESTAMPS,
+                     history_file = ruffus_utility.get_default_history_file_name (),
+                     multithread = 1,
+                     verbose = 0,
+                     touch_files_only = 2,
+                     forcedtorun_tasks = ["generate_initial_files1", "generate_initial_files2", "generate_initial_files3", "generate_initial_files4"],
+                     one_second_per_job = one_second_per_job)
+        #   
+        # print "printout expecting sqlite file"
+        #
+        s = StringIO()
+        pipeline_printout(s, [test_task4])
+        self.assertTrue(not re.search('Tasks which will be run:.*\n(.*\n)*Task = ', s.getvalue()))
+
+        throw_exception = False
+
+
     #___________________________________________________________________________
     #
     #   cleanup
     #___________________________________________________________________________
     def tearDown(self):
-        pass
         shutil.rmtree(workdir)
 
 
@@ -173,4 +223,5 @@ class Test_job_history_with_exceptions(unittest.TestCase):
 if __name__ == '__main__':
     #pipeline_printout(sys.stdout, [test_product_task], verbose = 5)
     unittest.main()
+
 

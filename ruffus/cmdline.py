@@ -426,11 +426,15 @@ extra_pipeline_printout_graph_options = [
                                             "pipeline_name"                  ,
                                             "size"                           ,
                                             "dpi"                            ,
+                                            "history_file"                      ,
+                                            "checksum_level"                    ,
                                             "runtime_data"                   ,
                                          ]
 extra_pipeline_printout_options   = [
                                             "indent"                        ,
                                             "gnu_make_maximal_rebuild_mode" ,
+                                            "checksum_level"                    ,
+                                            "history_file"                      ,
                                             "wrap_width"                    ,
                                             "runtime_data"]
 
@@ -445,7 +449,8 @@ extra_pipeline_run_options = [
                                 "logger"                            ,
                                 "exceptions_terminate_immediately"  ,
                                 "log_exceptions"                    ,
-                                "use_multi_threading"]
+                                "checksum_level"                    ,
+                                "multithread"]
 
 
 def get_extra_options_appropriate_for_command (appropriate_option_names, extra_options):

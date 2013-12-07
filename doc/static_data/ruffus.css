@@ -283,17 +283,6 @@ tt {
     font-size: 0.95em;
 }
 
-/* 
-
-    Make highlighted background always yellow and text always red 
-    Use :nth-of-type(n) pseudo class (which matches everything to prevent the .hll class
-        style from being overridden in the pygments.css
-*/
-
-.highlight .nd:nth-of-type(n)   { background-color: #ffff88; color: red; font-weight: bold; outline:red dotted thin}/**/
-.highlight .hll:nth-of-type(n)   { background-color: #eeffcc; font-weight: bold}
-.highlight .hll .c:nth-of-type(n)    { background-color: #ffffff; color: red; font-weight: bold; font-style: normal;font-size:120%} /* Comment */
-
 /*
 div.sphinxsidebar h3 {
     font-family: 'Trebuchet MS', sans-serif;
@@ -311,4 +300,28 @@ div.sphinxsidebar h3 a{
 }
 
 */
+
+
+
+/* 
+
+    Override Pygment style so that I can annotate the code
+
+    The key style are comments within highlighted sections. I have set these to have a
+    white background with big bold red text, so that it stands out from and does not appear
+    to be part of the surrounding code. This way I don't have to screen shot and highlight
+    manually the code in photoshop, and the embedded bitmapped code doesn't get out of date,...
+    and the code is selectable, and it fits into a sane workflow etc. etc.
+
+    I use :nth-of-type(n) pseudo class (but one which matches everything) 
+        so that this is a specialisation of the css .hll class style in pygments.css
+
+    Nasty hack but this way I don't have to modify pygments.css by hand each time, and I don't have
+    to create my own pygments style.
+
+*/
+
+.highlight .nd:nth-of-type(n)   { background-color: #ffff88; color: red; font-weight: bold; outline:red dotted thin}/**/
+.highlight .hll:nth-of-type(n)   { background-color: #eeffcc; font-weight: bold}
+.highlight .hll .c:nth-of-type(n)    { background-color: #ffffff; color: red; font-weight: bold; font-style: normal;font-size:120%} /* Comment */
 

@@ -499,14 +499,14 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
 
     i,o = param[0:2]
 
-    if not touch_files_only:
+    if touch_files_only == 0:
         # @originate only uses output files
         if output_files_only:
             ret_val = user_defined_work_func(*(param[1:]))
         # all other decorators
         else:
             ret_val = user_defined_work_func(*param)
-    else:
+    elif touch_files_only == 1:
         #job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
 
         #
@@ -3109,7 +3109,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                             check_input_files_exist (*param)
 
                         # pause for one second before first job of each tasks
-                        if cnt_jobs_created == 0:
+                        if cnt_jobs_created == 0 and touch_files_only < 2:
                             if "ONE_SECOND_PER_JOB" in runtime_data and runtime_data["ONE_SECOND_PER_JOB"]:
                                 log_at_level (logger, 10, verbose, "   1 second PAUSE in job_parameter_generator\n\n\n")
                                 time.sleep(1.01)
@@ -3291,7 +3291,7 @@ def pipeline_run(target_tasks                     = [],
                  verbose                          = 1,
                  runtime_data                     = None,
                  one_second_per_job               = None,
-                 touch_files_only                 = False,
+                 touch_files_only                 = 0,
                  exceptions_terminate_immediately = False,
                  log_exceptions                   = False,
                  checksum_level                    = CHECKSUM_HISTORY_TIMESTAMPS,
@@ -3304,11 +3304,10 @@ def pipeline_run(target_tasks                     = [],
 
     :param target_tasks: targets task functions which will be run if they are out-of-date
     :param forcedtorun_tasks: task functions which will be run whether or not they are out-of-date
-    :param multiprocess: The number of concurrent jobs
+    :param multiprocess: The number of concurrent jobs running on different processes.
+    :param multithread: The number of concurrent jobs running as different threads. If > 1, ruffus will use multithreading *instead of* multiprocessing (and ignore the multiprocess parameter). Using multi threading is particularly useful to manage high performance clusters which otherwise are prone to "processor storms" when large number of cores finish jobs at the same time. (Thanks Andreas Heger)
     :param logger: Where progress will be logged. Defaults to stderr output.
     :type logger: `logging <http://docs.python.org/library/logging.html>`_ objects
-    :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all* out-of-date tasks. Runs minimal
-                                          set to build targets if set to ``True``. Use with caution.
     :param verbose: level 0 : nothing
                     level 1 : logs task names and warnings
                     level 2 : logs task description if exists
@@ -3316,22 +3315,30 @@ def pipeline_run(target_tasks                     = [],
                     level 4 : logs list of up-to-date tasks and job names for jobs to be run
                     level 5 : logs job names for all jobs whether up-to-date or not
                     level 10: logs messages useful only for debugging ruffus pipeline code
-    :param runtime_data: Experimental feature for passing data to tasks at run time
-    :param one_second_per_job: Defaults to True if checksum_level is 0 forcing jobs to take a minimum of 1 second to complete
-    :param touch_file_only: Create or update input/output files only to simulate running the pipeline. Do not run jobs
+    :param touch_files_only: Create or update input/output files only to simulate running the pipeline. Do not run jobs. If set to CHECKSUM_REGENERATE, will regenerate the checksum history file to reflect the existing i/o files on disk.
     :param exceptions_terminate_immediately: Exceptions cause immediate termination
                         rather than waiting for N jobs to finish where N = multiprocess
-    :param use_multi_threading: Using multi threading is particularly useful to manage high performance clusters
-                        which are to "processor storms" when multiple cluster cores finish jobs at the same time.
-                        Thanks to Andreas Heger.
+    :param log_exceptions: Print exceptions to the logger as soon as they occur.
     :param checksum_level: Several options for checking up-to-dateness are available: Default is level 1.
                            level 0 : Use only file timestamps
                            level 1 : above, plus timestamp of successful job completion
                            level 2 : above, plus a checksum of the pipeline function body
                            level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
-    :param multithread: The number of multithreaded jobs. If > 1, ruffus will use multithreading *instead of* multiprocessing (and ignore the multiprocess parameter)
-
+    :param history_file: The database file which stores checksums and file timestamps for input/output files. 
+    :param one_second_per_job: To work around poor file timepstamp resolution for some file systems. Defaults to True if checksum_level is 0 forcing Tasks to take a minimum of 1 second to complete.
+    :param runtime_data: Experimental feature for passing data to tasks at run time
+    :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all* out-of-date tasks. Runs minimal
+                                          set to build targets if set to ``True``. Use with caution.
     """
+
+    if touch_files_only == False:
+        touch_files_only = 0
+    elif touch_files_only == True:
+        touch_files_only = 1
+    else:
+        touch_files_only = 2
+        # we are not running anything so do it as quickly as possible
+        one_second_per_job = False 
 
     syncmanager = multiprocessing.Manager()
 
@@ -3393,6 +3400,21 @@ def pipeline_run(target_tasks                     = [],
     #
     target_tasks = task_names_to_tasks ("Target", target_tasks)
     forcedtorun_tasks = task_names_to_tasks ("Forced to run", forcedtorun_tasks)
+
+
+    #
+    #   To update the checksum file, we force all tasks to rerun but then don't actually call the task function...
+    #   
+    #   So starting with target_tasks and forcedtorun_tasks, we harvest all upstream dependencies willy, nilly
+    #           and assign the results to forcedtorun_tasks
+    #
+    if touch_files_only == 2:
+        (forcedtorun_tasks, ignore_param1, ignore_param2,
+         ignore_param3) = topologically_sorted_nodes(target_tasks + forcedtorun_tasks, True,
+                                                     gnu_make_maximal_rebuild_mode,
+                                                     extra_data_for_signal = [t_verbose_logger(0, None, runtime_data), job_history])
+
+
 
     (topological_sorted,
     self_terminated_nodes,
