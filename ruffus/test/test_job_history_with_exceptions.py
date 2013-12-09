@@ -196,12 +196,15 @@ class Test_job_history_with_exceptions(unittest.TestCase):
                      verbose = 0,
                      touch_files_only = 2,
                      one_second_per_job = one_second_per_job)
-        #   
+        #
         # print "printout expecting sqlite file"
         #
         s = StringIO()
-        pipeline_printout(s, [test_task4])
-        self.assertTrue(not re.search('Tasks which will be run:.*\n(.*\n)*Task = ', s.getvalue()))
+        pipeline_printout(s, [test_task4], verbose = 5)
+        succeed = not re.search('Tasks which will be run:.*\n(.*\n)*Task = ', s.getvalue())
+        if not succeed:
+            print >>sys.stderr, s.getvalue()
+        self.assertTrue(succeed)
 
         throw_exception = False
 
@@ -212,6 +215,7 @@ class Test_job_history_with_exceptions(unittest.TestCase):
     #___________________________________________________________________________
     def tearDown(self):
         shutil.rmtree(workdir)
+        pass
 
 
 
