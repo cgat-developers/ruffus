@@ -124,7 +124,6 @@ except ImportError:
 dumps = json.dumps
 
 import Queue
-Queue = Queue.Queue
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -2994,7 +2993,7 @@ def get_semaphore (t, job_limit_semaphores, syncmanager):
 #
 #________________________________________________________________________________________
 def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forcedtorun_tasks,
-                                    count_remaining_jobs, runtime_data, verbose,
+                                    task_with_completed_job_q, runtime_data, verbose,
                                     syncmanager,
                                     touch_files_only, job_history):
 
@@ -3002,10 +3001,43 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
     job_limit_semaphores = dict()
 
     def parameter_generator():
+        count_remaining_jobs = defaultdict(int)
         log_at_level (logger, 10, verbose, "   job_parameter_generator BEGIN")
         while len(incomplete_tasks):
             cnt_jobs_created_for_all_tasks = 0
             cnt_tasks_processed = 0
+
+            #
+            #   get rid of all completed tasks first
+            #       Completion is signalled from pipeline_run
+            #
+            while True:
+                try:
+                    item = task_with_completed_job_q.get_nowait()
+                    job_completed_task, job_completed_task_name, job_completed_name = item
+
+
+                    if not job_completed_task in incomplete_tasks:
+                        raise Exception("Last job %s for %s. Missing from incomplete tasks in make_job_parameter_generator" % (job_completed_name, job_completed_task_name))
+                    count_remaining_jobs[job_completed_task] = count_remaining_jobs[job_completed_task] - 1
+                    #
+                    #   This is bad: something has gone very wrong
+                    #
+                    if count_remaining_jobs[t] < 0:
+                        raise Exception("job %s for %s causes job count < 0." % (job_completed_name, job_completed_task_name))
+
+                    #
+                    #   This Task completed
+                    #
+                    if count_remaining_jobs[job_completed_task] == 0:
+                        log_at_level (logger, 10, verbose, "   Last job for %s. Retired from incomplete tasks in pipeline_run " % job_completed_task._name)
+                        incomplete_tasks.remove(job_completed_task)
+                        job_completed_task.completed (logger)
+
+                    task_with_completed_job_q.task_done()
+                except Queue.Empty:
+                    break
+
             for t in list(incomplete_tasks):
                 #
                 #   wrap in execption handler so that we know which task exception
@@ -3080,7 +3112,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                         job_name = t.get_job_name(descriptive_param, runtime_data)
 
                         #
-                        #    don't run if up to date
+                        #    don't run if up to date unless force to run
                         #
                         if force_rerun:
                             log_at_level (logger, 3, verbose, "    force task %s to rerun " % job_name)
@@ -3109,8 +3141,9 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                             check_input_files_exist (*param)
 
                         # pause for one second before first job of each tasks
+                        # @originate tasks do not need to pause, because they depend on nothing!
                         if cnt_jobs_created == 0 and touch_files_only < 2:
-                            if "ONE_SECOND_PER_JOB" in runtime_data and runtime_data["ONE_SECOND_PER_JOB"]:
+                            if "ONE_SECOND_PER_JOB" in runtime_data and runtime_data["ONE_SECOND_PER_JOB"] and t._action_type != _task.action_task_originate:
                                 log_at_level (logger, 10, verbose, "   1 second PAUSE in job_parameter_generator\n\n\n")
                                 time.sleep(1.01)
                             else:
@@ -3134,6 +3167,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     if cnt_jobs_created == 0:
                         incomplete_tasks.remove(t)
                         t.completed (logger, True)
+                        log_at_level (logger, 10, verbose, "   No jobs created for %s. Retired in parameter_generator " % t._name)
 
                         #
                         #   Add extra warning if no regular expressions match:
@@ -3324,13 +3358,12 @@ def pipeline_run(target_tasks                     = [],
                            level 1 : above, plus timestamp of successful job completion
                            level 2 : above, plus a checksum of the pipeline function body
                            level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
-    :param history_file: The database file which stores checksums and file timestamps for input/output files. 
+    :param history_file: The database file which stores checksums and file timestamps for input/output files.
     :param one_second_per_job: To work around poor file timepstamp resolution for some file systems. Defaults to True if checksum_level is 0 forcing Tasks to take a minimum of 1 second to complete.
     :param runtime_data: Experimental feature for passing data to tasks at run time
     :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all* out-of-date tasks. Runs minimal
                                           set to build targets if set to ``True``. Use with caution.
     """
-
     if touch_files_only == False:
         touch_files_only = 0
     elif touch_files_only == True:
@@ -3338,7 +3371,7 @@ def pipeline_run(target_tasks                     = [],
     else:
         touch_files_only = 2
         # we are not running anything so do it as quickly as possible
-        one_second_per_job = False 
+        one_second_per_job = False
 
     syncmanager = multiprocessing.Manager()
 
@@ -3349,16 +3382,20 @@ def pipeline_run(target_tasks                     = [],
                         "values passes to jobs at run time.")
 
 
+
     #
     #   Supplement mtime with system clock if using CHECKSUM_HISTORY_TIMESTAMPS
     #       we don't need to default to adding 1 second delays between jobs
     #
     if one_second_per_job == None:
          if checksum_level == CHECKSUM_FILE_TIMESTAMPS:
-                runtime_data["ONE_SECOND_PER_JOB"] = True
+            log_at_level (logger, 5, verbose, "   Checksums rely on FILE TIMESTAMPS only and we don't know if the system file time resolution: Pause 1 second...")
+            runtime_data["ONE_SECOND_PER_JOB"] = True
          else:
-                runtime_data["ONE_SECOND_PER_JOB"] = False
+            log_at_level (logger, 5, verbose, "   Checksum use calculated time as well: No 1 second pause...")
+            runtime_data["ONE_SECOND_PER_JOB"] = False
     else:
+        log_at_level (logger, 5, verbose, "   One second per job specified to be %s" % one_second_per_job)
         runtime_data["ONE_SECOND_PER_JOB"] = one_second_per_job
 
 
@@ -3404,7 +3441,7 @@ def pipeline_run(target_tasks                     = [],
 
     #
     #   To update the checksum file, we force all tasks to rerun but then don't actually call the task function...
-    #   
+    #
     #   So starting with target_tasks and forcedtorun_tasks, we harvest all upstream dependencies willy, nilly
     #           and assign the results to forcedtorun_tasks
     #
@@ -3463,12 +3500,11 @@ def pipeline_run(target_tasks                     = [],
     #
     # prime queue with initial set of job parameters
     #
-    parameter_q = Queue()
-
-    count_remaining_jobs = defaultdict(int)
+    parameter_q = Queue.Queue()
+    task_with_completed_job_q = Queue.Queue()
     parameter_generator = make_job_parameter_generator (incomplete_tasks, task_parents,
                                                         logger, forcedtorun_tasks,
-                                                        count_remaining_jobs,
+                                                        task_with_completed_job_q,
                                                         runtime_data, verbose,
                                                         syncmanager,
                                                         touch_files_only, job_history)
@@ -3548,11 +3584,6 @@ def pipeline_run(target_tasks                     = [],
     #
     for job_result in pool_func(run_pooled_job_without_exceptions, feed_job_params_to_process_pool()):
         t = node.lookup_node_from_name(job_result.task_name)
-        count_remaining_jobs[t] = count_remaining_jobs[t] - 1
-
-
-        if count_remaining_jobs[t] < 0:
-            raise Exception("Task [%s] job count < 0" % t._name)
 
         # remove failed jobs from history-- their output is bogus now!
         if job_result.state in (JOB_ERROR, JOB_SIGNALLED_BREAK):
@@ -3664,16 +3695,9 @@ def pipeline_run(target_tasks                     = [],
 
 
         #
-        #   Current Task completed
-        #       Not called if Exception (break loop before)
-        #       Triggers make_job_parameter_generator() to make children jobs
-        #           Do this after we save checksums
+        #   signal completed task after checksumming
         #
-        if count_remaining_jobs[t] == 0:
-            incomplete_tasks.remove(t)
-            t.completed (logger)
-
-
+        task_with_completed_job_q.put((t, job_result.task_name, job_result.job_name))
 
 
         # make sure queue is still full after each job is retired
