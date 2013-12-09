@@ -21,18 +21,8 @@ import glob
 
 #---------------------------------------------------------------
 #
-#   make sure tasks take long enough to register as separate
-#       entries in the file system
-#
-def sleep_a_while ():
-    time.sleep(.1)
-
-
-#---------------------------------------------------------------
-#
 #   Create random numbers
 #
-@posttask(sleep_a_while)
 @follows(mkdir(working_dir))
 @files(None, working_dir + "random_numbers.list")
 def create_random_numbers(input_file_name, output_file_name):
@@ -45,7 +35,6 @@ def create_random_numbers(input_file_name, output_file_name):
 #   Split initial file
 #
 @follows(create_random_numbers)
-@posttask(sleep_a_while)
 @split(working_dir + "random_numbers.list", working_dir + "*.chunks")
 def step_4_split_numbers_into_chunks (input_file_name, output_files):
     """
@@ -72,7 +61,6 @@ def step_4_split_numbers_into_chunks (input_file_name, output_files):
 #
 #   Calculate sum and sum of squares for each chunk file
 #
-@posttask(sleep_a_while)
 @transform(step_4_split_numbers_into_chunks, suffix(".chunks"), ".sums")
 def step_5_calculate_sum_of_squares (input_file_name, output_file_name):
     output = open(output_file_name,  "w")
@@ -98,9 +86,8 @@ def print_whoppee_again():
 #   Calculate sum and sum of squares for each chunk
 #
 @posttask(lambda: sys.stdout.write("hooray\n"))
-@posttask(print_hooray_again, print_whoppee_again, touch_file("done"))
-@merge(step_5_calculate_sum_of_squares, "variance.result")
-@posttask(sleep_a_while)
+@posttask(print_hooray_again, print_whoppee_again, touch_file(os.path.join(working_dir, "done")))
+@merge(step_5_calculate_sum_of_squares, os.path.join(working_dir, "variance.result"))
 def step_6_calculate_variance (input_file_names, output_file_name):
     """
     Calculate variance naively
@@ -132,4 +119,5 @@ def step_6_calculate_variance (input_file_names, output_file_name):
 #       Run
 #
 pipeline_run([step_6_calculate_variance], verbose = 1)
-
+import shutil
+shutil.rmtree(working_dir)

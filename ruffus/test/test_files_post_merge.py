@@ -238,14 +238,14 @@ def combine_results (input_files, output_files):
 
 
 
-@files(combine_results, "check_all_is.well")
+@files(combine_results, os.path.join(tempdir, "check_all_is.well"))
 def post_merge_check (input_filename, output_filename):
     """
     check that merge sends just one file, not a list to me
     """
     open(output_filename, "w").write(open(input_filename).read())
 
-@files(post_merge_check, "check_all_is.weller")
+@files(post_merge_check, os.path.join(tempdir, "check_all_is.weller"))
 def post_post_merge_check (input_filename, output_filename):
     """
     check that @files forwards a single file on when given a single file
