@@ -3033,8 +3033,6 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                         log_at_level (logger, 10, verbose, "   Last job for %s. Retired from incomplete tasks in pipeline_run " % job_completed_task._name)
                         incomplete_tasks.remove(job_completed_task)
                         job_completed_task.completed (logger)
-
-                    task_with_completed_job_q.task_done()
                 except Queue.Empty:
                     break
 
