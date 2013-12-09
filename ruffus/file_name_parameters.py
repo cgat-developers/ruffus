@@ -594,10 +594,12 @@ def needs_update_check_modify_time (*params, **kwargs):
     for input_file_name in i:
         rel_input_file_name = os.path.relpath(input_file_name)
         real_input_file_names.add(os.path.realpath(input_file_name))
+        file_timestamp = os.path.getmtime(input_file_name)
         if task.checksum_level >= CHECKSUM_HISTORY_TIMESTAMPS and rel_input_file_name in job_history:
-            mtime = max(os.path.getmtime(input_file_name), job_history[rel_input_file_name].mtime)
+            old_chksum = job_history[rel_input_file_name]
+            mtime = max(file_timestamp, old_chksum.mtime)
         else:
-            mtime = os.path.getmtime(input_file_name)
+            mtime = file_timestamp
         filename_to_times[0].append((mtime, input_file_name))
         file_times[0].append(mtime)
 
@@ -607,11 +609,17 @@ def needs_update_check_modify_time (*params, **kwargs):
     for output_file_name in o:
         rel_output_file_name = os.path.relpath(output_file_name)
         real_file_name = os.path.realpath(output_file_name)
+        file_timestamp = os.path.getmtime(output_file_name)
         if task.checksum_level >= CHECKSUM_HISTORY_TIMESTAMPS:
             old_chksum = job_history[rel_output_file_name]
-            mtime = min(os.path.getmtime(output_file_name), old_chksum.mtime)
+            if old_chksum.mtime > file_timestamp and old_chksum.mtime - file_timestamp > 1.1:
+                mtime = file_timestamp
+            # use check sum time in preference if both are within one second
+            #   (suggesting higher resolution
+            else:
+                mtime = old_chksum.mtime
         else:
-            mtime = os.path.getmtime(output_file_name)
+            mtime = file_timestamp
         if real_file_name not in real_input_file_names:
             file_times[1].append(mtime)
         filename_to_times[1].append((mtime, output_file_name))
