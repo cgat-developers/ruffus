@@ -6,9 +6,9 @@ New features
 ***************************************
 
     #. Job completion monitoring: ``pipeline_run(..., checksum_level=CHECKSUM_FILE_TIMESTAMPS, ...)``
-    #. ``@originate()``: Make new files (jobs) ab nihilo
+    #. ``@originate()``: Make new files (jobs) *ex nihilo*
     #. ``@subdivide`` / ``@split(..., regex(), ...)``
-    #. ``formatter`` : with regular expression or not. More flexible replacement for regex
+    #. ``formatter`` : with regular expression or not. More flexible replacement for ``regex``
     #. ``@combinatorics.product``
     #. ``@combinatorics.permutations``
     #. ``@combinatorics.combinations``
@@ -37,6 +37,7 @@ New order of Topics in the tutorial
     2. ``@transform`` as the paradigm for Ruffus
     3. more ``@transform`` (``multiprocess``) and ``@originate`` to start the pipeline
     4. task completion monitoring and exceptions
+       Mention the use of file dates and a database. Exceptions
     5. ``pipeline_printout``and ``cmdline``
     6. ``pipeline_printout_graph``
     7. ``suffix`` and ``formatter`` to generate output file names from input file names
@@ -73,7 +74,7 @@ Esoteric
     * ``@check_if_uptodate``
 
 Legacy and deprecated
-    * ``@files``
+   * ``@files``
     * ``@files_re``
     * ``regex``
     * ``@split(...,regex(),...)``
@@ -97,7 +98,7 @@ Future / Planned Improvements to  Ruffus
 Todo: Running python jobs remotely on cluster nodes
 ****************************************************
 
-    Might wait until next release.
+    Wait until next release.
 
     Will bump Ruffus to v.3.0 if can run python jobs transparently on a cluster!
 

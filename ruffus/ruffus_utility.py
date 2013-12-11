@@ -90,7 +90,7 @@ CHECKSUM_HISTORY_TIMESTAMPS   = 1     # also rerun when the history shows a job 
 CHECKSUM_FUNCTIONS            = 2     # also rerun when function body has changed
 CHECKSUM_FUNCTIONS_AND_PARAMS = 3     # also rerun when function parameters or function body change
 
-CHECKSUM_REGENERATE           = 3     # regenerate checksums
+CHECKSUM_REGENERATE           = 2     # regenerate checksums
 
 #_________________________________________________________________________________________
 
