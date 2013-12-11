@@ -134,6 +134,10 @@ def append_to_argparse (parser, **args_dict):
                                 help="Don't actually run any commands; just print the pipeline.")
     pipline_options.add_argument("--touch_files_only", action="store_true",
                                 help="Don't actually run the pipeline; just 'touch' the output for each task to make them appear up to date.")
+    pipline_options.add_argument("--recreate_database", action="store_true",
+                                help="Don't actually run the pipeline; just recreate the checksum database.")
+    pipline_options.add_argument("--checksum_file_name", dest = "history_file", metavar="FILE", type=str,
+                                help="Path of the checksum file.")
     pipline_options.add_argument("--flowchart", metavar="FILE", type=str,
                                 help="Don't run any commands; just print pipeline as a flowchart.")
 
@@ -193,6 +197,8 @@ def append_to_optparse (parser):
         -n, --just_print
             --flowchart
             --touch_files_only
+            --recreate_database
+            --checksum_file_name
             --key_legend_in_graph
             --draw_graph_horizontally
             --flowchart_format
@@ -230,6 +236,13 @@ def append_to_optparse (parser):
     parser.add_option("--touch_files_only", dest="touch_files_only",
                         action="store_true", default=False,
                         help="Don't actually run the pipeline; just 'touch' the output for each task to make them appear up to date.")
+    parser.add_option("--recreate_database", dest="recreate_database",
+                        action="store_true", default=False,
+                        help="Don't actually run the pipeline; just recreate the checksum database.")
+    parser.add_option("--checksum_file_name", dest="history_file",
+                        metavar="FILE",
+                        type="string",
+                        help="Path of the checksum file.")
     parser.add_option("--flowchart", dest="flowchart",
                         metavar="FILE",
                         type="string",
@@ -271,6 +284,7 @@ MESSAGE = 15
 logging.addLevelName(MESSAGE, "MESSAGE")
 import task
 import proxy_logger
+from ruffus_utility import CHECKSUM_REGENERATE
 import sys
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -426,8 +440,8 @@ extra_pipeline_printout_graph_options = [
                                             "pipeline_name"                  ,
                                             "size"                           ,
                                             "dpi"                            ,
-                                            "history_file"                      ,
-                                            "checksum_level"                    ,
+                                            "history_file"                   ,
+                                            "checksum_level"                 ,
                                             "runtime_data"                   ,
                                          ]
 extra_pipeline_printout_options   = [
@@ -501,11 +515,18 @@ def run (options, **extra_options):
         elif extra_options["logger"] == None:
             extra_options["logger"] = task.stderr_logger
         appropriate_options = get_extra_options_appropriate_for_command (extra_pipeline_run_options, extra_options)
+        if options.recreate_database:
+            touch_files_only = CHECKSUM_REGENERATE
+        elif options.recreate_database:
+            touch_files_only = True
+        else:
+            touch_files_only = False
         task.pipeline_run(  options.target_tasks,
                             options.forced_tasks,
                             multiprocess    = options.jobs,
                             verbose         = options.verbose,
-                            touch_files_only= options.touch_files_only,
+                            touch_files_only= touch_files_only,
+                            history_file = options.history_file,
                             **appropriate_options)
         return True
 
