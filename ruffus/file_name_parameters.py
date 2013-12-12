@@ -691,7 +691,10 @@ def file_names_from_tasks_globs(files_task_globs,
 
     # look up globs and tasks
     for g in files_task_globs.globs:
-        task_or_glob_to_files[g] = sorted(glob.glob(g))
+        # check whether still is glob pattern after transform
+        # {} are particularly suspicious...
+        if is_glob(g):
+            task_or_glob_to_files[g] = sorted(glob.glob(g))
     for t in files_task_globs.tasks:
         of = t.get_output_files(False, runtime_data)
         task_or_glob_to_files[t] = of
