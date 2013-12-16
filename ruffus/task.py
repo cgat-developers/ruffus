@@ -1100,6 +1100,7 @@ class _task (node):
                 messages.append(indent_str + "Task up-to-date")
 
         else:
+            runtime_data["MATCH_FAILURE"] = []
             #
             #   return messages description per job
             #
