@@ -1412,6 +1412,11 @@ class _task (node):
         """
         called even when all jobs are up to date
         """
+        if not self.is_active:
+            logger.info("Inactive Task = " + self.get_task_name())
+            self.output_filenames = None
+            return
+
         for f in self.posttask_functions:
             f()
         if jobs_uptodate:
@@ -3062,10 +3067,11 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     log_at_level (logger, 10, verbose, "   job_parameter_generator start task %s (parents completed)" % t._name)
                     force_rerun = t in forcedtorun_tasks
                     #
-                    # log task
+                    # Only log active task
                     #
-                    log_at_level (logger, 3, verbose, "Task enters queue = " + t.get_task_name() + (": Forced to rerun" if force_rerun else ""))
-                    log_at_level (logger, 3, verbose, t._description)
+                    if t.is_active:
+                        log_at_level (logger, 3, verbose, "Task enters queue = " + t.get_task_name() + (": Forced to rerun" if force_rerun else ""))
+                        log_at_level (logger, 3, verbose, t._description)
                     inprogress_tasks.add(t)
                     cnt_tasks_processed += 1
 
