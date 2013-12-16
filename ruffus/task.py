@@ -3068,7 +3068,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     #
                     # Only log active task
                     #
-                    if self.is_active:
+                    if t.is_active:
                         log_at_level (logger, 3, verbose, "Task enters queue = " + t.get_task_name() + (": Forced to rerun" if force_rerun else ""))
                         log_at_level (logger, 3, verbose, t._description)
                     inprogress_tasks.add(t)
