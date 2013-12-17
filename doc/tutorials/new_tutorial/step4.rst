@@ -146,7 +146,7 @@ Command line options made easier with ``ruffus.cmdline``
                     --version
                     --log_file
 
-                -t, --target_tasks
+                -T, --target_tasks
                 -j, --jobs
                 -n, --just_print
                     --flowchart
@@ -154,6 +154,10 @@ Command line options made easier with ``ruffus.cmdline``
                     --draw_graph_horizontally
                     --flowchart_format
                     --forced_tasks
+                    --touch_files_only
+                    --checksum_file_name
+                    --recreate_database
+
 
 
     This only requires five lines of code:

@@ -977,38 +977,40 @@ argparse
 
             parser = cmdline.get_argparse(description='WHAT DOES THIS PIPELINE DO?')
 
-            parser.add_argument("--input_file")
+            #   <<<---- add your own command line options like --input_file here
+            #parser.add_argument("--input_file")
 
             options = parser.parse_args()
 
-            #  logger which can be passed to ruffus tasks
+            #  logger which can be passed to multiprocessing ruffus tasks
             logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
 
-            #_____________________________________________________________________________________
+            #   <<<----  pipelined functions go here
 
-            #   pipelined functions go here
-
-            #_____________________________________________________________________________________
-
-            cmdline.run (options, version = "%(prog)s v 1.1")
+            cmdline.run (options)
 
 
     Provides these predefined options:
 
         .. code-block:: bash
 
-                    --verbose
-                    --version
-                    --log_file
+                --verbose
+                --version
+                --log_file
 
-                -t, --target_tasks
-                -j, --jobs
-                -n, --just_print
-                    --flowchart
-                    --key_legend_in_graph
-                    --draw_graph_horizontally
-                    --flowchart_format
-                    --forced_tasks
+            -T, --target_tasks
+            -j, --jobs
+            -n, --just_print
+                --flowchart
+                --key_legend_in_graph
+                --draw_graph_horizontally
+                --flowchart_format
+                --forced_tasks
+                --touch_files_only
+                --checksum_file_name
+                --recreate_database
+
+
 
 ============================================================================================================================================================
 optparse (deprecated)
