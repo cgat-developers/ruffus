@@ -239,8 +239,12 @@ def run_job_using_drmaa (cmd_str, job_queue_name = None, job_queue_priority = No
     if retval and retval.exitStatus != 0:
         raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n"
                                "The original command was:\n%s\n"
-                               "The stderr was: \n%s\n" %
-                                 (retval.exitStatus, cmd_str, "".join( stderr)) )
+                               "The stderr was: \n%s\n\n"
+                               "The stdout was: \n%s\n\n" %
+                                 (retval.exitStatus, cmd_str,
+                                    "".join( stderr),
+                                    "".join( stdout)
+                                     ) )
 
 
     #
@@ -283,8 +287,9 @@ def run_job_locally (cmd_str, logger = None):
     if process.returncode != 0:
         raise error_drmaa_job( "The locally run command was terminated by signal %i:\n"
                                "The original command was:\n%s\n"
-                               "The stderr was: \n%s\n" %
-                                 (-process.returncode, cmd_str, "".join( stderr)) )
+                               "The stderr was: \n%s\n\n"
+                               "The stdout was: \n%s\n\n" %
+                                 (-process.returncode, cmd_str, "".join( stderr), "".join( stdout)) )
 
     return stdout.splitlines(True), stderr.splitlines(True)
 
