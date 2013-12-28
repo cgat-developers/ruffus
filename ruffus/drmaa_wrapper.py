@@ -201,7 +201,7 @@ def run_job_using_drmaa (cmd_str, job_queue_name = None, job_queue_priority = No
     #
     #   make job template
     #
-    job_template = setup_drmaa_job( session, job_queue_name, job_queue_priority, job_name, job_other_options)
+    job_template = setup_drmaa_job( drmaa_session, job_queue_name, job_queue_priority, job_name, job_other_options)
 
     #
     #   make job script
@@ -215,12 +215,12 @@ def run_job_using_drmaa (cmd_str, job_queue_name = None, job_queue_priority = No
     #
     #   Run job and wait
     #
-    jobid = session.runJob(job_template)
+    jobid = drmaa_session.runJob(job_template)
     if logger:
         logger.debug( "job has been submitted with jobid %s" % str(jobid ))
 
     try:
-        retval = session.wait(jobid, drmaa.Session.TIMEOUT_WAIT_FOREVER)
+        retval = drmaa_session.wait(jobid, drmaa.Session.TIMEOUT_WAIT_FOREVER)
     except Exception, msg:
         # ignore message 24 in PBS
         # code 24: drmaa: Job finished but resource usage information and/or termination status could not be provided.":
@@ -246,7 +246,7 @@ def run_job_using_drmaa (cmd_str, job_queue_name = None, job_queue_priority = No
     #
     #   clean up job template
     #
-    session.deleteJobTemplate(job_template)
+    drmaa_session.deleteJobTemplate(job_template)
 
     #
     #   Cleanup job script
