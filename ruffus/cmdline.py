@@ -86,17 +86,44 @@
 
 def get_argparse (*args, **args_dict):
     """
-    Common options:
+    Set up argparse
+        to allow for ruffus specific options:
 
             --verbose
             --version
             --log_file
+
+        -t, --target_tasks
+        -j, --jobs
+        -n, --just_print
+            --flowchart
+            --touch_files_only
+            --recreate_database
+            --checksum_file_name
+            --key_legend_in_graph
+            --draw_graph_horizontally
+            --flowchart_format
+            --forced_tasks
+
+    Optionally specify ignored_args = ["verbose", "recreate_database",...]
+        listing names which will not be added as valid options on the command line
+
+    Optionally specify version = "%(prog)s version 1.234"
+
     """
     import argparse
 
+    # version and ignored_args are for append_to_argparse
+    orig_args_dict = dict(args_dict)
+    if "version" in args_dict:
+        del args_dict["version"]
+    if "ignored_args" in args_dict:
+        del args_dict["ignored_args"]
+
     parser = argparse.ArgumentParser(*args, **args_dict)
 
-    return append_to_argparse(parser, **args_dict)
+
+    return append_to_argparse(parser, **orig_args_dict)
 
 def append_to_argparse (parser, **args_dict):
     """
@@ -112,55 +139,87 @@ def append_to_argparse (parser, **args_dict):
     else:
         prog_version = "%(prog)s 1.0"
 
+    #
+    #   ignored_args contains a list of options which will *not* be added
+    #
+    if "ignored_args" in args_dict:
+        if isinstance(args_dict["ignored_args"], basestring):
+            ignored_args = set([args_dict["ignored_args"]])
+        else:
+            try:
+                ignored_args = set(args_dict["ignored_args"])
+            except:
+                raise Exception("Error: expected ignored_args = ['list_of', 'option_names']")
+    else:
+        ignored_args = set()
+
+
 
     common_options = parser.add_argument_group('Common options')
-    common_options.add_argument('--verbose', "-v", const=1, default=0, nargs='?', type= int,
-                                help="Print more verbose messages for each additional verbose level.")
-    common_options.add_argument('--version', action='version', version=prog_version)
-    common_options.add_argument("-L", "--log_file", metavar="FILE", type=str,
-                                  help="Name and path of log file")
+    if "verbose" not in ignored_args:
+        common_options.add_argument('--verbose', "-v", const=1, default=0, nargs='?', type= int,
+                                    help="Print more verbose messages for each additional verbose level.")
+    if "version" not in ignored_args:
+        common_options.add_argument('--version', action='version', version=prog_version)
+    if "log_file" not in ignored_args:
+        common_options.add_argument("-L", "--log_file", metavar="FILE", type=str,
+                                      help="Name and path of log file")
 
 
     #
     #   pipeline
     #
-    pipline_options = parser.add_argument_group('pipeline arguments')
-    pipline_options.add_argument("-T", "--target_tasks", action="append",
-                                metavar="JOBNAME", type=str,
-                                help="Target task(s) of pipeline.", default = [])
-    pipline_options.add_argument("-j", "--jobs", default=1, metavar="N", type=int,
-                                help="Allow N jobs (commands) to run simultaneously.")
-    pipline_options.add_argument("-n", "--just_print", action="store_true",
-                                help="Don't actually run any commands; just print the pipeline.")
-    pipline_options.add_argument("--touch_files_only", action="store_true",
-                                help="Don't actually run the pipeline; just 'touch' the output for each task to make them appear up to date.")
-    pipline_options.add_argument("--recreate_database", action="store_true",
-                                help="Don't actually run the pipeline; just recreate the checksum database.")
-    pipline_options.add_argument("--checksum_file_name", dest = "history_file", metavar="FILE", type=str,
-                                help="Path of the checksum file.")
-    pipline_options.add_argument("--flowchart", metavar="FILE", type=str,
-                                help="Don't run any commands; just print pipeline as a flowchart.")
+    pipeline_options = parser.add_argument_group('pipeline arguments')
+    if "target_tasks" not in ignored_args:
+        pipeline_options.add_argument("-T", "--target_tasks", action="append",
+                                    metavar="JOBNAME", type=str,
+                                    help="Target task(s) of pipeline.", default = [])
+    if "jobs" not in ignored_args:
+        pipeline_options.add_argument("-j", "--jobs", default=1, metavar="N", type=int,
+                                    help="Allow N jobs (commands) to run simultaneously.")
+    if "use_threads" not in ignored_args:
+        pipeline_options.add_argument("--use_threads", action="store_true",
+                                    help="Use multiple threads rather than processes. Needs --jobs N with N > 1")
+    if "just_print" not in ignored_args:
+        pipeline_options.add_argument("-n", "--just_print", action="store_true",
+                                    help="Don't actually run any commands; just print the pipeline.")
+    if "touch_files_only" not in ignored_args:
+        pipeline_options.add_argument("--touch_files_only", action="store_true",
+                                    help="Don't actually run the pipeline; just 'touch' the output for each task to make them appear up to date.")
+    if "recreate_database" not in ignored_args:
+        pipeline_options.add_argument("--recreate_database", action="store_true",
+                                    help="Don't actually run the pipeline; just recreate the checksum database.")
+    if "checksum_file_name" not in ignored_args:
+        pipeline_options.add_argument("--checksum_file_name", dest = "history_file", metavar="FILE", type=str,
+                                    help="Path of the checksum file.")
+    if "flowchart" not in ignored_args:
+        pipeline_options.add_argument("--flowchart", metavar="FILE", type=str,
+                                    help="Don't run any commands; just print pipeline as a flowchart.")
 
     #
     #   Less common pipeline options
     #
-    pipline_options.add_argument("--key_legend_in_graph",     action="store_true",
-                                help="Print out legend and key for dependency graph.")
-    pipline_options.add_argument("--draw_graph_horizontally", action="store_true", dest= "draw_horizontally",
-                                help="Draw horizontal dependency graph.")
-    pipline_options.add_argument("--flowchart_format", metavar="FORMAT",
-                                type=str, choices = ["svg", "svgz", "png", "jpg", "pdf", "dot"],
-                                #  "eps", "jpeg", "gif", "plain", "ps", "wbmp", "canon",
-                                #  "cmap", "cmapx", "cmapx_np", "fig", "gd", "gd2",
-                                # "gv", "imap", "imap_np", "ismap", "jpe", "plain-ext",
-                                # "ps2", "tk", "vml", "vmlz", "vrml", "x11", "xdot", "xlib"
-                                default = 'svg',
-                                help="format of dependency graph file. Can be 'pdf', " +
-                                      "'svg', 'svgz' (Structured Vector Graphics), 'pdf', " +
-                                      "'png' 'jpg' (bitmap  graphics) etc ")
-    pipline_options.add_argument("--forced_tasks", action="append",
-                                metavar="JOBNAME", type=str,
-                                help="Task(s) which will be included even if they are up to date.", default = [])
+    if "key_legend_in_graph" not in ignored_args:
+        pipeline_options.add_argument("--key_legend_in_graph",     action="store_true",
+                                    help="Print out legend and key for dependency graph.")
+    if "draw_graph_horizontally" not in ignored_args:
+        pipeline_options.add_argument("--draw_graph_horizontally", action="store_true", dest= "draw_horizontally",
+                                    help="Draw horizontal dependency graph.")
+    if "flowchart_format" not in ignored_args:
+        pipeline_options.add_argument("--flowchart_format", metavar="FORMAT",
+                                    type=str, choices = ["svg", "svgz", "png", "jpg", "pdf", "dot"],
+                                    #  "eps", "jpeg", "gif", "plain", "ps", "wbmp", "canon",
+                                    #  "cmap", "cmapx", "cmapx_np", "fig", "gd", "gd2",
+                                    # "gv", "imap", "imap_np", "ismap", "jpe", "plain-ext",
+                                    # "ps2", "tk", "vml", "vmlz", "vrml", "x11", "xdot", "xlib"
+                                    default = 'svg',
+                                    help="format of dependency graph file. Can be 'pdf', " +
+                                          "'svg', 'svgz' (Structured Vector Graphics), 'pdf', " +
+                                          "'png' 'jpg' (bitmap  graphics) etc ")
+    if "forced_tasks" not in ignored_args:
+        pipeline_options.add_argument("--forced_tasks", action="append",
+                                    metavar="JOBNAME", type=str,
+                                    help="Task(s) which will be included even if they are up to date.", default = [])
 
 
 
@@ -170,20 +229,6 @@ def append_to_argparse (parser, **args_dict):
 
 
 def get_optparse (*args, **args_dict):
-    """
-    Common options:
-
-            --verbose
-            --version
-            --log_file
-    """
-    from optparse import OptionParser
-
-    parser = OptionParser(*args, **args_dict)
-
-    return append_to_optparse(parser)
-
-def append_to_optparse (parser):
     """
     Set up OptionParser from optparse
         to allow for ruffus specific options:
@@ -204,76 +249,146 @@ def append_to_optparse (parser):
             --flowchart_format
             --forced_tasks
 
+    Optionally specify ignored_args = ["verbose", "recreate_database",...]
+        listing names which will not be added as valid options on the command line
+
+    N.B. optparse is deprecated since python version 2.7.
     """
+    from optparse import OptionParser
+
+    # ignored_args are for append_to_optparse
+    orig_args_dict = dict(args_dict)
+    if "ignored_args" in args_dict:
+        del args_dict["ignored_args"]
+
+    parser = OptionParser(*args, **args_dict)
+
+    return append_to_optparse(parser, **orig_args_dict)
+
+def append_to_optparse (parser, **args_dict):
+    """
+    Set up OptionParser from optparse
+        to allow for ruffus specific options:
+
+            --verbose
+            --version
+            --log_file
+
+        -t, --target_tasks
+        -j, --jobs
+        -n, --just_print
+            --flowchart
+            --touch_files_only
+            --recreate_database
+            --checksum_file_name
+            --key_legend_in_graph
+            --draw_graph_horizontally
+            --flowchart_format
+            --forced_tasks
+
+    Optionally specify ignored_args = ["verbose", "recreate_database",...]
+        listing names which will not be added as valid options on the command line
+    """
+
+    #
+    #   ignored_args contains a list of options which will *not* be added
+    #
+    if "ignored_args" in args_dict:
+        if isinstance(args_dict["ignored_args"], basestring):
+            ignored_args = set([args_dict["ignored_args"]])
+        else:
+            try:
+                ignored_args = set(args_dict["ignored_args"])
+            except:
+                raise Exception("Error: expected ignored_args = ['list_of', 'option_names']")
+    else:
+        ignored_args = set()
 
     #
     #   general options: verbosity / logging
     #
-    parser.add_option("-v", "--verbose", dest = "verbose",
-                      action="count", default=0,
-                      help="Print more verbose messages for each additional verbose level.")
-    parser.add_option("-L", "--log_file", dest="log_file",
-                      metavar="FILE",
-                      type="string",
-                      help="Name and path of log file")
+    if "verbose" not in ignored_args:
+        parser.add_option("-v", "--verbose", dest = "verbose",
+                          action="count", default=0,
+                          help="Print more verbose messages for each additional verbose level.")
+    if "log_file" not in ignored_args:
+        parser.add_option("-L", "--log_file", dest="log_file",
+                          metavar="FILE",
+                          type="string",
+                          help="Name and path of log file")
     #
     #   pipeline
     #
-    parser.add_option("-t", "--target_tasks", dest="target_tasks",
-                        action="append",
-                        default = list(),
-                        metavar="JOBNAME",
-                        type="string",
-                        help="Target task(s) of pipeline.")
-    parser.add_option("-j", "--jobs", dest="jobs",
-                        default=1,
-                        metavar="N",
-                        type="int",
-                        help="Allow N jobs (commands) to run simultaneously.")
-    parser.add_option("-n", "--just_print", dest="just_print",
-                        action="store_true", default=False,
-                        help="Don't actually run any commands; just print the pipeline.")
-    parser.add_option("--touch_files_only", dest="touch_files_only",
-                        action="store_true", default=False,
-                        help="Don't actually run the pipeline; just 'touch' the output for each task to make them appear up to date.")
-    parser.add_option("--recreate_database", dest="recreate_database",
-                        action="store_true", default=False,
-                        help="Don't actually run the pipeline; just recreate the checksum database.")
-    parser.add_option("--checksum_file_name", dest="history_file",
-                        metavar="FILE",
-                        type="string",
-                        help="Path of the checksum file.")
-    parser.add_option("--flowchart", dest="flowchart",
-                        metavar="FILE",
-                        type="string",
-                        help="Don't actually run any commands; just print the pipeline "
-                             "as a flowchart.")
+    if "target_tasks" not in ignored_args:
+            parser.add_option("-t", "--target_tasks", dest="target_tasks",
+                            action="append",
+                            default = list(),
+                            metavar="JOBNAME",
+                            type="string",
+                            help="Target task(s) of pipeline.")
+    if "jobs" not in ignored_args:
+        parser.add_option("-j", "--jobs", dest="jobs",
+                            default=1,
+                            metavar="N",
+                            type="int",
+                            help="Allow N jobs (commands) to run simultaneously.")
+    if "use_threads" not in ignored_args:
+        parser.add_option("--use_threads", dest="use_threads",
+                            action="store_true", default=False,
+                            help="Use multiple threads rather than processes. Needs --jobs N with N > 1")
+    if "just_print" not in ignored_args:
+        parser.add_option("-n", "--just_print", dest="just_print",
+                            action="store_true", default=False,
+                            help="Don't actually run any commands; just print the pipeline.")
+    if "touch_files_only" not in ignored_args:
+        parser.add_option("--touch_files_only", dest="touch_files_only",
+                            action="store_true", default=False,
+                            help="Don't actually run the pipeline; just 'touch' the output for each task to make them appear up to date.")
+    if "recreate_database" not in ignored_args:
+        parser.add_option("--recreate_database", dest="recreate_database",
+                            action="store_true", default=False,
+                            help="Don't actually run the pipeline; just recreate the checksum database.")
+    if "checksum_file_name" not in ignored_args:
+        parser.add_option("--checksum_file_name", dest="history_file",
+                            metavar="FILE",
+                            type="string",
+                            help="Path of the checksum file.")
+    if "flowchart" not in ignored_args:
+        parser.add_option("--flowchart", dest="flowchart",
+                            metavar="FILE",
+                            type="string",
+                            help="Don't actually run any commands; just print the pipeline "
+                                 "as a flowchart.")
 
     #
     #   Less common pipeline options
     #
-    parser.add_option("--key_legend_in_graph", dest="key_legend_in_graph",
-                        action="store_true", default=False,
-                        help="Print out legend and key for dependency graph.")
-    parser.add_option("--draw_graph_horizontally", dest="draw_horizontally",
-                        action="store_true", default=False,
-                        help="Draw horizontal dependency graph.")
-    parser.add_option("--flowchart_format", dest="flowchart_format",
-                        metavar="FORMAT",
-                        type="string",
-                        default = 'svg',
-                        help="format of dependency graph file. Can be 'ps' (PostScript), "+
-                              "'svg' 'svgz' (Structured Vector Graphics), " +
-                              "'png' 'gif' (bitmap  graphics) etc ")
-    parser.add_option("--forced_tasks", dest="forced_tasks",
-                        action="append",
-                        default = list(),
-                        metavar="JOBNAME",
-                        type="string",
-                        help="Pipeline task(s) which will be included even if they are up to date.")
+    if "key_legend_in_graph" not in ignored_args:
+        parser.add_option("--key_legend_in_graph", dest="key_legend_in_graph",
+                            action="store_true", default=False,
+                            help="Print out legend and key for dependency graph.")
+    if "flowchart_format" not in ignored_args:
+        parser.add_option("--draw_graph_horizontally", dest="draw_horizontally",
+                            action="store_true", default=False,
+                            help="Draw horizontal dependency graph.")
+    if "flowchart_format" not in ignored_args:
+        parser.add_option("--flowchart_format", dest="flowchart_format",
+                            metavar="FORMAT",
+                            type="string",
+                            default = 'svg',
+                            help="format of dependency graph file. Can be 'ps' (PostScript), "+
+                                  "'svg' 'svgz' (Structured Vector Graphics), " +
+                                  "'png' 'gif' (bitmap  graphics) etc ")
+    if "forced_tasks" not in ignored_args:
+        parser.add_option("--forced_tasks", dest="forced_tasks",
+                            action="append",
+                            default = list(),
+                            metavar="JOBNAME",
+                            type="string",
+                            help="Pipeline task(s) which will be included even if they are up to date.")
 
 
-    return parser
+        return parser
 
 
 
@@ -490,6 +605,25 @@ def run (options, **extra_options):
     Returns True if pipeline_run
     """
 
+    #
+    #   be very defensive: these options names are use below. Make sure they already
+    #       exist in ``options`` , even if they have a value of None
+    #
+    for attr_name in [  "just_print",
+                        "verbose",
+                        "flowchart",
+                        "flowchart_format",
+                        "target_tasks",
+                        "forced_tasks",
+                        "draw_horizontally",
+                        "key_legend_in_graph",
+                        "use_threads",
+                        "jobs",
+                        "recreate_database",
+                        "touch_files_only",
+                        "history_file" ]:
+        if not hasattr(options, attr_name):
+            setattr(options, attr_name, None)
 
     if options.just_print:
         appropriate_options = get_extra_options_appropriate_for_command (extra_pipeline_printout_options, extra_options)
@@ -508,6 +642,20 @@ def run (options, **extra_options):
                                         **appropriate_options)
         return False
     else:
+
+        #
+        #   turn on multithread if --use_threads specified and --jobs > 1
+        #       ignore if manually specified
+        #
+        if  (   options.use_threads
+                # ignore if manual override
+                and not "multithread" in extra_options
+                and options.jobs and options.jobs > 1):
+            multithread = options.jobs
+        else:
+            multithread = None
+
+
         if not "logger" in extra_options:
             extra_options["logger"] = None
         if extra_options["logger"] == False:
@@ -517,13 +665,14 @@ def run (options, **extra_options):
         appropriate_options = get_extra_options_appropriate_for_command (extra_pipeline_run_options, extra_options)
         if options.recreate_database:
             touch_files_only = CHECKSUM_REGENERATE
-        elif options.recreate_database:
+        elif options.touch_files_only:
             touch_files_only = True
         else:
             touch_files_only = False
         task.pipeline_run(  options.target_tasks,
                             options.forced_tasks,
                             multiprocess    = options.jobs,
+                            multithread     = multithread,
                             verbose         = options.verbose,
                             touch_files_only= touch_files_only,
                             history_file = options.history_file,

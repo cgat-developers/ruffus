@@ -983,12 +983,13 @@ argparse
 
         .. code-block:: bash
 
-                --verbose
+            -v, --verbose
                 --version
-                --log_file
+            -L, --log_file
 
             -T, --target_tasks
             -j, --jobs
+                --use_threads
             -n, --just_print
                 --flowchart
                 --key_legend_in_graph
@@ -998,6 +999,24 @@ argparse
                 --touch_files_only
                 --checksum_file_name
                 --recreate_database
+
+    Note that particular options can be skipped (not added to the command line:
+
+        .. code-block:: python
+
+            parser = cmdline.get_argparse(  description='WHAT DOES THIS PIPELINE DO?',
+                                            prog = "my_%(prog)s",
+                                            ignored_args = ["log_file", "key_legend_in_graph"])
+
+
+    Note that the version for ``get_argparse`` defaults to ``"%(prog)s 1.0"`` unless specified:
+
+        .. code-block:: python
+
+            parser = cmdline.get_argparse(  description='WHAT DOES THIS PIPELINE DO?',
+                                            version = "my_programme.py v. 2.23")
+
+
 
 
 
