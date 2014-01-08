@@ -3387,6 +3387,18 @@ def pipeline_run(target_tasks                     = [],
                         "values passes to jobs at run time.")
 
 
+    #
+    #   whether using multiprocessing or multithreading
+    #
+    if multithread:
+        pool = ThreadPool(multithread)
+        parallelism = multithread
+    elif multiprocess > 1:
+        pool = Pool(multiprocess)
+        parallelism = multiprocess
+    else:
+        parallelism = 1
+        pool = None
 
     #
     #   Supplement mtime with system clock if using CHECKSUM_HISTORY_TIMESTAMPS
@@ -3514,7 +3526,7 @@ def pipeline_run(target_tasks                     = [],
                                                         syncmanager,
                                                         touch_files_only, job_history)
     job_parameters = parameter_generator()
-    fill_queue_with_job_parameters(job_parameters, parameter_q, multiprocess, logger, verbose)
+    fill_queue_with_job_parameters(job_parameters, parameter_q, parallelism, logger, verbose)
 
     #
     #   N.B.
@@ -3529,7 +3541,7 @@ def pipeline_run(target_tasks                     = [],
     #   #
     #   #   whether using multiprocessing
     #   #
-    #   pool = Pool(multiprocess) if multiprocess > 1 else None
+    #   pool = Pool(parallelism) if multiprocess > 1 else None
     #   if pool:
     #       pool_func = pool.imap_unordered
     #       job_iterator_timeout = []
@@ -3553,18 +3565,6 @@ def pipeline_run(target_tasks                     = [],
 
 
 
-    #
-    #   whether using multiprocessing or multithreading
-    #
-    if multithread:
-        pool = ThreadPool(multithread)
-        parallelism = multithread
-    elif multiprocess > 1:
-        pool = Pool(multiprocess)
-        parallelism = multiprocess
-    else:
-        parallelism = 1
-        pool = None
 
     if pool:
         pool_func = pool.imap_unordered
