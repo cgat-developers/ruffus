@@ -652,8 +652,16 @@ def run (options, **extra_options):
                 and not "multithread" in extra_options
                 and options.jobs and options.jobs > 1):
             multithread = options.jobs
+        elif "multithread" in extra_options:
+            multithread = extra_options["multithread"]
+            del extra_options["multithread"]
         else:
             multithread = None
+
+
+
+
+
 
 
         if not "logger" in extra_options:
