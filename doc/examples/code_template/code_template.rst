@@ -14,26 +14,34 @@ a good place to start developing a new pipeline.
 From version 2.4 up, Ruffus therefore includes an optional ``Ruffus.cmdline`` module which provides
 support for a set of common command line arguments which make writing *Ruffus* much more pleasant
 
-All you need to do is
+******************************************************
+``argparse``
+******************************************************
+    All you need to do is copy these 6 lines
 
- * change the file name(!)
- * add any extra command line arguments
- * Place your pipeline code where it says
-    ::
+
+    .. code-block:: python
+        :emphasize-lines: 5,13
+        :linenos:
+
+        from ruffus import *
+
+        parser = cmdline.get_argparse(description='WHAT DOES THIS PIPELINE DO?')
+
+        #   <<<---- add your own command line options like --input_file here
+        # parser.add_argument("--input_file")
+
+        options = parser.parse_args()
+
+        #  logger which can be passed to multiprocessing ruffus tasks
+        logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
 
         #   <<<----  pipelined functions go here
 
-    and run the script
+        cmdline.run (options)
 
- .. note::
-
-        Python code for the Ruffus script template is available for:
-
-            * :ref:`Display <code_template.code>` or
-            * :download:`Download <../../static_data/example_scripts/ruffus_template.py>`
-
-You are recommended to use the standard `argparse  <http://docs.python.org/2.7/library/argparse.html>`__ module
-but the deprecated `optparse  <http://docs.python.org/2.7/library/optparse.html>`__ module works as well.
+    You are recommended to use the standard `argparse  <http://docs.python.org/2.7/library/argparse.html>`__ module
+    but the deprecated `optparse  <http://docs.python.org/2.7/library/optparse.html>`__ module works as well. (See :ref:`below <code_template.optparse>` for the template)
 
 
 ##################################
@@ -211,6 +219,7 @@ Example 2: nested in common directory
 ============================================================================================================================================================
 
     .. code-block:: bash
+
         export DEFAULT_RUFFUS_HISTORY_FILE=/common/path/for/job_history/{path}/.{basename}.ruffus_history.sqlite
 
     .. code-block:: bash
@@ -270,34 +279,13 @@ Touch files
                                             version = "my_programme.py v. 2.23")
 
 
-******************************************************
-``argparse``
-******************************************************
-
-    .. code-block:: python
-
-        from ruffus import *
-
-        parser = cmdline.get_argparse(description='WHAT DOES THIS PIPELINE DO?')
-
-        #   <<<---- add your own command line options like --input_file here
-        # parser.add_argument("--input_file")
-
-        options = parser.parse_args()
-
-        #  logger which can be passed to multiprocessing ruffus tasks
-        logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
-
-        #   <<<----  pipelined functions go here
-
-        cmdline.run (options)
 
 
 
 
 
 
-
+.. _code_template.optparse:
 
 ******************************************************
 ``optparse``

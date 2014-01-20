@@ -43,6 +43,7 @@ Manual:
 .. toctree::
    :maxdepth: 2
 
+   tutorials/manual/manual_contents.rst
    tutorials/manual/manual_introduction.rst
    tutorials/manual/follows.rst
    tutorials/manual/tasks_as_recipes.rst
@@ -98,7 +99,7 @@ Examples
    examples/bioinformatics/part2_code.rst
    examples/colour_schemes/flowchart_colours.rst
    examples/colour_schemes/flowchart_colours_code.rst
-   examples/code_template/code_template_code.rst
+   examples/code_template/code_template.rst
    tutorials/manual/manual_code.rst
    tutorials/simple_tutorial/simple_tutorial_code.rst
 
