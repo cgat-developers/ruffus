@@ -33,9 +33,6 @@ Q. *Ruffus* won't create dependency graphs
 
 
 
-
-
-
 =========================================================
 Q. *Ruffus* seems to be hanging in the same place
 =========================================================
@@ -284,6 +281,30 @@ Q. Can I call extra code before each job?
 =========================================================================================================
 Q. Does *Ruffus* allow checkpointing: to distinguish interrupted and completed results?
 =========================================================================================================
+
+_____________________________________________________
+A. Use the builtin sqlite checkpointing
+_____________________________________________________
+
+
+    By default, ``pipeline_run(...)`` will save the timestamps for output files from successfully run jobs to an sqlite database file (``.ruffus_history.sqlite``) in the current directory .
+
+    * If you are using ``Ruffus.cmdline``, you can change the checksum / timestamp database file name on the command line using  ``--checksum_file_name NNNN``
+    *
+
+
+    The level of timestamping / checksumming can be set via the ``checksum_level`` parameter::
+
+    .. code-block::
+
+        pipeline_run(..., checksum_level = N, ...)
+
+    where the default is 1:
+
+       level 0 : Use only file timestamps
+       level 1 : above, plus timestamp of successful job completion
+       level 2 : above, plus a checksum of the pipeline function body
+       level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
 
 _____________________________________________________
 A. Use a flag file
