@@ -1058,10 +1058,10 @@ def expand_nested_tasks_or_globs(p, tasksglobs_to_filenames):
             elif pp.__class__.__name__ == '_task' or isinstance(pp, runtime_parameter):
                 files = tasksglobs_to_filenames[pp]
                 # task may have produced a single output: in which case append
-                if isinstance(files, basestring):
-                    l.append(files)
-                else:
+                if non_str_sequence(files):
                     l.extend(files)
+                else:
+                    l.append(files)
             else:
                 l.append(expand_nested_tasks_or_globs(pp, tasksglobs_to_filenames))
         return type(p)(l)

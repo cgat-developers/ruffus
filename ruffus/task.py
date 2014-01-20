@@ -1746,7 +1746,7 @@ class _task (node):
             if isinstance(file_name_transform_tag, formatter):
                 return t_formatter_file_names_transform(self, file_name_transform_tag, error_type, decorator_name)
 
-        raise error_type(self, "%s expects one of as the second argument" % (decorator_name, ", ".join(valid_tag_names)))
+        raise error_type(self, "%s expects one of %s as the second argument" % (decorator_name, ", ".join(valid_tag_names)))
 
 
     #_________________________________________________________________________________________
