@@ -2732,7 +2732,7 @@ def pipeline_printout_graph (stream,
                              size                           = (11,8),
                              dpi                            = 120,
                              runtime_data                   = None,
-                             checksum_level                 = CHECKSUM_HISTORY_TIMESTAMPS,
+                             checksum_level                 = None,
                              history_file                   = None):
                              # Remember to add further extra parameters here to "extra_pipeline_printout_graph_options" inside cmdline.py
                              # This will forward extra parameters from the command line to pipeline_printout_graph
@@ -2758,6 +2758,9 @@ def pipeline_printout_graph (stream,
                     level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
     """
 
+
+    if checksum_level is None:
+        checksum_level = get_default_checksum_level()
 
     link_task_names_to_functions ()
     update_checksum_level_on_tasks (checksum_level)
@@ -2834,7 +2837,7 @@ def pipeline_printout(  output_stream,
                         gnu_make_maximal_rebuild_mode   = True,
                         wrap_width                      = 100,
                         runtime_data                    = None,
-                        checksum_level                  = CHECKSUM_HISTORY_TIMESTAMPS,
+                        checksum_level                  = None,
                         history_file                    = None):
                       # Remember to add further extra parameters here to "extra_pipeline_printout_options" inside cmdline.py
                       # This will forward extra parameters from the command line to pipeline_printout
@@ -2887,6 +2890,9 @@ def pipeline_printout(  output_stream,
     if not isinstance(runtime_data, dict):
         raise Exception("pipeline_run parameter runtime_data should be a dictionary of "
                         "values passes to jobs at run time.")
+
+    if checksum_level is None:
+        checksum_level = get_default_checksum_level()
 
     link_task_names_to_functions ()
     update_checksum_level_on_tasks(checksum_level)
@@ -3333,7 +3339,7 @@ def pipeline_run(target_tasks                     = [],
                  touch_files_only                 = False,
                  exceptions_terminate_immediately = False,
                  log_exceptions                   = False,
-                 checksum_level                    = CHECKSUM_HISTORY_TIMESTAMPS,
+                 checksum_level                   = None,
                  multithread                      = 0,
                  history_file                     = None):
                  # Remember to add further extra parameters here to "extra_pipeline_run_options" inside cmdline.py
@@ -3399,6 +3405,9 @@ def pipeline_run(target_tasks                     = [],
     else:
         parallelism = 1
         pool = None
+
+    if checksum_level is None:
+        checksum_level = get_default_checksum_level()
 
     #
     #   Supplement mtime with system clock if using CHECKSUM_HISTORY_TIMESTAMPS
