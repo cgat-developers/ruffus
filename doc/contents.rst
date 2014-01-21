@@ -20,6 +20,13 @@ Start Here:
    6. Calculate partial solutions in parallel <tutorials/simple_tutorial/step6_transform>
    7. Re-combine the partial solutions into the final result <tutorials/simple_tutorial/step7_merge>
    8. Automatically signal the completion of each step of our pipeline <tutorials/simple_tutorial/step8_posttask>
+
+==========================================
+New tutorial in revision
+==========================================
+.. toctree::
+   :maxdepth: 1
+
    1. Chain tasks (functions) together into a pipeline <tutorials/new_tutorial/step1>
    2. Transforming data in a pipeline <tutorials/new_tutorial/step2>
    3. More on data transformation <tutorials/new_tutorial/step3>
@@ -81,7 +88,7 @@ Overview:
    Bugs and Updates <history>
    Future plans <todo>
    Pending changes <refactoring_ruffus_notes>
-   Implementation_notes
+   Implementation_notes <implementation_notes.rst>
    faq.rst
    glossary.rst
    gallery.rst
@@ -100,7 +107,6 @@ Examples
    examples/bioinformatics/part2_code.rst
    examples/colour_schemes/flowchart_colours.rst
    examples/colour_schemes/flowchart_colours_code.rst
-   examples/code_template/code_template.rst
    tutorials/manual/manual_code.rst
    tutorials/simple_tutorial/simple_tutorial_code.rst
 

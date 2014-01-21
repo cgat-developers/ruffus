@@ -1,7 +1,9 @@
 .. include:: ../../global.inc
 .. _New_Tutorial_1st_step:
 
-    * :ref:`New tutorial overview <New_Tutorial>`
+.. index::
+    pair: overview; Tutorial
+
 
 ######################################################################################################################################
 New Tutorial in revision Step 1: An introduction to basic Ruffus syntax
@@ -35,10 +37,10 @@ A gentle introduction to Ruffus syntax
         ::
 
             def first_task():
-                print "Hello "
+                print "# Hello "
 
             def second_task():
-                print "world"
+                print "# World"
 
 
     The simplest **Ruffus** pipeline would look like this:
@@ -49,11 +51,11 @@ A gentle introduction to Ruffus syntax
             from ruffus import *
 
             def first_task():
-                print "Hello "
+                print "# Hello "
 
             @follows(first_task)
             def second_task():
-                print "world"
+                print "# World"
 
             pipeline_run([second_task])
 
@@ -125,7 +127,7 @@ Running the pipeline
             >>> pipeline_run([second_task], verbose = 1)
 
     Ruffus by default prints out the ``verbose`` progress through the pipelined code,
-    interleaved with the **Hello** printed by ``first_task`` and **World** printed
+    interleaved with the "**# Hello**" printed by ``first_task`` and "**# World**" printed
     by ``second_task``.
 
 
@@ -135,10 +137,10 @@ Running the pipeline
 
             >>> pipeline_run([second_task], verbose = 1)
             Start Task = first_task
-            Hello
+            # Hello
                 Job completed
             Completed Task = first_task
             Start Task = second_task
-            world
+            # World
                 Job completed
             Completed Task = second_task

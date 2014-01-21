@@ -5,25 +5,26 @@
 **Ruffus** Manual: Table of Contents:
 ####################################################################
 
-    :ref:`manual_introduction <manual_introduction>`
-    :ref:`follows <follows>`
-    :ref:`tasks_as_recipes <tasks_as_recipes>`
-    :ref:`files <files>`
-    :ref:`tasks_and_globs_in_inputs <tasks_and_globs_in_inputs>`
-    :ref:`tracing_pipeline_parameters <tracing_pipeline_parameters>`
-    :ref:`parallel_processing <parallel_processing>`
-    :ref:`split <split>`
-    :ref:`transform <transform>`
-    :ref:`merge <merge>`
-    :ref:`posttask <posttask>`
-    :ref:`jobs_limit <jobs_limit>`
-    :ref:`dependencies <dependencies>`
-    :ref:`onthefly <onthefly>`
-    :ref:`collate <collate>`
-    :ref:`advanced_transform <advanced_transform>`
-    :ref:`parallel <parallel>`
-    :ref:`check_if_uptodate <check_if_uptodate>`
-    :ref:`exceptions <exceptions>`
-    :ref:`logging <logging>`
-    :ref:`files_re <files_re>`
+    :ref:`manual_introduction <manual.introduction>`
+
+    #) :ref:`follows <manual.follows>`
+    #) :ref:`tasks_as_recipes <manual.tasks_as_recipes>`
+    #) :ref:`files <manual.files>`
+    #) :ref:`tasks_and_globs_in_inputs <manual.tasks_and_globs_in_inputs>`
+    #) :ref:`tracing_pipeline_parameters <manual.tracing_pipeline_parameters>`
+    #) :ref:`parallel_processing <manual.multiprocessing>`
+    #) :ref:`split <manual.split>`
+    #) :ref:`transform <manual.transform>`
+    #) :ref:`merge <manual.merge>`
+    #) :ref:`posttask <manual.posttask>`
+    #) :ref:`jobs_limit <manual.jobs_limit>`
+    #) :ref:`dependencies <manual.dependencies>`
+    #) :ref:`onthefly <manual.on_the_fly>`
+    #) :ref:`collate <manual.collate>`
+    #) :ref:`advanced_transform <manual.advanced_transform>`
+    #) :ref:`parallel <manual.parallel>`
+    #) :ref:`check_if_uptodate <manual.check_if_uptodate>`
+    #) :ref:`exceptions <manual.exceptions>`
+    #) :ref:`logging <manual.logging>`
+    #) :ref:`files_re <manual.files_re>`
 

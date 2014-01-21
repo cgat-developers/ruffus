@@ -1,7 +1,7 @@
 .. include:: ../../global.inc
 .. include:: chapter_numbers.inc
 
-.. _manual.transform_ex:
+.. _manual.advanced_transform:
 
 ######################################################################################################################################################
 |manual.transform_ex.chapter_num|: **add_inputs()** `and` **inputs()**: `Controlling both input and output files with` **@transform**
