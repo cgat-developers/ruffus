@@ -5,17 +5,17 @@
 #
 #
 #   Copyright (c) 10/9/2009 Leo Goodstadt
-#   
+#
 #   Permission is hereby granted, free of charge, to any person obtaining a copy
 #   of this software and associated documentation files (the "Software"), to deal
 #   in the Software without restriction, including without limitation the rights
 #   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 #   copies of the Software, and to permit persons to whom the Software is
 #   furnished to do so, subject to the following conditions:
-#   
+#
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
-#   
+#
 #   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -30,23 +30,23 @@ Create proxy for logging for use with multiprocessing
 ****************************************************************************
 
 These can be safely sent (marshalled) across process boundaries
-    
+
 
 ===========
 Example 1
 ===========
 
     Set up logger from config file::
-    
+
         from proxy_logger import *
         args={}
         args["config_file"] = "/my/config/file"
-        
-        (logger_proxy, 
-         logging_mutex) = make_shared_logger_and_proxy (setup_std_shared_logger, 
+
+        (logger_proxy,
+         logging_mutex) = make_shared_logger_and_proxy (setup_std_shared_logger,
                                                         "my_logger", args)
-    
-    
+
+
 ===========
 Example 2
 ===========
@@ -54,30 +54,30 @@ Example 2
     Log to file ``"/my/lg.log"`` in the specified format (Time / Log name / Event type / Message).
 
     Delay file creation until first log.
-    
+
     Only log ``Debug`` messages
-    
+
         Other alternatives for the logging threshold (``args["level"]``) include
-    
+
             * ``logging.DEBUG``
             * ``logging.INFO``
             * ``logging.WARNING``
             * ``logging.ERROR``
             * ``logging.CRITICAL``
-    
+
     ::
-    
+
         from proxy_logger import *
         args={}
         args["file_name"] = "/my/lg.log"
         args["formatter"] = "%(asctime)s - %(name)s - %(levelname)6s - %(message)s"
         args["delay"]     = True
         args["level"]     = logging.DEBUG
-        
-        (logger_proxy, 
-         logging_mutex) = make_shared_logger_and_proxy (setup_std_shared_logger, 
+
+        (logger_proxy,
+         logging_mutex) = make_shared_logger_and_proxy (setup_std_shared_logger,
                                                         "my_logger", args)
-    
+
 ===========
 Example 3
 ===========
@@ -91,22 +91,22 @@ Example 3
         args["rotating"] = True
         args["maxBytes"]=20000
         args["backupCount"]=10
-        (logger_proxy, 
-         logging_mutex) = make_shared_logger_and_proxy (setup_std_shared_logger, 
+        (logger_proxy,
+         logging_mutex) = make_shared_logger_and_proxy (setup_std_shared_logger,
                                                         "my_logger", args)
-    
-    
-                                                        
+
+
+
 ==============
 To use:
 ==============
 
     ::
-    
-        (logger_proxy, 
-         logging_mutex) = make_shared_logger_and_proxy (setup_std_shared_logger, 
+
+        (logger_proxy,
+         logging_mutex) = make_shared_logger_and_proxy (setup_std_shared_logger,
                                                         "my_logger", args)
-    
+
         with logging_mutex:
             my_log.debug('This is a debug message')
             my_log.info('This is an info message')
@@ -114,7 +114,7 @@ To use:
             my_log.error('This is an error message')
             my_log.critical('This is a critical error message')
             my_log.log(logging.DEBUG, 'This is a debug message')
-            
+
     Note that the logging function ``exception()`` is not included because python
     stack trace information is not well-marshalled
     (`pickle <http://docs.python.org/library/pickle.html>`_\ d) across processes.
@@ -127,14 +127,14 @@ To use:
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   imports        
+#   imports
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 import sys,os
 
-    
+
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Shared logging
@@ -152,76 +152,76 @@ import logging.handlers
 
 
 #
-#   setup_logger 
+#   setup_logger
 #
 def setup_std_shared_logger(logger_name, args):
     """
-    This function is a simple around wrapper around the python 
+    This function is a simple around wrapper around the python
     `logging <http://docs.python.org/library/logging.html>`_ module.
-    
+
     This *logger_factory* example creates logging objects which can
     then be managed by proxy via ``ruffus.proxy_logger.make_shared_logger_and_proxy()``
-    
+
     This can be:
-    
+
         * a `disk log file <http://docs.python.org/library/logging.html#filehandler>`_
         * a automatically backed-up `(rotating) log <http://docs.python.org/library/logging.html#rotatingfilehandler>`_.
         * any log specified in a `configuration file <http://docs.python.org/library/logging.html#configuration-file-format>`_
-        
+
     These are specified in the ``args`` dictionary forwarded by ``make_shared_logger_and_proxy()``
-    
+
     :param logger_name: name of log
     :param args: a dictionary of parameters forwarded from ``make_shared_logger_and_proxy()``
-    
+
         Valid entries include:
-    
+
             .. describe:: "level"
-        
+
                 Sets the `threshold <http://docs.python.org/library/logging.html#logging.Handler.setLevel>`_ for the logger.
-            
+
             .. describe:: "config_file"
-        
+
                 The logging object is configured from this `configuration file <http://docs.python.org/library/logging.html#configuration-file-format>`_.
-        
+
             .. describe:: "file_name"
-        
+
                 Sets disk log file name.
-        
+
             .. describe:: "rotating"
-        
+
                 Chooses a `(rotating) log <http://docs.python.org/library/logging.html#rotatingfilehandler>`_.
-        
+
             .. describe:: "maxBytes"
-        
+
                 Allows the file to rollover at a predetermined size
-        
+
             .. describe:: "backupCount"
-        
-                If backupCount is non-zero, the system will save old log files by appending the extensions ``.1``, ``.2``, ``.3`` etc., to the filename. 
-        
+
+                If backupCount is non-zero, the system will save old log files by appending the extensions ``.1``, ``.2``, ``.3`` etc., to the filename.
+
             .. describe:: "delay"
-        
+
                 Defer file creation until the log is written to.
-        
+
             .. describe:: "formatter"
-        
-                `Converts <http://docs.python.org/library/logging.html#formatter-objects>`_ the message to a logged entry string. 
+
+                `Converts <http://docs.python.org/library/logging.html#formatter-objects>`_ the message to a logged entry string.
                 For example,
                 ::
-                
+
                     "%(asctime)s - %(name)s - %(levelname)6s - %(message)s"
-                
+
 
 
     """
-    
+
     #
     #   Log file name with logger level
-    # 
+    #
     new_logger = logging.getLogger(logger_name)
     if args.has_key("level"):
         new_logger.setLevel(args["level"])
-        
+
     if args.has_key("config_file"):
         logging.config.fileConfig(args["config_file"])
 
@@ -229,7 +229,7 @@ def setup_std_shared_logger(logger_name, args):
         if not args.has_key("file_name"):
             raise Exception("Missing file name for log. Remember to set 'file_name'")
         log_file_name = args["file_name"]
-        
+
         if args.has_key("rotating"):
             rotating_args = {}
             # override default
@@ -239,7 +239,7 @@ def setup_std_shared_logger(logger_name, args):
         else:
             defer_loggin = args.has_key("delay")
             handler = logging.handlers.RotatingFileHandler( log_file_name, delay=defer_loggin)
-            
+
         #       %(name)s
         #       %(levelno)s
         #       %(levelname)s
@@ -256,24 +256,24 @@ def setup_std_shared_logger(logger_name, args):
         #       %(threadName)s
         #       %(process)d
         #       %(message)s
-        # 
+        #
         # E.g.: "%(asctime)s - %(name)s - %(levelname)6s - %(message)s"
-        # 
+        #
         if args.has_key("formatter"):
-            formatter = logging.Formatter(args["formatter"])
-            handler.setFormatter(formatter)
+            my_formatter = logging.Formatter(args["formatter"])
+            handler.setFormatter(my_formatter)
 
         new_logger.addHandler(handler)
 
     #
-    #   This log object will be wrapped in proxy 
+    #   This log object will be wrapped in proxy
     #
     return new_logger
 
 
 #
 #   Proxy object for logging
-#       Logging messages will be marshalled (forwarded) to the process where the 
+#       Logging messages will be marshalled (forwarded) to the process where the
 #       shared log lives
 #
 class LoggerProxy(multiprocessing.managers.BaseProxy):
@@ -294,10 +294,10 @@ class LoggerProxy(multiprocessing.managers.BaseProxy):
     def __str__ (self):
         return "<LoggingProxy>"
 
-# 
+#
 #   Register the setup_logger function as a proxy for setup_logger
-#   
-#   We use SyncManager as a base class so we can get a lock proxy for synchronising 
+#
+#   We use SyncManager as a base class so we can get a lock proxy for synchronising
 #       logging later on
 #
 class LoggingManager(multiprocessing.managers.SyncManager):
@@ -312,43 +312,43 @@ class LoggingManager(multiprocessing.managers.SyncManager):
 
 def make_shared_logger_and_proxy (logger_factory, logger_name, args):
     """
-    Make a `logging <http://docs.python.org/library/logging.html>`_ object 
+    Make a `logging <http://docs.python.org/library/logging.html>`_ object
     called "\ ``logger_name``\ " by calling ``logger_factory``\ (``args``\ )
-    
-    This function will return a proxy to the shared logger which can be copied to jobs 
+
+    This function will return a proxy to the shared logger which can be copied to jobs
     in other processes, as well as a mutex which can be used to prevent simultaneous logging
     from happening.
 
-    :param logger_factory: functions which creates and returns an object with the 
+    :param logger_factory: functions which creates and returns an object with the
                            `logging <http://docs.python.org/library/logging.html>`_ interface.
                            ``setup_std_shared_logger()`` is one example of a logger factory.
     :param logger_name: name of log
     :param args: parameters passed (as a single argument) to ``logger_factory``
     :returns: a proxy to the shared logger which can be copied to jobs in other processes
     :returns: a mutex which can be used to prevent simultaneous logging from happening
-    
+
     """
     #
-    #   make shared log and proxy 
+    #   make shared log and proxy
     #
     manager = LoggingManager()
-    manager.register(   'setup_logger', 
-                        logger_factory, 
-                        proxytype=LoggerProxy, 
-                        exposed = ( 'critical', 'log', 
+    manager.register(   'setup_logger',
+                        logger_factory,
+                        proxytype=LoggerProxy,
+                        exposed = ( 'critical', 'log',
                                     'info', 'debug', 'warning', 'error'))
     manager.start()
     logger_proxy = manager.setup_logger(logger_name, args)
-    
+
     #
     #   make sure we are not logging at the same time in different processes
     #
     logging_mutex = manager.Lock()
-    
+
     return logger_proxy, logging_mutex
 
 
-    
+
 import unittest, os,sys
 from proxy_logger import *
 import traceback
@@ -369,8 +369,8 @@ class Test_Logging(unittest.TestCase):
         args["maxBytes"]=20000
         args["backupCount"]=10
         #args["level"]= logging.INFO
-        (my_log, 
-         logging_mutex) = make_shared_logger_and_proxy (setup_std_shared_logger, 
+        (my_log,
+         logging_mutex) = make_shared_logger_and_proxy (setup_std_shared_logger,
                                                         "my_logger", args)
         with logging_mutex:
             my_log.debug('This is a debug message')
@@ -389,7 +389,7 @@ This is a debug message
 
 #
 #   debug code not run if called as a module
-#     
+#
 if __name__ == '__main__':
     if sys.argv.count("--debug"):
         sys.argv.remove("--debug")
