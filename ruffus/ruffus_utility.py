@@ -374,7 +374,13 @@ def get_all_paths_components(paths, compiled_regex):
         both_components = []
         for rr, pp in izip(regex_match_components, path_components):
             if rr == None:
-                both_components.append({})
+                #
+                #   previously failed regular expression matches would taint file
+                #   decomposition as well: too clever by half
+                #
+                #both_components.append({})
+                #
+                both_components.append(pp)
             else:
                 #
                 #   regular expression matches override file decomposition values in
