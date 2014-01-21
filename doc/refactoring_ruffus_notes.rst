@@ -1060,3 +1060,20 @@ optparse (deprecated)
             #_____________________________________________________________________________________
 
             cmdline.run (options)
+
+
+
+
+
+************************************************************************************************
+``@subdivide``
+************************************************************************************************
+
+    synonym for ``@split(..., regex(), ...)``
+
+    Take a list of input jobs (like ``@transform``) but further splits each into multiple jobs, i.e. it is a many->many more relationship
+
+    Example code in  ``test/test_split_regex_and_collate.py``
+
+
+

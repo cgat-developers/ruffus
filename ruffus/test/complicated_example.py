@@ -524,3 +524,4 @@ if __name__ == '__main__':
             pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs)
     except Exception, e:
         print e.args
+            

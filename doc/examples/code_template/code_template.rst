@@ -19,6 +19,10 @@ support for a set of common command line arguments which make writing *Ruffus* m
 ******************************************************
     All you need to do is copy these 6 lines
 
+ * change the file name(!)
+ * add any extra command line arguments
+ * Place your pipeline code where it says
+    ::
 
     .. code-block:: python
         :emphasize-lines: 5,13

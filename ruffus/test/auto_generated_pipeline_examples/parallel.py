@@ -225,3 +225,4 @@ elif options.dependency_file:
                          options.forced_tasks)
 else:
     pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs)
+    

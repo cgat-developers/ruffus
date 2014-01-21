@@ -266,3 +266,4 @@ elif options.dependency_file:
 else:
     pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
                     gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode)
+    
