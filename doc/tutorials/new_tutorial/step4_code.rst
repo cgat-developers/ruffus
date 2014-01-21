@@ -1,13 +1,14 @@
 .. include:: ../../global.inc
-.. _Simple_Tutorial_4th_step_code:
+.. _New_Tutorial_4th_step_code:
 
 
-###################################################################
-Code for Step 4: Understanding how your pipeline works
-###################################################################
-* :ref:`Simple tutorial overview <Simple_Tutorial>`
+######################################################################################################################################
+New Tutorial in revision Code for Step 4: Understanding how your pipeline works
+######################################################################################################################################
+
+* :ref:`New tutorial overview <New_Tutorial>`
 * :ref:`pipeline functions <pipeline_functions>` in detail
-* :ref:`Back to Step 4 <Simple_Tutorial_4th_step>`
+* :ref:`Back to Step 4 <New_Tutorial_4th_step>`
 
 ******************************************
 Display the initial state of the pipeline

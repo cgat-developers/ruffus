@@ -37,10 +37,10 @@ The first steps (1-4)
 
     The first half of the tutorial will show you how to:
 
-    1. Chain tasks (functions) together into a pipeline
-    2. Provide parameters to run jobs in parallel
-    3. Tracing through your new pipeline
-    4. Using flowcharts
+    1. :ref:`Chain tasks (functions) together into a pipeline <step1_follows>`
+    2. :ref:`Provide parameters to run jobs in parallel <step2>`
+    3. :ref:`Tracing through your new pipeline <step3_run_pipeline>`
+    4. :ref:`Using flowcharts <step4_run_pipeline_graphically>`
 
 ============================
 A worked example (steps 5-8)
@@ -49,10 +49,10 @@ A worked example (steps 5-8)
     The second half of the tutorial is a worked example to calculate
     the sample variance of 10,000 random numbers. This shows you how to:
 
-    5. Split up a large problem into smaller chunks
-    6. Calculate partial solutions in parallel
-    7. Re-combine the partial solutions into the final result
-    8. Automatically signal the completion of each step of our pipeline
+    5. :ref:`Split up a large problem into smaller chunks <step5_split>`
+    6. :ref:`Calculate partial solutions in parallel <step6_transform>`
+    7. :ref:`Re-combine the partial solutions into the final result <step7_merge>`
+    8. :ref:`Automatically signal the completion of each step of our pipeline <step8_posttask>`
 
 
     This covers the core functionality of *Ruffus*.

@@ -1,11 +1,11 @@
 .. include:: ../../global.inc
-.. _Simple_Tutorial_1st_step:
+.. _New_Tutorial_1st_step:
 
-    * :ref:`Simple tutorial overview <Simple_Tutorial>`
+    * :ref:`New tutorial overview <New_Tutorial>`
 
-###################################################################
-Step 1: An introduction to basic Ruffus syntax
-###################################################################
+######################################################################################################################################
+New Tutorial in revision Step 1: An introduction to basic Ruffus syntax
+######################################################################################################################################
 
 ************************************
 Overview

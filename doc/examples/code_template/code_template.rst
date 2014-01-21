@@ -19,10 +19,6 @@ support for a set of common command line arguments which make writing *Ruffus* m
 ******************************************************
     All you need to do is copy these 6 lines
 
- * change the file name(!)
- * add any extra command line arguments
- * Place your pipeline code where it says
-    ::
 
     .. code-block:: python
         :emphasize-lines: 5,13
@@ -101,14 +97,13 @@ support for a set of common command line arguments which make writing *Ruffus* m
 
             myscript --log_file PIPELINE.LOG_FILE
 
-    Loggin is ignored if ``--verbose`` or ``--log_file`` are not specified
-    on the command line
+    Logging is ignored if neither ``--verbose`` or ``--log_file`` are specified on the command line
 
     ``Ruffus.cmdline`` automatically allows you to access the same log file from multiple processes, via a proxy.
-    You need to use ``logging_mutex`` as well for the log files to be synchronised properly
-    across different jobs:
 
-        .. code-block:: bash
+    However, you need to use ``logging_mutex`` for the log files to be synchronised properly across different jobs:
+
+        .. code-block:: python
 
             with logging_mutex:
 
@@ -120,14 +115,16 @@ support for a set of common command line arguments which make writing *Ruffus* m
 =================================
         A) Only to the log file:
 =================================
-            ::
+
+        .. code-block:: python
 
                 logger.info("A message")
 
 =================================
         B) Only to the display:
 =================================
-            ::
+
+        .. code-block:: python
 
                 logger.debug("A message")
 
@@ -135,7 +132,7 @@ support for a set of common command line arguments which make writing *Ruffus* m
         C) To both simultaneously:
 ======================================
 
-        .. code-block:: bash
+        .. code-block:: python
 
                 from ruffus.cmdline import MESSAGE
 
@@ -155,13 +152,13 @@ support for a set of common command line arguments which make writing *Ruffus* m
 
         .. code-block:: bash
 
-            myscript -n
+            myscript -nv
 
             or
 
-            myscript --just_print
+            myscript --just_print --verbose 3
 
-    Increasing levels of verbosity (``-v`` to ``-v 5``) provide more detailed output
+    Increasing levels of verbosity (``--verbose`` to ``--verbose 5``) provide more detailed output
 
 
 ##################################
@@ -184,10 +181,12 @@ support for a set of common command line arguments which make writing *Ruffus* m
 5) Running the pipeline on multiple processors
 #######################################################
 
-    Optionally specify the number of parallel strands of execution and which the final task is::
+    Optionally specify the number of parallel strands of execution and which the final task is:
 
-        myscript --jobs 15 --target_tasks "final_task"
-        myscript -j 15
+        .. code-block:: bash
+
+            myscript --jobs 15 --target_tasks "final_task"
+            myscript -j 15
 
 
 ##############################################################################################################
@@ -207,7 +206,7 @@ Example 1: same directory, different name
 ============================================================================================================================================================
     If the environment variable is:
 
-    ::
+    .. code-block:: bash
 
         export DEFAULT_RUFFUS_HISTORY_FILE=.{basename}.ruffus_history.sqlite
 
@@ -258,27 +257,24 @@ Touch files
 ##############################################################################################################
 7) Skipping specified options
 ##############################################################################################################
-    Note that particular options can be skipped (not added to the command line, for example, if they conflict with your own options:
+    Note that particular options can be skipped (not added to the command line), if they conflict with your own options, for example:
 
         .. code-block:: python
             :emphasize-lines: 3
 
             # see below for how to use get_argparse
             parser = cmdline.get_argparse(  description='WHAT DOES THIS PIPELINE DO?',
-                                            # skip the following options
+                                            # Do not use the following options: log_file, key_legend_in_graph
                                             ignored_args = ["log_file", "key_legend_in_graph"])
 
 
 ##############################################################################################################
-8) Script versions
+8) Displaying the version
 ##############################################################################################################
-    Note that the version for ``get_argparse`` defaults to ``"%(prog)s 1.0"`` unless specified:
+    Note that the version for your script will default to ``"%(prog)s 1.0"`` unless specified:
 
         .. code-block:: python
 
-            :emphasize-lines: 3
-
-            # see below for how to use get_argparse
             parser = cmdline.get_argparse(  description='WHAT DOES THIS PIPELINE DO?',
                                             version = "my_programme.py v. 2.23")
 
@@ -317,4 +313,3 @@ Touch files
             #   <<<----  pipelined functions go here
 
             cmdline.run (options)
-

@@ -356,6 +356,3 @@ Hadoop
 ***************
 Can anyone help me with this / have any experience?
 
-
-
-

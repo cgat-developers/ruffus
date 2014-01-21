@@ -81,6 +81,7 @@ Overview:
    Bugs and Updates <history>
    Future plans <todo>
    Pending changes <refactoring_ruffus_notes>
+   Implementation_notes
    faq.rst
    glossary.rst
    gallery.rst
@@ -190,4 +191,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

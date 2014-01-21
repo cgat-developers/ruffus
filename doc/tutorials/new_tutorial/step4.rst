@@ -1,19 +1,20 @@
 .. include:: ../../global.inc
-.. _Simple_Tutorial_4th_step:
+.. _New_Tutorial_4th_step:
 
 
 
-###################################################################
-Step 4: Understanding how your pipeline works
-###################################################################
-    * :ref:`Simple tutorial overview <Simple_Tutorial>`
+######################################################################################################################################
+New Tutorial in revision Step 4: Understanding how your pipeline works
+######################################################################################################################################
+
+    * :ref:`New tutorial overview <New_Tutorial>`
     * :ref:`pipeline functions <pipeline_functions>` in detail
 
 
 .. note::
     Remember to look at the example code:
 
-    * :ref:`Python Code for step 4 <Simple_Tutorial_4th_step_code>`
+    * :ref:`Python Code for step 4 <New_Tutorial_4th_step_code>`
 
 .. index::
     pair: pipeline_printout; Tutorial
@@ -46,7 +47,7 @@ Printing out which jobs will be run
 
     The ``verbose`` parameter controls how much detail is displayed.
 
-    Let us take the three step  :ref:`example <Simple_Tutorial_3nd_step_code>` pipelined code we have previously written,
+    Let us take the three step  :ref:`example <New_Tutorial_3nd_step_code>` pipelined code we have previously written,
     but call :ref:`pipeline_printout(...) <pipeline_functions.pipeline_printout>` instead of
     :ref:`pipeline_run(...) <pipeline_functions.pipeline_run>`.
     This lists the tasks which will be run in the pipeline:
@@ -67,7 +68,7 @@ Printing out which jobs will be run
 
 
     To see the input and output parameters of each job in the pipeline, try increasing the verbosity from the default (``1``) to ``3``
-    (see :ref:`example <Simple_Tutorial_4th_step_code>`)
+    (see :ref:`example <New_Tutorial_4th_step_code>`)
 
     This is very useful for checking that the input and output parameters have been specified
         correctly.

@@ -1,21 +1,21 @@
 .. include:: ../../global.inc
-.. _Simple_Tutorial_2nd_step:
+.. _New_Tutorial_2nd_step:
 
 .. index::
     pair: @transform; Tutorial
 
-###################################################################
-Step 2: Transforming data in a pipeline with ``@transform``
-###################################################################
+######################################################################################################################################
+New Tutorial in revision Step 2: Transforming data in a pipeline with ``@transform``
+######################################################################################################################################
 
-   * :ref:`Simple tutorial overview <Simple_Tutorial>`
+   * :ref:`New tutorial overview <New_Tutorial>`
    * :ref:`@transform syntax in detail <decorators.transform>`
 
 .. note::
 
     Remember to look at the example code:
 
-    * :ref:`Python Code for step 2 <Simple_Tutorial_2nd_step_code>`
+    * :ref:`Python Code for step 2 <New_Tutorial_2nd_step_code>`
 
 ***************************************
 Overview
@@ -206,7 +206,7 @@ Multiple steps
         * call ``pipeline_run()`` with the correct final task (``second_task()``)
 
 
-    The full source code can be found :ref:`here <Simple_Tutorial_2nd_step_code>`
+    The full source code can be found :ref:`here <New_Tutorial_2nd_step_code>`
 
     With very little effort, we now have three independent pieces of information coursing through our pipeline.
     Because ``second_task()`` *transforms* the output from ``first_task()``, it magically knows its dependencies and

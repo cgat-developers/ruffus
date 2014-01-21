@@ -1,13 +1,14 @@
 .. include:: ../../global.inc
-.. _Simple_Tutorial_5th_step_graphical_code:
+.. _New_Tutorial_5th_step_graphical_code:
 
 
-###################################################################
-Code for Step 5: Displaying the pipeline visually
-###################################################################
-* :ref:`Simple tutorial overview <Simple_Tutorial>`
+######################################################################################################################################
+New Tutorial in revision Code for Step 5: Displaying the pipeline visually
+######################################################################################################################################
+
+* :ref:`New tutorial overview <New_Tutorial>`
 * :ref:`pipeline functions <pipeline_functions>` in detail
-* :ref:`Back to Step 5 <Simple_Tutorial_5th_step_graphical>`
+* :ref:`Back to Step 5 <New_Tutorial_5th_step_graphical>`
 
 ************************************
 Code
@@ -101,3 +102,5 @@ Resulting Flowcharts
    | .. centered:: Legend                                                                                                                |
    |                                                                                                                                     |
    +-------------------------------------------------------------------------------------------------------------------------------------+
+
+

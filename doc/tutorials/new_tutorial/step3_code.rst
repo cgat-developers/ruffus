@@ -1,12 +1,12 @@
 .. include:: ../../global.inc
-.. _Simple_Tutorial_3nd_step_code:
+.. _New_Tutorial_3nd_step_code:
 
+######################################################################################################################################
+New Tutorial in revision Code for Step 3: More on ``@transform``-ing data
+######################################################################################################################################
 
-###################################################################
-Code for Step 3: More on ``@transform``-ing data
-###################################################################
-* :ref:`Simple tutorial overview <Simple_Tutorial>`
-* :ref:`Back to Step 3 <Simple_Tutorial_3rd_step>`
+* :ref:`New tutorial overview <New_Tutorial>`
+* :ref:`Back to Step 3 <New_Tutorial_3rd_step>`
 
 **********************************************
 Using ``@originate``
@@ -63,3 +63,4 @@ Resulting Output
             Job  = [job2.a.output.1 -> job2.a.output.2] completed
             Job  = [job3.a.output.1 -> job3.a.output.2] completed
         Completed Task = second_task
+

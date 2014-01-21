@@ -1,12 +1,12 @@
 .. include:: ../../global.inc
-.. _Simple_Tutorial_2nd_step_code:
+.. _New_Tutorial_2nd_step_code:
 
 
-###################################################################
-Code for Step 2: Transforming data in a pipeline with ``@transform``
-###################################################################
-* :ref:`Simple tutorial overview <Simple_Tutorial>`
-* :ref:`Back to Step 2 <Simple_Tutorial_2nd_step>`
+#####################################################################
+New Tutorial in revision Code for Step 2: Transforming data in a pipeline with ``@transform``
+#####################################################################
+* :ref:`New tutorial overview <New_Tutorial>`
+* :ref:`Back to Step 2 <New_Tutorial_2nd_step>`
 
 *******************************************
 Producing several items / files per job
