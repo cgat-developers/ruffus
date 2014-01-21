@@ -675,9 +675,13 @@ class Test_get_all_paths_components (unittest.TestCase):
                     ])
 
         # empty path
-        self.helper([""],r"(.*)(?P<basename>\d+)\..+", [{}])
+        self.helper([""],r"(.*)(?P<basename>\d+)\..+", [{'path': [], 'basename': '', 'ext': '', 'subdir': []}])
         # not matching regular expression
-        self.helper(["/a/b/c/nonumber.txt"],r"(.*)(?P<id>\d+)\..+", [{}])
+        self.helper(["/a/b/c/nonumber.txt"],r"(.*)(?P<id>\d+)\..+", [{'path': '/a/b/c',
+                                                                      'basename': 'nonumber',
+                                                                      'subpath': ['/a/b/c', '/a/b', '/a', '/'],
+                                                                      'ext': '.txt',
+                                                                      'subdir': ['c', 'b', 'a', '/']}])
         # multiple paths
         self.helper(["/a/b/c/sample1.bam",
                      "dbsnp15.vcf",
@@ -706,8 +710,11 @@ class Test_get_all_paths_components (unittest.TestCase):
                         },
 
                         # no regular expression match
-                        # everything fails!
-                        {
+                        {   'basename': 'test',
+                            'ext': '.txt',
+                            'path': '/',
+                            'subdir': ['/'],
+                            'subpath': ['/']
                         }
                     ])
 

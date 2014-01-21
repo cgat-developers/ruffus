@@ -112,8 +112,9 @@ def test_product_misspelt_capture_error_task( infiles, outfile):
 @product(
         generate_initial_files1,
         formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
-        "{path[2][0]}/{basename[0][0]}.tmp2")
-def test_product_out_of_range_formatter_ref_error_task( infiles, outfile):
+        "{path[2][0]}/{basename[0][0]}.tmp2",
+        "{FILE_PART[0][0]}")
+def test_product_out_of_range_formatter_ref_error_task( infiles, outfile, ignored_filter):
     """
     {path[2][0]} when len(path) == 1
     """
@@ -126,8 +127,9 @@ def test_product_out_of_range_formatter_ref_error_task( infiles, outfile):
 @product(
         generate_initial_files1,
         formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
-        "{path[0][0][1000]}/{basename[0][0]}.tmp2")
-def test_product_formatter_ref_index_error_task( infiles, outfile):
+        "{path[0][0][1000]}/{basename[0][0]}.tmp2",
+        "{FILE_PART[0][0]}")
+def test_product_formatter_ref_index_error_task( infiles, outfile, ignored_filter):
     """
     {path[0][0][1000} when len of the path string len(path[0][0]) < 1000
     """
