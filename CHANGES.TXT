@@ -1,5 +1,5 @@
 = v. 2.4=
-    _08/October/2013_
+    _21/January/2014_
     ==Naive support for drmaa / running Ruffus on a cluster submission node
         * Needs multithreading instead of multiprocessing added `pipeline_run(..., use_multi_threading = True)`
 		  Multithreading allows a drmaa session to be shared and prevents the submission node from being overloaded by completion notifications from the cluster.
