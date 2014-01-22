@@ -116,7 +116,7 @@ def get_default_checksum_level ():
     #
     checksum_level = None
     env_checksum_level = os.environ["DEFAULT_RUFFUS_CHECKSUM_LEVEL"]
-    if env_checksum_level in "0123":
+    if len(env_checksum_level) == 1 and env_checksum_level in "0123":
         checksum_level = int(env_checksum_level)
     else:
         for key, value in globals().iteritems():
