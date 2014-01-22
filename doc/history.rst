@@ -100,19 +100,20 @@ Additions to ``ruffus`` namespace
 
     * Contributed by **Jake Biesinger**
     * Uses a fault resistant sqlite database file to log i/o files, and additional checksums
-    * defaults to using checking file timestamps stored in an sqllite database in the current directory (``ruffus_utilility.RUFFUS_HISTORY_FILE = '.ruffus_history.sqlite'``)
+    * defaults to checking file timestamps stored in the current directory (``ruffus_utilility.RUFFUS_HISTORY_FILE = '.ruffus_history.sqlite'``)
     * ``pipeline_run(..., checksum_level = N, ...)``
 
-       * level 0 : Use only file timestamps (no checksum file will be created)
-       * level 1 : above, plus timestamp of successful job completion
-       * level 2 : above, plus a checksum of the pipeline function body
-       * level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
+       * level 0 : Classic mode. Use only file timestamps (no checksum file will be created)
+       * level 1 : Also store timestamps in a database after successful job completion
+       * level 2 : As above, plus a checksum of the pipeline function body
+       * level 3 : As above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
 
-       * defaults to 1
+       * defaults to level 1
        * Use ``pipeline_run(..., checksum_level=CHECKSUM_FILE_TIMESTAMPS, ...)`` for "classic" mode
 
 
-    * Allows Ruffus to avoid adding an extra 1 second pause between tasks to guard against file systems with low timestamp granularity.
+    * Can speed up trivial tasks: Previously Ruffus always added an extra 1 second pause between tasks 
+      to guard against file systems (Ext3, FAT, some NFS) with low timestamp granularity.
 
 
 ____________________________________________________________________________________________________________________
@@ -121,8 +122,8 @@ ________________________________________________________________________________
 
 
     1) Default is ``.ruffus_history.sqlite`` (i.e. in the current working directory)
-    2) Overridden by the environment variable DEFAULT_RUFFUS_HISTORY_FILE
-    3) Overridden by parameter to ``pipeline_run``, ``pipeline_printout``, ``pipeline_printout_graph``
+    2) Overridden by the environment variable ``DEFAULT_RUFFUS_HISTORY_FILE``
+    3) Set in ``pipeline_run``, ``pipeline_printout``, ``pipeline_printout_graph``
 
             ``pipeline_run(.., history_file = "XXX", ...)``
 
@@ -145,7 +146,7 @@ ________________________________________________________________________________
             # checksum file
             /common/path/for/job_history/scripts/.run.me.ruffus_history.sqlite
 
-    *Example 2*: Nested in common directory
+    *Example 2*: Nested in common directory (Note the use of ``{path}``)
 
         .. code-block:: bash
 
@@ -156,6 +157,8 @@ ________________________________________________________________________________
             # Ruffus script
             /test/bin/scripts/run.me.py
             # checksum file
+            # /common/path/for/job_history/ +  /test/bin/scripts + . + run.me + .ruffus_history.sqlite
+            #
             /common/path/for/job_history/test/bin/scripts/.run.me.ruffus_history.sqlite
 
 
@@ -177,7 +180,7 @@ ________________________________________________________________________________
 3) drmaa support and multithreading: ``ruffus.drmaa_wrapper``
 ============================================================================================================================================================
 
-    Optional helper module allows jobs to dispatch work to a computational cluster and wait for its completion.
+    Optional helper module allows jobs to dispatch work to a computational cluster and wait until it completes.
 
     * First set up a shared drmaa session:
 
@@ -193,12 +196,11 @@ ________________________________________________________________________________
 
     * ``ruffus.drmaa_wrapper.run_cmd`` dispatches the actual work to a cluster node within a normal Ruffus job
 
-        This is the equivalent of ``os.system`` or ``subprocess.check_output`` but the code will run remotely
-        as specified:
+        This is the equivalent of `os.system  <http://docs.python.org/2/library/os.html#os.system>`__  or 
+        `subprocess.check_output  <http://docs.python.org/2/library/subprocess.html#subprocess.check_call>`__ but the code will run remotely as specified:
 
         .. code-block:: python
-            :emphasize-lines: 16
-            :linenos:
+            :emphasize-lines: 16,18,19
 
             from ruffus.drmaa_wrapper import run_job, error_drmaa_job
 
@@ -233,7 +235,9 @@ ________________________________________________________________________________
                     raise Exception("Failed to run:\n%(cmd)s\n%(err)s\n%(stdout_res)s\n%(stderr_res)s\n" % locals())
 
 
-    * Use ``multithread`` rather than ``multiprocess``
+    .. note:
+
+        Requires ``multithread`` rather than ``multiprocess``
 
         * allows the drmaa session to be shared
         * prevents "processing storms" when hundreds or thousands of cluster jobs complete at the same time.
@@ -254,9 +258,10 @@ ________________________________________________________________________________
 4) ``@subdivide``
 ============================================================================================================================================================
 
-    synonym for ``@split(..., regex(), ...)``
 
     Take a list of input jobs (like ``@transform``) but further splits each into multiple jobs, i.e. it is a many->many more relationship
+
+    synonym for ``@split(..., regex(), ...)``
 
     Example code in  ``test/test_split_regex_and_collate.py``
 
@@ -268,7 +273,7 @@ ________________________________________________________________________________
 
     * allows directories to be created depending on runtime parameters or the output of previous tasks
     * behaves just like ``@transform`` but with its own (internal) function which does the actual work of making a directory
-    * ``mkdir`` continues to work seamlessly inside ``@follows``)
+    * Previous behavior is retained:``mkdir`` continues to work seamlessly inside ``@follows``
 
     Example (See below for "formatter" syntax):
 
@@ -306,7 +311,6 @@ ________________________________________________________________________________
 6) ``@originate``
 ============================================================================================================================================================
 
-    * For first step in a pipeline
     * Generates output files without dependencies from scratch  (*ex nihilo*!)
         .. code-block:: python
             :emphasize-lines: 3,5
@@ -314,7 +318,8 @@ ________________________________________________________________________________
             @originate([tempdir + d + ".tmp1" for d in 'a', 'b', 'c'])
             def generate_initial_files(outfile):
                 pass
-    * prints as such:
+    * For first step in a pipeline
+    * Clear in ``pipeline_printout``:
 
 
         .. code-block:: bash
@@ -325,13 +330,13 @@ ________________________________________________________________________________
                      -> b.tmp1]
                  Job needs update: Missing files [a.tmp1, b.tmp1]
 
-    * Task function obviously only takes outputs.
+    * Task function obviously only takes output and not input parameters. (There *are* no inputs!)
     * synonym for ``@split(None,...)``
 
 
 
 ============================================================================================================================================================
-7) New flexible ``formatter`` alternative to ``regex`` ``suffix``
+7) New flexible ``formatter`` alternative to ``regex`` & ``suffix``
 ============================================================================================================================================================
 
     * Easy manipulation of path subcomponents in the style of `os.path.split()  <http://docs.python.org/2/library/os.path.html#os.path.split>`__
@@ -339,15 +344,15 @@ ________________________________________________________________________________
         Regular expressions are no longer necessary for path manipulation
 
     * Familiar python syntax
-    * Optional Regular Expression matches
-    * Can refer to any in the list of N nput files (not only the first as for ``regex(...)``)
+    * Optional regular expression matches
+    * Can refer to any in the list of N input files (not only the first file as for ``regex(...)``)
     * Can even refer to individual letters within a match
 
 
 ____________________________________________________________________________________________________________________
-path, extension and basename for pattern substitution
+path, extension and basename
 ____________________________________________________________________________________________________________________
-    ``formatter`` produces matches for both path components and any regular expression.
+    ``formatter`` matches both path components and (optionally) regular expressions.
     Each level of indirection just means another level of nesting.
     In the case of ``@transform`` ``@collate`` we are dealing with a list of input files per job, so typically,
     the components with be, using python format syntax:
@@ -357,15 +362,15 @@ ________________________________________________________________________________
             input_file_names = ['/a/b/c/sample1.bam']
             formatter(r"(.*)(?P<id>\d+)\.(.+)")
 
-            "{0[0]}"            #   '/a/b/c/sample1.bam',           // Entire match captured by index
-            "{1[0]}"            #   '/a/b/c/sample',                // captured by index
-            "{2[0]}"            #   'bam',                          // captured by index
-            "{id[0]}"           #   '1'                             // captured by name
-            "{basename[0]}"     #   'sample1',                      // file name
-            "{ext[0]}"          #   '.bam',                         // extension
-            "{path[0]}"         #   '/a/b/c',                       // full path
-            "{subpath[0][1]}"   #   '/a/b'                          // recurse down path 1 level
-            "{subdir[0][0]}"    #   'c'                             // 1st level subdirectory
+            "{0[0]}"            #   '/a/b/c/sample1.bam',  Regular expression: entire match captured by index
+            "{1[0]}"            #   '/a/b/c/sample',       Regular expression: captured by index
+            "{2[0]}"            #   'bam',                 Regular expression: captured by index
+            "{id[0]}"           #   '1'                    Regular expression: captured by name
+            "{basename[0]}"     #   'sample1',             file name
+            "{ext[0]}"          #   '.bam',                extension
+            "{path[0]}"         #   '/a/b/c',              full path
+            "{subpath[0][1]}"   #   '/a/b'                 recurse down path 1 level
+            "{subdir[0][0]}"    #   'c'                    1st level subdirectory
 
 
     ``@transform`` example:
@@ -398,7 +403,8 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________________________________
 
     For the new "combinatorics", (i.e. all versus all etc.) decorators, we have **groups** of inputs for each job.
-    This just means an extra level of indirection.
+    This just means an extra level of indirection: ``{path[0][0]}`` (The first input file from the first set of input files) 
+    instead of ``{path[0]}``.
 
     .. code-block:: python
         :emphasize-lines: 2
@@ -427,7 +433,7 @@ ________________________________________________________________________________
 
 
 ____________________________________________________________________________________________________________________
-Using regular expressions as a filter
+Using regular expressions as filters
 ____________________________________________________________________________________________________________________
 
     * We can use regular expression matches as a filter.
@@ -442,22 +448,25 @@ ________________________________________________________________________________
             ["prev_task.2.ignore", 19, "prev_task.2.correct"]
             ["prev_task.2.ignore", 19, "prev_task.3.oops"   ]
 
-        When we are refer to the 3rd file name in the list (``"{basename[2]}"``), Ruffus knows that
-        the regular expression filter only applies to the third file.
+        When we refer to the 3rd file name in each list of inputs, Ruffus knows that
+        the regular expression filter only applies to any but the third in each list.
+        ( For ``"{0[2]}"`` : ``0`` means the search string. ``2`` means the third file)
 
-        Ruffus sensibly will not go through your inputs filtering everything blindly (i.e. apply the regular expression to``*.ignore``)
+        Ruffus sensibly will not go through your inputs filtering everything blindly (i.e. apply the regular expression to ``*.ignore`` )
 
 
         This works:
 
         .. code-block:: python
-            :emphasize-lines: 3
+            :emphasize-lines: 4
 
             @transform( previous_task,
                         formatter(r".correct" ),            # formatter with optional regular expression
-                        "{basename[2]}")                    # First file in list
+                        "{basename[0]}.changed",
+                        "{0[2]}")                           # 3rd file in list
             def test_transform_task(    infiles,
-                                        outfile):
+                                        outfile,
+                                        third_input_path):
                 pass
 
 
@@ -466,16 +475,18 @@ ________________________________________________________________________________
 
 
 
-        This produces no matches:
+        This produces no matches (``".ignore"`` doesn't match ``".correct"``)
 
         .. code-block:: python
-            :emphasize-lines: 3
+            :emphasize-lines: 4
 
             @transform( previous_task,
                         formatter(r".correct" ),            # formatter with optional regular expression
-                        "{basename[0]}")                    # First file in list
+                        "{basename[0]}.changed",            # First file in list
+                        "{0[0]}")                           # 1st file in list
             def test_transform_task(    infiles,
-                                        outfile):
+                                        outfile,
+                                        first_input_path):
                 pass
 
 
@@ -484,19 +495,18 @@ ________________________________________________________________________________
 8) Combinatorics (all vs. all decorators)`
 ============================================================================================================================================================
 
-    * ``@product()``
-    * ``@permutations(...)``
-    * ``@combinations(...)``
-    * ``@combinations_with_replacement(...)``
-    * based on `itertools  <http://docs.python.org/2/library/itertools.html>`__
+    * ``@product`` (See `itertools.product  <http://docs.python.org/2/library/itertools.html#itertools.product>`__)
+    * ``@permutations`` (See `itertools.permutations  <http://docs.python.org/2/library/itertools.html#itertools.permutations>`__)
+    * ``@combinations`` (See `itertools.combinations  <http://docs.python.org/2/library/itertools.html#itertools.combinations>`__)
+    * ``@combinations_with_replacement`` (See `itertools.combinations_with_replacement  <http://docs.python.org/2/library/itertools.html#itertools.combinations_with_replacement>`__)
     * in optional ``combinatorics`` module
-    * Only ``formatter([OPTIONAl_REGEX])`` provides the necessary flexibility to construct the output so ``suffix`` and ``regex`` are not supported
+    * Only ``formatter([OPTIONAl_REGEX])`` provides the necessary flexibility to construct the output. (``suffix`` and ``regex`` are not supported.)
 
 
-    * ``@product`` example: Cartesian product of inputs
+    ``@product`` example: Cartesian product of inputs
 
         .. code-block:: python
-            :emphasize-lines: 1,7,11,14
+            :emphasize-lines: 3,7,11,14,17
 
             @product(
 
@@ -511,9 +521,10 @@ ________________________________________________________________________________
                     # output file
                     "{path[0][0]}/{base_name[0][0]}.{base_name[0][0]}.out",
 
-                    # regular expression matches
+                    # path decomposition
                     "{path[0][0]}",       # extra: path for 1st input, 1st file
                     "{basename[0][1]}",   # extra: file name for 1st input, 2nd file
+                    # regular expression matches
                     "{ID[1][2]}",         # extra: regular expression named capture group for 2nd input, 3rd file
                     )
             def product( infiles, outfile,
