@@ -58,6 +58,7 @@ htmlsync:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	rsync -t --delete --recursive _build/html/* mus:/home/lg/public_html/oss/ruffus
+	rsync -t --delete --recursive _build/html/* u36264041@www.llewgoodstadt.org.uk:/kunden/homepages/33/d100248119/htdocs/ruffus
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html and copied to the test web directory."
 
 dirhtml:
