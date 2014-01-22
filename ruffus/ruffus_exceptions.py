@@ -208,6 +208,8 @@ class error_missing_runtime_parameter(error_task):
     pass
 class error_unescaped_regular_expression_forms(error_task):
     pass
+class error_checksum_level(error_task):
+    pass
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888

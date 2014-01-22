@@ -787,7 +787,6 @@ class _task (node):
 
     job_limit_semaphores = {}
 
-    checksum_level = CHECKSUM_FILE_TIMESTAMPS
 
 
     #_________________________________________________________________________________________
@@ -853,8 +852,11 @@ class _task (node):
         node.__init__ (self, module_name + "." + func_name)
         self._action_type  = _task.action_unspecified
 
-
-
+        #   Each task has its own checksum level
+        #   At the moment this is really so multiple pipelines in the same script can have
+        #       different checksum levels
+        #   Though set by pipeline_xxxx functions, have initial valid value so unit tests work :-|
+        self.checksum_level             = CHECKSUM_FILE_TIMESTAMPS
         self.param_generator_func       = None
         self.needs_update_func          = None
         self.job_wrapper                = job_wrapper_generic

@@ -103,25 +103,25 @@ Additions to ``ruffus`` namespace
     * defaults to checking file timestamps stored in the current directory (``ruffus_utilility.RUFFUS_HISTORY_FILE = '.ruffus_history.sqlite'``)
     * ``pipeline_run(..., checksum_level = N, ...)``
 
-       * level 0 : Classic mode. Use only file timestamps (no checksum file will be created)
-       * level 1 : Also store timestamps in a database after successful job completion
-       * level 2 : As above, plus a checksum of the pipeline function body
-       * level 3 : As above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
+       * level 0 = CHECKSUM_FILE_TIMESTAMPS      : Classic mode. Use only file timestamps (no checksum file will be created)
+       * level 1 = CHECKSUM_HISTORY_TIMESTAMPS   : Also store timestamps in a database after successful job completion
+       * level 2 = CHECKSUM_FUNCTIONS            : As above, plus a checksum of the pipeline function body
+       * level 3 = CHECKSUM_FUNCTIONS_AND_PARAMS : As above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
 
        * defaults to level 1
        * Use ``pipeline_run(..., checksum_level=CHECKSUM_FILE_TIMESTAMPS, ...)`` for "classic" mode
 
 
-    * Can speed up trivial tasks: Previously Ruffus always added an extra 1 second pause between tasks 
+    * Can speed up trivial tasks: Previously Ruffus always added an extra 1 second pause between tasks
       to guard against file systems (Ext3, FAT, some NFS) with low timestamp granularity.
 
 
 ____________________________________________________________________________________________________________________
-The checksum history_file file name can be changed
+The checksum file name and level can be set at runtime or in the environment
 ____________________________________________________________________________________________________________________
 
 
-    1) Default is ``.ruffus_history.sqlite`` (i.e. in the current working directory)
+    1) Default filename is ``.ruffus_history.sqlite`` (i.e. in the current working directory)
     2) Overridden by the environment variable ``DEFAULT_RUFFUS_HISTORY_FILE``
     3) Set in ``pipeline_run``, ``pipeline_printout``, ``pipeline_printout_graph``
 
@@ -162,6 +162,20 @@ ________________________________________________________________________________
             /common/path/for/job_history/test/bin/scripts/.run.me.ruffus_history.sqlite
 
 
+    4) default checksum level of ``CHECKSUM_HISTORY_TIMESTAMPS`` can be overridden by the environment variable ``DEFAULT_RUFFUS_CHECKSUM_LEVEL``
+
+       .. code-block:: bash
+
+           export DEFAULT_RUFFUS_CHECKSUM_LEVEL=CHECKSUM_FUNCTIONS
+           export DEFAULT_RUFFUS_CHECKSUM_LEVEL=3
+
+
+
+
+
+
+
+
 ____________________________________________________________________________________________________________________
 Regenerate checksums
 ____________________________________________________________________________________________________________________
@@ -196,7 +210,7 @@ ________________________________________________________________________________
 
     * ``ruffus.drmaa_wrapper.run_cmd`` dispatches the actual work to a cluster node within a normal Ruffus job
 
-        This is the equivalent of `os.system  <http://docs.python.org/2/library/os.html#os.system>`__  or 
+        This is the equivalent of `os.system  <http://docs.python.org/2/library/os.html#os.system>`__  or
         `subprocess.check_output  <http://docs.python.org/2/library/subprocess.html#subprocess.check_call>`__ but the code will run remotely as specified:
 
         .. code-block:: python
@@ -403,7 +417,7 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________________________________
 
     For the new "combinatorics", (i.e. all versus all etc.) decorators, we have **groups** of inputs for each job.
-    This just means an extra level of indirection: ``{path[0][0]}`` (The first input file from the first set of input files) 
+    This just means an extra level of indirection: ``{path[0][0]}`` (The first input file from the first set of input files)
     instead of ``{path[0]}``.
 
     .. code-block:: python

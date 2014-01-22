@@ -98,12 +98,43 @@ CHECKSUM_REGENERATE           = 2     # regenerate checksums
 #
 #_________________________________________________________________________________________
 def get_default_checksum_level ():
-    checksum_level = CHECKSUM_HISTORY_TIMESTAMPS
-    if "DEFAULT_RUFFUS_CHECKSUM_LEVEL" in os.environ:
-        env_checksum_level = os.environ["DEFAULT_RUFFUS_CHECKSUM_LEVEL"]
+    """
+    Use the checksum level from the environmental variable DEFAULT_RUFFUS_CHECKSUM_LEVEL
+    Otherwise default to CHECKSUM_HISTORY_TIMESTAMPS
+    """
+
+    #
+    #   environmental variable not set
+    #
+    if "DEFAULT_RUFFUS_CHECKSUM_LEVEL" not in os.environ:
+        return CHECKSUM_HISTORY_TIMESTAMPS
+
+
+
+    #
+    # lookup value from list of CHECKSUM_XXX constants
+    #
+    checksum_level = None
+    env_checksum_level = os.environ["DEFAULT_RUFFUS_CHECKSUM_LEVEL"]
+    if env_checksum_level in "0123":
+        checksum_level = int(env_checksum_level)
+    else:
         for key, value in globals().iteritems():
             if key.startswith('CHECKSUM') and key == env_checksum_level:
                 checksum_level = value
+
+    #
+    #   check environmental variable is valid string
+    #
+    if checksum_level == None:
+        raise error_checksum_level(("The environmental value "
+                                   "DEFAULT_RUFFUS_CHECKSUM_LEVEL should be: [0-3 | "
+                                   "CHECKSUM_FILE_TIMESTAMPS | "
+                                   "CHECKSUM_HISTORY_TIMESTAMPS | "
+                                   "CHECKSUM_FUNCTIONS | "
+                                   "CHECKSUM_FUNCTIONS_AND_PARAMS] (rather than '%s') ")
+                                   % (env_checksum_level,))
+
     return checksum_level
 
 
