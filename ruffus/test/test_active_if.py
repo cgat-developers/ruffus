@@ -114,11 +114,12 @@ pipeline_active_if = True
 #    task1
 #
 @follows(mkdir("test_active_if"))
-@originate(['test_active_if/a.1', 'test_active_if/b.1'])
-def task1(outfile):
+@originate(['test_active_if/a.1', 'test_active_if/b.1'], "an extra_parameter")
+def task1(outfile, extra):
     """
     First task
     """
+    sys.stderr.write("originate works with outfile '%s'" % outfile + " and " + extra + "\n")
     helper (None, outfile)
 
 
