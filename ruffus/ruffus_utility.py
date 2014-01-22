@@ -93,6 +93,21 @@ CHECKSUM_FUNCTIONS_AND_PARAMS = 3     # also rerun when function parameters or f
 CHECKSUM_REGENERATE           = 2     # regenerate checksums
 
 #_________________________________________________________________________________________
+#
+#   get_default_checksum_level
+#
+#_________________________________________________________________________________________
+def get_default_checksum_level ():
+    checksum_level = CHECKSUM_HISTORY_TIMESTAMPS
+    if "DEFAULT_RUFFUS_CHECKSUM_LEVEL" in os.environ:
+        env_checksum_level = os.environ["DEFAULT_RUFFUS_CHECKSUM_LEVEL"]
+        for key, value in globals().iteritems():
+            if key.startswith('CHECKSUM') and key == env_checksum_level:
+                checksum_level = value
+    return checksum_level
+
+
+#_________________________________________________________________________________________
 
 #   open_job_history
 
