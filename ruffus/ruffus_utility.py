@@ -152,7 +152,7 @@ def get_default_history_file_name ():
         import __main__ as main
         path_parts = path_decomposition (os.path.abspath(main.__file__))
         history_file = history_file.format(**path_parts)
-    except Exception as err:
+    except Exception:
         pass
     return history_file
 
@@ -512,11 +512,13 @@ class t_regex_replace(object):
             (res_str, cnt_replacements) = self.compiled_regex.subn(p, self.filename)
             if cnt_replacements > 0:
                 return res_str
-        except re.error as e:
-            err_str = str(e)
+        except re.error:
+            exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+            err_str = str(exceptionValue)
             raise fatal_error_input_file_does_not_match("File '%s' does not match regex('%s') and pattern '%s':\n\t%s\n" % (self.filename, self.regex_str, p, err_str))
-        except IndexError as e:
-            err_str = str(e)
+        except IndexError:
+            exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+            err_str = str(exceptionValue)
             raise fatal_error_input_file_does_not_match("File '%s' does not match regex('%s') and pattern '%s':\n\t%s\n" % (self.filename, self.regex_str, p, err_str))
 
         #except (re.error, IndexError):
