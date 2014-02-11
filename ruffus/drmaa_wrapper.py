@@ -96,14 +96,18 @@ def read_stdout_stderr_from_files( stdout_path, stderr_path, logger = None, cmd_
 
     try:
         stdout = open( stdout_path, "r" ).readlines()
-    except IOError, msg:
+    except IOError:
+        exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+        msg = str(exceptionValue):
         if logger:
             logger.warn( "could not open stdout: %s for \n%s" % (msg, cmd_str))
         stdout = []
 
     try:
         stderr = open( stderr_path, "r" ).readlines()
-    except IOError, msg:
+    except IOError:
+        exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+        msg = str(exceptionValue):
         if logger:
             logger.warn( "could not open stderr: %s for \n%s" % (msg, cmd_str))
         stderr = []
@@ -114,7 +118,7 @@ def read_stdout_stderr_from_files( stdout_path, stderr_path, logger = None, cmd_
     try:
         os.unlink( stdout_path )
         os.unlink( stderr_path )
-    except OSError, msg:
+    except OSError:
         pass
 
     return stdout, stderr
@@ -221,7 +225,9 @@ def run_job_using_drmaa (cmd_str, job_queue_name = None, job_queue_priority = No
 
     try:
         retval = drmaa_session.wait(jobid, drmaa.Session.TIMEOUT_WAIT_FOREVER)
-    except Exception, msg:
+    except Exception:
+        exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+        msg = str(exceptionValue):
         # ignore message 24 in PBS
         # code 24: drmaa: Job finished but resource usage information and/or termination status could not be provided.":
         if not msg.message.startswith("code 24"): raise
