@@ -358,14 +358,14 @@ def get_all_paths_components(paths, compiled_regex):
             and regular expression matches
                 The keys are the index or name of the capturing group.
 
-            If compiled_regex is specified, and the regular expression does not match, an empty
-            dictionary is returned.
+            If compiled_regex is specified, and the regular expression does not match, only the path components are returned
 
         For example, the following three paths give:
             get_all_paths_components(["/a/b/c/sample1.bam",
                                       "dbsnp15.vcf",
                                       "/test.txt"],
                                      r"(.*)(?P<id>\d+)\..+")
+
             [   {
                     0:          '/a/b/c/sample1.bam',           // captured by index
                     1:          '/a/b/c/sample',                // captured by index
@@ -386,9 +386,14 @@ def get_all_paths_components(paths, compiled_regex):
                     'basename': 'dbsnp15',
                 },
 
-                // no regular expression match
-                // everything fails!
+                // path components only
+                //
                 {
+                    'ext': '.txt',
+                    'subdir': ['/']
+                    'subpath': ['/'],
+                    'path': '/',
+                    'basename': 'test',
                 }
             ]
     """
