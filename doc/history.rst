@@ -525,7 +525,7 @@ ________________________________________________________________________________
             @product(
 
                     # first list from wildcard: filter on *.bam
-                    "*.a",
+                    "*.ba*",
                     formatter( ".*/(?P<ID>\w+.bamfile).bam" ),
 
                     # second list from task "AToB"
