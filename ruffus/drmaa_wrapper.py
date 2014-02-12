@@ -231,6 +231,10 @@ def run_job_using_drmaa (cmd_str, job_queue_name = None, job_queue_priority = No
         # ignore message 24 in PBS
         # code 24: drmaa: Job finished but resource usage information and/or termination status could not be provided.":
         if not msg.message.startswith("code 24"): raise
+        if logger:
+            logger.log(MESSAGE, "Warning %s\n"
+                                   "The original command was:\n%s\n"
+                                     (msg.message, cmd_str,) )
         retval = None
 
 
@@ -242,7 +246,7 @@ def run_job_using_drmaa (cmd_str, job_queue_name = None, job_queue_priority = No
     #
     #   Throw if failed
     #
-    if retval and retval.exitStatus != 0:
+    if retval and not retval.hasExited():
         raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n"
                                "The original command was:\n%s\n"
                                "The stderr was: \n%s\n\n"
