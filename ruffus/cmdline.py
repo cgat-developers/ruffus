@@ -625,15 +625,30 @@ def run (options, **extra_options):
         if not hasattr(options, attr_name):
             setattr(options, attr_name, None)
 
+
+    #
+    #   touch files or not
+    #
+    if options.recreate_database:
+        touch_files_only = CHECKSUM_REGENERATE
+    elif options.touch_files_only:
+        touch_files_only = True
+    else:
+        touch_files_only = False
+
     if options.just_print:
         appropriate_options = get_extra_options_appropriate_for_command (extra_pipeline_printout_options, extra_options)
         task.pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
+                               touch_files_only= touch_files_only,
+                               history_file = options.history_file,
                                 verbose=options.verbose, **appropriate_options)
         return False
 
     elif options.flowchart:
         appropriate_options = get_extra_options_appropriate_for_command (extra_pipeline_printout_graph_options, extra_options)
         task.pipeline_printout_graph (   open(options.flowchart, "w"),
+                                         touch_files_only= touch_files_only,
+                                         history_file = options.history_file,
                                         options.flowchart_format,
                                         options.target_tasks,
                                         options.forced_tasks,
@@ -659,11 +674,6 @@ def run (options, **extra_options):
             multithread = None
 
 
-
-
-
-
-
         if not "logger" in extra_options:
             extra_options["logger"] = None
         if extra_options["logger"] == False:
@@ -671,12 +681,6 @@ def run (options, **extra_options):
         elif extra_options["logger"] == None:
             extra_options["logger"] = task.stderr_logger
         appropriate_options = get_extra_options_appropriate_for_command (extra_pipeline_run_options, extra_options)
-        if options.recreate_database:
-            touch_files_only = CHECKSUM_REGENERATE
-        elif options.touch_files_only:
-            touch_files_only = True
-        else:
-            touch_files_only = False
         task.pipeline_run(  options.target_tasks,
                             options.forced_tasks,
                             multiprocess    = options.jobs,
