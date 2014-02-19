@@ -639,7 +639,6 @@ def run (options, **extra_options):
     if options.just_print:
         appropriate_options = get_extra_options_appropriate_for_command (extra_pipeline_printout_options, extra_options)
         task.pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
-                               touch_files_only= touch_files_only,
                                history_file = options.history_file,
                                 verbose=options.verbose, **appropriate_options)
         return False
@@ -650,7 +649,6 @@ def run (options, **extra_options):
                                         options.flowchart_format,
                                         options.target_tasks,
                                         options.forced_tasks,
-                                         touch_files_only= touch_files_only,
                                          history_file = options.history_file,
                                         draw_vertically = not options.draw_horizontally,
                                         no_key_legend   = not options.key_legend_in_graph,
