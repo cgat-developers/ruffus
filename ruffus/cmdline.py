@@ -647,11 +647,11 @@ def run (options, **extra_options):
     elif options.flowchart:
         appropriate_options = get_extra_options_appropriate_for_command (extra_pipeline_printout_graph_options, extra_options)
         task.pipeline_printout_graph (   open(options.flowchart, "w"),
-                                         touch_files_only= touch_files_only,
-                                         history_file = options.history_file,
                                         options.flowchart_format,
                                         options.target_tasks,
                                         options.forced_tasks,
+                                         touch_files_only= touch_files_only,
+                                         history_file = options.history_file,
                                         draw_vertically = not options.draw_horizontally,
                                         no_key_legend   = not options.key_legend_in_graph,
                                         **appropriate_options)
