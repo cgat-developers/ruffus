@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import ez_setup
-ez_setup.use_setuptools()
+from distutils.core import setup
+#from setuptools import find_packages
 
 import sys, os
 if not sys.version_info[0:2] >= (2,4):
@@ -19,7 +19,6 @@ else:
     module_dependencies = ['multiprocessing>=2.6', 'simplejson']
 
 
-from setuptools import setup, find_packages
 setup(
         name='ruffus',
         version=ruffus.ruffus_version.__version, #major.minor[.patch[.sub]]
