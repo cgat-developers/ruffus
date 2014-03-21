@@ -2575,7 +2575,10 @@ class _task (node):
         #print 'job is active:', active_checks, [
         #                arg() if isinstance(arg, collections.Callable) else arg
         #                for arg in active_checks]
-        self.active_if_checks = active_if_checks
+        if self.active_if_checks == None:
+            self.active_if_checks = []
+        self.active_if_checks.extend(active_if_checks)
+        print self.active_if_checks
 
 
 class task_encoder(json.JSONEncoder):
