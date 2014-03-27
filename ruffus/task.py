@@ -2722,8 +2722,8 @@ def task_names_to_tasks (task_description, task_names):
 
 #_________________________________________________________________________________________
 def pipeline_printout_graph (stream,
-                             output_format,
-                             target_tasks,
+                             output_format                  = None,
+                             target_tasks                   = [],
                              forcedtorun_tasks              = [],
                              draw_vertically                = True,
                              ignore_upstream_of_target      = False,
@@ -2786,16 +2786,6 @@ def pipeline_printout_graph (stream,
                         "values passes to jobs at run time.")
 
     #
-    #   target jobs
-    #
-    target_tasks        = task_names_to_tasks ("Target", target_tasks)
-    forcedtorun_tasks   = task_names_to_tasks ("Forced to run", forcedtorun_tasks)
-
-    # open file if (unicode?) string
-    if isinstance(stream, basestring):
-        stream = open(stream, "w")
-
-    #
     #   If we aren't using checksums, and history file hasn't been specified,
     #       we might be a bit surprised to find Ruffus writing to a sqlite db anyway.
     #       Let us just use a in memory db which will be thrown away
@@ -2808,6 +2798,35 @@ def pipeline_printout_graph (stream,
     # load previous job history if it exists, otherwise create an empty history
     #
     job_history = open_job_history (history_file)
+
+    #
+    #   target jobs
+    #
+    if target_tasks == None:
+        target_tasks = []
+    if forcedtorun_tasks == None:
+        forcedtorun_tasks = []
+    target_tasks        = task_names_to_tasks ("Target", target_tasks)
+    forcedtorun_tasks   = task_names_to_tasks ("Forced to run", forcedtorun_tasks)
+
+
+    (topological_sorted, ignore_param1, ignore_param2,
+         ignore_param3) = topologically_sorted_nodes(target_tasks, forcedtorun_tasks,
+                                                        gnu_make_maximal_rebuild_mode,
+                                                        extra_data_for_signal = [t_verbose_logger(0, None, runtime_data), job_history])
+    if not len(target_tasks):
+        target_tasks = topological_sorted[-1:]
+
+
+
+    # open file if (unicode?) string
+    if isinstance(stream, basestring):
+        stream = open(stream, "w")
+
+    # derive format automatically from name
+    if output_format == None:
+        output_format = os.path.splitext(stream.name)[1].lstrip(".")
+
 
 
     graph_printout (  stream,
@@ -2835,7 +2854,7 @@ def pipeline_printout_graph (stream,
 
 #_________________________________________________________________________________________
 def pipeline_printout(  output_stream,
-                        target_tasks,
+                        target_tasks                    = [],
                         forcedtorun_tasks               = [],
                         verbose                         = 1,
                         indent                          = 4,

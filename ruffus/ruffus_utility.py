@@ -225,7 +225,25 @@ class JobHistoryChecksum:
 
 
 
+#_________________________________________________________________________________________
+#
+#   parameter_list_as_string
+#
+#_________________________________________________________________________________________
+def parameter_list_as_string (parameters):
+    """
+    Input list of parameters
+       Turn this into a string for display
 
+        E.g.
+
+    """
+    if parameters == None:
+        return ""
+    elif not isinstance(parameters, list):
+        raise Exception("Unexpected parameter list %s" % (parameters,))
+    else:
+        return str(parameters)[1:-1]
 
 #_________________________________________________________________________________________
 #
@@ -341,12 +359,71 @@ def swap_doubly_nested_order (orig_coll):
 
     return new_list, new_dict
 
+
+#_________________________________________________________________________________________
+#
+#   regex_match_str_list
+#
+#_________________________________________________________________________________________
+def regex_match_str_list(test_str_list, compiled_regexes):
+    """
+    Returns a list of regular expression matches for a string and its corresponding regex
+    Each match consists of a dictionary combining both named and unnamed captures
+    """
+    if not isinstance(compiled_regexes, list):
+        raise Exception("Expecting list of None and strings")
+
+    #   pad compiled_regexes with None
+    if len(compiled_regexes) < len(test_str_list):
+        compiled_regexes.extend([None] * (len(test_str_list) - len(compiled_regexes)))
+
+    #   Turn strings to regular expression just in case
+    #   We don't want to do this here because the error messages are not very nice:
+    #   There is not much context left
+    compiled_regexes = [re.compile(rr) if isinstance(rr, basestring) else rr for rr in compiled_regexes]
+
+    #   check types
+    regex_types = type(re.compile("")), type(None)
+    for rr in compiled_regexes:
+        if not isinstance(rr, regex_types):
+            raise Exception("Unexpected type %s ('%s') specified in regular expression list. Expecting string or compiled regular expression" % (type(rr), rr))
+
+    #
+    #   match against regular expressions
+    #
+    matches = [rr.search(ss) if rr else None for rr, ss in izip(compiled_regexes, test_str_list)]
+
+    #
+    #   convert regular expression matches into a dictionary for named and unamed captures
+    #
+    matchdicts = []
+    for rr, mm in izip(compiled_regexes, matches):
+
+        # Ignore: no regular expression match attempted
+        if rr == None:
+            matchdicts.append(None)
+
+        # Match failed
+        elif mm == None:
+            matchdicts.append(False)
+        else:
+            # No capture
+            if mm.lastindex == None:
+                matchdicts.append({0: mm.group(0)})
+
+            # Combined named and unnamed captures
+            else:
+                # no dictionary comprehensions in python 2.6 :-(
+                #matchdicts.append({i : mm.group(i) for i in (range(mm.lastindex) + mm.groupdict().keys())})
+                matchdicts.append(dict((i, mm.group(i)) for i in (range(mm.lastindex + 1) + mm.groupdict().keys())))
+    return matchdicts
+
 #_________________________________________________________________________________________
 #
 #   get_all_paths_components
 #
 #_________________________________________________________________________________________
-def get_all_paths_components(paths, compiled_regex):
+def get_all_paths_components(paths, compiled_regexes):
     """
         For each path in a list,
             returns a dictionary identifying the components of a file path.
@@ -358,7 +435,8 @@ def get_all_paths_components(paths, compiled_regex):
             and regular expression matches
                 The keys are the index or name of the capturing group.
 
-            If compiled_regex is specified, and the regular expression does not match, only the path components are returned
+            If compiled_regexes is specified, and the corresponding regular expression does not match,
+                the entire match fails
 
         For example, the following three paths give:
             get_all_paths_components(["/a/b/c/sample1.bam",
@@ -397,41 +475,24 @@ def get_all_paths_components(paths, compiled_regex):
                 }
             ]
     """
-    def regex_match_str_list(test_str_list, compiled_regex):
-        if isinstance(compiled_regex, basestring):
-            compiled_regex = re.compile(compiled_regex)
-        matches = [compiled_regex.search(ss) for ss in test_str_list]
-
-        matchdicts = []
-        for mm in matches:
-            if mm == None:
-                matchdicts.append(None)
-            else:
-                if mm.lastindex == None:
-                    matchdicts.append({})
-                else:
-                    # no dictionary comprehensions in python 2.6 :-(
-                    #matchdicts.append({i : mm.group(i) for i in (range(mm.lastindex) + mm.groupdict().keys())})
-                    matchdicts.append(dict((i, mm.group(i)) for i in (range(mm.lastindex + 1) + mm.groupdict().keys())))
-        return matchdicts
     #
     #   merge regular expression matches and path decomposition
     #
     path_components = [path_decomposition(pp) for pp in paths]
-    if compiled_regex == None:
+    if compiled_regexes == None:
         return path_components
     else:
-        regex_match_components = regex_match_str_list(paths, compiled_regex)
+        regex_match_components = regex_match_str_list(paths, compiled_regexes)
         both_components = []
         for rr, pp in izip(regex_match_components, path_components):
+            # regular expression not specified
+            # just path
             if rr == None:
-                #
-                #   previously failed regular expression matches would taint file
-                #   decomposition as well: too clever by half
-                #
-                #both_components.append({})
-                #
                 both_components.append(pp)
+            # regular expression match failed
+            # nothing
+            elif rr == False:
+                both_components.append({})
             else:
                 #
                 #   regular expression matches override file decomposition values in
@@ -532,12 +593,14 @@ class t_regex_replace(object):
 #
 #_________________________________________________________________________________________
 class t_formatter_replace(object):
-    def __init__ (self, filenames, regex_str, compiled_regex = None):
+    def __init__ (self, filenames, regex_strings, compiled_regexes = None):
         self.filenames = filenames
         # get the full absolute, normalised paths
         filenames = [os.path.abspath(f) for f in filenames]
-        self.path_regex_components = get_all_paths_components(filenames, compiled_regex)
-        self.regex_str = "'" + regex_str + "'" if regex_str else ""
+        self.path_regex_components = get_all_paths_components(filenames, compiled_regexes)
+        self.display_regex_strings = parameter_list_as_string(regex_strings)
+
+
 
     def __call__(self, p):
         # swapped nesting order makes the syntax easier to explain:
@@ -554,7 +617,7 @@ class t_formatter_replace(object):
                                                   "."
                                                   % (   str(sys.exc_info()[1]),
                                                         p,
-                                                        self.regex_str,
+                                                        self.display_regex_strings,
                                                         self.filenames))
 
 
@@ -564,14 +627,21 @@ class t_formatter_replace(object):
 #
 #_________________________________________________________________________________________
 class t_nested_formatter_replace(object):
+    """
+    Like  t_formatter_replace but with one additional level of nesting
+    I.e. everything is a list comprehension!
+    For combinatorics @decorators
+    """
     def __init__ (self, filenames, regex_strings, compiled_regexes):
+        # make sure that we have the same level of nestedness for regular expressions and file names etc.
         if len(filenames) != len(regex_strings) or len(filenames) != len(compiled_regexes):
             raise Exception("Logic Error.")
         self.filenames = filenames
         # get the full absolute, normalised paths
         filenames = [[os.path.abspath(f) for f in filegroups] for filegroups in filenames]
         self.path_regex_components = [get_all_paths_components(f, r) for (f,r) in zip(filenames, compiled_regexes)]
-        self.regex_strings = regex_strings
+        self.display_regex_strs = [parameter_list_as_string(ss) for ss in regex_strings]
+
 
     def __call__(self, p):
         # swapped nesting order makes the syntax easier to explain:
@@ -584,7 +654,7 @@ class t_nested_formatter_replace(object):
         try:
             return p.format(*dl, **dd)
         except (KeyError, IndexError):
-            formatter_str = ", ".join("formatter(%s)" % (s if not s else "'%s'" %s) for s in self.regex_strings)
+            formatter_str = ", ".join("formatter(%s)" % ss for ss in self.display_regex_strs)
             raise error_input_file_does_not_match("Unmatched field %s in ('%s') using %s fails to match Files '%s'"
                                                   "."
                                                   % (   str(sys.exc_info()[1]),
@@ -942,6 +1012,52 @@ def wrap_exception_as_string ():
     if len(exception_value):
         return msg + ": (%s)" % exception_value
     return msg
+
+
+#_________________________________________________________________________________________
+
+#   compile_formatter
+
+#_________________________________________________________________________________________
+def compile_formatter(enclosing_task, formatter_obj, error_object, descriptor_string):
+    """
+    Given list of [string|None]
+    Return compiled regular expressions.
+    """
+
+    compiled_regexes = []
+    for ss in formatter_obj.args:
+        # ignore None
+        if ss is None:
+            compiled_regexes.append(None)
+            continue
+
+        formatter_args = str(formatter_obj.args)[1:-1]
+        # regular expression should be strings
+        if not isinstance(ss, basestring):
+            raise error_object(enclosing_task, ("{descriptor_string}: "
+                                       "formatter({formatter_args}) is malformed\n"
+                                        "formatter(...) should only be used to wrap "
+                                        'regular expression strings or None (not "{ss}")')
+                                        .format(descriptor_string = descriptor_string,
+                                                formatter_args = formatter_args,
+                                                ss = ss)
+                               )
+
+        try:
+            compiled_regexes.append(re.compile(ss))
+        except:
+            raise error_object(enclosing_task, ("{descriptor_string}: "
+                                        "in formatter({formatter_args}) \n"
+                                       'regular expression "{ss}" is malformed\n'
+                                        "[{except_str}]")
+                                        .format(descriptor_string = descriptor_string,
+                                                formatter_args = formatter_args,
+                                                ss = ss,
+                                                except_str = wrap_exception_as_string())
+                           )
+    return compiled_regexes
+
 
 
 #_________________________________________________________________________________________
