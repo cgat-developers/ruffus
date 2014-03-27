@@ -4,28 +4,29 @@
     {{ super() }}
     <h3> Quick Reference:</h3>
     <ul>
-        <ul>
-            <li><a href="{{ pathto('faq') }}">FAQ</a>                                               </li>
-            <li><a href="{{ pathto('history') }}">Changes</a>                                       </li>
-            <li><a href="{{ pathto('todo') }}">Future plans</a>                                     </li>
-        </ul>
         <h3><a href="{{ pathto('decorators/decorators') }}">Decorators:</a></h3>   
         <ul>
             <li><a href="{{ pathto('decorators/follows') }}">@follows / mkdir</a>                       </li>
-            <li><a href="{{ pathto('decorators/files') }}">@files</a>                                   </li>
+            <li><a href="{{ pathto('decorators/originate') }}">@originate</a>                           </li>
             <li><a href="{{ pathto('decorators/split') }}">@split</a>                                   </li>
             <li><a href="{{ pathto('decorators/transform') }}">@transform</a>                           </li>
             <li><a href="{{ pathto('decorators/merge') }}">@merge</a>                                   </li>
             <li><a href="{{ pathto('decorators/posttask') }}">@posttask touch_file</a>                  </li>
+            <li><a href="{{ pathto('decorators/active_if') }}">@active_if</a>                           </li>
             <li><a href="{{ pathto('decorators/jobs_limit') }}">@jobs_limit</a>                         </li>
-            <li><a href="{{ pathto('decorators/split_ex') }}">@split (regex / add_inputs)</a>             </li>
-            <li><a href="{{ pathto('decorators/transform_ex') }}">@transform (add_inputs) </a>          </li>
+            <li><a href="{{ pathto('decorators/subdivide') }}">@subdivide</a>                           </li>
             <li><a href="{{ pathto('decorators/collate') }}">@collate</a>                               </li>
+            <li><a href="{{ pathto('decorators/product') }}">@product </a>                              </li>
+            <li><a href="{{ pathto('decorators/permutations') }}">@permutations </a>                    </li>
+            <li><a href="{{ pathto('decorators/combinations') }}">@combinations </a>                    </li>
+            <li><a href="{{ pathto('decorators/product') }}">@product </a>                              </li>
+            <li><a href="{{ pathto('decorators/transform_ex') }}">@transform (add_inputs) </a>          </li>
             <li><a href="{{ pathto('decorators/collate_ex') }}">@collate (add_inputs)        </a>       </li>
             <li><a href="{{ pathto('decorators/jobs_limit') }}">@jobs_limit</a>                         </li>
             <li><a href="{{ pathto('decorators/files_ex') }}">@files (on the fly)</a>                   </li>
             <li><a href="{{ pathto('decorators/parallel') }}">@parallel</a>                             </li>
             <li><a href="{{ pathto('decorators/check_if_uptodate') }}">@check_if_uptodate</a>           </li>
+            <li><a href="{{ pathto('decorators/files') }}">@files (deprecated)</a>                      </li>
         </ul>
     
         <h4 ><a href="{{ pathto('decorators/indicator_objects') }}">Indicator objects</a></h4>
@@ -35,6 +36,9 @@
             <li><a href="{{ pathto('pipeline_functions') }}#pipeline-functions-pipeline-printout">pipeline_printout</a>                      </li>
             <li><a href="{{ pathto('pipeline_functions') }}#pipeline-functions-pipeline-printout-graph">pipeline_printout_graph</a>          </li>
         </ul>
+        <ul>
+            <li><a href="{{ pathto('todo') }}">Future plans</a>                                     </li>
+        </ul>
     </ul>
 {% endblock %}
 
@@ -43,8 +47,7 @@
             <li><a href="{{ pathto('index') }}">Home</a> | </li>
             <li><a href="{{ pathto('contents') }}">Contents</a> | </li>
             <li><a href="{{ pathto('installation') }}">Install</a>  | </li>
-            <li><a href="{{ pathto('tutorials/simple_tutorial/simple_tutorial') }}">Tutorial</a>  / </li>
-            <li><a href="{{ pathto('tutorials/manual/manual_introduction') }}">Manual</a>  / </li>
+            <li><a href="{{ pathto('tutorials/new_tutorial/introduction') }}">Manual</a>  / </li>
             <li><a href="{{ pathto('examples/bioinformatics/index') }}">Bioinformatics</a>  | </li>
             <li><a href="{{ pathto('faq') }}">FAQ</a>  | </li>
             <li><a href="{{ pathto('cheatsheet') }}">Cheat sheet</a> | </li>

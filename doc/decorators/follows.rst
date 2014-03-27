@@ -1,6 +1,6 @@
 .. include:: ../global.inc
 .. _decorators.follows:
-.. index:: 
+.. index::
     pair: @follows; Syntax
 
 .. seealso::
@@ -24,38 +24,38 @@
 *@follows*\ (|task|_ | |task_name|_ | :ref:`mkdir<decorators.mkdir>` (|directory_name|_), [more_tasks, ...])
 ***************************************************************************************************************************************************
     **Purpose:**
-    
+
         Indicates task dependencies
 
 
     **Example**::
-    
+
         def task1():
             print "doing task 1"
-    
+
         @follows(task1)
         def task2():
             print "doing task 2"
 
 
     **Parameters:**
-                
+
 .. _decorators.follows.task:
- 
-    * *task*: 
+
+    * *task*:
         a list of tasks which have to be run **before** this function
-                
+
 .. _decorators.follows.task_name:
- 
-    * *"task_name"*: 
+
+    * *"task_name"*:
         Dependencies can be quoted function names.
         Quoted function names allow dependencies to be added before the function is defined.
 
         Functions in other modules need to be fully qualified.
-                
-                
+
+
 .. _decorators.follows.directory_name:
- 
+
     * *directory_name*:
         Directories which need to be created (if they don't exist) before
         the task is run can be specified via a ``mkdir`` indicator object:

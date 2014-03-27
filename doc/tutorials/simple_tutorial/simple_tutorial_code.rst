@@ -7,24 +7,25 @@ Code for the simple tutorial: 8 steps to *Ruffus*
 ############################################################
 
     * :ref:`A simple tutorial<Simple_Tutorial>`
-    
+
 
 ***************************************
 Table of Contents
 ***************************************
-    .. toctree::
-        :maxdepth: 1
-    
-        step2_code.rst
-        step3_run_pipeline_code.rst
-        step4_run_pipeline_graphically_code.rst
-        step5_split_code.rst
-        step6_transform_code.rst
-        step7_merge_code.rst
-        step8_posttask_code.rst
 
 
-    
+   :ref:`Chain tasks (functions) together into a pipeline <Simple_Tutorial_1st_step>`
+   :ref:`Provide parameters to run jobs in parallel <Simple_Tutorial_2nd_step>`
+   :ref:`Tracing through your new pipeline <Simple_Tutorial_3rd_step>`
+   :ref:`Using flowcharts  <Simple_Tutorial_4th_step_graphical>`
+   :ref:`Split up a large problem into smaller chunks <Simple_Tutorial_5th_step>`
+   :ref:`Calculate partial solutions in parallel <Simple_Tutorial_6th_step>`
+   :ref:`Re-combine the partial solutions into the final result <Simple_Tutorial_7th_step>`
+   :ref:`Automatically signal the completion of each step of our pipeline <Simple_Tutorial_8th_step>`
+
+
+
+
 
 
 

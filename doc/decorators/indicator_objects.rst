@@ -1,10 +1,13 @@
 .. include:: ../global.inc
+
+
 .. seealso::
     :ref:`Decorators <decorators>`
 
 .. index::
     single: Indicator Object (Disambiguating parameters)
-.. _indicator_objects:
+
+.. _decorators.indicator_objects:
 
 
 ########################
@@ -20,51 +23,26 @@ Indicator Objects
     Indicator objects are also "self-documenting" so you can see
     exactly what is happening clearly.
 
-.. _decorators.regex:
 
 .. index::
-    pair: regex; Indicator Object (Disambiguating parameters)
+    pair: formatter; Indicator Object (Disambiguating parameters)
+
+.. _decorators.formatter:
+
 
 *********************************************
-*regex(*\ `regular_expression`\ *)*
+*formatter*
 *********************************************
-    The enclosed parameter is a python regular expression string,
-    which must be wrapped in a ``regex`` indicator object.
 
-    See python `regular expression (re) <http://docs.python.org/library/re.html>`_
-    documentation for details of regular expression syntax
+    **formatter([** ``regex | None`` **, regex | None...])**
 
-
-    **Used by:**
-
-        * :ref:`@transform <decorators.transform>`
-        * :ref:`@collate <decorators.collate>`
-        * The advanced form of :ref:`@transform <decorators.transform_ex>`
-        * The deprecated :ref:`@files_re <decorators.files_re>`
-
-    **Example**:
-        ::
-
-            @transform(previous_task, regex(r".c$"), ".o")
-            def compile(infile, outfile):
-                pass
-
-
-.. _decorators.suffix:
-
-.. index::
-    pair: suffix; Indicator Object (Disambiguating parameters)
-
-*********************************************
-*suffix(*\ `string`\ *)*
-*********************************************
-    The enclosed parameter is a string which must match *exactly* to the end
-    of a file name.
+    * The optional enclosed parameters are a python regular expression strings
+    * Each regular expression matches a corresponding *Input* file name string
+    * formatter
 
 
     **Used by:**
         * :ref:`@transform <decorators.transform>`
-        * The advanced form of :ref:`@transform <decorators.transform_ex>`
 
     **Example**:
         ::
@@ -76,23 +54,86 @@ Indicator Objects
             def compile(infile, outfile):
                 pass
 
-.. _decorators.add_inputs:
+
+.. index::
+    pair: suffix; Indicator Object (Disambiguating parameters)
+
+.. _decorators.suffix:
+
+
+*********************************************
+*suffix*
+*********************************************
+
+    **suffix(** ``string`` **)**
+
+    The enclosed parameter is a string which must match *exactly* to the end
+    of a file name.
+
+
+    **Used by:**
+        * :ref:`@transform <decorators.transform>`
+
+    **Example**:
+        ::
+
+            #
+            #   Transforms ``*.c`` to ``*.o``::
+            #
+            @transform(previous_task, suffix(".c"), ".o")
+            def compile(infile, outfile):
+                pass
+
+.. index::
+    pair: regex; Indicator Object (Disambiguating parameters)
+
+.. _decorators.regex:
+
+*********************************************
+*regex*
+*********************************************
+
+    **regex(** ``regular_expression`` **)**
+
+
+    The enclosed parameter is a python regular expression string,
+    which must be wrapped in a ``regex`` indicator object.
+
+    See python `regular expression (re) <http://docs.python.org/library/re.html>`_
+    documentation for details of regular expression syntax
+
+
+    **Used by:**
+
+        * :ref:`@transform <decorators.transform>`
+        * :ref:`@collate <decorators.collate>`
+        * The deprecated :ref:`@files_re <decorators.files_re>`
+
+    **Example**:
+        ::
+
+            @transform(previous_task, regex(r".c$"), ".o")
+            def compile(infile, outfile):
+                pass
+
 .. index::
     pair: add_inputs; Indicator Object (Adding additional input parameters)
 
+.. _decorators.add_inputs:
+
 ***********************************************
-*add_inputs(*\ `input_file_pattern`\ *)*
+*add_inputs*
 ***********************************************
+
+    **add_inputs(** ``input_file_pattern`` **)**
+
     The enclosed parameter(s) are pattern strings or a nested structure which is added to the
     input for each job.
 
     **Used by:**
         * :ref:`@transform <decorators.transform_ex>`
-          ``regex(...)`` and ``suffix(...)`` only
         * :ref:`@collate <decorators.transform_ex>`
-          ``regex(...)`` only
-        * :ref:`@split <decorators.transform_ex>`
-          ``regex(...)`` only
+        * :ref:`@subdivide <decorators.subdivide>`
 
     **Example @transform with suffix(...)**
 
@@ -159,13 +200,22 @@ Indicator Objects
 
 
 
-.. _decorators.inputs:
 .. index::
     pair: inputs; Indicator Object (Replacing input parameters)
 
+.. _decorators.inputs:
+
 ***************************************
-*inputs(*\ `input_file_pattern`\ *)*
+*inputs*
 ***************************************
+
+    **inputs(** ``input_file_pattern`` **)**
+
+    **Used by:**
+        * :ref:`@transform <decorators.transform_ex>`
+        * :ref:`@collate <decorators.transform_ex>`
+        * :ref:`@subdivide <decorators.subdivide>`
+
     The enclosed single parameter is a pattern string or a nested structure which is
     used to construct the input for each job.
 
@@ -199,17 +249,21 @@ Indicator Objects
         In this example, the corresponding python files have been sneakily substituted
         without trace in the place of the C source files.
 
-.. _decorators.mkdir:
-
 
 .. index::
     single: @follows; mkdir (Syntax)
     single: mkdir; @follows (Syntax)
     single: Indicator Object (Disambiguating parameters); mkdir
 
+.. _decorators.mkdir:
+
+
 ******************************************************************************************
-*mkdir(*\ `directory_name1`, [`directory_name2`, ...]\ *)*
+*mkdir*
 ******************************************************************************************
+
+    **mkdir(** ``directory_name1`` **, [** ``directory_name2`` **, ...] )**
+
     The enclosed parameter is a directory name or a sequence of directory names.
     These directories will be created as part of the prerequisites of running a task.
 
@@ -224,17 +278,20 @@ Indicator Objects
                 pass
 
 
-.. _decorators.touch_file:
-
 .. index::
     single: @posttask; touch_file (Syntax)
     single: touch_file; @posttask (Syntax)
     single: Indicator Object (Disambiguating parameters); touch_file
 
+.. _decorators.touch_file:
+
 
 ******************************************************************************************
-*touch_file(*\ `file_name`\ *)*
+*touch_file*
 ******************************************************************************************
+
+    **touch_file(** ``file_name`` **)**
+
     The enclosed parameter is a file name. This file will be ``touch``\ -ed after a
     task is executed.
 
@@ -254,58 +311,30 @@ Indicator Objects
                 pass
 
 
-.. _decorators.combine:
-.. index::
-    single: @files_re; combine (Deprecated Syntax)
-    single: combine; @follows (Deprecated Syntax)
-    single: Indicator Object (Disambiguating parameters); combine
-
-******************************************************************************************
-*combine(*\ `arguments`\ *)*
-******************************************************************************************
-    .. note::
-
-        This is deprecated syntax.
-
-        Please do not use!
-
-        `@merge <decorators.merge>` and :ref:`@collate <decorators.collate>` are more powerful
-        and have straightforward syntax.
-
-    Indicates that the *inputs* of :ref:`@files_re <decorators.files_re>` will be collated
-    or summarised into *outputs* by category. See the :ref:`Manual <manual.files_re.combine>`  or
-    :ref:` @collate <manual.collate>` for examples.
-
-
-    **Used by:**
-        * :ref:`@files_re <manual.files_re.combine>`
-
-    **Example:**
-        ::
-
-            @files_re('*.animals',                           # inputs = all *.animal files
-                        r'mammals.([^.]+)',                  # regular expression
-                        combine(r'\1/animals.in_my_zoo'),    # single output file per species
-                        r'\1' )                              # species name
-            def capture_mammals(infiles, outfile, species):
-                # summarise all animals of this species
-                ""
-
-.. _decorators.output_from:
 .. index::
     pair: output_from; Indicator Object (Disambiguating parameters)
 
+.. _decorators.output_from:
+
 ******************************************************************************************
-*output_from(*\ `file_name_string1`\ *[,*\ `file_name_string1` , ... *]* *)*
+*output_from*
 ******************************************************************************************
+
+    **output_from (** ``file_name_string1`` **[,** ``file_name_string1`` **, ...] )**
+
     Indicates that any enclosed strings are not file names but refer to task functions.
 
     **Used by:**
-        * :ref:`@files <decorators.files>`
         * :ref:`@split <decorators.split>`
         * :ref:`@transform <decorators.transform>`
         * :ref:`@merge <decorators.merge>`
         * :ref:`@collate <decorators.collate>`
+        * :ref:`@subdivide <decorators.subdivide>`
+        * :ref:`@product <decorators.product>`
+        * :ref:`@permutations <decorators.permutations>`
+        * :ref:`@combinations <decorators.combinations>`
+        * :ref:`@combinations_with_replacement <decorators.combinations_with_replacement>`
+        * :ref:`@files <decorators.files>`
 
     **Example:**
         ::
@@ -326,4 +355,44 @@ Indicator Objects
 
 
 
+.. index::
+    single: @files_re; combine (Deprecated Syntax)
+    single: combine; @follows (Deprecated Syntax)
+    single: Indicator Object (Disambiguating parameters); combine
+
+.. _decorators.combine:
+
+******************************************************************************************
+*combine*
+******************************************************************************************
+
+    **combine(** ``arguments`` **)**
+
+    .. warning::
+
+        This is deprecated syntax.
+
+        Please do not use!
+
+        :ref:`@merge <decorators.merge>` and :ref:`@collate <decorators.collate>` are more powerful
+        and have straightforward syntax.
+
+    Indicates that the *inputs* of :ref:`@files_re <decorators.files_re>` will be collated
+    or summarised into *outputs* by category. See the :ref:`Manual <manual.files_re.combine>`  or
+    :ref:` @collate <manual.collate>` for examples.
+
+
+    **Used by:**
+        * :ref:`@files_re <manual.files_re.combine>`
+
+    **Example:**
+        ::
+
+            @files_re('*.animals',                           # inputs = all *.animal files
+                        r'mammals.([^.]+)',                  # regular expression
+                        combine(r'\1/animals.in_my_zoo'),    # single output file per species
+                        r'\1' )                              # species name
+            def capture_mammals(infiles, outfile, species):
+                # summarise all animals of this species
+                ""
 

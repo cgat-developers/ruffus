@@ -3,7 +3,9 @@
 .. index::
     pair: @transform; Syntax
 
-See :ref:`Decorators <decorators>` for more decorators
+.. seealso::
+
+    * :ref:`Decorators <decorators>` for more decorators
 
 ########################
 @transform

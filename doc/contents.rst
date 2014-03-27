@@ -2,50 +2,45 @@
 ***************************
 **Ruffus** documentation
 ***************************
-
-=====================
+==========================================
 Start Here:
-=====================
-
+==========================================
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    installation.rst
-   tutorials/simple_tutorial/simple_tutorial.rst
-   1. Chain tasks (functions) together into a pipeline <tutorials/simple_tutorial/step1_follows>
-   2. Provide parameters to run jobs in parallel <tutorials/simple_tutorial/step2>
-   3. Tracing through your new pipeline <tutorials/simple_tutorial/step3_run_pipeline>
-   4. Using flowcharts  <tutorials/simple_tutorial/step4_run_pipeline_graphically>
-   5. Split up a large problem into smaller chunks <tutorials/simple_tutorial/step5_split>
-   6. Calculate partial solutions in parallel <tutorials/simple_tutorial/step6_transform>
-   7. Re-combine the partial solutions into the final result <tutorials/simple_tutorial/step7_merge>
-   8. Automatically signal the completion of each step of our pipeline <tutorials/simple_tutorial/step8_posttask>
+   tutorials/new_tutorial/manual_contents.rst
+   tutorials/new_tutorial/introduction.rst
+   tutorials/new_tutorial/transform.rst
+   tutorials/new_tutorial/transform_in_parallel.rst
+   tutorials/new_tutorial/originate.rst
+   tutorials/new_tutorial/pipeline_printout.rst
+   tutorials/new_tutorial/command_line.rst
+   tutorials/new_tutorial/pipeline_printout_graph.rst
+   tutorials/new_tutorial/output_file_names.rst
+   tutorials/new_tutorial/task_completion.rst
+   tutorials/new_tutorial/decorators_compendium.rst
+   tutorials/new_tutorial/split.rst
+   tutorials/new_tutorial/merge.rst
 
-==========================================
-New tutorial in revision
-==========================================
-.. toctree::
-   :maxdepth: 1
-
-   1. Chain tasks (functions) together into a pipeline <tutorials/new_tutorial/step1>
-   2. Transforming data in a pipeline <tutorials/new_tutorial/step2>
-   3. More on data transformation <tutorials/new_tutorial/step3>
-   4. Understanding how your pipeline works <tutorials/new_tutorial/step4>
-   5. Displaying the pipeline visually <tutorials/new_tutorial/step5>
-
-Example code
+Example code for:
 
 .. toctree::
    :maxdepth: 1
 
-   2. for "Transforming data in a pipeline" <tutorials/new_tutorial/step2_code>
-   3. for "More on data transformation" <tutorials/new_tutorial/step3_code>
-   4. for "Understanding how your pipeline works" <tutorials/new_tutorial/step4_code>
-   4. for "Displaying the pipeline visually" <tutorials/new_tutorial/step5_code>
+   tutorials/new_tutorial/transform_code.rst
+   tutorials/new_tutorial/transform_in_parallel_code.rst
+   tutorials/new_tutorial/originate_code.rst
+   tutorials/new_tutorial/pipeline_printout_code.rst
+   tutorials/new_tutorial/pipeline_printout_graph_code.rst
+   tutorials/new_tutorial/output_file_names_code.rst
+   tutorials/new_tutorial/task_completion_code.rst
+   tutorials/new_tutorial/split_code.rst
+   tutorials/new_tutorial/merge_code.rst
 
-=====================
-Manual:
-=====================
+==========================================
+Old Manual: / tutorial
+==========================================
 
 .. toctree::
    :maxdepth: 2
@@ -74,6 +69,42 @@ Manual:
    tutorials/manual/files_re.rst
    recipes.rst
 
+.. toctree::
+   :maxdepth: 2
+
+   tutorials/simple_tutorial/simple_tutorial.rst
+   1. Chain tasks (functions) together into a pipeline <tutorials/simple_tutorial/step1_follows>
+   2. Provide parameters to run jobs in parallel <tutorials/simple_tutorial/step2>
+   3. Tracing through your new pipeline <tutorials/simple_tutorial/step3_run_pipeline>
+   4. Using flowcharts  <tutorials/simple_tutorial/step4_run_pipeline_graphically>
+   5. Split up a large problem into smaller chunks <tutorials/simple_tutorial/step5_split>
+   6. Calculate partial solutions in parallel <tutorials/simple_tutorial/step6_transform>
+   7. Re-combine the partial solutions into the final result <tutorials/simple_tutorial/step7_merge>
+   8. Automatically signal the completion of each step of our pipeline <tutorials/simple_tutorial/step8_posttask>
+
+
+Manual Code:
+
+.. toctree::
+    :maxdepth: 1
+
+    tutorials/manual/dependencies_code.rst
+    tutorials/manual/logging_code.rst
+    tutorials/manual/onthefly_code.rst
+    tutorials/manual/transform_code.rst
+
+Tutorial Code:
+
+.. toctree::
+    :maxdepth: 1
+
+    tutorials/simple_tutorial/step2_code.rst
+    tutorials/simple_tutorial/step3_run_pipeline_code.rst
+    tutorials/simple_tutorial/step4_run_pipeline_graphically_code.rst
+    tutorials/simple_tutorial/step5_split_code.rst
+    tutorials/simple_tutorial/step6_transform_code.rst
+    tutorials/simple_tutorial/step7_merge_code.rst
+    tutorials/simple_tutorial/step8_posttask_code.rst
 
 =====================
 Overview:
@@ -112,10 +143,6 @@ Examples
 
 
 
-
-
-
-
 =====================
 Reference:
 =====================
@@ -130,24 +157,18 @@ Decorators
 
 
 .. topic::
-    Basic
-
-    .. toctree::
-        :maxdepth: 1
-
-        decorators/follows.rst
-        decorators/files.rst
-
-.. topic::
     Core
 
     .. toctree::
         :maxdepth: 1
 
+        decorators/originate.rst
         decorators/split.rst
         decorators/transform.rst
         decorators/merge.rst
+        decorators/follows.rst
         decorators/posttask.rst
+        decorators/active_if.rst
 
 .. topic::
     For advanced users
@@ -156,7 +177,7 @@ Decorators
         :maxdepth: 1
 
         decorators/jobs_limit.rst
-        decorators/split_ex.rst
+        decorators/subdivide.rst
         decorators/transform_ex.rst
         decorators/collate.rst
         decorators/collate_ex.rst
@@ -167,6 +188,7 @@ Decorators
     .. toctree::
         :maxdepth: 1
 
+        decorators/files.rst
         decorators/files_ex.rst
         decorators/parallel.rst
         decorators/check_if_uptodate.rst

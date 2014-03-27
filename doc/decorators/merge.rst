@@ -1,9 +1,11 @@
 .. include:: ../global.inc
 .. _decorators.merge:
-.. index:: 
+.. index::
     pair: @merge; Syntax
 
-See :ref:`Decorators <decorators>` for more decorators
+.. seealso::
+
+    * :ref:`Decorators <decorators>` for more decorators
 
 .. |tasks_or_file_names| replace:: `tasks_or_file_names`
 .. _tasks_or_file_names: `decorators.merge.tasks_or_file_names`_
@@ -21,7 +23,7 @@ See :ref:`Decorators <decorators>` for more decorators
 ************************************************************************************
     **Purpose:**
         Merges multiple input files into a single output.
-        
+
         Only out of date tasks (comparing input and output files) will be run
 
     **Example**::
@@ -29,10 +31,10 @@ See :ref:`Decorators <decorators>` for more decorators
         @merge(previous_task, 'all.summary')
         def summarize(infiles, summary_file):
             pass
-        
+
     **Parameters:**
-                
-                
+
+
 .. _decorators.merge.tasks_or_file_names:
 
     * *tasks_or_file_names*
@@ -43,13 +45,13 @@ See :ref:`Decorators <decorators>` for more decorators
        #.  (Nested) list of file name strings.
             File names containing ``*[]?`` will be expanded as a |glob|_.
              E.g.:``"a.*" => "a.1", "a.2"``
-             
-                
+
+
 .. _decorators.merge.output_file:
 
     * *output_file*
         Specifies the resulting output file name(s).
-                
+
 .. _decorators.merge.extra_parameters:
 
     * *extra_parameters, ...*

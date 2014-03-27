@@ -1,9 +1,11 @@
 .. include:: ../global.inc
 .. _decorators.files:
-.. index:: 
+.. index::
     pair: @files; Syntax
 
-See :ref:`Decorators <decorators>` for more decorators
+.. seealso::
+
+    * :ref:`Decorators <decorators>` for more decorators
 
 
 .. |input| replace:: `input`
@@ -33,15 +35,15 @@ See :ref:`Decorators <decorators>` for more decorators
 
     **Purpose:**
         Provides parameters to run a task.
-        
+
         The first two parameters in each set represent the input and output which are
         used to see if the job is out of date and needs to be (re-)run.
-        
+
         By default, out of date checking uses input/output file timestamps.
         (On some file systems, timestamps have a resolution in seconds.)
         See :ref:`@check_if_uptodate() <decorators.check_if_uptodate>` for alternatives.
-            
-    
+
+
     **Example**:
         ::
 
@@ -53,7 +55,7 @@ See :ref:`Decorators <decorators>` for more decorators
 
     If ``a.2`` is missing or was created before ``a.1``, then the following will be called:
         ::
-        
+
             transform_files('a.1', 'a.2', 'A file')
 
     **Parameters:**
@@ -68,7 +70,7 @@ See :ref:`Decorators <decorators>` for more decorators
 
     * *output*
         Output file names
-    
+
 
 .. _decorators.files.extra_parameters1:
 
@@ -78,7 +80,7 @@ See :ref:`Decorators <decorators>` for more decorators
 
     **Checking if jobs are up to date:**
         Strings in ``input`` and ``output`` (including in nested sequences) are interpreted as file names and
-        used to check if jobs are up-to-date. 
+        used to check if jobs are up-to-date.
 
         See :ref:`above <decorators.files.check_up_to_date>` for more details
 
@@ -92,10 +94,10 @@ See :ref:`Decorators <decorators>` for more decorators
     **Purpose:**
 
         Passes each set of parameters to separate jobs which can run in parallel
-        
+
         The first two parameters in each set represent the input and output which are
         used to see if the job is out of date and needs to be (re-)run.
-        
+
         By default, out of date checking uses input/output file timestamps.
         (On some file systems, timestamps have a resolution in seconds.)
         See :ref:`@check_if_uptodate() <decorators.check_if_uptodate>` for alternatives.
@@ -108,7 +110,7 @@ See :ref:`Decorators <decorators>` for more decorators
                                 [ 'a.1', 'a.2', 'A file'], # 1st job
                                 [ 'b.1', 'b.2', 'B file'], # 2nd job
                           ]
-    
+
             @files(parameters)
             def parallel_io_task(infile, outfile, text):
                 pass
@@ -116,7 +118,7 @@ See :ref:`Decorators <decorators>` for more decorators
 
     is the equivalent of calling:
         ::
-            
+
             parallel_io_task('a.1', 'a.2', 'A file')
             parallel_io_task('b.1', 'b.2', 'B file')
 
@@ -132,13 +134,13 @@ See :ref:`Decorators <decorators>` for more decorators
 
     * *output*
         Output file names
-    
+
 
 .. _decorators.files.extra_parameters:
 
     * *extra_parameters*
         optional ``extra_parameters`` are passed verbatim to each job.
-        
+
 .. _decorators.files.check_up_to_date:
 
     **Checking if jobs are up to date:**

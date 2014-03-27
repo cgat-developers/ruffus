@@ -234,7 +234,7 @@ Pipeline functions
 **********************************************************************************************************************************************************************************************************
 *pipeline_printout*
 **********************************************************************************************************************************************************************************************************
-**pipeline_printout** (|pp_output_stream|_, |pp_target_tasks|_, |pp_forcedtorun_tasks|_ = [], |pp_verbose|_ = 1, |pp_indent|_ = 4, |pp_gnu_make|_ = True, |pp_wrap_width|_ = 100, |pp_runtime_data|_ = None)
+**pipeline_printout** (|pp_output_stream|_, |pp_target_tasks|_ = [], |pp_forcedtorun_tasks|_ = [], |pp_verbose|_ = 1, |pp_indent|_ = 4, |pp_gnu_make|_ = True, |pp_wrap_width|_ = 100, |pp_runtime_data|_ = None)
 
     **Purpose:**
 
@@ -334,7 +334,7 @@ Pipeline functions
 *pipeline_printout_graph*
 ************************************************************************************************************************************************************************************************************************************************************************************
 
-**pipeline_printout_graph** (|ppg_stream|_, |ppg_output_format|_, |ppg_target_tasks|_, |ppg_forcedtorun_tasks|_ = [], |ppg_ignore_upstream_of_target|_ = False, |ppg_skip_uptodate_tasks|_ = False, |ppg_gnu_make|_ = True, |ppg_test_all_task_for_update|_ = True, |ppg_no_key_legend|_  = False, |ppg_minimal_key_legend|_ = True, |ppg_user_colour_scheme|_ = None, |ppg_pipeline_name|_ = "Pipeline", |ppg_size|_ = (11,8), |ppg_dpi|_ = 120, |ppg_runtime_data|_ = None)
+**pipeline_printout_graph** (|ppg_stream|_, |ppg_output_format|_ = None, |ppg_target_tasks|_ = [], |ppg_forcedtorun_tasks|_ = [], |ppg_ignore_upstream_of_target|_ = False, |ppg_skip_uptodate_tasks|_ = False, |ppg_gnu_make|_ = True, |ppg_test_all_task_for_update|_ = True, |ppg_no_key_legend|_  = False, |ppg_minimal_key_legend|_ = True, |ppg_user_colour_scheme|_ = None, |ppg_pipeline_name|_ = "Pipeline", |ppg_size|_ = (11,8), |ppg_dpi|_ = 120, |ppg_runtime_data|_ = None)
 
     **Purpose:**
 
@@ -372,11 +372,13 @@ Pipeline functions
 .. _pipeline_functions.pipeline_printout_graph.output_format:
 
     * *output_format*
+        If missing, defaults to the extension of the *stream* file name (i.e. ``jpg`` for ``a.jpg``)
+
         | If the programme ``dot`` can be found on the executio path, this
           can be any number of `formats <http://www.graphviz.org/doc/info/output.html>`_
           supported by `Graphviz <http://www.graphviz.org/>`_, including, for example,
           ``jpg``, ``png``, ``pdf``, ``svg`` etc.
-        | Otherwise, **ruffus** will only output in the `dot <http://en.wikipedia.org/wiki/DOT_language>`_ format, which
+        | Otherwise, **ruffus** will only output without error in the `dot <http://en.wikipedia.org/wiki/DOT_language>`_ format, which
           is a plain-text graph description language.
         
 .. _pipeline_functions.pipeline_printout_graph.target_tasks:

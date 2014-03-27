@@ -1,15 +1,15 @@
 .. include:: global.inc
-******
+#############
 FAQ
-******
+#############
 
-^^^^^^^^^^^^^^^^^
+**********************************************************
 Citations
-^^^^^^^^^^^^^^^^^
+**********************************************************
 
-=============================================================
+===============================================================
 Q. How should *Ruffus* be cited in academic publications?
-=============================================================
+===============================================================
 
     The official publication describing the original version of *Ruffus* is:
 
@@ -17,9 +17,9 @@ Q. How should *Ruffus* be cited in academic publications?
 
 
 
-^^^^^^^^^^^^^^^^^
+**********************************************************
 General
-^^^^^^^^^^^^^^^^^
+**********************************************************
 
 =========================================================
 Q. *Ruffus* won't create dependency graphs
@@ -70,10 +70,40 @@ Q. Regular expression substitutions don't work
 
     Ruffus will throw an exception if it sees an unescaped ``"\1"`` or ``"\2"`` in a file name.
 
+========================================================================================
+Q. How to make a force a pipeline appear up to date?
+========================================================================================
 
-======================================================================================
+    I have made a trivial modification to one of my data files and now Ruffus wants to rerun
+    my month long pipeline. How can I convince Ruffus that everything is fine and to leave
+    things as they are?
+
+    The standard way to do what you are trying to do is to touch all the files downstream...
+    That way the modification times of your analysis files would postdate your existing files.
+    You can do this manually but Ruffus also has direct support for this:
+
+    .. code-block:: python
+
+        pipeline_run (touch_files_only = True)
+
+    pipeline_run will run your script normally stepping over up-to-date tasks and starting
+    with jobs which look out of date. However, after that, none of your pipeline task functions
+    will be called, instead, each non-up-to-date file is `touch  <https://en.wikipedia.org/wiki/Touch_(Unix)>`__-ed in
+    turn so that the file modification dates follow on successively.
+
+    See the documentation at http://www.ruffus.org.uk/pipeline_functions.html#pipeline-functions-pipeline-run
+
+    It is even simpler if you are using the new Ruffus.cmdline support from version 2.4. You can just type
+
+        .. code-block:: bash
+
+            your script --touch_files_only [--other_options_of_your_own_etc]
+
+    See http://www.ruffus.org.uk/examples/code_template/code_template.html
+
+========================================================================================
 Q. How to use decorated functions in Ruffus
-======================================================================================
+========================================================================================
     A. Place your decorator after *Ruffus* decorators. This ensures that by the time *Ruffus* sees
     your function, it has already been decorated.
 
@@ -104,18 +134,18 @@ Q. How to use decorated functions in Ruffus
     are made available to *Ruffus* via your decorator.
 
 
-======================================================================================
+========================================================================================
 Q. Can a task function in a *Ruffus* pipeline be called normally outside of Ruffus?
-======================================================================================
+========================================================================================
     A. Yes. Most python decorators wrap themselves around a function. However, *Ruffus* leaves the
     original function untouched and unwrapped. Instead, *Ruffus* adds a ``pipeline_task`` attribute
     to the task function to signal that this is a pipelined function.
 
     This means the original task function can be called just like any other python function.
 
-======================================================================================
+========================================================================================
 Q. My tasks creates two files but why does only one survive in the *Ruffus* pipeline?
-======================================================================================
+========================================================================================
     ::
 
         from ruffus import *
@@ -184,9 +214,9 @@ Q. My tasks creates two files but why does only one survive in the *Ruffus* pipe
             ________________________________________
 
 
-======================================================================================
+=======================================================================================
 Q. How can a *Ruffus* task produce output which goes off in different directions?
-======================================================================================
+=======================================================================================
     A. As above, anytime there is a situation which requires a one-to-many operation, you should reach
     for :ref:`@split <decorators.split_ex>`. The advanced form takes a regular expression, making
     it easier to produce multiple derivatives of the input file. The following example splits
@@ -235,9 +265,9 @@ Q. How can a *Ruffus* task produce output which goes off in different directions
 
 
 
-======================================================================================
+=======================================================================================
 Q. Can I call extra code before each job?
-======================================================================================
+=======================================================================================
     A. This is easily accomplished by hijacking the process
     for checking if jobs are up to date or not (:ref:`@check_if_uptodate <decorators.check_if_uptodate>`):
 
@@ -310,14 +340,10 @@ _____________________________________________________
 A. Use a flag file
 _____________________________________________________
 
-    (Thanks to Bernie Pope for sorting this out.)
-
-    A. When gmake is interrupted, it will delete the target file it is updating so that the target is
-    remade from scratch when make is next run.
-
-    There is no direct support for this in *ruffus* **yet**. In any case, the partial / incomplete
-    file may be usefully if only to reveal, for example, what might have caused an interrupting error
-    or exception.
+    When gmake is interrupted, it will delete the target file it is updating so that the target is
+    remade from scratch when make is next run. Ruffus, by design, does not do this because, more often than
+    not, the partial / incomplete file may be usefully if only to reveal, for example, what might have caused an interrupting error
+    or exception. It also seems a bit too clever and underhand to go around the programmer's back to delete files...
 
     A common *Ruffus* convention is create an empty checkpoint or "flag" file whose sole purpose
     is to record a modification-time and the successful completion of a job.
@@ -437,9 +463,9 @@ _____________________________________________________
 
 
 
-^^^^^^^^^^^^^^^
+**********************************************************
 Windows
-^^^^^^^^^^^^^^^
+**********************************************************
 
 =========================================================
 Q. Windows seems to spawn *ruffus* processes recursively
@@ -462,9 +488,9 @@ Q. Windows seems to spawn *ruffus* processes recursively
 
 
 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**********************************************************
 Sun Grid Engine / PBS etc
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**********************************************************
 
 ==========================================================================================================================================
 Q. Can Ruffus be used to manage a cluster or grid based pipeline?
@@ -593,5 +619,217 @@ Q. Keeping Large intermediate files
                     f.close()
                     # change the time of the file back to what it was
                     os.utime(file,(timeInfo.st_atime, timeInfo.st_mtime))
+
+**********************************************************************************
+Sharing python objects between Ruffus processes running concurrently
+**********************************************************************************
+
+    The design of Ruffus envisages that much of the data flow in pipelines occurs in files but it is also possible to pass python objects in memory.
+
+    Ruffus uses the `multiprocessing  <http://docs.python.org/2/library/multiprocessing.html>`_ module and much of the following is a summary of what is covered
+    in depth in the Python Standard Library `Documentation  <http://docs.python.org/2/library/multiprocessing.html#sharing-state-between-processes>`_.
+
+    Running Ruffus using ``pipeline_run(..., multiprocess = NNN)`` where ``NNN`` > 1 runs each job concurrently on up to ``NNN`` separate local processes.
+    Each task function runs independently in a different python intepreter, possibly on a different CPU, in the most efficient way.
+    However, this does mean we have to pay some attention to how data is sent across process boundaries (unlike the situation with ``pipeline_run(..., multithread = NNN)`` ).
+
+    The python code and data which comprises your multitasking Ruffus job is sent to a separate process in three ways:
+
+    #. The python function code and data objects are `pickled  <http://docs.python.org/2/library/pickle.html>`__, i.e. converting into a byte stream, by the master process, sent to the remote process
+       before being converted back into normal python (unpickling).
+    #. The parameters for your jobs, i.e. what Ruffus calls your task functions with, are separately `pickled  <http://docs.python.org/2/library/pickle.html>`__ and sent to the remote process via
+       `multiprocessing.Queue  <http://docs.python.org/2/library/multiprocessing.html#multiprocessing.Queue>`_
+    #. You can share and synchronise other data yourselves. The canonical example is the logger provided by ``Ruffus.cmdline.setup_logging``
+
+    .. note::
+
+        Check that your function code and data can be `pickled  <http://docs.python.org/2/library/pickle.html#what-can-be-pickled-and-unpickled>`_.
+
+        Only functions, built-in functions and classes defined at the top level of a module are picklable.
+
+
+    The following answers are a short "how-to" for sharing and synchronising data yourselves.
+
+
+==============================================================================
+Can ordinary python objects be shared between processes?
+==============================================================================
+
+    A. Objects which can be `pickled  <http://docs.python.org/2/library/pickle.html>`__ can be shared as is. These include
+
+        * numbers
+        * strings
+        * tuples, lists, sets, and dictionaries containing only objects which can be `pickled  <http://docs.python.org/2/library/pickle.html>`__.
+
+    #. If these do not change during your pipeline, you can just use them without any further effort in your task.
+    #. If you need to use the value at the point when the task function is *called*, then you need to pass the python object as parameters to your task.
+       For example:
+
+       .. code-block:: python
+           :emphasize-lines: 1
+
+            # changing_list changes...
+            @transform(previous_task, suffix(".foo"), ".bar", changing_list)
+            def next_task(input_file, output_file, changing_list):
+                pass
+
+    #. If you need to use the value when the task function is *run* then see :ref:`the following answer. <how-about-synchronising-python-objects-in-real-time>`.
+
+
+================================================================================================
+Why am I getting ``PicklingError``?
+================================================================================================
+
+    What is happening? Didn't `Joan of Arc  <https://en.wikipedia.org/wiki/Battle_of_the_Herrings>`_ solve this once and for all?
+
+    A. Some of the data or code in your function cannot be `pickled  <http://docs.python.org/2/library/pickle.html>`__ and is being asked to be sent by python ``mulitprocessing`` across process boundaries.
+
+
+        When you run your pipeline using multiprocess:
+
+            .. code-block:: python
+
+                pipeline_run([], verbose = 5, multiprocess = 5, logger = ruffusLoggerProxy)
+
+        You will get the following errors:
+
+            .. code-block:: python
+
+                Exception in thread Thread-2:
+                Traceback (most recent call last):
+                  File "/path/to/python/python2.7/threading.py", line 808, in __bootstrap_inner
+                    self.run()
+                  File "/path/to/python/python2.7/threading.py", line 761, in run
+                    self.__target(*self.__args, * *self.__kwargs)
+                  File "/path/to/python/python2.7/multiprocessing/pool.py", line 342, in _handle_tasks
+                    put(task)
+                PicklingError: Can't pickle <type 'function'>: attribute lookup __builtin__.function failed
+
+
+        which go away when you set ``pipeline_run([], multiprocess = 1, ...)``
+
+
+
+
+    Unfortunately, pickling errors are particularly ill-served by standard python error messages. The only really good advice is to take the offending
+    code and try and `pickle  <http://docs.python.org/2/library/pickle.html>`__ it yourself and narrow down the errors. Check your objects against the list
+    in the `pickle  <http://docs.python.org/2/library/pickle.html#what-can-be-pickled-and-unpickled>`_ module.
+    Watch out especially for nested functions. These will have to be moved to file scope.
+    Other objects may have to be passed in proxy (see below).
+
+
+.. _how-about-synchronising-python-objects-in-real-time:
+
+================================================================================================
+How about synchronising python objects in real time?
+================================================================================================
+
+    A. You can use managers and proxy objects from the `multiprocessing  <http://docs.python.org/library/multiprocessing.html>`__ module.
+
+    The underlying python object would be owned and managed by a (hidden) server process. Other processes can access the shared objects transparently by using proxies. This is how the logger provided by
+    ``Ruffus.cmdline.setup_logging`` works:
+
+    .. code-block:: python
+
+        #  optional logger which can be passed to ruffus tasks
+        logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
+
+    ``logger`` is a proxy for the underlying python `logger  <http://docs.python.org/2/library/logging.html>`__ object, and it can be shared freely between processes.
+
+    The best course is to pass ``logger`` as a parameter to a *Ruffus* task.
+
+    The only caveat is that we should make sure multiple jobs are not writting to the log at the same time. To synchronise logging, we use proxy to a non-reentrant `multiprocessing.lock <http://docs.python.org/2/library/multiprocessing.html#multiprocessing.Lock>`_.
+
+    .. code-block:: python
+
+        logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
+
+
+        @transform(previous_task, suffix(".foo"), ".bar", logger, logger_mutex)
+        def next_task(input_file, output_file, logger, logger_mutex):
+            with logger_mutex:
+                logger.info("We are in the middle of next_task: %s -> %s" % (input_file, output_file))
+
+
+==============================================================================
+Can I  share and synchronise my own python classes via proxies?
+==============================================================================
+
+    A. `multiprocessing.managers.SyncManager  <http://docs.python.org/2/library/multiprocessing.html#multiprocessing.managers.SyncManager>`__ provides out of the box support for lists, arrays and dicts etc.
+
+        Most of the time, we can use a "vanilla" manager provided by `multiprocessing.Manager()  <http://docs.python.org/2/library/multiprocessing.html#multiprocessing.sharedctypes.multiprocessing.Manager>`_:
+
+        .. code-block:: python
+
+
+            import multiprocessing
+            manager = multiprocessing.Manager()
+
+            list_proxy = manager.list()
+            dict_proxy = manager.dict()
+            lock_proxy          = manager.Lock()
+            namespace_proxy     = manager.Namespace()
+            queue_proxy         = manager.Queue([maxsize])
+            rentrant_lock_proxy = manager.RLock()
+            semaphore_proxy     = manager.Semaphore([value])
+            char_array_proxy    = manager.Array('c')
+            integer_proxy       = manager.Value('i', 6)
+
+            @transform(previous_task, suffix(".foo"), ".bar", lock_proxy, dict_proxy, list_proxy)
+            def next_task(input_file, output_file, lock_proxy, dict_proxy, list_proxy):
+                with lock_proxy:
+                    list_proxy.append(3)
+                    dict_proxy['a'] = 5
+
+
+    However, you can also create proxy custom classes for your own objects.
+
+    In this case you may need to derive from  `multiprocessing.managers.SyncManager  <http://docs.python.org/2/library/multiprocessing.html#multiprocessing.managers.SyncManager>`_
+    and register proxy functions. See ``Ruffus.proxy_logger`` for an example of how to do this.
+
+============================================================================================================================================================
+How do I send python objects back and forth without tangling myself in horrible synchronisation code?
+============================================================================================================================================================
+
+    A. Sharing python objects by passing messages is a much more modern and safer way to coordinate multitasking than using synchronization primitives like locks.
+
+    The python `multiprocessing  <http://docs.python.org/2/library/multiprocessing.html#pipes-and-queues>`__ module provides support for passing python objects as messages between processes.
+    You can either use `pipes  <http://docs.python.org/2/library/multiprocessing.html#multiprocessing.Pipe>`__
+    or `queues  <http://docs.python.org/2/library/multiprocessing.html#multiprocessing.Queue>`__.
+    The idea is that one process pushes and object onto a `pipe  <http://docs.python.org/2/library/multiprocessing.html#multiprocessing.Pipe>`__ or `queue  <http://docs.python.org/2/library/multiprocessing.html#multiprocessing.Queue>`__
+    and the other processes pops it out at the other end. `Pipes  <http://docs.python.org/2/library/multiprocessing.html#multiprocessing.Pipe>`__ are
+    only two ended so `queues  <http://docs.python.org/2/library/multiprocessing.html#multiprocessing.Queue>`__ are usually a better fit for sending data to multiple Ruffus jobs.
+
+    Proxies for `queues  <http://docs.python.org/2/library/multiprocessing.html#multiprocessing.managers.SyncManager.Queue>`__ can be passed between processes as in the previous section
+
+
+==============================================================================
+How do I sharing large amounts of data efficiently?
+==============================================================================
+
+    A. If it is really impractical to use data files on disk, you can put the data in shared memory.
+
+    It is possible to create shared objects using shared memory which can be inherited by child processes or passed as Ruffus parameters.
+    This is probably most efficently done via the `array  <http://docs.python.org/2/library/multiprocessing.html#multiprocessing.Array>`_
+    interface. Again, it is easy to create locks and proxies for synchronised access:
+
+
+    .. code-block:: python
+
+        from multiprocessing import Process, Lock
+        from multiprocessing.sharedctypes import Value, Array
+        from ctypes import Structure, c_double
+
+        manager = multiprocessing.Manager()
+
+        lock_proxy          = manager.Lock()
+        int_array_proxy     = manager.Array('i', [123] * 100)
+
+        @transform(previous_task, suffix(".foo"), ".bar", lock_proxy, int_array_proxy)
+        def next_task(input_file, output_file, lock_proxy, int_array_proxy):
+            with lock_proxy:
+                int_array_proxy[23] = 71
+
+
 
 
