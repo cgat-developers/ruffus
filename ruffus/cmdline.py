@@ -212,7 +212,7 @@ def append_to_argparse (parser, **args_dict):
                                     #  "cmap", "cmapx", "cmapx_np", "fig", "gd", "gd2",
                                     # "gv", "imap", "imap_np", "ismap", "jpe", "plain-ext",
                                     # "ps2", "tk", "vml", "vmlz", "vrml", "x11", "xdot", "xlib"
-                                    default = 'svg',
+                                    default = None,
                                     help="format of dependency graph file. Can be 'pdf', " +
                                           "'svg', 'svgz' (Structured Vector Graphics), 'pdf', " +
                                           "'png' 'jpg' (bitmap  graphics) etc ")
