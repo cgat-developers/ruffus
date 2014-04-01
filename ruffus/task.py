@@ -705,7 +705,7 @@ def run_pooled_job_without_exceptions (process_parameters):
             job_state = JOB_SIGNALLED_BREAK
         else:
             job_state = JOB_ERROR
-        return t_job_result(task_name, JOB_ERROR, job_name, None,
+        return t_job_result(task_name, job_state, job_name, None,
                             [task_name,
                              job_name,
                              exception_name,
@@ -3666,6 +3666,8 @@ def pipeline_run(target_tasks                     = [],
         elif job_result.state == JOB_SIGNALLED_BREAK:
             job_errors.append(job_result.exception)
             job_errors.specify_task(t, "Exceptions running jobs")
+            log_at_level (logger, 6, verbose, "   Break loop JOB_SIGNALLED_BREAK %s %s " % (len(job_errors), parallelism) )
+            parameter_q.put(all_tasks_complete())
             break
 
         else:
