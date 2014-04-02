@@ -2853,7 +2853,7 @@ def pipeline_printout_graph (stream,
 #   pipeline_printout
 
 #_________________________________________________________________________________________
-def pipeline_printout(  output_stream,
+def pipeline_printout(  output_stream                   = None,
                         target_tasks                    = [],
                         forcedtorun_tasks               = [],
                         verbose                         = 1,
@@ -2905,6 +2905,11 @@ def pipeline_printout(  output_stream,
     """
     if verbose == 0:
         return
+
+    if output_stream == None:
+        import sys
+        output_stream = sys.stdout
+
 
     if not hasattr(output_stream, "write"):
         raise Exception("The first parameter to pipeline_printout needs to be an output file, e.g. sys.stdout and not %s" % str(output_stream))
