@@ -1,34 +1,80 @@
-.. include:: ../global.inc
-.. _decorators.active_if:
+.. include:: ../../global.inc
+.. include:: manual_chapter_numbers.inc
+
 .. index::
-    pair: @active_if; Syntax
+    pair: @active_if; Tutorial
+
+.. _new_manual.active_if:
+
+##########################################################################################################################################
+|new_manual.active_if.chapter_num|: Turning parts of the pipeline on and off at runtime with :ref:`@active_if <decorators.active_if>`
+##########################################################################################################################################
+
 
 .. seealso::
 
-    * :ref:`Decorators <decorators>` for more decorators
-    * More on @active_if in the ``Ruffus`` :ref:`Manual <new_manual.active_if>`
+   * :ref:`Manual Table of Contents <new_manual.table_of_contents>`
+   * :ref:`@active_if syntax in detail <decorators.active_if>`
 
 
-############
-@active_if
-############
+***************************************
+Overview
+***************************************
 
-.. Comment. These are parameter names
+    It is sometimes useful to be able to switch on and off parts of a pipeline. For example, a pipeline 
+    might have two difference code paths depending on the type of data it is being asked to analyse.
 
-.. |on_or_off| replace:: `on_or_off`
-.. _on_or_off: `decorators.active_if.on_or_off`_
+    One surprisingly easy way to do this is to use a python ``if`` statement around particular task functions:
 
-***************************************************************************************************************************************************
-*@active_if*\ (on_or_off1, [on_or_off2,...])
-***************************************************************************************************************************************************
-    **Purpose:**
+        .. code-block:: python
+           :emphasize-lines: 3,5
+        
+            from ruffus import *
+
+            run_task1 = True
+
+            @originate(['a.foo', 'b.foo'])
+            def create_files(output_file):
+                open(output_file, "w")
+
+
+            if run_task1:
+                # might not run
+                @transform(create_files, suffix(".foo"), ".bar")
+                def foobar(input_file, output_file):
+                    open(output_file, "w")
+                    
+
+            @transform(foobar, suffix(".bar"), ".result")
+            def wrap_up(input_file, output_file):
+                    open(output_file, "w")
+
+
+            pipeline_run()
+
+
+    This simple solution has a number of drawbacks:
+        #. The on/off decision is a one off event that happens when the script is loaded. Ideally, we 
+           would like some flexibility, and postpone the decision until ``pipeline_run()`` is invoked.
+        #. When ``if`` is false, the entire task function becomes invisible, and if there are any
+           downstreak tasks, as in the above example, *Ruffus* will complain loudly about
+           missing dependencies.
+
+
+******************************************************************************
+:ref:`@active_if <decorators.active_if>`  controls the state of tasks
+******************************************************************************
+
+
+    :ref:`@active_if <decorators.active_if>` 
 
         * Switches tasks on and off at run time depending on its parameters
         * Evaluated each time ``pipeline_run``, ``pipeline_printout`` or ``pipeline_printout_graph`` is called.
-        * The Design and initial implementation were contributed by Jacob Biesinger
         * Dormant tasks behave as if they are up to date and have no output.
 
-    **Example**:
+    The Design and initial implementation were contributed by Jacob Biesinger
+
+    The following example shows its flexibility and syntax:
 
         .. code-block:: python
             :emphasize-lines: 20
@@ -96,15 +142,4 @@
                     Job  = [a.foo -> a.bar] completed
                     Job  = [b.foo -> b.bar] completed
                 Completed Task = this_task_might_be_inactive
-
-
-    **Parameters:**
-
-.. _decorators.active_if.on_or_off:
-
-    * *on_or_off*:
-        A comma separated list of boolean conditions. These can be values, functions or callable objects which return True / False
-
-        Multiple ``@active_if`` decorators can be stacked for clarity as in the example
-
 

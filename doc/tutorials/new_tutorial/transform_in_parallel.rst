@@ -176,6 +176,7 @@ Running pipelines in parallel
     In this case, we are telling ruffus to run a maximum of 5 jobs at the same time. Since we only have
     three sets of data, that is as much parallelism as we are going to get...
 
+.. _new_manual.only_rerun_out_of_date:
 
 **************************************************
 Up-to-date jobs are not re-run unnecessarily
@@ -252,7 +253,7 @@ Intermediate files
     *input* parameters which contains a |glob|_ pattern (e.g. ``*.txt``) are expanded to matching file names.
 
 
-.. index:: 
+.. index::
     pair: @follows; referring to functions before they are defined
     pair: @follows; out of order
 .. _new_manual.follows.out_of_order:
@@ -270,7 +271,7 @@ Defining pipeline tasks out of order
 
         .. code-block:: python
            :emphasize-lines: 5
-        
+
             #---------------------------------------------------------------
             #
             #   second task
@@ -302,31 +303,31 @@ Defining pipeline tasks out of order
             #
             pipeline_run([second_task])
 
-    You can also refer to tasks (functions) in other modules, in which case the full 
+    You can also refer to tasks (functions) in other modules, in which case the full
     qualified name must be used:
 
         ::
-        
+
             @transform(output_from("other_module.first_task"), suffix(".output.1"), ".output2")
             def second_task(input_files, output_file):
                 pass
 
 
 
-.. index:: 
-    pair: @follows; multiple dependencies
-    
-.. _new_manual.follows.multiple_dependencies:
+.. index::
+    pair: @transform; multiple dependencies
+
+.. _new_manual.transform.multiple_dependencies:
 
 ***************************************
 Multiple dependencies
 ***************************************
-            
+
     Each task can also depend on more than one antecedent task simply by connecting a list of tasks rather than a single tasks in ``@transform``
-   
+
         .. code-block:: python
            :emphasize-lines: 2
-        
+
             #
             # third_task depends on both first_task() and second_task()
             #
@@ -339,7 +340,7 @@ Multiple dependencies
     and will and can run in parallel. This can be clearly shown for our example if we added a little randomness to the run time of each job:
 
         .. code-block:: python
-        
+
             import time
             import random
             time.sleep(random.random())
@@ -358,6 +359,11 @@ Multiple dependencies
                 Job  = [[job2.a.start, job2.b.start] -> [job2.a.output.1, job2.a.output.extra.1], some_extra.string.for_example, 14] completed
 
 
+.. index::
+    pair: @follow; imposing order with
+
+.. _new_manual.follows:
+
 ***************************************
 :ref:`@follows <decorators.follows>`
 ***************************************
@@ -367,7 +373,7 @@ Multiple dependencies
 
         .. code-block:: python
            :emphasize-lines: 2
-        
+
             #
             #   @follows specifies a preceding task
             #
@@ -380,7 +386,7 @@ Multiple dependencies
                             extra_parameter_str, extra_parameter_num):
 
 
-    :ref:`@follows <decorators.follows>` specifies either a preceding task (e.g. ``first_task``), or if 
+    :ref:`@follows <decorators.follows>` specifies either a preceding task (e.g. ``first_task``), or if
     it has not yet been defined, the name (as a string) of a task function (e.g. ``"first_task"``).
 
     With the addition of :ref:`@follows <decorators.follows>`, all the jobs
@@ -398,27 +404,27 @@ Multiple dependencies
                 Job  = [[job6.a.start, job6.b.start] -> [job6.a.output.1, job6.a.output.extra.1], some_extra.string.for_example, 14] completed
                 Job  = [[job5.a.start, job5.b.start] -> [job5.a.output.1, job5.a.output.extra.1], some_extra.string.for_example, 14] completed
             Completed Task = second_task
-    
-.. _new_manual.follows.mkdir:
 
-.. index:: 
+
+.. index::
     single: @follows; mkdir (Manual)
     single: mkdir; @follows (Manual)
 
+.. _new_manual.follows.mkdir:
 
 ******************************************************************************
 Making directories automatically with :ref:`mkdir <decorators.mkdir>`
 ******************************************************************************
 
     :ref:`@follows <decorators.follows>` is also useful for making sure one or more destination directories
-    exist before a task is run. 
+    exist before a task is run.
 
-    **Ruffus** provides special syntax to support this, using the special 
+    **Ruffus** provides special syntax to support this, using the special
     :ref:`mkdir <decorators.mkdir>` indicator class. For example:
 
         .. code-block:: python
             :emphasize-lines: 2
-    
+
             #
             #   @follows specifies both a preceding task and a directory name
             #
@@ -429,7 +435,7 @@ Making directories automatically with :ref:`mkdir <decorators.mkdir>`
                                    "some_extra.string.for_example", 14)
             def second_task(input_files, output_file_pair,
                             extra_parameter_str, extra_parameter_num):
-            
+
     Before ``second_task()`` is run, the ``output/results/here`` directory will be created if necessary.
 
 

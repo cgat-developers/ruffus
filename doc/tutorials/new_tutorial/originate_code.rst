@@ -4,7 +4,7 @@
 .. _new_manual.originate.code:
 
 ######################################################################################################
-|new_manual.originate.chapter_num|: Creating files with ``@originate``
+|new_manual.originate.chapter_num|: Python Code for Creating files with ``@originate``
 ######################################################################################################
 
 .. seealso::

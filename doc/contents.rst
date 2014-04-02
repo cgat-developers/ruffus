@@ -18,10 +18,27 @@ Start Here:
    tutorials/new_tutorial/command_line.rst
    tutorials/new_tutorial/pipeline_printout_graph.rst
    tutorials/new_tutorial/output_file_names.rst
+   tutorials/new_tutorial/mkdir.rst
    tutorials/new_tutorial/task_completion.rst
    tutorials/new_tutorial/decorators_compendium.rst
    tutorials/new_tutorial/split.rst
    tutorials/new_tutorial/merge.rst
+   tutorials/new_tutorial/multiprocessing.rst
+   tutorials/new_tutorial/logging.rst
+   tutorials/new_tutorial/subdivide_collate.rst
+   tutorials/new_tutorial/combinatorics.rst
+   tutorials/new_tutorial/active_if.rst
+   tutorials/new_tutorial/posttask.rst
+   tutorials/new_tutorial/inputs.rst
+   tutorials/new_tutorial/onthefly.rst
+   tutorials/new_tutorial/parallel.rst
+   tutorials/new_tutorial/check_if_uptodate.rst
+   tutorials/new_tutorial/flowchart_colours.rst
+   tutorials/new_tutorial/dependencies.rst
+   tutorials/new_tutorial/exceptions.rst
+   tutorials/new_tutorial/deprecated_files.rst
+   tutorials/new_tutorial/deprecated_files_re.rst
+
 
 Example code for:
 
@@ -34,16 +51,25 @@ Example code for:
    tutorials/new_tutorial/pipeline_printout_code.rst
    tutorials/new_tutorial/pipeline_printout_graph_code.rst
    tutorials/new_tutorial/output_file_names_code.rst
+   tutorials/new_tutorial/mkdir_code.rst
    tutorials/new_tutorial/task_completion_code.rst
    tutorials/new_tutorial/split_code.rst
    tutorials/new_tutorial/merge_code.rst
+   tutorials/new_tutorial/multiprocessing_code.rst
+   tutorials/new_tutorial/subdivide_collate_code.rst
+   tutorials/new_tutorial/combinatorics_code.rst
+   tutorials/new_tutorial/inputs_code.rst
+   tutorials/new_tutorial/onthefly_code.rst
+   tutorials/new_tutorial/flowchart_colours_code.rst
+
+
 
 ==========================================
 Old Manual: / tutorial
 ==========================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    tutorials/manual/manual_contents.rst
    tutorials/manual/manual_introduction.rst
@@ -70,7 +96,7 @@ Old Manual: / tutorial
    recipes.rst
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    tutorials/simple_tutorial/simple_tutorial.rst
    1. Chain tasks (functions) together into a pipeline <tutorials/simple_tutorial/step1_follows>
@@ -83,7 +109,7 @@ Old Manual: / tutorial
    8. Automatically signal the completion of each step of our pipeline <tutorials/simple_tutorial/step8_posttask>
 
 
-Manual Code:
+Old Manual Code:
 
 .. toctree::
     :maxdepth: 1
@@ -93,7 +119,7 @@ Manual Code:
     tutorials/manual/onthefly_code.rst
     tutorials/manual/transform_code.rst
 
-Tutorial Code:
+Old Tutorial Code:
 
 .. toctree::
     :maxdepth: 1
@@ -114,6 +140,7 @@ Overview:
 
    cheatsheet.rst
    pipeline_functions.rst
+   drmaa_wrapper_functions.rst
    installation.rst
    design.rst
    Bugs and Updates <history>
@@ -123,7 +150,6 @@ Overview:
    faq.rst
    glossary.rst
    gallery.rst
-   examples/code_template/code_template.rst
    why_ruffus.rst
 
 =====================
@@ -136,8 +162,6 @@ Examples
    examples/bioinformatics/part2.rst
    examples/bioinformatics/part1_code.rst
    examples/bioinformatics/part2_code.rst
-   examples/colour_schemes/flowchart_colours.rst
-   examples/colour_schemes/flowchart_colours_code.rst
    tutorials/manual/manual_code.rst
    tutorials/simple_tutorial/simple_tutorial_code.rst
 
@@ -166,9 +190,6 @@ Decorators
         decorators/split.rst
         decorators/transform.rst
         decorators/merge.rst
-        decorators/follows.rst
-        decorators/posttask.rst
-        decorators/active_if.rst
 
 .. topic::
     For advanced users
@@ -176,11 +197,26 @@ Decorators
     .. toctree::
         :maxdepth: 1
 
-        decorators/jobs_limit.rst
         decorators/subdivide.rst
         decorators/transform_ex.rst
         decorators/collate.rst
         decorators/collate_ex.rst
+        decorators/mkdir.rst
+        decorators/jobs_limit.rst
+        decorators/posttask.rst
+        decorators/active_if.rst
+        decorators/follows.rst
+
+.. topic::
+    Combinatorics
+
+    .. toctree::
+        :maxdepth: 1
+
+        decorators/product.rst
+        decorators/permutations.rst
+        decorators/combinations.rst
+        decorators/combinations_with_replacement.rst
 
 .. topic::
     Esoteric
@@ -188,12 +224,18 @@ Decorators
     .. toctree::
         :maxdepth: 1
 
-        decorators/files.rst
         decorators/files_ex.rst
-        decorators/parallel.rst
         decorators/check_if_uptodate.rst
-        decorators/files_re.rst
+        decorators/parallel.rst
 
+.. topic::
+    Deprecated
+
+    .. toctree::
+        :maxdepth: 1
+
+        decorators/files.rst
+        decorators/files_re.rst
 
 
 ######################

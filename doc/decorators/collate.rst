@@ -8,7 +8,7 @@
     * :ref:`Decorators <decorators>` for more decorators
 
 ########################
-@collate
+@product
 ########################
 
 .. |tasks_or_file_names| replace:: `tasks_or_file_names`
@@ -19,15 +19,30 @@
 .. _output_pattern: `decorators.collate.output_pattern`_
 .. |matching_regex| replace:: `matching_regex`
 .. _matching_regex: `decorators.collate.matching_regex`_
+.. |matching_formatter| replace:: `matching_formatter`
+.. _matching_formatter: `decorators.collate.matching_formatter`_
 
 
-***********************************************************************************************************************************************************
-*@collate* ( |tasks_or_file_names|_, :ref:`regex<decorators.regex>`\ *(*\ |matching_regex|_\ *)*\ , |output_pattern|_, [|extra_parameters|_,...] )
-***********************************************************************************************************************************************************
+********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+*@collate* ( |tasks_or_file_names|_, :ref:`regex<decorators.regex>`\ *(*\ |matching_regex|_\ *)* |  :ref:`formatter<decorators.formatter>`\ *(*\ |matching_formatter|_\ *)*\, |output_pattern|_, [|extra_parameters|_,...] )
+********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
     **Purpose:**
         Groups / collates sets of input files, each into a separate summary.
 
         Only out of date tasks (comparing input and output files) will be run
+
+        Output file names and strings in the extra parameters
+        are determined from |tasks_or_file_names|_, i.e. from the output
+        of up stream tasks, or a list of file names.
+
+        String replacement occurs either through suffix matches via :ref:`suffix<decorators.suffix>` or
+        the :ref:`formatter<decorators.formatter>` or :ref:`regex<decorators.regex>` indicators.
+
+        ``@collate`` groups together all **Input** which result in identical **Output** and **extra**
+        parameters.
+
+        It is a **many to fewer** operation.
+
 
     **Example**:
         ``regex(r".*(\..+)"), "\1.summary"`` creates a separate summary file for each suffix::
@@ -61,6 +76,13 @@
        See python `regular expression (re) <http://docs.python.org/library/re.html>`_
        documentation for details of regular expression syntax
 
+.. _decorators.collate.matching_formatter:
+
+    * *matching_formatter*
+       a :ref:`formatter<decorators.formatter>` indicator object containing optionally
+       a  python `regular expression (re) <http://docs.python.org/library/re.html>`_.
+
+
 .. _decorators.collate.output_pattern:
 
     * *output_pattern*
@@ -71,9 +93,9 @@
     * *extra_parameters*
         Any extra parameters are passed verbatim to the task function
 
-    #. *outputs* and optional extra parameters are passed to the functions after regular expression
+    #. *outputs* and optional extra parameters are passed to the functions after string
        substitution in any strings. Non-string values are passed through unchanged.
-    #. Each collate job consists of input files which are aggregated by regular expression substitution
+    #. Each collate job consists of input files which are aggregated by string substitution
        to a single set of output / extra parameter matches
     #. In the above cases, ``a.fish`` and ``b.fish`` both produce ``fish.summary`` after regular
        expression subsitution, and are collated into a single job:

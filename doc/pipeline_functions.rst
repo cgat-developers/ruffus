@@ -83,9 +83,9 @@ See :ref:`Decorators <decorators>` for more decorators
 .. _ppg_dpi: `pipeline_functions.pipeline_printout_graph.dpi`_
 .. |ppg_runtime_data| replace:: `runtime_data`
 .. _ppg_runtime_data: `pipeline_functions.pipeline_printout_graph.runtime_data`_
-    
-    
-    
+
+
+
 
 
 
@@ -104,27 +104,28 @@ Pipeline functions
 
 .. _pipeline_functions.pipeline_run:
 
-.. index:: 
+.. index::
     single: pipeline functions; pipeline_run
     pair: pipeline_run; Run pipeline
 
 **************************************************************************************************************************************************************************************
 *pipeline_run*
 **************************************************************************************************************************************************************************************
-**pipeline_run** ( |pr_target_tasks|_, [ |pr_forcedtorun_tasks|_ = [], |pr_multiprocess|_ = 1, |pr_logger|_ = stderr_logger, |pr_gnu_make|_ = True, |pr_verbose|_ =1], |pr_runtime_data|_ = None, |pr_one_second_per_job|_ = True, |pr_touch_files_only|_ = False)
+**pipeline_run** ( |pr_target_tasks|_ = [],  |pr_forcedtorun_tasks|_ = [], |pr_multiprocess|_ = 1, |pr_logger|_ = stderr_logger, |pr_gnu_make|_ = True, |pr_verbose|_ =1, |pr_runtime_data|_ = None, |pr_one_second_per_job|_ = True, |pr_touch_files_only|_ = False)
 
     **Purpose:**
 
-        Runs all specified pipelined functions if they or any antecedent tasks are 
+        Runs all specified pipelined functions if they or any antecedent tasks are
         incomplete or out-of-date.
-        
+
     **Example**:
-        ::
+
+        .. code-block:: python
 
             #
             #   Run task2 whatever its state, and also task1 and antecedents if they are incomplete
             #   Do not log pipeline progress messages to stderr
-            #            
+            #
             pipeline_run([task1, task2], forcedtorun_tasks = [task2], logger = blackhole_logger)
 
     **Parameters:**
@@ -146,10 +147,10 @@ Pipeline functions
 .. _pipeline_functions.pipeline_run.multiprocess:
 
     * *multiprocess*
-        Optional. The number of processes which should be dedicated to running in parallel independent 
+        Optional. The number of processes which should be dedicated to running in parallel independent
         tasks and jobs within each task. If ``multiprocess`` is set to 1, the pipeline will
         execute in the main process.
-        
+
 .. _pipeline_functions.pipeline_run.logger:
 
     * *logger*
@@ -167,28 +168,28 @@ Pipeline functions
         out of date and needs to be re-run. If set to ``False``, **ruffus** will work back
         from the ``target_tasks`` and only execute the pipeline after the first up-to-date
         tasks that it encounters. For example, if there are four tasks:
-        
+
             ::
-            
-                #  
+
+                #
                 #   task1 -> task2 -> task3 -> task4 -> task5
                 #
                 target_tasks = [task5]
-                
+
         If ``task3()`` is up-to-date, then only ``task4()`` and ``task5()`` will be run.
         This will be the case even if ``task2()`` and ``task1()`` are incomplete.
-        
+
         This allows you to remove all intermediate results produced by ``task1 -> task3``.
-        
+
 
 
 .. _pipeline_functions.pipeline_run.verbose:
 
     * *verbose*
         Optional parameter indicating the verbosity of the messages sent to ``logger``:
-    
+
             ::
-            
+
                 verbose = 0 : prints nothing
                 verbose = 1 : logs warnings and tasks which are not up-to-date and which will be run
                 verbose = 2 : logs doc strings for task functions as well
@@ -200,7 +201,7 @@ Pipeline functions
 
         ``verbose >= 10`` are intended for debugging **Ruffus** by the developers and the details
         are liable to change from release to release
-        
+
 .. _pipeline_functions.pipeline_run.runtime_data:
 
     * *runtime_data*
@@ -217,24 +218,24 @@ Pipeline functions
 .. _pipeline_functions.pipeline_run.touch_files_only:
 
     * *touch_files_only*
-        Create or update output files only to simulate the running of the pipeline. 
-        Does not invoke real task functions to run jobs. This is most useful to force a 
+        Create or update output files only to simulate the running of the pipeline.
+        Does not invoke real task functions to run jobs. This is most useful to force a
         pipeline to acknowledge that a particular part is now up-to-date.
-        
-        This will not work properly if the identities of some files are not known before hand, 
+
+        This will not work properly if the identities of some files are not known before hand,
         and depend on run time. In other words, not recommended if ``@split`` or custom parameter generators are being used.
 
 
 .. _pipeline_functions.pipeline_printout:
 
-.. index:: 
+.. index::
     single: pipeline functions; pipeline_run
     pair: pipeline_printout; Printout simulated run of the pipeline
 
 **********************************************************************************************************************************************************************************************************
 *pipeline_printout*
 **********************************************************************************************************************************************************************************************************
-**pipeline_printout** (|pp_output_stream|_, |pp_target_tasks|_ = [], |pp_forcedtorun_tasks|_ = [], |pp_verbose|_ = 1, |pp_indent|_ = 4, |pp_gnu_make|_ = True, |pp_wrap_width|_ = 100, |pp_runtime_data|_ = None)
+**pipeline_printout** (|pp_output_stream|_ = sys.stdout, |pp_target_tasks|_ = [], |pp_forcedtorun_tasks|_ = [], |pp_verbose|_ = 1, |pp_indent|_ = 4, |pp_gnu_make|_ = True, |pp_wrap_width|_ = 100, |pp_runtime_data|_ = None)
 
     **Purpose:**
 
@@ -252,7 +253,7 @@ Pipeline functions
             #   Simulate running task2 whatever its state, and also task1 and antecedents
             #     if they are incomplete
             #   Print out results to STDOUT
-            #            
+            #
             pipeline_printout(sys.stdout, [task1, task2], forcedtorun_tasks = [task2], verbose = 1)
 
     **Parameters:**
@@ -261,7 +262,7 @@ Pipeline functions
 
     * *output_stream*
         Where to printout the results of simulating the running of the pipeline.
-        
+
 .. _pipeline_functions.pipeline_printout.target_tasks:
 
     * *target_tasks*
@@ -275,13 +276,13 @@ Pipeline functions
         As in :ref:`pipeline_run<pipeline_functions.pipeline_run>`:These pipeline functions will be invoked regardless of their state.
         Any antecedents tasks will also be executed if they are out-of-date or incomplete.
 
-        
+
 .. _pipeline_functions.pipeline_printout.verbose:
 
     * *verbose*
         Optional parameter indicating the verbosity of the printout.
         Please do not expect messages to stay constant between release
-    
+
             ::
 
                 verbose = 0 : prints nothing
@@ -296,7 +297,7 @@ Pipeline functions
 .. _pipeline_functions.pipeline_printout.indent:
 
     * *indent*
-        Optional parameter governing the indentation when printing out the component job 
+        Optional parameter governing the indentation when printing out the component job
         parameters of each task function.
 
 
@@ -307,7 +308,7 @@ Pipeline functions
             This is a dangerous option. Use rarely and with caution
 
         See explanation in :ref:`pipeline_run <pipeline_functions.pipeline_run.gnu_make>`.
-        
+
 .. _pipeline_functions.pipeline_printout.wrap_width:
 
     * *wrap_width*
@@ -321,10 +322,10 @@ Pipeline functions
         Experimental feature for passing data to tasks at run time
 
 
-        
+
 .. _pipeline_functions.pipeline_printout_graph:
 
-.. index:: 
+.. index::
     single: pipeline functions; pipeline_printout_graph
     pair: pipeline_printout_graph; print flowchart representation of pipeline functions
 
@@ -341,21 +342,21 @@ Pipeline functions
         Prints out flowchart of all the pipelined functions which will be invoked given specified ``target_tasks``
         without actually running the pipeline.
 
-        See :ref:`Flowchart colours <flowchart_colours>` 
+        See :ref:`Flowchart colours <new_manual.flowchart_colours>`
 
     **Example**:
         ::
 
-            pipeline_printout_graph("flowchart.jpg", "jpg", [task1, task16], 
-                                        forcedtorun_tasks = [task2], 
+            pipeline_printout_graph("flowchart.jpg", "jpg", [task1, task16],
+                                        forcedtorun_tasks = [task2],
                                         no_key_legend = True)
 
     **Customising appearance:**
 
         The :ref:`user_colour_scheme <pipeline_functions.pipeline_printout_graph.user_colour_scheme>` parameter can be used to change
-        flowchart colours. This allows the default :ref:`Colour Schemes <flowchart_colours>` 
-        to be set. An example of customising flowchart appearance is available :ref:`(see code) <flowchart_colours.code>` .
-    
+        flowchart colours. This allows the default :ref:`Colour Schemes <new_manual.flowchart_colours>`
+        to be set. An example of customising flowchart appearance is available :ref:`(see code) <new_manual.flowchart_colours.code>` .
+
 
 
 
@@ -364,10 +365,10 @@ Pipeline functions
 .. _pipeline_functions.pipeline_printout_graph.stream:
 
     * *stream*
-        The file or file-like object to which the flowchart should be printed. 
+        The file or file-like object to which the flowchart should be printed.
         If a string is provided, it is assumed that this is the name of the output file
         which will be opened automatically.
-        
+
 
 .. _pipeline_functions.pipeline_printout_graph.output_format:
 
@@ -380,7 +381,7 @@ Pipeline functions
           ``jpg``, ``png``, ``pdf``, ``svg`` etc.
         | Otherwise, **ruffus** will only output without error in the `dot <http://en.wikipedia.org/wiki/DOT_language>`_ format, which
           is a plain-text graph description language.
-        
+
 .. _pipeline_functions.pipeline_printout_graph.target_tasks:
 
     * *target_tasks*
@@ -393,7 +394,7 @@ Pipeline functions
     * *forcedtorun_tasks*
         As in :ref:`pipeline_run<pipeline_functions.pipeline_run>`:These pipeline functions will be invoked regardless of their state.
         Any antecedents tasks will also be executed if they are out-of-date or incomplete.
-        
+
 .. _pipeline_functions.pipeline_printout_graph.draw_vertically:
 
     * *draw_vertically*
@@ -408,9 +409,9 @@ Pipeline functions
 .. _pipeline_functions.pipeline_printout_graph.skip_uptodate_tasks:
 
     * *ignore_upstream_of_target*
-        Do not draw up-to-date / completed tasks in the flowchart unless they are 
+        Do not draw up-to-date / completed tasks in the flowchart unless they are
         lie on the execution path of the pipeline.
-        
+
 .. _pipeline_functions.pipeline_printout_graph.gnu_make:
 
     * *gnu_make_maximal_rebuild_mode*
@@ -425,7 +426,7 @@ Pipeline functions
         | Indicates whether intermediate tasks are out of date or not. Normally **Ruffus** will
           stop checking dependent tasks for completion or whether they are out-of-date once it has
           discovered the maximal extent of the pipeline which has to be run.
-        | For displaying the flow of the pipeline, this is hardly very informative. 
+        | For displaying the flow of the pipeline, this is hardly very informative.
 
 .. _pipeline_functions.pipeline_printout_graph.no_key_legend:
 
@@ -443,7 +444,7 @@ Pipeline functions
      * *user_colour_scheme*
         Dictionary specifying colour scheme for flowchart
 
-        See complete :ref:`list of Colour Schemes <flowchart_colours>`.
+        See complete :ref:`list of Colour Schemes <new_manual.flowchart_colours>`.
 
         | Colours can be names e.g. ``"black"`` or quoted hex e.g. ``'"#F6F4F4"'`` (note extra quotes)
         | Default values will be used unless specified
@@ -452,7 +453,7 @@ Pipeline functions
            :header: "key", "Subkey", ""
 
            "
-           - ``'colour_scheme_index'`` ", "| index of default colour scheme, 
+           - ``'colour_scheme_index'`` ", "| index of default colour scheme,
            | 0-7, defaults to 0 unless specified", ""
            "
            - ``'Final target'``
@@ -462,11 +463,11 @@ Pipeline functions
            - ``'Up-to-date Final target'``
            - ``'Up-to-date task forced to rerun'``
            - ``'Up-to-date task'``
-           - ``'Vicious cycle'``                  
+           - ``'Vicious cycle'``
            ","
            - ``'fillcolor'``
            - ``'fontcolor'``
-           - ``'color'``    
+           - ``'color'``
            - ``'dashed'``   = ``0/1``
            ", "Colours / attributes for each task type"
            "
@@ -487,11 +488,11 @@ Pipeline functions
                                          user_colour_scheme = {
                                                                 "colour_scheme_index" :1,
                                                                 "Pipeline"      :{"fontcolor" : '"#FF3232"' },
-                                                                "Key"           :{"fontcolor" : "Red",      
+                                                                "Key"           :{"fontcolor" : "Red",
                                                                                   "fillcolor" : '"#F6F4F4"' },
                                                                 "Task to run"   :{"linecolor" : '"#0044A0"' },
                                                                 "Final target"  :{"fillcolor" : '"#EFA03B"',
-                                                                                  "fontcolor" : "black",    
+                                                                                  "fontcolor" : "black",
                                                                                   "dashed"    : 0           }
                                                                })
 

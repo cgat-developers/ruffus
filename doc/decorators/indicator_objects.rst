@@ -38,21 +38,169 @@ Indicator Objects
 
     * The optional enclosed parameters are a python regular expression strings
     * Each regular expression matches a corresponding *Input* file name string
-    * formatter
+    * *formatter* parses each file name string into path and regular expression components
+    * Parsing fails altogether if the regular expression is not matched
 
+    Path components include:
+
+        * ``basename``: The `base name <http://docs.python.org/2/library/os.path.html#os.path.basename>`__ *excluding* `extension  <http://docs.python.org/2/library/os.path.html#os.path.splitext>`__, ``"file.name"``
+        * ``ext``     : The `extension <http://docs.python.org/2/library/os.path.html#os.path.splitext>`__, ``".ext"``
+        * ``path``    : The `dirname <http://docs.python.org/2/library/os.path.html#os.path.dirname>`__, ``"/directory/to/a"``
+        * ``subdir``  : A list of sub-directories in the ``path`` in reverse order, ``["a", "to", "directory", "/"]``
+        * ``subpath`` : A list of descending sub-paths in reverse order, ``["/directory/to/a", "/directory/to", "/directory", "/"]``
+
+    The replacement string refers to these components using python `string.format <http://docs.python.org/2/library/string.html#string-formatting>`__ style curly braces. ``{NAME}``
+
+    We refer to an element from the Nth input string by index, for example:
+
+       * ``"{ext[0]}"``     is the extension of the first input string.
+       * ``"{basename[1]}"`` is the basename of the second input string.
+       * ``"{basename[1][0:3]}"`` are the first three letters from the basename of the second input string.
 
     **Used by:**
+        * :ref:`@split <decorators.split>`
         * :ref:`@transform <decorators.transform>`
+        * :ref:`@merge <decorators.merge>`
+        * :ref:`@subdivide <decorators.subdivide>`
+        * :ref:`@collate <decorators.collate>`
+        * :ref:`@product <decorators.product>`
+        * :ref:`@permutations <decorators.permutations>`
+        * :ref:`@combinations <decorators.combinations>`
+        * :ref:`@combinations_with_replacement <decorators.combinations_with_replacement>`
 
-    **Example**:
-        ::
+    **@transform example**:
+
+        .. code-block:: python
+            :emphasize-lines: 14, 18,19
+
+            from ruffus import *
+
+            #   create initial file pairs
+            @originate([   ['job1.a.start', 'job1.b.start'],
+                           ['job2.a.start', 'job2.b.start'],
+                           ['job3.a.start', 'job3.c.start']    ])
+            def create_initial_file_pairs(output_files):
+                for output_file in output_files:
+                    with open(output_file, "w") as oo: pass
+
+
+            #---------------------------------------------------------------
+            #
+            #   formatter
+            #
+            @transform(create_initial_file_pairs,                               # Input
+
+                        formatter(".+/job(?P<JOBNUMBER>\d+).a.start",           # Extract job number
+                                  ".+/job[123].b.start"),                       # Match only "b" files
+
+                        ["{path[0]}/jobs{JOBNUMBER[0]}.output.a.1",             # Replacement list
+                         "{path[1]}/jobs{JOBNUMBER[0]}.output.b.1"])
+            def first_task(input_files, output_parameters):
+                print "input_parameters = ", input_files
+                print "output_parameters = ", output_parameters
+
 
             #
-            #   Transforms ``*.c`` to ``*.o``::
+            #       Run
             #
-            @transform(previous_task, suffix(".c"), ".o")
-            def compile(infile, outfile):
-                pass
+            pipeline_run(verbose=0)
+
+        This produces:
+
+        .. code-block:: pycon
+
+            input_parameters  =  ['job1.a.start',
+                                  'job1.b.start']
+            output_parameters =  ['/home/lg/src/temp/jobs1.output.a.1',
+                                  '/home/lg/src/temp/jobs1.output.b.1', 45]
+
+            input_parameters  =  ['job2.a.start',
+                                  'job2.b.start']
+            output_parameters =  ['/home/lg/src/temp/jobs2.output.a.1',
+                                  '/home/lg/src/temp/jobs2.output.b.1', 45]
+
+    **@permutations example**:
+
+        Combinatoric decorators such as :ref:`@product <decorators.product>` or
+        :ref:`@product <decorators.permutations>` behave much
+        like nested for loops in enumerating, combining, and permutating the original sets
+        of inputs.
+
+        The replacement strings require an extra level of indirection to refer to
+        parsed components:
+
+        .. code-block:: python
+            :emphasize-lines: 14, 18,19
+
+            from ruffus import *
+            from ruffus.combinatorics import *
+
+            #   create initial files
+            @originate([ 'a.start', 'b.start', 'c.start'])
+            def create_initial_files(output_file):
+                with open(output_file, "w") as oo: pass
+
+
+            #---------------------------------------------------------------
+            #
+            #   formatter
+            #
+            @permutations(create_initial_files,                                           # Input
+
+                        formatter("(.start)$"),                                           # match input file in permutations
+                        2,
+
+                        "{path[0][0]}/{basename[0][0]}_vs_{basename[1][0]}.product",    # Output Replacement string
+                        "{path[0][0]}",                                                 # path for 1st set of files, 1st file name
+                        ["{basename[0][0]}",                                            # basename for 1st set of files, 1st file name
+                         "{basename[1][0]}"])                                           # basename for 2nd set of files, 1st file name
+            def product_task(input_file, output_parameter, shared_path, basenames):
+                print "input_parameter  = ", input_file
+                print "output_parameter = ", output_parameter
+                print "shared_path      = ", shared_path
+                print "basenames        = ", basenames
+
+
+            #
+            #       Run
+            #
+            pipeline_run(verbose=0)
+
+        This produces:
+
+        .. code-block:: pycon
+
+            >>> pipeline_run(verbose=0)
+            input_parameter  =  ('a.start', 'b.start')
+            output_parameter =  /home/lg/src/oss/ruffus/a_vs_b.product
+            shared_path      =  /home/lg/src/oss/ruffus
+            basenames        =  ['a', 'b']
+
+            input_parameter  =  ('a.start', 'c.start')
+            output_parameter =  /home/lg/src/oss/ruffus/a_vs_c.product
+            shared_path      =  /home/lg/src/oss/ruffus
+            basenames        =  ['a', 'c']
+
+            input_parameter  =  ('b.start', 'a.start')
+            output_parameter =  /home/lg/src/oss/ruffus/b_vs_a.product
+            shared_path      =  /home/lg/src/oss/ruffus
+            basenames        =  ['b', 'a']
+
+            input_parameter  =  ('b.start', 'c.start')
+            output_parameter =  /home/lg/src/oss/ruffus/b_vs_c.product
+            shared_path      =  /home/lg/src/oss/ruffus
+            basenames        =  ['b', 'c']
+
+            input_parameter  =  ('c.start', 'a.start')
+            output_parameter =  /home/lg/src/oss/ruffus/c_vs_a.product
+            shared_path      =  /home/lg/src/oss/ruffus
+            basenames        =  ['c', 'a']
+
+            input_parameter  =  ('c.start', 'b.start')
+            output_parameter =  /home/lg/src/oss/ruffus/c_vs_b.product
+            shared_path      =  /home/lg/src/oss/ruffus
+            basenames        =  ['c', 'b']
+
 
 
 .. index::
@@ -106,6 +254,7 @@ Indicator Objects
     **Used by:**
 
         * :ref:`@transform <decorators.transform>`
+        * :ref:`@subdivide <decorators.subdivide>`
         * :ref:`@collate <decorators.collate>`
         * The deprecated :ref:`@files_re <decorators.files_re>`
 
@@ -255,7 +404,7 @@ Indicator Objects
     single: mkdir; @follows (Syntax)
     single: Indicator Object (Disambiguating parameters); mkdir
 
-.. _decorators.mkdir:
+.. _decorators.indicator_objects.mkdir:
 
 
 ******************************************************************************************
@@ -378,12 +527,12 @@ Indicator Objects
         and have straightforward syntax.
 
     Indicates that the *inputs* of :ref:`@files_re <decorators.files_re>` will be collated
-    or summarised into *outputs* by category. See the :ref:`Manual <manual.files_re.combine>`  or
-    :ref:` @collate <manual.collate>` for examples.
+    or summarised into *outputs* by category. See the :ref:`Manual <new_manual.files_re.combine>`  or
+    :ref:` @collate <new_manual.collate>` for examples.
 
 
     **Used by:**
-        * :ref:`@files_re <manual.files_re.combine>`
+        * :ref:`@files_re <new_manual.files_re.combine>`
 
     **Example:**
         ::

@@ -1,17 +1,25 @@
 .. include:: ../../global.inc
-.. _flowchart_colours.code:
+.. include:: manual_chapter_numbers.inc
 
+.. index::
+    pair: flowchart colours; Tutorial
 
-########################################################################################
-Code for flowchart_colours
-########################################################################################
-    * :ref:`Flowchart colours <flowchart_colours>` 
-    * :ref:`pipeline_printout_graph <pipeline_functions.pipeline_printout_graph>` 
+.. _new_manual.flowchart_colours.code:
+
+##########################################################################################################################################################################################################################################
+|new_manual.flowchart_colours.chapter_num|: Python code for Flow Chart Colours with :ref:`pipeline_printout_graph(...) <pipeline_functions.pipeline_printout_graph>`
+##########################################################################################################################################################################################################################################
+
+.. seealso::
+
+    * :ref:`Manual Table of Contents <new_manual.table_of_contents>`
+    * :ref:`pipeline_printout_graph(...) <pipeline_functions.pipeline_printout_graph>`
     * :download:`Download code <../../static_data/example_scripts/play_with_colours.py>`
+    * Back to :ref:`Flowchart colours <new_manual.flowchart_colours>`
 
     This example shows how flowchart colours can be customised.
-              
-    
+
+
 ************************************
 Code
 ************************************
@@ -19,13 +27,13 @@ Code
 
         #!/usr/bin/env python
         """
-        
+
             play_with_colours.py
             [--log_file PATH]
             [--verbose]
-        
+
         """
-        
+
         ################################################################################
         #
         #   play_with_colours.py
@@ -51,27 +59,27 @@ Code
         #   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
         #   THE SOFTWARE.
         #################################################################################
-        
+
         import sys, os
-        
-        
+
+
         #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-        
+
         #   options
-        
-        
+
+
         #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-        
-        
+
+
         from optparse import OptionParser
         import StringIO
-        
+
         parser = OptionParser(version="%play_with_colours 1.0",
                               usage = "\n\n    play_with_colours "
                                         "--flowchart FILE [options] "
                                         "[--colour_scheme_index INT ] "
                                         "[--key_legend_in_graph]")
-        
+
         #
         #   pipeline
         #
@@ -87,57 +95,57 @@ Code
         parser.add_option("--key_legend_in_graph", dest="key_legend_in_graph",
                             action="store_true", default=False,
                             help="Print out legend and key for dependency graph.")
-        
+
         (options, remaining_args) = parser.parse_args()
         if not options.flowchart:
             raise Exception("Missing mandatory parameter: --flowchart.\n")
-        
-        
-        
-        
+
+
+
+
         #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-        
+
         #   imports
-        
-        
+
+
         #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-        
+
         from ruffus import *
         from ruffus.ruffus_exceptions import JobSignalledBreak
-        
-        
+
+
         #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-        
+
         #   Pipeline
-        
-        
+
+
         #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-        
-        
+
+
         #
         # up to date tasks
         #
         @check_if_uptodate (lambda : (False, ""))
         def Up_to_date_task1(infile, outfile):
             pass
-        
+
         @check_if_uptodate (lambda : (False, ""))
         @follows(Up_to_date_task1)
         def Up_to_date_task2(infile, outfile):
             pass
-        
+
         @check_if_uptodate (lambda : (False, ""))
         @follows(Up_to_date_task2)
         def Up_to_date_task3(infile, outfile):
             pass
-        
-        
+
+
         @check_if_uptodate (lambda : (False, ""))
         @follows(Up_to_date_task3)
         def Up_to_date_final_target(infile, outfile):
             pass
-        
-        
+
+
         #
         # Explicitly specified
         #
@@ -145,73 +153,73 @@ Code
         @follows(Up_to_date_task1)
         def Explicitly_specified_task(infile, outfile):
             pass
-        
-        
-        
+
+
+
         #
         # Tasks to run
         #
         @follows(Explicitly_specified_task)
         def Task_to_run1(infile, outfile):
             pass
-        
-        
+
+
         @follows(Task_to_run1)
         def Task_to_run2(infile, outfile):
             pass
-        
+
         @follows(Task_to_run2)
         def Task_to_run3(infile, outfile):
             pass
-        
+
         @check_if_uptodate (lambda : (False, ""))
         @follows(Task_to_run2)
         def Up_to_date_task_forced_to_rerun(infile, outfile):
             pass
-        
-        
+
+
         #
         # Final target
         #
         @follows(Up_to_date_task_forced_to_rerun, Task_to_run3)
         def Final_target(infile, outfile):
             pass
-        
+
         #
         # Ignored downstream
         #
         @follows(Final_target)
         def Downstream_task1_ignored(infile, outfile):
             pass
-        
+
         @follows(Final_target)
         def Downstream_task2_ignored(infile, outfile):
             pass
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+
         #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-        
+
         #   Main logic
-        
-        
+
+
         #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
         from collections import defaultdict
         custom_flow_chart_colour_scheme = defaultdict(dict)
-        
+
         #
         #   Base chart on this overall colour scheme index
         #
         custom_flow_chart_colour_scheme["colour_scheme_index"] = options.colour_scheme_index
-        
+
         #
         #   Overriding colours
         #
@@ -254,27 +262,27 @@ Code
             custom_flow_chart_colour_scheme["Up-to-date Final target"]["fontcolor"]              = '"#006000"'
             custom_flow_chart_colour_scheme["Up-to-date Final target"]["color"]                  = '"#006000"'
             custom_flow_chart_colour_scheme["Up-to-date Final target"]["dashed"]                 = 0
-        
+
         if __name__ == '__main__':
             pipeline_printout_graph (
-        
+
                                             open(options.flowchart, "w"),
                                             # use flowchart file name extension to decide flowchart format
                                             #   e.g. svg, jpg etc.
                                             os.path.splitext(options.flowchart)[1][1:],
-        
+
                                             # final targets
                                             [Final_target, Up_to_date_final_target],
-        
+
                                             # Explicitly specified tasks
                                             [Explicitly_specified_task],
-        
+
                                             # Do we want key legend
                                             no_key_legend   = not options.key_legend_in_graph,
-        
+
                                             # Print all the task types whether used or not
                                             minimal_key_legend             = False,
-        
+
                                             user_colour_scheme = custom_flow_chart_colour_scheme,
                                             pipeline_name = "Colour schemes")
 

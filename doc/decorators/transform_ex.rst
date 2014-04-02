@@ -23,6 +23,8 @@
 .. _input_pattern_or_glob: `decorators.transform.input_pattern_or_glob`_
 .. |matching_regex| replace:: `matching_regex`
 .. _matching_regex: `decorators.transform.matching_regex`_
+.. |matching_formatter| replace:: `matching_formatter`
+.. _matching_formatter: `decorators.transform.matching_formatter`_
 .. |suffix_string| replace:: `suffix_string`
 .. _suffix_string: `decorators.transform.suffix_string`_
 
@@ -30,20 +32,26 @@
 
 
 
-***********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
-*@transform* ( |tasks_or_file_names|_, :ref:`suffix<decorators.suffix>`\ *(*\ |suffix_string|_\ *)*\ | :ref:`regex<decorators.regex>`\ *(*\ |matching_regex|_\ *)*\ , :ref:`inputs<decorators.inputs>` | :ref:`add_inputs<decorators.add_inputs>`\ *(*\ |input_pattern_or_glob|_\ *)*\ , |output_pattern|_, [|extra_parameters|_,...] )
-***********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+*@transform* ( |tasks_or_file_names|_, :ref:`suffix<decorators.suffix>`\ *(*\ |suffix_string|_\ *)*\ | :ref:`regex<decorators.regex>`\ *(*\ |matching_regex|_\ *)* |  :ref:`formatter<decorators.formatter>`\ *(*\ |matching_formatter|_\ *)*\, :ref:`inputs<decorators.inputs>` | :ref:`add_inputs<decorators.add_inputs>`\ *(*\ |input_pattern_or_glob|_\ *)*\ , |output_pattern|_, [|extra_parameters|_,...] )
+********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
     **Purpose:**
         This variant of ``@transform`` allows additional inputs or dependencies to be added
         dynamically to the task.
 
-        Output file names are determined from |tasks_or_file_names|_, i.e. from the output
+        Output file names and strings in the extra parameters 
+        are determined from |tasks_or_file_names|_, i.e. from the output
         of up stream tasks, or a list of file names.
 
         This variant of ``@transform`` allows input file names to be derived in the same way.
 
-        This can be either via matches to the end of the file name (suffix matches) or, using
-        more powerful (but more complex) regular expression pattern substitutions.
+        String replacement occurs either through suffix matches via :ref:`suffix<decorators.suffix>` or 
+        the :ref:`formatter<decorators.formatter>` or :ref:`regex<decorators.regex>` indicators.
+
+        ``@collate`` groups together all **Input** which result in identical **Output** and **extra**
+        parameters.
+
+        It is a **many to fewer** operation.
 
         :ref:`add_inputs<decorators.add_inputs>` nests the the original input parameters in a list before adding additional dependencies.
 
@@ -129,6 +137,12 @@
        documentation for details of regular expression syntax
        Each output file name is created using regular expression substitution with ``output_pattern``
 
+.. _decorators.transform.matching_formatter:
+
+    * *matching_formatter*
+       a :ref:`formatter<decorators.formatter>` indicator object containing optionally
+       a  python `regular expression (re) <http://docs.python.org/library/re.html>`_.
+
 .. _decorators.transform.input_pattern_or_glob:
 
     * *input_pattern*
@@ -140,7 +154,7 @@
        #.  Task / list of tasks (as in the example above).
             File names are taken from the output of the specified task(s)
        #.  (Nested) list of file name strings.
-            Strings will be subject to (regular expression or suffix) pattern substitution.
+            Strings will be subject to substitution.
             File names containing ``*[]?`` will be expanded as a |glob|_.
             E.g.:``"a.*" => "a.1", "a.2"``
 
@@ -156,7 +170,7 @@
     * [*extra_parameters, ...*]
        Any extra parameters are passed to the task function.
 
-       If :ref:`regex<decorators.regex>`\ `(matching_regex)` parameter is used, then regular expression substitution
+       If the ``regex(...)`` or ``formatter(...)`` parameter is used, then substitution
        is first applied to (even nested) string parameters. Other data types are passed
        verbatim.
 

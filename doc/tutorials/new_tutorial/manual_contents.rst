@@ -4,7 +4,7 @@
 .. _new_manual.table_of_contents:
 
 ####################################################################
-**Ruffus** Manual: Table of Contents:
+**Ruffus** Manual: List of Chapters and Example code
 ####################################################################
 
     * |new_manual.introduction.chapter_num|: :ref:`An introduction to basic Ruffus syntax <new_manual.introduction>`
@@ -14,16 +14,31 @@
     * |new_manual.pipeline_printout.chapter_num|: :ref:`Understanding how your pipeline works <new_manual.pipeline_printout>`
     * |new_manual.cmdline.chapter_num|: :ref:`Running Ruffus from the command line <new_manual.cmdline>`
     * |new_manual.pipeline_printout_graph.chapter_num|: :ref:`Displaying the pipeline visually <new_manual.pipeline_printout_graph>`
-    * |new_manual.output_file_names.chapter_num|: :ref:`Specifying output file names <new_manual.output_file_names>`
+    * |new_manual.output_file_names.chapter_num|: :ref:`Specifying output file names with @formatter and @regex <new_manual.output_file_names>`
+    * |new_manual.mkdir.chapter_num|: :ref:`Preparing directories for output with @mkdir <new_manual.mkdir>`
     * |new_manual.task_completion.chapter_num|: :ref:`Checkpointing: Interrupted Pipelines and Exceptions <new_manual.task_completion>`
     * |new_manual.decorators_compendium.chapter_num|: :ref:`Pipeline topologies and a compendium of Ruffus decorators <new_manual.decorators_compendium>`
     * |new_manual.split.chapter_num|: :ref:`Splitting up large tasks / files with @split <new_manual.split>`
     * |new_manual.merge.chapter_num|: :ref:`@merge multiple input into a single result <new_manual.merge>`
+    * |new_manual.logging.chapter_num|: :ref:`Logging progress through a pipeline <new_manual.logging>`
+    * |new_manual.multiprocessing.chapter_num|: :ref:`Multiprocessing, drmaa and Computation Clusters <new_manual.multiprocessing>`
+    * |new_manual.subdivide_collate.chapter_num|: :ref:`@subdivide tasks to run efficiently and regroup @collate <new_manual.subdivide_collate>`
+    * |new_manual.combinatorics.chapter_num|: :ref:`@combinations, @permutations and all versus all @product <new_manual.combinatorics>`
+    * |new_manual.active_if.chapter_num|: :ref:`Turning parts of the pipeline on and off at runtime <new_manual.active_if>`
+    * |new_manual.inputs.chapter_num|: :ref:`Manipulating task inputs via string substitution <new_manual.inputs>`
+    * |new_manual.posttask.chapter_num|: :ref:`Signal the completion of each stage of our pipeline with @posttask <new_manual.posttask>`
+    * |new_manual.on_the_fly.chapter_num|: :ref:`Esoteric: Generating parameters on the fly with @files <new_manual.on_the_fly>`
+    * |new_manual.parallel.chapter_num|: :ref:`Esoteric: Running jobs in parallel without using files: :ref:`@parallel<decorators.parallel>`
+    * |new_manual.check_if_uptodate.chapter_num|: :ref:`Esoteric: Writing custom functions to decide which jobs are up to date with @check_if_uptodate <new_manual.check_if_uptodate>`
+    * |new_manual.flowchart_colours.chapter_num| :ref:`Flow Chart Colours with pipeline_printout_graph <new_manual.flowchart_colours>`
+    * |new_manual.dependencies.chapter_num| :ref:`Under the hood: How dependency works <new_manual.dependencies>`
+    * |new_manual.exceptions.chapter_num| :ref:`Exceptions thrown inside pipelines <new_manual.exceptions>`
+    * |new_manual.deprecated_files.chapter_num|: :ref:`Legacy and deprecated syntax @files <new_manual.deprecated_files>`
+    * |new_manual.deprecated_files_re.chapter_num|: :ref:`Legacy and deprecated syntax @files_re <new_manual.deprecated_files_re>`
 
 
-==============================================================================
-**Ruffus** Manual: Accompanying code:
-==============================================================================
+
+**Ruffus** Manual: List of Example Code for Each Chapter:
 
     * :ref:`new_manual.transform.code`
     * :ref:`new_manual.transform_in_parallel.code`
@@ -31,7 +46,14 @@
     * :ref:`new_manual.pipeline_printout.code`
     * :ref:`new_manual.pipeline_printout_graph.code`
     * :ref:`new_manual.output_file_names.code`
+    * :ref:`new_manual.mkdir.code`
     * :ref:`new_manual.task_completion.code`
     * :ref:`new_manual.split.code`
     * :ref:`new_manual.merge.code`
+    * :ref:`new_manual.multiprocessing.code`
+    * :ref:`new_manual.subdivide_collate.code`
+    * :ref:`new_manual.combinatorics.code`
+    * :ref:`new_manual.inputs.code`
+    * :ref:`new_manual.on_the_fly.code`
+
 

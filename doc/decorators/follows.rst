@@ -6,7 +6,7 @@
 .. seealso::
 
     * :ref:`Decorators <decorators>` for more decorators
-    * More on @follows in the ``Ruffus`` :ref:`Manual <manual.follows>`
+    * More on @follows in the ``Ruffus`` :ref:`Manual <new_manual.follows>`
 
 
 ############

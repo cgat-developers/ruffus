@@ -23,11 +23,13 @@
 .. _input_pattern_or_glob: `decorators.collate_ex.input_pattern_or_glob`_
 .. |matching_regex| replace:: `matching_regex`
 .. _matching_regex: `decorators.collate_ex.matching_regex`_
+.. |matching_formatter| replace:: `matching_formatter`
+.. _matching_formatter: `decorators.collate_ex.matching_formatter`_
 
 
-**********************************************************************************************************************************************************************************************************************************************************************************************************************
-*@collate* ( |tasks_or_file_names|_, :ref:`regex<decorators.regex>`\ *(*\ |matching_regex|_\ *)*\ , [:ref:`inputs<decorators.inputs>`\ *(*\ |input_pattern_or_glob|_\ *)* | :ref:`add_inputs<decorators.add_inputs>`\ *(*\ |input_pattern_or_glob|_\ *)*\] , |output_pattern|_, [|extra_parameters|_,...] )
-**********************************************************************************************************************************************************************************************************************************************************************************************************************
+*******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+*@collate* ( |tasks_or_file_names|_, :ref:`regex<decorators.regex>`\ *(*\ |matching_regex|_\ *)* |  :ref:`formatter<decorators.formatter>`\ *(*\ |matching_formatter|_\ *)*\, [:ref:`inputs<decorators.inputs>`\ *(*\ |input_pattern_or_glob|_\ *)* | :ref:`add_inputs<decorators.add_inputs>`\ *(*\ |input_pattern_or_glob|_\ *)*\] , |output_pattern|_, [|extra_parameters|_,...] )
+*******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
     **Purpose:**
         Groups / collates sets of input files, each into a separate summary.
 
@@ -101,6 +103,12 @@
        See python `regular expression (re) <http://docs.python.org/library/re.html>`_
        documentation for details of regular expression syntax
 
+.. _decorators.collate_ex.matching_formatter:
+
+    * *matching_formatter*
+       a :ref:`formatter<decorators.formatter>` indicator object containing optionally
+       a  python `regular expression (re) <http://docs.python.org/library/re.html>`_.
+
 .. _decorators.collate_ex.input_pattern_or_glob:
 
     * *input_pattern*
@@ -112,7 +120,7 @@
        #.  Task / list of tasks (as in the example above).
             File names are taken from the output of the specified task(s)
        #.  (Nested) list of file name strings.
-            Strings will be subject to (regular expression or suffix) pattern substitution.
+            Strings will be subject to substitution.
             File names containing ``*[]?`` will be expanded as a |glob|_.
             E.g.:``"a.*" => "a.1", "a.2"``
 
@@ -128,9 +136,9 @@
     * *extra_parameters*
         Any extra parameters are passed verbatim to the task function
 
-    #. *outputs* and optional extra parameters are passed to the functions after regular expression
+    #. *outputs* and optional extra parameters are passed to the functions after string
        substitution in any strings. Non-string values are passed through unchanged.
-    #. Each collate job consists of input files which are aggregated by regular expression substitution
+    #. Each collate job consists of input files which are aggregated by string substitution
        to a single set of output / extra parameter matches
 
 

@@ -42,9 +42,9 @@ Overview
 
 
 .. index::
-    pair: manual; interrupting tasks
+    pair: Tutorial; interrupting tasks
 
-.. _manual.interrupting_tasks:
+.. _new_manual.interrupting_tasks:
 
 ***************************************
 Interrupting tasks
@@ -113,7 +113,7 @@ Interrupting tasks
     We can see that **Ruffus** magically knows that the previous run was incomplete, and that ``job1.output`` is detritus.
 
 
-.. _manual.logging_completed_jobs:
+.. _new_manual.logging_completed_jobs:
 
 ******************************************
 Checkpointing: only log completed jobs
@@ -144,7 +144,7 @@ Checkpointing: only log completed jobs
         Checksums are calculated from the `pickled  <http://docs.python.org/2/library/pickle.html>`_ string for the function code and parameters.
         If pickling fails, Ruffus will degrade gracefully to saving just the timestamp in the SQLite database.
 
-.. _manual.history_files_cannot_be_shared:
+.. _new_manual.history_files_cannot_be_shared:
 
 ****************************************************************************
 Do not share the same checkpoint file across for multiple pipelines!
@@ -158,7 +158,7 @@ Do not share the same checkpoint file across for multiple pipelines!
 
     Luckily, the name and path of the checkpoint file can be also changed for each pipeline
 
-.. _manual.changing_history_file_name:
+.. _new_manual.changing_history_file_name:
 
 ****************************************************************************
 Setting checkpoint file names
@@ -236,7 +236,7 @@ Example 2: Different directory, same name but keep one level of subdirectory to 
     .. code-block:: bash
 
         export DEFAULT_RUFFUS_HISTORY_FILE=/common/path/for/job_history/{subdir[0]}/.{basename}.ruffus_history.sqlite
-           
+
 
     .. code-block:: bash
 
@@ -260,9 +260,9 @@ Example 2: nested in common directory
 
 
 .. index::
-    pair: manual; Regenerating the checkpoint file
+    pair: Tutorial; Regenerating the checkpoint file
 
-.. _manual.regenerating_history_file:
+.. _new_manual.regenerating_history_file:
 
 ******************************************************************************
 Regenerating the checkpoint file
@@ -301,7 +301,7 @@ Regenerating the checkpoint file
 .. index::
     pair: rules; for rerunning jobs
 
-.. _manual.skip_up_to_date.rules:
+.. _new_manual.skip_up_to_date.rules:
 
 ******************************************************************************
 Rules for determining if files are up to date

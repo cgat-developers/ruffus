@@ -217,21 +217,22 @@ Q. My tasks creates two files but why does only one survive in the *Ruffus* pipe
 =======================================================================================
 Q. How can a *Ruffus* task produce output which goes off in different directions?
 =======================================================================================
+
     A. As above, anytime there is a situation which requires a one-to-many operation, you should reach
-    for :ref:`@split <decorators.split_ex>`. The advanced form takes a regular expression, making
-    it easier to produce multiple derivatives of the input file. The following example splits
+    for :ref:`@subdivide <decorators.subdivide>`. The advanced form takes a regular expression, making
+    it easier to produce multiple derivatives of the input file. The following example subdivides
     *2* jobs each into *3*, so that the subsequence task will run *2* x *3* = *6* jobs.
 
         ::
 
             from ruffus import *
             import sys
-            @split(["1.input_file",
-                    "2.input_file"],
-                    regex(r"(.+).input_file"),      # match file prefix
-                   [r"\1.file_type1",
-                    r"\1.file_type2",
-                    r"\1.file_type3"])
+            @subdivide(["1.input_file",
+                        "2.input_file"],
+                        regex(r"(.+).input_file"),      # match file prefix
+                       [r"\1.file_type1",
+                        r"\1.file_type2",
+                        r"\1.file_type3"])
             def split_task(input, output):
                pass
 

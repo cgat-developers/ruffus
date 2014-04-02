@@ -83,3 +83,10 @@
         Any extra parameters are passed verbatim to the task function
 
 
+
+########################################################################
+@split with ``regex(...)``, ``add_inputs`` and ``inputs``
+########################################################################
+
+    This deprecated syntax is a synonym for :ref:`@subdivide <decorators.subdivide>`.
+

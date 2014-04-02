@@ -9,9 +9,9 @@
 
 .. _new_manual.output_file_names:
 
-######################################################################################################
-|new_manual.output_file_names.chapter_num|: Specifying output file names
-######################################################################################################
+############################################################################################################################################################################################################
+|new_manual.output_file_names.chapter_num|: Specifying output file names with :ref:`formatter() <decorators.formatter>` and :ref:`regex() <decorators.regex>`
+############################################################################################################################################################################################################
 
 .. seealso::
 
@@ -51,9 +51,9 @@ Review
               Do these file names follow a *pattern* ?
             * **Write down the names of functions which transforms the data at each stage of the pipeline.**
 
-******************************************************************************
-Different file name suffices for each pipeline stage
-******************************************************************************
+**********************************************************************************************************************************************
+A different file name :ref:`suffix() <decorators.suffix>` for each pipeline stage
+**********************************************************************************************************************************************
 
 
     The easiest and cleanest way to write Ruffus pipelines is to use a different suffix
@@ -163,6 +163,7 @@ Different file name suffices for each pipeline stage
 
 
 
+.. _new_manual.formatter:
 
 ************************************************************************************************************************************************************
  :ref:`formatter() <decorators.formatter>` manipulates pathnames and regular expression
@@ -224,8 +225,10 @@ Path name components
     ``subdir``, ``subpath`` were designed to help you navigate your directory hierachy with the minimum of fuss. For example, you might want to maintain the
 
 
+.. _new_manual.formatter.regex:
+
 ================================================
-Filter and parse using regular expression
+Filter and parse using regular expressions
 ================================================
 
     `Regular expression   <http://docs.python.org/2/library/re.html#re.MatchObject.group>`__ matches can be used with the similar syntax.
@@ -268,7 +271,7 @@ Filter and parse using regular expression
             formatter(None, "b.start$")
 
 ================================================================================================
-``@transform`` and :ref:`formatter() <decorators.formatter>`
+Using :ref:`@transform() <decorators.transform>` with :ref:`formatter() <decorators.formatter>`
 ================================================================================================
 
     We can put these together for our the ``@transform`` example from step 3:
@@ -312,7 +315,9 @@ Filter and parse using regular expression
             pipeline_run(verbose=0)
 
 
-        This produces::
+        This produces:
+
+        .. code-block:: pycon
 
             input_parameters  =  ['job1.a.start',
                                   'job1.b.start']
@@ -403,6 +408,10 @@ string substitution for "extra" arguments
             1 : ['job1.a.start', 'job1.b.start']
             2 : ['job2.a.start', 'job2.b.start']
 
+
+
+.. _new_manual.output_file_names.formatter.zoo:
+
 ================================================================================================
 Changing directories using :ref:`formatter() <decorators.formatter>` in a zoo...
 ================================================================================================
@@ -470,23 +479,26 @@ Changing directories using :ref:`formatter() <decorators.formatter>` in a zoo...
             Food for the wild        tiger     = ./mammals/wild.tiger.food      will be placed in ./mammals
 
 
-
+.. _new_manual.regex:
 
 ******************************************************************************
- :ref:`regex() <decorators.regex>` manipulates regular expression
+ :ref:`regex() <decorators.regex>` manipulates via regular expressions
 ******************************************************************************
 
 
     If you are a hard core regular expressions fan, you may want to use :ref:`regex() <decorators.regex>` instead of :ref:`suffix() <decorators.suffix>` or :ref:`formatter() <decorators.formatter>`.
-    :ref:`regex() <decorators.regex>` uses regular expressions like :ref:`formatter() <decorators.formatter>` but
 
-        * It only matches the first file name in the input. As described above, :ref:`formatter() <decorators.formatter>` can match any one or more of the input filename strings.
-        * It does not understand file paths so you may have to perform your own directory / file name parsing.
-        * String replacement uses syntax borrowed from `re.sub()  <http://docs.python.org/2/library/re.html#re.sub>`__, rather than building a result from parsed regular expression (and file path) components
+    .. note::
 
-    In general :ref:`formatter() <decorators.formatter>` is more powerful and introduced from version 2.4 is intended to be a more user friendly replacement for :ref:`regex() <decorators.regex>`.
+        :ref:`regex() <decorators.regex>` uses regular expressions like :ref:`formatter() <decorators.formatter>` but
 
-    You may, however, prefer the original :ref:`regex() <decorators.regex>` syntax. Let us see how the previous zoo example looks with :ref:`regex() <decorators.regex>`
+            * It only matches the first file name in the input. As described above, :ref:`formatter() <decorators.formatter>` can match any one or more of the input filename strings.
+            * It does not understand file paths so you may have to perform your own directory / file name parsing.
+            * String replacement uses syntax borrowed from `re.sub()  <http://docs.python.org/2/library/re.html#re.sub>`__, rather than building a result from parsed regular expression (and file path) components
+
+        In general :ref:`formatter() <decorators.formatter>` is more powerful and was introduced from version 2.4 is intended to be a more user friendly replacement for :ref:`regex() <decorators.regex>`.
+
+    Let us see how the previous zoo example looks with :ref:`regex() <decorators.regex>`:
 
 
         :ref:`formatter() <decorators.formatter>` code:
@@ -515,7 +527,7 @@ Changing directories using :ref:`formatter() <decorators.formatter>` in a zoo...
             #   Put different animals in different directories depending on their clade
             @transform(create_initial_files,                                        # Input
 
-                       regex(r"(.*?)/?(\w+)/(?P<clade>\w+).(?P<tame>\w+).animals"), # Only animals: ignore plants!
+                       regex(r"(.*?/?)(\w+)/(?P<clade>\w+).(?P<tame>\w+).animals"), # Only animals: ignore plants!
 
                        r"\1/\g<clade>/\g<tame>.\2.food",                            # Replacement
 
@@ -526,8 +538,10 @@ Changing directories using :ref:`formatter() <decorators.formatter>` in a zoo...
                 print "Food for the {tameness:11s} {animal_name:9s} = {output_file:90s} will be placed in {new_directory}".format(**locals())
 
 
-    The regular expression to parse the input file path safely was a bit hairy to write and get right. Apart from that, if the
-    limitations of :ref:`regex() <decorators.regex>` do not preclude its use, then the two approaches in :ref:`formatter() <decorators.formatter>` and :ref:`regex() <decorators.regex>` are not so different in practice.
+    The regular expression to parse the input file path safely was a bit hairy to write, and it is not
+    clear that it handles all edge conditions (e.g. files in the root directory). Apart from that, if the
+    limitations of :ref:`regex() <decorators.regex>` do not preclude its use, then the two approaches
+    are not so different in practice.
 
 
 

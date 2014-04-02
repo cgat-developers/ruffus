@@ -272,4 +272,46 @@ Chaining multiple steps together
     are passed verbatim to task functions.
 
 
+.. index::
+    pair: inputs parameters; globs
+    pair: globs in input parameters; Tutorial
+
+.. _new_manual.globs_as_input:
+
+=======================================
+Globs in the *inputs* parameters
+=======================================
+
+    * As a syntactic convenience, **Ruffus** also allows you to specify a |glob|_ pattern (e.g. ``*.txt``) in the
+      **Input** parameter.
+    * |glob|_ patterns will be expanded automatically to the matching file names
+    * Any strings within **Input** which contain the letters: ``*?[]`` will be treated as a |glob|_ pattern.
+
+
+
+.. index::
+    pair: tasks; combined with globs and files as input parameters (Manual)
+    pair: tasks combined with globs and files as input parameters; Manual
+    pair: globs; combined with tasks and files as input parameters (Manual)
+    pair: globs combined with tasks and files as input parameters; Manual
+
+
+.. _new_manual.mixing_tasks_globs_files:
+
+=========================================================
+Mixing globs, tasks and files as **inputs**
+=========================================================
+
+    |glob|_ patterns, references to tasks and file names strings
+    can be mixed freely in (nested) python lists and tuples in **Input** parameters.
+
+    In all cases, **Ruffus** tries to do the right thing, and to make the simple or
+    obvious case require the simplest, least onerous syntax.
+
+    If sometimes **Ruffus** does not behave the way you expect, please write to the authors:
+    it may be a bug!
+
+    :ref:`new_manual.pipeline_printout`  and
+    :ref:`new_manual.cmdline` will show you how to
+    to make sure that your intentions are reflected in *Ruffus* code.
 

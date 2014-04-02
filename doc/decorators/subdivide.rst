@@ -36,7 +36,7 @@
 
         * The number of files in each *Output* can be set at runtime by the use of globs
 
-        * Output file names are specified using the :ref:`regex<decorators.formatter>` or :ref:`regex<decorators.regex>` indicators from |tasks_or_file_names|_, i.e. from the output
+        * Output file names are specified using the :ref:`formatter<decorators.formatter>` or :ref:`regex<decorators.regex>` indicators from |tasks_or_file_names|_, i.e. from the output
           of specified tasks, or a list of file names, or a |glob|_ matching pattern.
 
         * Additional inputs or dependencies can be added dynamically to the task:

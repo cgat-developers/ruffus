@@ -3,9 +3,9 @@
 
 .. _new_manual.output_file_names.code:
 
-######################################################################################################
-|new_manual.output_file_names.chapter_num|: Python Code for Specifying output file names
-######################################################################################################
+############################################################################################################################################################################################################
+|new_manual.output_file_names.chapter_num|: Python Code for Specifying output file names with :ref:`formatter() <decorators.formatter>` and :ref:`regex() <decorators.regex>`
+############################################################################################################################################################################################################
 
 .. seealso::
 
@@ -16,7 +16,7 @@
     * Back to |new_manual.output_file_names.chapter_num|: :ref:`Specifying output file names <new_manual.output_file_names>`
 
 ************************************************************************
-Code for :ref:`suffix() <decorators.suffix>` example
+Example Code for :ref:`suffix() <decorators.suffix>`
 ************************************************************************
     .. code-block:: python
 
@@ -53,7 +53,7 @@ Code for :ref:`suffix() <decorators.suffix>` example
 
 
 ************************************************************************
-Code for :ref:`formatter() <decorators.formatter>` example
+Example Code for :ref:`formatter() <decorators.formatter>`
 ************************************************************************
 
     .. code-block:: python
@@ -95,7 +95,7 @@ Code for :ref:`formatter() <decorators.formatter>` example
 
 
 ****************************************************************************************************************
-Code for :ref:`formatter() <decorators.formatter>` example with replacements in extra arguments
+Example Code for :ref:`formatter() <decorators.formatter>` with replacements in *extra* arguments
 ****************************************************************************************************************
 
 
@@ -135,7 +135,7 @@ Code for :ref:`formatter() <decorators.formatter>` example with replacements in 
 
 
 ****************************************************************************************************************
-Code for :ref:`formatter() <decorators.formatter>` Zoo example
+Example Code for :ref:`formatter() <decorators.formatter>` in Zoos
 ****************************************************************************************************************
 
 
@@ -191,7 +191,7 @@ Code for :ref:`formatter() <decorators.formatter>` Zoo example
 
 
 ****************************************************************************************************************
-Code for :ref:`regex() <decorators.regex>` Zoo example
+Example Code for :ref:`regex() <decorators.regex>` in zoos
 ****************************************************************************************************************
 
 
@@ -219,7 +219,7 @@ Code for :ref:`regex() <decorators.regex>` Zoo example
         #   Put different animals in different directories depending on their clade
         @transform(create_initial_files,                                        # Input
 
-                   regex(r"(.*?)/?(\w+)/(?P<clade>\w+).(?P<tame>\w+).animals"), # Only animals: ignore plants!
+                   regex(r"(.*?/?)(\w+)/(?P<clade>\w+).(?P<tame>\w+).animals"), # Only animals: ignore plants!
 
                    r"\1/\g<clade>/\g<tame>.\2.food",                            # Replacement
 

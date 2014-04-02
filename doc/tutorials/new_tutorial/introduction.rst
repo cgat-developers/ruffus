@@ -10,6 +10,9 @@
 |new_manual.introduction.chapter_num|: An introduction to basic Ruffus syntax
 ######################################################################################################
 
+.. seealso::
+
+   * :ref:`Manual Table of Contents <new_manual.table_of_contents>`
 
 
 ************************************
@@ -85,7 +88,7 @@ A gentle introduction to Ruffus syntax
     pair: decorators; Tutorial
 
 
-.. _manual.introduction.import:
+.. _new_manual.introduction.import:
 
 .. index::
     single: importing ruffus
@@ -190,7 +193,7 @@ If any of these clash with names in your code, you can use qualified names inste
 Running the pipeline
 ****************************
 
-    When you need to run the pipeline, Ruffus will find the the **last** stage (:term:`task` function) 
+    When you need to run the pipeline, Ruffus will find the the **last** stage (:term:`task` function)
     of your pipeline, work out what other functions this depends on, following the appropriate chain of
     dependencies automatically, making sure that the entire pipeline is up-to-date.
 

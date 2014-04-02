@@ -19,20 +19,22 @@
 .. _output_pattern: `decorators.transform.output_pattern`_
 .. |matching_regex| replace:: `matching_regex`
 .. _matching_regex: `decorators.transform.matching_regex`_
+.. |matching_formatter| replace:: `matching_formatter`
+.. _matching_formatter: `decorators.transform.matching_formatter`_
 .. |suffix_string| replace:: `suffix_string`
 .. _suffix_string: `decorators.transform.suffix_string`_
 
-*********************************************************************************************************************************************************************************************************************
-*@transform* ( |tasks_or_file_names|_, :ref:`suffix<decorators.suffix>`\ *(*\ |suffix_string|_\ *)*\ | :ref:`regex<decorators.regex>`\ *(*\ |matching_regex|_\ *)*\ , |output_pattern|_, [|extra_parameters|_,...] )
-*********************************************************************************************************************************************************************************************************************
+******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+*@transform* ( |tasks_or_file_names|_, :ref:`suffix<decorators.suffix>`\ *(*\ |suffix_string|_\ *)*\ | :ref:`regex<decorators.regex>`\ *(*\ |matching_regex|_\ *)* |  :ref:`formatter<decorators.formatter>`\ *(*\ |matching_formatter|_\ *)*\, |output_pattern|_, [|extra_parameters|_,...] )
+******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
     **Purpose:**
         Applies the task function to transform data from input to output files.
 
-        Output file names are determined from |tasks_or_file_names|_, i.e. from the output
-        of specified tasks, or a list of file names.
+        Output file names are specified from |tasks_or_file_names|_, i.e. from the output
+        of specified tasks, or a list of file names, or a |glob|_ matching pattern.
 
-        This can be either via matches to the end of the file name (suffix matches) or, more
-        flexibly, using regular expression pattern substitutions.
+        String replacement occurs either through suffix matches via :ref:`suffix<decorators.suffix>` or 
+        the :ref:`formatter<decorators.formatter>` or :ref:`regex<decorators.regex>` indicators.
 
         Only out of date tasks (comparing input and output files) will be run
 
@@ -137,6 +139,12 @@
        documentation for details of regular expression syntax
        Each output file name is created using regular expression substitution with ``output_pattern``
 
+.. _decorators.transform.matching_formatter:
+
+    * *matching_formatter*
+       a :ref:`formatter<decorators.formatter>` indicator object containing optionally
+       a  python `regular expression (re) <http://docs.python.org/library/re.html>`_.
+
 .. _decorators.transform.output_pattern:
 
     * *output_pattern*
@@ -147,7 +155,7 @@
     * [*extra_parameters, ...*]
        Any extra parameters are passed to the task function.
 
-       If ``regex(matching_regex)`` parameter is used, then regular expression substitution
+       If ``regex(matching_regex)`` or ``formatter(...)``` is used, then substitution
        is first applied to (even nested) string parameters. Other data types are passed
        verbatim.
 

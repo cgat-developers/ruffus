@@ -1,29 +1,38 @@
 .. include:: ../../global.inc
-.. include:: chapter_numbers.inc
+.. include:: manual_chapter_numbers.inc
 
-.. _manual.files_re:
+.. index::
+    pair: deprecated @files_re; Tutorial
 
-###############################################################################################################
-|manual.files_re.chapter_num|: **@files_re**: Deprecated `syntax using regular expressions`
-###############################################################################################################
+.. _new_manual.deprecated_files_re:
 
-    .. hlist::
+#####################################################################################################################
+|new_manual.deprecated_files_re.chapter_num|: **@files_re**: Deprecated `syntax using regular expressions`
+#####################################################################################################################
 
-        * :ref:`Manual overview <manual>`
-        * :ref:`@files_re <decorators.files_re>` syntax in detail
+.. warning ::
+
+    -
+
+        **This is deprecated syntax**
+
+        **which is no longer supported and**
+
+        **should NOT be used in new code.**
 
 
-    .. index::
-        pair: @files_re; Manual
+.. seealso::
 
-
+    * :ref:`Manual Table of Contents <new_manual.table_of_contents>`
+    * :ref:`decorators <decorators>`
+    * :ref:`@files_re <decorators.files_re>` syntax in detail
 
 
 ***************************************
-**@files_re**
+Overview
 ***************************************
 
-    This is older, now deprecated syntax.
+
 
     **@files_re** combines the functionality of @transform, @collate and @merge in
     one overloaded decorator.
@@ -38,7 +47,7 @@ Transforming input and output filenames
 =======================================
 
 
-    For example, the following code from |manual.transform.chapter_num| takes files from
+    For example, the following code takes files from
     the previous pipeline task, and makes new output parameters with the ``.sums`` suffix
     in place of the ``.chunks`` suffix:
 
@@ -59,7 +68,7 @@ Transforming input and output filenames
             def step_5_calculate_sum_of_squares (input_file_name, output_file_name):
             ""
 
-.. _manual.files_re.combine:
+.. _new_manual.files_re.combine:
 .. index::
     pair: combine; Manual
 
@@ -67,7 +76,7 @@ Transforming input and output filenames
 Collating many *inputs* into a single *output*
 =====================================================
 
-    Similarly, the following code from :ref:`|manual.collate.chapter_num| <manual.collate>` collects **inputs**
+    Similarly, the following code collects **inputs**
     from the same species in the same directory:
 
         ::
@@ -98,7 +107,8 @@ Collating many *inputs* into a single *output*
 Generating *input* and *output* parameter using regular expresssions
 ==============================================================================
 
-    The following code generates additional *Input* prerequisite file names which match the original *Input* files names.
+    The following code generates additional
+    *input* prerequisite file names which match the original *input* files.
 
     We want each job of our ``analyse()`` function to get corresponding pairs
     of ``xx.chunks`` and ``xx.red_indian`` files when

@@ -55,7 +55,7 @@ Printing out a flowchart of our pipeline
 
         .. image:: ../../images/flowchart_colour_schemes.png
 
-    See :ref:`here <flowchart_colours>` for example code.
+    See :ref:`here <new_manual.flowchart_colours>` for example code.
 
 ================================================================
 Command line options made easier with ``ruffus.cmdline``
