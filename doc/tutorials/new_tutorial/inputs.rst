@@ -228,7 +228,7 @@ Replacing all input parameters with :ref:`inputs() <decorators.inputs>`
                 open(output_file, "w")
 
 
-    The Ruffus code will call each python script corresponding to their c++ counterpart:
+    The *Ruffus* code will call each python script corresponding to their c++ counterpart:
 
         .. code-block:: pycon
 

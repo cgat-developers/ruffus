@@ -34,7 +34,7 @@ Overview
     Previously, this would have required all the parameters to be supplied using a custom function
     on the fly with :ref:`@files<decorators.files_on_the_fly>`.
 
-    From version 2.4, Ruffus supports  :ref:`@combinations_with_replacement <decorators.combinations_with_replacement>`,
+    From version 2.4, *Ruffus* supports  :ref:`@combinations_with_replacement <decorators.combinations_with_replacement>`,
     :ref:`@combinations <decorators.combinations>`, :ref:`@permutations <decorators.permutations>`,
     :ref:`@product <decorators.product>`.
 
@@ -47,7 +47,7 @@ Generating output with :ref:`formatter()<decorators.formatter>`
 ***************************************************************************
 
     String replacement always takes place via :ref:`formatter()<decorators.formatter>`. Unfortunately,
-    the other Ruffus workhorses of  :ref:`regex()<decorators.regex>` and  :ref:`suffix()<decorators.suffix>`
+    the other *Ruffus* workhorses of  :ref:`regex()<decorators.regex>` and  :ref:`suffix()<decorators.suffix>`
     do not have sufficient syntactic flexibility.
 
     Each combinatorics decorator deals with multiple sets of inputs whether this might be:

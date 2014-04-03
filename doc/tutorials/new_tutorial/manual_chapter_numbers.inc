@@ -24,6 +24,7 @@
 .. |new_manual.flowchart_colours.chapter_num|         replace:: **Appendix 1**  
 .. |new_manual.dependencies.chapter_num|              replace:: **Appendix 2**  
 .. |new_manual.exceptions.chapter_num|                replace:: **Appendix 3**  
-.. |new_manual.deprecated_files.chapter_num|          replace:: **Appendix 4**  
-.. |new_manual.deprecated_files_re.chapter_num|       replace:: **Appendix 5**  
+.. |new_manual.ruffus_names.chapter_num|              replace:: **Appendix 4**  
+.. |new_manual.deprecated_files.chapter_num|          replace:: **Appendix 5**  
+.. |new_manual.deprecated_files_re.chapter_num|       replace:: **Appendix 6**  
 

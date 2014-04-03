@@ -1,13 +1,13 @@
 .. include:: ../../global.inc
 .. include:: manual_chapter_numbers.inc
 
-.. INDEX::
+.. index::
     pair: command line; Tutorial
 
 .. _new_manual.cmdline:
 
 ######################################################################################################
-|new_manual.cmdline.chapter_num|: Running Ruffus from the command line
+|new_manual.cmdline.chapter_num|: Running *Ruffus* from the command line
 ######################################################################################################
 
 .. seealso::
@@ -15,11 +15,18 @@
    * :ref:`Manual table of Contents <new_manual.table_of_contents>`
 
 
-We find that much of our Ruffus pipeline code is built on the same template and this is generally
+We find that much of our *Ruffus* pipeline code is built on the same template and this is generally
 a good place to start developing a new pipeline.
 
-From version 2.4 up, Ruffus therefore includes an optional ``Ruffus.cmdline`` module which provides
+From version 2.4 up, *Ruffus* therefore includes an optional ``Ruffus.cmdline`` module which provides
 support for a set of common command line arguments which make writing *Ruffus* much more pleasant
+
+
+.. _new_manual.cmdline.get_argparse:
+
+.. _new_manual.cmdline.run:
+
+.. _new_manual.cmdline.setup_logging:
 
 ************************************************************************************************************
 Template for `argparse  <http://docs.python.org/2.7/library/argparse.html>`__
@@ -135,6 +142,9 @@ Command Line Arguments
 
                 logger.debug("A message")
 
+
+.. _new_manual.cmdline.MESSAGE:
+
 ======================================
         C) To both simultaneously:
 ======================================
@@ -153,7 +163,7 @@ Command Line Arguments
     This is extremely useful for understanding what is happening with your pipeline, what tasks and which
     jobs are up-to-date etc.
 
-    See :ref:`new_manual.pipeline_printout` 
+    See :ref:`new_manual.pipeline_printout`
 
     To trace the pipeline, call script with the following options
 
@@ -206,7 +216,7 @@ Command Line Arguments
 
 
 ******************************************************************************************************
-5) Setup checkpointing so that Ruffus knows which files are out of date
+5) Setup checkpointing so that *Ruffus* knows which files are out of date
 ******************************************************************************************************
     The checkpoint file defaults to ``.ruffus_history.sqlite`` in the script current working directory. This file name can be set via
 

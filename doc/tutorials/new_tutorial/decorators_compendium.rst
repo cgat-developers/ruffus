@@ -7,7 +7,7 @@
 .. _new_manual.decorators_compendium:
 
 #####################################################################################################################
-|new_manual.decorators_compendium.chapter_num|: Pipeline topologies and a compendium of Ruffus decorators
+|new_manual.decorators_compendium.chapter_num|: Pipeline topologies and a compendium of *Ruffus* decorators
 #####################################################################################################################
 
 .. seealso::
@@ -23,7 +23,7 @@ Overview
     Computational pipelines transform your data in stages until the final result is produced.
 
     You can visualise your pipeline data flowing like water down a system of pipes.
-    Ruffus has many ways of joining up your pipes to create different topologies.
+    *Ruffus* has many ways of joining up your pipes to create different topologies.
 
     .. note::
 
@@ -49,10 +49,10 @@ Overview
     generated, ready to got into the next pipeline stage. If we start with three sets of starting data, we would end up with three final sets of results.
 
 ******************************************************************************
-A bestiary of **Ruffus** decorators
+A bestiary of *Ruffus* decorators
 ******************************************************************************
 
-    Very often, we would like to transform our data in more complex ways, this is where other Ruffus decorators come in.
+    Very often, we would like to transform our data in more complex ways, this is where other *Ruffus* decorators come in.
 
     .. image:: ../../images/bestiary_decorators.png
        :scale: 50
@@ -105,9 +105,9 @@ Combinatorics
 
     For example, in bioinformatics, we might need to find all instances of a set of genes in a different number of species. In other words, need to find the :ref:`@product <decorators.product>` of XXX genes in YYY species.
 
-    Ruffus provides decorators modelled on the "Combinatoric generators" in the Standard Python `itertools  <http://docs.python.org/2/library/itertools.html>`_ library.
+    *Ruffus* provides decorators modelled on the "Combinatoric generators" in the Standard Python `itertools  <http://docs.python.org/2/library/itertools.html>`_ library.
 
-    To use combinatorics decorators, you have to explicitly include them from Ruffus:
+    To use combinatorics decorators, you have to explicitly include them from *Ruffus*:
 
     .. code-block:: python
 

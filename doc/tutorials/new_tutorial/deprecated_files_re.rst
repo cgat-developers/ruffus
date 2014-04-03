@@ -40,7 +40,7 @@ Overview
     This is the reason why its use is discouraged. **@files_re** syntax is far too overloaded
     and context-dependent to support its myriad of different functions.
 
-    The following documentation is provided to help maintain historical **ruffus** usage.
+    The following documentation is provided to help maintain historical *Ruffus* usage.
 
 =======================================
 Transforming input and output filenames

@@ -33,8 +33,8 @@ Overview
 
 
     | The python functions which do the actual work of each stage  or
-      :term:`task` of a **Ruffus** pipeline are written by you.
-    | The role of **Ruffus** is to make sure these functions are called in the right order,
+      :term:`task` of a *Ruffus* pipeline are written by you.
+    | The role of *Ruffus* is to make sure these functions are called in the right order,
       with the right parameters, running in parallel using multiprocessing if desired.
 
     The easiest way to specify parameters to *Ruffus* :term:`task` functions is to use
@@ -77,7 +77,7 @@ Overview
                     Job = [a.1 -> [a.2, b.2], A file] completed
                 Completed Task = single_job_io_task
 
-    **Ruffus** will automatically check if your task is up to date. The second time :ref:`pipeline_run() <pipeline_functions.pipeline_run>`
+    *Ruffus* will automatically check if your task is up to date. The second time :ref:`pipeline_run() <pipeline_functions.pipeline_run>`
     is called, nothing will happen. But if you update ``a.1``, the task will rerun:
 
         ::
@@ -87,7 +87,7 @@ Overview
                 Job = [a.1 -> [a.2, b.2], A file] completed
             Completed Task = single_job_io_task
 
-    See :ref:`chapter 2 <new_manual.skip_up_to_date.rules>` for a more in-depth discussion of how **Ruffus**
+    See :ref:`chapter 2 <new_manual.skip_up_to_date.rules>` for a more in-depth discussion of how *Ruffus*
     decides which parts of the pipeline are complete and up-to-date.
 
 
@@ -102,7 +102,7 @@ Running the same code on different parameters in parallel
 
     Your pipeline may require the same function to be called multiple times on independent parameters.
     In which case, you can supply all the parameters to @files, each will be sent to separate jobs that
-    may run in parallel if necessary. **Ruffus** will check if each separate :term:`job` is up-to-date using
+    may run in parallel if necessary. *Ruffus* will check if each separate :term:`job` is up-to-date using
     the *inputs* and *outputs* (first two) parameters (See the :ref:`new_manual.only_rerun_out_of_date` ).
 
 
@@ -124,7 +124,7 @@ Running the same code on different parameters in parallel
             def task_file(*params):
                 ""
 
-    | **Ruffus** creates as many jobs as there are elements in ``parameters``.
+    | *Ruffus* creates as many jobs as there are elements in ``parameters``.
     | In turn, each of these elements consist of series of parameters which will be
       passed to each separate job.
 
@@ -141,7 +141,7 @@ Running the same code on different parameters in parallel
 
     What ``task_file()`` does with these parameters is up to you!
 
-    The only constraint on the parameters is that **Ruffus** will treat any first
+    The only constraint on the parameters is that *Ruffus* will treat any first
     parameter of each job as the *inputs* and any second as the *output*. Any
     strings in the *inputs* or *output* parameters (including those nested in sequences)
     will be treated as file names.

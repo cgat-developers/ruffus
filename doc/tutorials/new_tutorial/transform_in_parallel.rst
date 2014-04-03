@@ -14,7 +14,7 @@
 .. seealso::
 
    * :ref:`Manual Table of Contents <new_manual.table_of_contents>`
-   * :ref:`@transform syntax in detail <decorators.transform>`
+   * :ref:`@transform <decorators.transform>`  syntax
 
 .. note::
 
@@ -29,8 +29,8 @@ Review
        :scale: 50
 
     Computational pipelines transform your data in stages until the final result is produced.
-    Ruffus automates the plumbing in your pipeline. You supply the python functions which perform the data transformation,
-    and tell Ruffus how these pipeline stages or :term:`task` functions are connected together.
+    *Ruffus* automates the plumbing in your pipeline. You supply the python functions which perform the data transformation,
+    and tell *Ruffus* how these pipeline stages or :term:`task` functions are connected together.
 
     .. note::
 
@@ -40,7 +40,15 @@ Review
             * **write down the names of functions which transforms the data at each stage of the pipeline.**
 
 
-    By letting **Ruffus** manage your pipeline parameters, you will get the following features
+    :ref:`new_manual.introduction` described the bare bones of a simple *Ruffus* pipeline.
+
+    Using the *Ruffus* :ref:`@transform <decorators.transform>` decorator, we were able to
+    specify the data files moving through our pipeline so that our specified task functions
+    could be invoked.
+
+    This may seem like a lot of effort and complication for something so simple: a couple of
+    simple python function calls we could have invoked ourselves.
+    However, By letting *Ruffus* manage your pipeline parameters, you will get the following features
     for free:
 
         #. only out-of-date parts of the pipeline will be re-run
@@ -48,133 +56,25 @@ Review
         #. pipeline stages can be chained together automatically
 
 
-
-.. index::
-    pair: one to one @transform; Tutorial
-
-***************************************
-@transform is a 1 to 1 operation
-***************************************
-
-
-    ``@transform`` is a 1:1 operation because for each input, it generates one output.
-
-    .. image:: ../../images/transform_1_to_1_example.png
-       :scale: 50
-
-
-    This is obvious when you count the number of jobs at each step. In our example pipeline, there are always
-    three jobs moving through in step at each stage (:term:`task`).
-
-    Each "input" or "output" is not limited, however, to a single filename. Each job can accept, for example,
-    a pair of files as its input, or generate more than one file or a dictionary or numbers as its output.
-
-    When each job outputs a pair of files, this does not generate two jobs downstream. It just means that the successive
-    :term:`task` in the pipeline will receive a list or tuple of files as its input parameter.
-
-    .. note::
-
-        The different sort of decorators in Ruffus determine the *topology* of your pipeline, i.e. how the jobs from different tasks are linked together seamlessly.
-
-        In the later parts of the tutorial, we will encounter more decorators which can *split up*, or *join together* or *group* inputs.
-
-            In other words, inputs and output can have **many to one**, **many to many** etc. relationships.
-
-
-*******************************************
-Producing several items / files per job
-*******************************************
-
-    Let us demonstrate this by modifying our previous example:
-        * ``first_task_params`` is changed to 3 *pairs* of file names
-        * ``@transform`` for ``first_task`` is modified to produce *pairs* of file names
-            * ``.output.1``
-            * ``.output.extra.1``
-
-
-        ::
-
-            from ruffus import *
-
-            #---------------------------------------------------------------
-            #   Create pairs of input files
-            #
-            first_task_params = [
-                                 ['job1.a.start', 'job1.b.start'],
-                                 ['job2.a.start', 'job2.b.start'],
-                                 ['job3.a.start', 'job3.b.start'],
-                                ]
-
-            for input_file_pairs in first_task_params:
-                for input_file in input_file_pairs:
-                    open(input_file, "w")
-
-
-            #---------------------------------------------------------------
-            #
-            #   first task
-            #
-            @transform(first_task_params, suffix(".start"),
-                                    [".output.1",
-                                     ".output.extra.1"],
-                                   "some_extra.string.for_example", 14)
-            def first_task(input_files, output_file_pair,
-                            extra_parameter_str, extra_parameter_num):
-                for output_file in output_file_pair:
-                    with open(output_file, "w"):
-                        pass
-
-
-            #---------------------------------------------------------------
-            #
-            #   second task
-            #
-            @transform(first_task, suffix(".output.1"), ".output2")
-            def second_task(input_files, output_file):
-                with open(output_file, "w"): pass
-
-
-            #---------------------------------------------------------------
-            #
-            #       Run
-            #
-            pipeline_run([second_task])
-
-        This gives the following results:
-
-        ::
-
-            >>> pipeline_run([second_task])
-                Job  = [[job1.a.start, job1.b.start] -> [job1.a.output.1, job1.a.output.extra.1], some_extra.string.for_example, 14] completed
-                Job  = [[job2.a.start, job2.b.start] -> [job2.a.output.1, job2.a.output.extra.1], some_extra.string.for_example, 14] completed
-                Job  = [[job3.a.start, job3.b.start] -> [job3.a.output.1, job3.a.output.extra.1], some_extra.string.for_example, 14] completed
-            Completed Task = first_task
-                Job  = [[job1.a.output.1, job1.a.output.extra.1] -> job1.a.output2] completed
-                Job  = [[job2.a.output.1, job2.a.output.extra.1] -> job2.a.output2] completed
-                Job  = [[job3.a.output.1, job3.a.output.extra.1] -> job3.a.output2] completed
-            Completed Task = second_task
-
-
-
-        We see that apart from having a file pair where previously there was a single file,
-        little else has changed. We still have three pieces of data going through the
-        pipeline in three parallel jobs.
+.. _new_manual.transform_in_parallel
 
 
 ************************************
 Running pipelines in parallel
 ************************************
-    Even though three sets of files have been specified for our pipeline, and they can be
-    processed completely independently, by default  **Ruffus** runs each of them serially in succession.
+    Even though three sets of files have been specified for our initial pipeline, and they can be
+    processed completely independently, by default  *Ruffus* runs each of them serially in succession.
 
-    To ask Ruffus to run them in parallel, all you have to do is to add a multiprocess parameter to ``pipeline_run``:
+    To ask *Ruffus* to run them in parallel, all you have to do is to add a ``multiprocess`` parameter to ``pipeline_run``:
 
         ::
 
-            >>> pipeline_run([second_task], multiprocess = 5)
+            >>> pipeline_run(multiprocess = 5)
 
-    In this case, we are telling ruffus to run a maximum of 5 jobs at the same time. Since we only have
+    In this case, we are telling *Ruffus* to run a maximum of 5 jobs at the same time. Since we only have
     three sets of data, that is as much parallelism as we are going to get...
+
+
 
 .. _new_manual.only_rerun_out_of_date:
 
@@ -183,90 +83,74 @@ Up-to-date jobs are not re-run unnecessarily
 **************************************************
 
     A job will be run only if the output file timestamps are out of date.
-    If you ran the same code a second time, nothing would happen because all the work is already complete.
+    If you ran our example code a second time, nothing would happen because all the work is already complete.
 
     We can check the details by asking *Ruffus* for more ``verbose`` output
 
         ::
 
-            >>> pipeline_run([second_task], verbose = 4)
-              Task = first_task
+            >>> pipeline_run(verbose = 4)
+              Task = map_dna_sequence
                 All jobs up to date
-              Task = second_task
+              Task = compress_sam_file
+                All jobs up to date
+              Task = summarise_bam_file
                 All jobs up to date
 
 
     Nothing happens because:
-        * ``job1.a.output.2`` is more recent than ``job1.a.output.1`` and
-        * ``job2.a.output.2`` is more recent than ``job2.a.output.1`` and
-        * ``job3.a.output.2`` is more recent than ``job3.a.output.1``.
+        * ``a.sam`` was created later than ``a.1.fastq`` and ``a.2.fastq``, and
+        * ``a.bam`` was created later than ``a.sam`` and
+        * ``a.statistics`` was created later than ``a.bam``.
 
     and so on...
 
 
-    Let us see what happens if we recreated the file ``job1.a.start`` so that it appears as if 1 out of the 3 files is out of date
+    Let us see what happens if we recreated the file ``a.1.fastq`` so that it appears as if 1 out of the original data files is out of date
         ::
 
-            open("job1.a.start", "w")
-            pipeline_run([second_task], multiprocess = 5)
+            open("a.1.fastq", "w")
+            pipeline_run(multiprocess = 5)
 
 
-    Only the out of date jobs (highlighted) are re-run:
+    The up to date jobs are cleverly ignored:
 
         .. code-block:: pycon
-           :emphasize-lines: 4,8
+           :emphasize-lines: 3,4,7,8,11,12
 
-            >>> pipeline_run([second_task], multiprocess = 5, verbose = 2)
-                Job  = [[job2.a.start, job2.b.start] -> job2.a.output.1] unnecessary: already up to date
-                Job  = [[job3.a.start, job3.b.start] -> job3.a.output.1] unnecessary: already up to date
-                Job  = [[job1.a.start, job1.b.start] -> job1.a.output.1] # completed
-            Completed Task = first_task
-                Job  = [job2.a.output.1 -> job2.a.output.2] unnecessary: already up to date
-                Job  = [job3.a.output.1 -> job3.a.output.2] unnecessary: already up to date
-                Job  = [job1.a.output.1 -> job1.a.output.2] # completed
-            Completed Task = second_task
+            >>> open("a.1.fastq", "w")
+            >>> pipeline_run(verbose=2)
+                Job  = [[b.1.fastq, b.2.fastq] -> b.sam] # unnecessary: already up to date
+                Job  = [[c.1.fastq, c.2.fastq] -> c.sam] # unnecessary: already up to date
+                Job  = [[a.1.fastq, a.2.fastq] -> a.sam] completed
+            Completed Task = map_dna_sequence
+                Job  = [b.sam -> b.bam] # unnecessary: already up to date
+                Job  = [c.sam -> c.bam] # unnecessary: already up to date
+                Job  = [a.sam -> a.bam] completed
+            Completed Task = compress_sam_file
+                Job  = [b.bam -> b.statistics, use_linear_model] # unnecessary: already up to date
+                Job  = [c.bam -> c.statistics, use_linear_model] # unnecessary: already up to date
+                Job  = [a.bam -> a.statistics, use_linear_model] completed
+            Completed Task = summarise_bam_file
 
 
-
-.. index::
-    pair: input / output parameters; Tutorial
-
-***************************************
-Intermediate files
-***************************************
-
-    In the above examples, the *input* and *output* parameters are file names.
-    Ruffus was designed for pipelines which save intermediate data in files. This is not
-    compulsory but saving your data in files at each step provides many advantages:
-
-        #) Ruffus can use file system time stamps to check if your pipeline is up to date
-        #) Your data is persistent across runs
-        #) This is a good way to pass large amounts of data across processes and computational nodes
-
-    Nevertheless, :term:`task` parameters can be anything which suits your workflow, from lists of files, to numbers,
-    sets or tuples. Ruffus imposes few constraints on what *you*
-    would like to send to each stage of your pipeline.
-
-    **Ruffus** does, however, assume that all strings in your *input* and *output*
-    parameters represent file names.
-
-    *input* parameters which contains a |glob|_ pattern (e.g. ``*.txt``) are expanded to matching file names.
 
 
 .. index::
-    pair: @follows; referring to functions before they are defined
-    pair: @follows; out of order
-.. _new_manual.follows.out_of_order:
+    pair: output_from; referring to functions before they are defined
+    pair: output_from; defining tasks out of order
+
+.. _new_manual.output_from:
 
 ***************************************
 Defining pipeline tasks out of order
 ***************************************
 
-    The above assumes that all your pipelined tasks are defined in order.
+    The examples so far assumes that all your pipelined tasks are defined in order.
     (``first_task`` before ``second_task``). This is usually the most sensible way to arrange your code.
 
     If you wish to refer to tasks which are not yet defined, you can do so by quoting the function name as a string and wrapping
-    it with the :ref:`indicator class <decorators.indicator_objects>` :ref:`output_from(...) <decorators.output_from>` so that **Ruffus**
+    it with the :ref:`indicator class <decorators.indicator_objects>` :ref:`output_from(...) <decorators.output_from>` so that *Ruffus*
     knowns this is a :term:`task` name, not a file name
 
         .. code-block:: python
@@ -323,7 +207,7 @@ Defining pipeline tasks out of order
 Multiple dependencies
 ***************************************
 
-    Each task can also depend on more than one antecedent task simply by connecting a list of tasks rather than a single tasks in ``@transform``
+    Each task can depend on more than one antecedent simply by chaining to a list in :ref:`@transform <decorators.transform>`
 
         .. code-block:: python
            :emphasize-lines: 2
@@ -341,11 +225,9 @@ Multiple dependencies
 
         .. code-block:: python
 
-            import time
-            import random
             time.sleep(random.random())
 
-    We can see that the execution of ``first_task()`` and ``second_task()`` jobs is interleaved and they finish in no particular order:
+    The execution of ``first_task()`` and ``second_task()`` jobs will be interleaved and they finish in no particular order:
 
         .. code-block:: pycon
 
@@ -357,6 +239,11 @@ Multiple dependencies
                 Job  = [[job5.a.start, job5.b.start] -> [job5.a.output.1, job5.a.output.extra.1], some_extra.string.for_example, 14] completed
             Completed Task = second_task
                 Job  = [[job2.a.start, job2.b.start] -> [job2.a.output.1, job2.a.output.extra.1], some_extra.string.for_example, 14] completed
+
+
+    .. note::
+
+        See the :ref:`example code <new_manual.transform.multiple_dependencies.code>`
 
 
 .. index::
@@ -406,20 +293,21 @@ Multiple dependencies
             Completed Task = second_task
 
 
+
 .. index::
     single: @follows; mkdir (Manual)
     single: mkdir; @follows (Manual)
 
 .. _new_manual.follows.mkdir:
 
-******************************************************************************
-Making directories automatically with :ref:`mkdir <decorators.mkdir>`
-******************************************************************************
+************************************************************************************************************************************************************
+Making directories automatically with :ref:`@follows <decorators.follows>` and  :ref:`mkdir <decorators.mkdir>`
+************************************************************************************************************************************************************
 
     :ref:`@follows <decorators.follows>` is also useful for making sure one or more destination directories
     exist before a task is run.
 
-    **Ruffus** provides special syntax to support this, using the special
+    *Ruffus* provides special syntax to support this, using the special
     :ref:`mkdir <decorators.mkdir>` indicator class. For example:
 
         .. code-block:: python
@@ -438,4 +326,70 @@ Making directories automatically with :ref:`mkdir <decorators.mkdir>`
 
     Before ``second_task()`` is run, the ``output/results/here`` directory will be created if necessary.
 
+
+.. index::
+    pair: inputs parameters; globs
+    pair: globs in input parameters; Tutorial
+
+.. _new_manual.globs_as_input:
+
+
+******************************************************************************
+Globs in the **Input** parameter
+******************************************************************************
+
+    * As a syntactic convenience, *Ruffus* also allows you to specify a |glob|_ pattern (e.g. ``*.txt``) in the
+      **Input** parameter.
+    * |glob|_ patterns will be expanded automatically to the matching file names
+    * Any strings within **Input** which contain the letters: ``*?[]`` will be treated as a |glob|_ pattern.
+
+    The first function in our initial *Ruffus* pipeline example could have been written as:
+
+        .. code-block:: python
+            :emphasize-lines: 4
+
+            #
+            #   STAGE 1 fasta->sam
+            #
+            @transform("*.fasta",                          # Input = glob
+                        suffix(".fasta"),                  #         suffix = .fasta
+                        ".sam")                            # Output  suffix = .sam
+            def map_dna_sequence(input_file,
+                                output_file):
+                ""
+
+
+.. index::
+    pair: Mixing tasks, globs and file names; Tutorial
+
+
+******************************************************************************
+Mixing Tasks and Globs in the **Input** parameter
+******************************************************************************
+
+    |glob|_ patterns, references to tasks and file names strings
+    can be mixed freely in (nested) python lists and tuples in the **Input** parameter.
+
+    For example, a task function can chain to the **Output** from multiple upstream tasks:
+
+        .. code-block:: python
+
+            @transform([task1, task2,                      # Input = multiple tasks
+                        "aa*.fasta",                               + all files matching glob
+                        "zz.fasta"]                                + file name
+                        suffix(".fasta"),                  #         suffix = .fasta
+                        ".sam")                            # Output  suffix = .sam
+            def map_dna_sequence(input_file,
+                                output_file):
+                ""
+
+    In all cases, *Ruffus* tries to do the right thing, and to make the simple or
+    obvious case require the simplest, least onerous syntax.
+
+    If sometimes *Ruffus* does not behave the way you expect, please write to the authors:
+    it may be a bug!
+
+    :ref:`new_manual.pipeline_printout`  and
+    :ref:`new_manual.cmdline` will show you how to
+    to make sure that your intentions are reflected in *Ruffus* code.
 

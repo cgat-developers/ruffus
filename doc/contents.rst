@@ -36,6 +36,7 @@ Start Here:
    tutorials/new_tutorial/flowchart_colours.rst
    tutorials/new_tutorial/dependencies.rst
    tutorials/new_tutorial/exceptions.rst
+   tutorials/new_tutorial/list_of_ruffus_names.rst
    tutorials/new_tutorial/deprecated_files.rst
    tutorials/new_tutorial/deprecated_files_re.rst
 
@@ -45,6 +46,7 @@ Example code for:
 .. toctree::
    :maxdepth: 1
 
+   tutorials/new_tutorial/introduction_code.rst
    tutorials/new_tutorial/transform_code.rst
    tutorials/new_tutorial/transform_in_parallel_code.rst
    tutorials/new_tutorial/originate_code.rst

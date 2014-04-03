@@ -156,6 +156,7 @@ Resulting Output
                 Job  = [[job3.a.output.1, job3.a.output.extra.1] -> job3.a.output2] completed
             Completed Task = second_task
 
+.. _new_manual.transform.multiple_dependencies.code:
 
 *******************************************
 Multiple dependencies

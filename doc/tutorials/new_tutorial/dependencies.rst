@@ -19,7 +19,7 @@
 Overview
 **************************************
 
-    How does **Ruffus** decide how to run your pipeline?
+    How does *Ruffus* decide how to run your pipeline?
 
         * In which order should pipelined functions be called?
 
@@ -34,7 +34,7 @@ Running all out-of-date tasks and dependents
        :scale: 50
 
 
-    By default, *ruffus* will
+    By default, *Ruffus* will
 
         * build a flow chart (dependency tree) of pipelined tasks (functions)
         * start from the most ancestral tasks with the fewest dependencies (``task1`` and ``task4`` in the flowchart above).
@@ -48,7 +48,7 @@ Running all out-of-date tasks and dependents
 
     .. note::
 
-        This means that **ruffus** *may* ask any task if their jobs are out of date more than once:
+        This means that *Ruffus* *may* ask any task if their jobs are out of date more than once:
 
             * once when deciding which parts of the pipeline have to be run
             * once just before executing the task.

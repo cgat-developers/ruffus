@@ -84,6 +84,6 @@
     The function specified by :ref:`@check_if_uptodate <decorators.check_if_uptodate>` can be called
     more than once for each job.
 
-    See the :ref:`description here <new_manual.dependencies>` of how **Ruffus** decides which tasks to run.
+    See the :ref:`description here <new_manual.dependencies>` of how *Ruffus* decides which tasks to run.
 
 

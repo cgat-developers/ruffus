@@ -13,6 +13,8 @@
 @follows
 ############
 
+.. _decorators.follows.mkdir:
+
 .. |task| replace:: `task`
 .. _task: `decorators.follows.task`_
 .. |task_name| replace:: `"task_name"`

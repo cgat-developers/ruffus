@@ -33,6 +33,7 @@
     * |new_manual.flowchart_colours.chapter_num| :ref:`Flow Chart Colours with pipeline_printout_graph <new_manual.flowchart_colours>`
     * |new_manual.dependencies.chapter_num| :ref:`Under the hood: How dependency works <new_manual.dependencies>`
     * |new_manual.exceptions.chapter_num| :ref:`Exceptions thrown inside pipelines <new_manual.exceptions>`
+    * |new_manual.ruffus_names.chapter_num| :ref:`Names (keywords) exported from Ruffus <new_manual.ruffus_names>`
     * |new_manual.deprecated_files.chapter_num|: :ref:`Legacy and deprecated syntax @files <new_manual.deprecated_files>`
     * |new_manual.deprecated_files_re.chapter_num|: :ref:`Legacy and deprecated syntax @files_re <new_manual.deprecated_files_re>`
 
@@ -40,6 +41,7 @@
 
 **Ruffus** Manual: List of Example Code for Each Chapter:
 
+    * :ref:`new_manual.introduction.code`
     * :ref:`new_manual.transform.code`
     * :ref:`new_manual.transform_in_parallel.code`
     * :ref:`new_manual.originate.code`

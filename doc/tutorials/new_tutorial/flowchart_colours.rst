@@ -21,7 +21,7 @@
 Flowchart colours
 ******************
 
-The appearance of Ruffus flowcharts produced by :ref:`pipeline_printout_graph <pipeline_functions.pipeline_printout_graph>`
+The appearance of *Ruffus* flowcharts produced by :ref:`pipeline_printout_graph <pipeline_functions.pipeline_printout_graph>`
 can be extensively customised.
 
 This is mainly controlled by the :ref:`user_colour_scheme <pipeline_functions.pipeline_printout_graph.user_colour_scheme>`  (note UK spelling of "colour") parameter

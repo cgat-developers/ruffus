@@ -28,7 +28,8 @@
 Overview
 ***********************
 
-pair: pipeline_run(multiprocess); Tutorial
+.. index::
+    pair: pipeline_run(multiprocess); Tutorial
 
 =====================
 Multi Processing
@@ -53,7 +54,8 @@ Multi Processing
 
 
 
-pair: data sharing across processes; Tutorial
+.. index::
+    pair: data sharing across processes; Tutorial
 
 =====================
 Data sharing
