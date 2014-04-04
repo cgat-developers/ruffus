@@ -79,7 +79,7 @@ A different file name :ref:`suffix() <decorators.suffix>` for each pipeline stag
         * recipes in a task function ``def foo_bar()`` for transforming your data: from **source** ``.c`` to **object** ``.o``
 
 
-    Let us look at the Ruffus syntax for doing this:
+    Let us review the Ruffus syntax for doing this:
 
         .. code-block:: bash
             :emphasize-lines: 1,2,3
