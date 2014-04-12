@@ -143,7 +143,7 @@ def setup_drmaa_job( drmaa_session, job_queue_name, job_queue_priority, job_name
     job_queue_priority  = ("-p %d " % job_queue_priority)   if not job_queue_priority is None   else ""
     job_name            = "-N " + job_name                  if job_name                         else ""
 
-    job_template.nativeSpecification = "-V {job_queue_name} {job_queue_priority} {job_name} {job_other_options}" .format(
+    job_template.nativeSpecification = "{job_queue_name} {job_queue_priority} {job_name} {job_other_options}" .format(
                                         job_queue_name      = job_queue_name,
                                         job_queue_priority  = job_queue_priority,
                                         job_name            = job_name,
