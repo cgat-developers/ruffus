@@ -185,7 +185,6 @@ Using ``drmaa`` to dispatch work to Computational Clusters or Grid engines from 
                                                   logger            = logger,
                                                   drmaa_session     = drmaa_session,
                                                   run_locally       = options.local_run,
-                                                  job_queue_name    = job_queue_name,
                                                   job_other_options = job_other_options)
 
         The complete code is available :ref:`here <using_ruffus.drmaa_wrapper>`

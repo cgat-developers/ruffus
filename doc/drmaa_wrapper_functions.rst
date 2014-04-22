@@ -10,10 +10,15 @@
 
 .. |dw_cmd_str| replace:: `cmd_str`
 .. _dw_cmd_str: `drmaa_wrapper.run_job.cmd_str`_
-.. |dw_job_queue_name| replace:: `job_queue_name`
-.. _dw_job_queue_name: `drmaa_wrapper.run_job.job_queue_name`_
-.. |dw_job_queue_priority| replace:: `job_queue_priority`
-.. _dw_job_queue_priority: `drmaa_wrapper.run_job.job_queue_priority`_
+
+.. |dw_job_script_directory| replace:: `job_script_directory`
+.. _dw_job_script_directory: `drmaa_wrapper.run_job.job_script_directory`_
+.. |dw_job_environment| replace:: `job_environment`
+.. _dw_job_environment: `drmaa_wrapper.run_job.job_environment`_
+.. |dw_working_directory| replace:: `working_directory`
+.. _dw_working_directory: `drmaa_wrapper.run_job.working_directory`_
+.. |dw_retain_job_scripts| replace:: `retain_job_scripts`
+.. _dw_retain_job_scripts: `drmaa_wrapper.run_job.retain_job_scripts`_
 .. |dw_job_name| replace:: `job_name`
 .. _dw_job_name: `drmaa_wrapper.run_job.job_name`_
 .. |dw_job_other_options| replace:: `job_other_options`
@@ -53,7 +58,7 @@ drmaa functions
 ************************************************************************************************************************************************************************************************************************************************************************************
 *run_job*
 ************************************************************************************************************************************************************************************************************************************************************************************
-**run_job** (|dw_cmd_str|_, |dw_job_queue_name|_ = None, |dw_job_queue_priority|_ = None, |dw_job_name|_ = None, |dw_job_other_options|_ = None, |dw_logger|_ = None, |dw_drmaa_session|_ = None, |dw_run_locally|_ = False, |dw_output_files|_ = None, |dw_touch_only|_ = False)
+**run_job** (|dw_cmd_str|_, |dw_job_name|_ = None, |dw_job_other_options|_ = None, |dw_job_script_directory|_ = None, |dw_job_environment|_ = None, |dw_working_directory|_ = None, |dw_logger|_ = None, |dw_drmaa_session|_ = None, |dw_retain_job_scripts|_ = False, |dw_run_locally|_ = False, |dw_output_files|_ = None, |dw_touch_only|_ = False)
 
     **Purpose:**
 
@@ -67,25 +72,22 @@ drmaa functions
         .. code-block:: python
 
             try:
-                stdout_res, stderr_res = "",""
-                job_queue_name, job_other_options = get_a_or_b_queue()
-
                 stdout_res, stderr_res  = run_job(cmd,
                                                   job_name          = job_name,
                                                   logger            = logger,
                                                   drmaa_session     = drmaa_session,
                                                   run_locally       = options.local_run,
-                                                  job_queue_name    = "my_queue_name",
-                                                  job_other_options = job_other_options)
+                                                  job_other_options = get_queue_name())
 
             # relay all the stdout, stderr, drmaa output to diagnose failures
             except error_drmaa_job as err:
                 raise Exception("\n".join(map(str,
-                                    "Failed to run:"
-                                    cmd,
-                                    err,
-                                    stdout_res,
-                                    stderr_res)))
+                                    ["Failed to run:",
+                                     cmd,
+                                     err,
+                                     stdout_res,
+                                     stderr_res])))
+
 
     **Parameters:**
 
@@ -95,23 +97,12 @@ drmaa functions
 
         The command which will be run remotely including all parameters
 
-.. _drmaa_wrapper.run_job.job_queue_name:
-
-    * *job_queue_name*
-
-        The queue on which ``cmd_str`` will be run
-
-.. _drmaa_wrapper.run_job.job_queue_priority:
-
-    * *job_queue_priority*
-
-        The priority at which  ``cmd_str`` should be scheduled
-
 .. _drmaa_wrapper.run_job.job_name:
 
     * *job_name*
 
         A descriptive name for the command. This will be displayed by `SGE qstat  <http://gridscheduler.sourceforge.net/htmlman/htmlman1/qstat.html>`__, for example.
+        Defaults to "ruffus_job"
 
 .. _drmaa_wrapper.run_job.job_other_options:
 
@@ -119,9 +110,40 @@ drmaa functions
 
         Other drmaa parameters can be passed verbatim as a string.
 
-        Examples include project name (``-P project_name``), parallel environment (``-pe parallel_environ``), account (``-A account_string``), resource (``-l resource=expression``),
+        Examples for SGE include project name (``-P project_name``), parallel environment (``-pe parallel_environ``), account (``-A account_string``), resource (``-l resource=expression``),
+        queue name (``-q a_queue_name``), queue priority (``-p 15``).
 
-        These are parameters which you normally need to include when submitting jobs interactively, for example via `SGE qsub  <http://gridscheduler.sourceforge.net/htmlman/htmlman1/qsub.html>`__
+        These are parameters which you normally need to include when submitting jobs interactively, for example via
+        `SGE qsub  <http://gridscheduler.sourceforge.net/htmlman/htmlman1/qsub.html>`__
+        or `SLURM  <http://apps.man.poznan.pl/trac/slurm-drmaa/wiki/WikiStart#Nativespecification>`__ (`srun <https://computing.llnl.gov/linux/slurm/srun.html>`__)
+
+.. _drmaa_wrapper.run_job.job_script_directory:
+
+    * *job_script_directory*
+
+        The directory where drmaa temporary script files will be found. Defaults to the current working directory.
+
+
+.. _drmaa_wrapper.run_job.job_environment:
+
+    * *job_environment*
+
+        A dictionary of key / values with environment variables. E.g. ``"{'BASH_ENV': '~/.bashrc'}"``
+
+
+.. _drmaa_wrapper.run_job.working_directory:
+
+    * *working_directory*
+
+        Sets the working directory. Defaults to the current working directory.
+
+
+.. _drmaa_wrapper.run_job.retain_job_scripts:
+
+    * *retain_job_scripts*
+
+        Do not delete temporary script files containg drmaa commands. Useful for
+        debugging, running on the command line directly, and can provide a useful record of the commands.
 
 .. _drmaa_wrapper.run_job.logger:
 
