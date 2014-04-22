@@ -11,9 +11,17 @@ version 2.4
 Additions to ``ruffus`` namespace
 ============================================================================================================================================================
 
-    * ``formatter``
-    * ``subdivide``
-    * ``originate``
+    * :ref:`formatter() <new_manual.formatter>` (:ref:`syntax <decorators.formatter>`)
+    * :ref:`originate() <new_manual.originate>` (:ref:`syntax <decorators.originate>`)
+    * :ref:`subdivide() <new_manual.subdivide>` (:ref:`syntax <decorators.subdivide>`)
+
+============================================================================================================================================================
+Installation: use pip
+============================================================================================================================================================
+
+    ::
+
+        sudo pip install ruffus --upgrade
 
 ============================================================================================================================================================
 1) Command Line support
@@ -21,87 +29,17 @@ Additions to ``ruffus`` namespace
 
     The optional ``Ruffus.cmdline`` module provides support for a set of common command
     line arguments which make writing *Ruffus* pipelines much more pleasant.
-
-
-    Provides these predefined options:
-
-        .. code-block:: bash
-
-            -v, --verbose
-                --version
-            -L, --log_file
-
-            -T, --target_tasks
-            -j, --jobs
-                --use_threads
-            -n, --just_print
-                --flowchart
-                --key_legend_in_graph
-                --draw_graph_horizontally
-                --flowchart_format
-                --forced_tasks
-                --touch_files_only
-                --checksum_file_name
-                --recreate_database
-
-    The following example uses the standard `argparse  <http://docs.python.org/2.7/library/argparse.html>`__ module
-    but the deprecated `optparse  <http://docs.python.org/2.7/library/optparse.html>`__ module works as well.
-
-
-        .. code-block:: python
-            :emphasize-lines: 5,13
-
-            from ruffus import *
-
-            parser = cmdline.get_argparse(description='WHAT DOES THIS PIPELINE DO?')
-
-            #   <<<---- add your own command line options like --input_file here
-            #parser.add_argument("--input_file")
-
-            options = parser.parse_args()
-
-            #  logger which can be passed to multiprocessing ruffus tasks
-            logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
-
-            #   <<<----  pipelined functions go here
-
-            cmdline.run (options)
-
-
-    You can exclude any of these common options (not add them to the command line):
-
-        .. code-block:: python
-            :emphasize-lines: 4
-
-            parser = cmdline.get_argparse(  description='WHAT DOES THIS PIPELINE DO?',
-                                            prog = "my_%(prog)s",
-
-                                            # do not use --log_file and --verbose
-                                            ignored_args = ["log_file", "verbose"])
-
-
-    Note that the version for ``get_argparse`` defaults to ``"%(prog)s 1.0"`` unless specified:
-
-        .. code-block:: python
-
-            parser = cmdline.get_argparse(  description='WHAT DOES THIS PIPELINE DO?',
-                                            version = "%(prog)s v. 2.23")
-
-
-
-
-
-
-
+    See :ref:`manual <new_manual.cmdline>`
 
 ============================================================================================================================================================
-2) Task completion monitoring
+2) Check pointing
 ============================================================================================================================================================
 
     * Contributed by **Jake Biesinger**
+    * See :ref:`Manual <new_manual.checkpointing>`
     * Uses a fault resistant sqlite database file to log i/o files, and additional checksums
     * defaults to checking file timestamps stored in the current directory (``ruffus_utilility.RUFFUS_HISTORY_FILE = '.ruffus_history.sqlite'``)
-    * ``pipeline_run(..., checksum_level = N, ...)``
+    * :ref:`pipeline_run(..., checksum_level = N, ...) <pipeline_functions.pipeline_run>`
 
        * level 0 = CHECKSUM_FILE_TIMESTAMPS      : Classic mode. Use only file timestamps (no checksum file will be created)
        * level 1 = CHECKSUM_HISTORY_TIMESTAMPS   : Also store timestamps in a database after successful job completion
@@ -109,502 +47,86 @@ Additions to ``ruffus`` namespace
        * level 3 = CHECKSUM_FUNCTIONS_AND_PARAMS : As above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
 
        * defaults to level 1
-       * Use ``pipeline_run(..., checksum_level=CHECKSUM_FILE_TIMESTAMPS, ...)`` for "classic" mode
-
 
     * Can speed up trivial tasks: Previously Ruffus always added an extra 1 second pause between tasks
       to guard against file systems (Ext3, FAT, some NFS) with low timestamp granularity.
 
 
-____________________________________________________________________________________________________________________
-The checksum file name and level can be set at runtime or in the environment
-____________________________________________________________________________________________________________________
-
-
-    1) Default filename is ``.ruffus_history.sqlite`` (i.e. in the current working directory)
-    2) Overridden by the environment variable ``DEFAULT_RUFFUS_HISTORY_FILE``
-    3) Set in ``pipeline_run``, ``pipeline_printout``, ``pipeline_printout_graph``
-
-            ``pipeline_run(.., history_file = "XXX", ...)``
-
-    The environment variable allows file name expansion for maximum flexibility
-
-
-
-    *Example 1*: Same directory, different name
-
-        The job history database for ``run.me.py`` will be ``.run.me.ruffus_history.sqlite``:
-
-        .. code-block:: bash
-
-            export DEFAULT_RUFFUS_HISTORY_FILE=.{basename}.ruffus_history.sqlite
-
-        .. code-block:: bash
-
-            # Ruffus script
-            /common/path/for/job_history/scripts/run.me.py
-            # checksum file
-            /common/path/for/job_history/scripts/.run.me.ruffus_history.sqlite
-
-    *Example 2*: Nested in common directory (Note the use of ``{path}``)
-
-        .. code-block:: bash
-
-            export DEFAULT_RUFFUS_HISTORY_FILE=/common/path/for/job_history/{path}/.{basename}.ruffus_history.sqlite
-
-        .. code-block:: bash
-
-            # Ruffus script
-            /test/bin/scripts/run.me.py
-            # checksum file
-            # /common/path/for/job_history/ +  /test/bin/scripts + . + run.me + .ruffus_history.sqlite
-            #
-            /common/path/for/job_history/test/bin/scripts/.run.me.ruffus_history.sqlite
-
-
-    4) default checksum level of ``CHECKSUM_HISTORY_TIMESTAMPS`` can be overridden by the environment variable ``DEFAULT_RUFFUS_CHECKSUM_LEVEL``
-
-       .. code-block:: bash
-
-           export DEFAULT_RUFFUS_CHECKSUM_LEVEL=CHECKSUM_FUNCTIONS
-           export DEFAULT_RUFFUS_CHECKSUM_LEVEL=3
-
-
-
-
-
-
-
-
-____________________________________________________________________________________________________________________
-Regenerate checksums
-____________________________________________________________________________________________________________________
-
-    Create or update the checkpoint file so that all existing files in completed jobs appear up to date
-
-    .. code-block:: python
-
-        pipeline(touch_files_only = CHECKSUM_REGENERATE, ...)
-
-    will regenerate the checksum history file to reflect the existing i/o files on disk.
-
-
-
 ============================================================================================================================================================
-3) drmaa support and multithreading: ``ruffus.drmaa_wrapper``
+3) :ref:`subdivide() <new_manual.subdivide>` (:ref:`syntax <decorators.subdivide>`)
 ============================================================================================================================================================
 
-    Optional helper module allows jobs to dispatch work to a computational cluster and wait until it completes.
+    *
+    * Take a list of input jobs (like :ref:`@transform <decorators.transform>`) but further splits each into multiple jobs, i.e. it is a **many->even more** relationship
+    * synonym for the deprecated ``@split(..., regex(), ...)``
 
-    * First set up a shared drmaa session:
-
-        .. code-block:: python
-
-            #
-            #   start shared drmaa session for all jobs / tasks in pipeline
-            #
-            import drmaa
-            drmaa_session = drmaa.Session()
-            drmaa_session.initialize()
-
-
-    * ``ruffus.drmaa_wrapper.run_cmd`` dispatches the actual work to a cluster node within a normal Ruffus job
-
-        This is the equivalent of `os.system  <http://docs.python.org/2/library/os.html#os.system>`__  or
-        `subprocess.check_output  <http://docs.python.org/2/library/subprocess.html#subprocess.check_call>`__ but the code will run remotely as specified:
-
-        .. code-block:: python
-            :emphasize-lines: 16,18,19
-
-            from ruffus.drmaa_wrapper import run_job, error_drmaa_job
-
-            @collate(prev_task,
-                formatter(),
-                "{basename[1]}",
-                logger, logger_mutex)
-            def ruffus_task_func(input_file, output_file):
-                pass
-                pass
-                try:
-                    stdout_res, stderr_res = "",""
-                    job_queue_name, job_other_options = get_a_or_b_queue()
-
-
-                    #
-                    #   ruffus.drmaa_wrapper.run_job
-                    #       takes queue parameters but also optionally allows
-                    #       1) output file to be "touched" or
-                    #       2) jobs to be run locally (normally, not via drmaa) for debugging
-                    #
-                    stdout_res, stderr_res  = run_job(cmd,
-                                                      job_name = job_name,
-                                                      logger=logger,
-                                                      drmaa_session=drmaa_session,
-                                                      run_locally=options.local_run,
-                                                      job_queue_name= "my_queue_name",
-                                                      job_other_options= job_other_options)
-
-                # relay all the stdout, stderr, drmaa output to diagnose failures
-                except error_drmaa_job as err:
-                    raise Exception("Failed to run:\n%(cmd)s\n%(err)s\n%(stdout_res)s\n%(stderr_res)s\n" % locals())
-
-
-    .. note:
-
-        Requires ``multithread`` rather than ``multiprocess``
-
-        * allows the drmaa session to be shared
-        * prevents "processing storms" when hundreds or thousands of cluster jobs complete at the same time.
-
-        .. code-block:: python
-
-            pipeline_run (..., multithread = NNN, ...)
-
-        or if you are using ruffus.cmdline:
-
-        .. code-block:: python
-
-            cmdline.run (options, multithread = options.jobs)
-
-
-
-============================================================================================================================================================
-4) ``@subdivide``
-============================================================================================================================================================
-
-
-    Take a list of input jobs (like ``@transform``) but further splits each into multiple jobs, i.e. it is a many->many more relationship
-
-    synonym for ``@split(..., regex(), ...)``
-
-    Example code in  ``test/test_split_regex_and_collate.py``
-
-
-
-============================================================================================================================================================
-5) ``@mkdir`` with ``formatter()``, ``suffix()`` and ``regex()``
-============================================================================================================================================================
+========================================================================================================================================================================================================================================================================================================================
+4) :ref:`mkdir() <new_manual.mkdir>` (:ref:`syntax <decorators.mkdir>`) with :ref:`formatter() <new_manual.formatter>`, :ref:`suffix() <decorators.suffix>`  and :ref:`regex() <decorators.regex>`
+========================================================================================================================================================================================================================================================================================================================
 
     * allows directories to be created depending on runtime parameters or the output of previous tasks
-    * behaves just like ``@transform`` but with its own (internal) function which does the actual work of making a directory
-    * Previous behavior is retained:``mkdir`` continues to work seamlessly inside ``@follows``
-
-    Example (See below for "formatter" syntax):
-
-        .. code-block:: python
-           :emphasize-lines: 1,5,15
-
-            # make fixed name directory before job is run
-            @mkdir(workdir + "/test1")
-
-            #
-            #  makes directory based on output of previous task:
-            #      For example:
-            #          /prev/task.1.output   ->  make directories /prev/task.1.dir, /prev/task.1.dir2
-            #          /prev/task.2.output   ->  make directories /prev/task.2.dir, /prev/task.2.dir2
-            #
-            @mkdir(prev_task, formatter(),
-                        ["{path[0]}/{basename[0]}.dir"
-                         "{path[0]}/{basename[0]}.dir2"])
-
-            #
-            #  @transform output lives happily inside new directories
-            #
-            #          /prev/task.1.output   ->  make directories /prev/task.1.dir/task.1.tmp2
-            #          /prev/task.2.output   ->  make directories /prev/task.2.dir/task.2.tmp2
-            #
-            @transform( generate_initial_files1,
-                        formatter(),
-                        "{path[0]}/{basename[0]}.dir/{basename[0]}.tmp2")
-            def curr_task( infiles, outfile):
-                pass
-
-
+    * behaves just like :ref:`@transform <decorators.transform>` but with its own (internal) function which does the actual work of making a directory
+    * Previous behavior is retained:``mkdir`` continues to work seamlessly inside :ref:`@follows <decorators.follows>`
 
 ============================================================================================================================================================
-6) ``@originate``
+5) :ref:`originate() <new_manual.originate>` (:ref:`syntax <decorators.originate>`)
 ============================================================================================================================================================
 
     * Generates output files without dependencies from scratch  (*ex nihilo*!)
-        .. code-block:: python
-            :emphasize-lines: 3,5
-
-            @originate([tempdir + d + ".tmp1" for d in 'a', 'b', 'c'])
-            def generate_initial_files(outfile):
-                pass
     * For first step in a pipeline
-    * Clear in ``pipeline_printout``:
-
-
-        .. code-block:: bash
-
-           Task = generate_initial_files
-               Job  = [None
-                     -> a.tmp1
-                     -> b.tmp1]
-                 Job needs update: Missing files [a.tmp1, b.tmp1]
-
     * Task function obviously only takes output and not input parameters. (There *are* no inputs!)
-    * synonym for ``@split(None,...)``
+    * synonym for :ref:`@@split(None,...) <decorators.split>`
+    * See :ref:`Summary <decorators.originate>` / :ref:`Manual <new_manual.originate>`
 
-
-
-============================================================================================================================================================
-7) New flexible ``formatter`` alternative to ``regex`` & ``suffix``
-============================================================================================================================================================
+========================================================================================================================================================================================================================================================================================================================
+6) New flexible :ref:`formatter() <new_manual.formatter>` (:ref:`syntax <decorators.formatter>`) alternative to :ref:`regex() <decorators.regex>`  & :ref:`suffix() <decorators.suffix>`
+========================================================================================================================================================================================================================================================================================================================
 
     * Easy manipulation of path subcomponents in the style of `os.path.split()  <http://docs.python.org/2/library/os.path.html#os.path.split>`__
-
-        Regular expressions are no longer necessary for path manipulation
-
+    * Regular expressions are no longer necessary for path manipulation
     * Familiar python syntax
     * Optional regular expression matches
     * Can refer to any in the list of N input files (not only the first file as for ``regex(...)``)
     * Can even refer to individual letters within a match
 
+============================================================================================================================================================
+7) Combinatorics (all vs. all decorators)
+============================================================================================================================================================
 
-____________________________________________________________________________________________________________________
-path, extension and basename
-____________________________________________________________________________________________________________________
-    ``formatter`` matches both path components and (optionally) regular expressions.
-    Each level of indirection just means another level of nesting.
-    In the case of ``@transform`` ``@collate`` we are dealing with a list of input files per job, so typically,
-    the components with be, using python format syntax:
-
-        .. code-block:: python
-
-            input_file_names = ['/a/b/c/sample1.bam']
-            formatter(r"(.*)(?P<id>\d+)\.(.+)")
-
-            "{0[0]}"            #   '/a/b/c/sample1.bam',  Regular expression: entire match captured by index
-            "{1[0]}"            #   '/a/b/c/sample',       Regular expression: captured by index
-            "{2[0]}"            #   'bam',                 Regular expression: captured by index
-            "{id[0]}"           #   '1'                    Regular expression: captured by name
-            "{basename[0]}"     #   'sample1',             file name
-            "{ext[0]}"          #   '.bam',                extension
-            "{path[0]}"         #   '/a/b/c',              full path
-            "{subpath[0][1]}"   #   '/a/b'                 recurse down path 1 level
-            "{subdir[0][0]}"    #   'c'                    1st level subdirectory
-
-
-    ``@transform`` example:
-
-        .. code-block:: python
-
-            @transform( previous_task,
-                        formatter(".*/(?P<FILE_PART>.+).tmp1$" ),   # formatter with optional regular expression
-                        "{path[0]}/{FILE_PART[0]}.tmp2",            # output
-                        "{basename}",                               # extra: list of all file names
-                        "{basename[0]}",                            # extra: first file name
-                        "{basename[0][0]}",                         # extra: first letter of first file name
-                        "{subpath[0][1]}",                          # extra: 1st file, recurse down path 1 level
-                        "{subdir[2][1]}")                           # extra: 3rd file, 1st level sub directory
-            def test_transform_task(    infiles,
-                                        outfile,
-                                        all_file_names_str,
-                                        first_file_name,
-                                        first_file_name_1st_letter,
-                                        first_file_name_first_subpath,
-                                        first_file_name_first_subdir):
-                """
-                    Test transform with formatter
-                """
-                pass
-
-
-____________________________________________________________________________________________________________________
-``@combinations`` example
-____________________________________________________________________________________________________________________
-
-    For the new "combinatorics", (i.e. all versus all etc.) decorators, we have **groups** of inputs for each job.
-    This just means an extra level of indirection: ``{path[0][0]}`` (The first input file from the first set of input files)
-    instead of ``{path[0]}``.
-
-    .. code-block:: python
-        :emphasize-lines: 2
-
-        #
-        #   Test combinations with k-tuple = 3
-        #
-        @combinations(  previous_task,
-                        formatter(".*/(?P<FILE_PART>.+).tmp1$" ),                                   # formatter with optional regular expression
-                        3,                                                                          # number of k-mers
-                        "{path[0][0]}/{FILE_PART[0][0]}.{basename[1][0]}.{basename[2][0]}.tmp2",    # output file name is a combination of each 3 input files
-                        "{basename[0]}{basename[1]}{basename[2]}"                                   # extra: list of 3 sets of file names
-                        "{basename[0][0]}{basename[1][0]}{basename[2][0]}",                         # extra: first file names for each of 3 set
-                        "{basename[0][0][0]}{basename[1][0][0]}{basename[2][0][0]}",                # extra: first letters of first file name from each of 3 input
-                        "{subpath[0][0][1]}",                                                       # extra: 1st input, 1st file, recurse down path 1 level
-                        "{subdir[2][3][1]}")                                                        # extra: 3rd input, 4th file, 1st level sub directory
-        def test_combinations3_task(nfiles,
-                                    outfile,
-                                    all_file_names_str,
-                                    first_file_names,
-                                    first_file_names_1st_letters,
-                                    first_file_name_first_subpath,
-                                    first_file_name_first_subdir):
-            pass
-
-
-
-____________________________________________________________________________________________________________________
-Using regular expressions as filters
-____________________________________________________________________________________________________________________
-
-    * We can use regular expression matches as a filter.
-
-    * Filtering is only applied if the requisited file is referred to in the substitution
-
-    * For example, if a job function receives an inputs of a list of 3:
-
-        .. code-block:: python
-
-            ["prev_task.1.ignore", 17, "prev_task.1.correct"]
-            ["prev_task.2.ignore", 19, "prev_task.2.correct"]
-            ["prev_task.2.ignore", 19, "prev_task.3.oops"   ]
-
-        When we refer to the 3rd file name in each list of inputs, Ruffus knows that
-        the regular expression filter only applies to any but the third in each list.
-        ( For ``"{0[2]}"`` : ``0`` means the search string. ``2`` means the third file)
-
-        Ruffus sensibly will not go through your inputs filtering everything blindly (i.e. apply the regular expression to ``*.ignore`` )
-
-
-        This works:
-
-        .. code-block:: python
-            :emphasize-lines: 4
-
-            @transform( previous_task,
-                        formatter(r".correct" ),            # formatter with optional regular expression
-                        "{basename[0]}.changed",
-                        "{0[2]}")                           # 3rd file in list
-            def test_transform_task(    infiles,
-                                        outfile,
-                                        third_input_path):
-                pass
-
-
-            # non matching input rejected:
-            #["prev_task.2.ignore", 19, "prev_task.3.oops"   ]
-
-
-
-        This produces no matches (``".ignore"`` doesn't match ``".correct"``)
-
-        .. code-block:: python
-            :emphasize-lines: 4
-
-            @transform( previous_task,
-                        formatter(r".correct" ),            # formatter with optional regular expression
-                        "{basename[0]}.changed",            # First file in list
-                        "{0[0]}")                           # 1st file in list
-            def test_transform_task(    infiles,
-                                        outfile,
-                                        first_input_path):
-                pass
+    * :ref:`product <new_manual.product>`  (See `itertools.product  <http://docs.python.org/2/library/itertools.html#itertools.product>`__)
+    * :ref:`permutations <new_manual.permutations>`  (See `itertools.permutations  <http://docs.python.org/2/library/itertools.html#itertools.permutations>`__)
+    * :ref:`combinations <new_manual.combinations>` (See `itertools.combinations  <http://docs.python.org/2/library/itertools.html#itertools.combinations>`__)
+    * :ref:`combinations_with_replacement <new_manual.combinations_with_replacement>` (See `itertools.combinations_with_replacement  <http://docs.python.org/2/library/itertools.html#itertools.combinations_with_replacement>`__)
+    * in optional :ref:`permutations <new_manual.combinatorics>` module
+    * Only :ref:`formatter() <new_manual.formatter>` provides the necessary flexibility to construct the output. (:ref:`suffix() <decorators.suffix>` and :ref:`regex() <decorators.regex>` are not supported.)
+    * See :ref:`Summary <decorators.combinatorics>` / :ref:`Manual <new_manual.combinatorics>`
 
 
 
 ============================================================================================================================================================
-8) Combinatorics (all vs. all decorators)`
+8) drmaa support and multithreading:
 ============================================================================================================================================================
 
-    * ``@product`` (See `itertools.product  <http://docs.python.org/2/library/itertools.html#itertools.product>`__)
-    * ``@permutations`` (See `itertools.permutations  <http://docs.python.org/2/library/itertools.html#itertools.permutations>`__)
-    * ``@combinations`` (See `itertools.combinations  <http://docs.python.org/2/library/itertools.html#itertools.combinations>`__)
-    * ``@combinations_with_replacement`` (See `itertools.combinations_with_replacement  <http://docs.python.org/2/library/itertools.html#itertools.combinations_with_replacement>`__)
-    * in optional ``combinatorics`` module
-    * Only ``formatter([OPTIONAl_REGEX])`` provides the necessary flexibility to construct the output. (``suffix`` and ``regex`` are not supported.)
-
-
-    ``@product`` example: Cartesian product of inputs
-
-        .. code-block:: python
-            :emphasize-lines: 3,7,11,14,17
-
-            @product(
-
-                    # first list from wildcard: filter on *.bam
-                    "*.ba*",
-                    formatter( ".*/(?P<ID>\w+.bamfile).bam" ),
-
-                    # second list from task "AToB"
-                    AToB,
-                    formatter(),
-
-                    # output file
-                    "{path[0][0]}/{base_name[0][0]}.{base_name[0][0]}.out",
-
-                    # path decomposition
-                    "{path[0][0]}",       # extra: path for 1st input, 1st file
-                    "{basename[0][1]}",   # extra: file name for 1st input, 2nd file
-                    # regular expression matches
-                    "{ID[1][2]}",         # extra: regular expression named capture group for 2nd input, 3rd file
-                    )
-            def product( infiles, outfile,
-                        input_1__1st_path,
-                        input_1__2nd_file_name,
-                        input_2__3rd_file_match
-                        ):
-                print infiles, outfile
-
-
-    * ``@permutations`` example
-
-        .. code-block:: python
-            :emphasize-lines: 3,7
-
-            @permutations(
-
-                    # Elements in a tuple come from a single list, so we only need one formatter
-                    "*.a",
-                    formatter( ".*/(?P<ID>\w+.bamfile).bam" ),
-
-                    # k_length_tuples,
-                    2,
-
-                    "{path[0][0]}/{base_name[0][0]}.{base_name[1][0]}.out",
-                    "{path[0][0]}",                                # extra: path for 1st input, 1st file
-                    "{path[1][0]}",                                # extra: path for 2nd input, 1st file
-                    "{basename[0][1]}",                            # extra: file name for 1st input, 2nd file
-                    "{ID[1][2]}",                                  # extra: regular expression named capture group for 2nd input, 3rd file
-                    )
-            def task1( infiles, outfile,
-                        input_1__path,
-                        input_2__path,
-                        input_1__2nd_file_name,
-                        input_2__3rd_file_match
-                        ):
-                print infiles, outfile
-
-
-
+    * :ref:`ruffus.drmaa_wrapper.run_job() <new_manual.ruffus.drmaa_wrapper.run_job>` (:ref:`syntax <drmaa_wrapper.run_job>`)
+    * Optional helper module allows jobs to dispatch work to a computational cluster and wait until it completes.
+    * Requires ``multithread`` rather than ``multiprocess``
 
 ============================================================================================================================================================
-10) ``pipeline_run(...)`` and exceptions
+9) ``pipeline_run(...)`` and exceptions
 ============================================================================================================================================================
+    See :ref:`Manual <new_manual.exceptions>`
+
     * Optionally terminate pipeline after first exception
-        To have all exceptions interrupt immediately::
-
-                pipeline_run(..., exceptions_terminate_immediately = True)
-
-        By default ruffus accumulates ``NN`` errors before interrupting the pipeline prematurely. ``NN`` is the specified parallelism for ``pipeline_run(..., multiprocess = NN)``.
-
-        Otherwise, a pipeline will only be interrupted immediately if exceptions of type ``ruffus.JobSignalledBreak`` are thrown.
-
     * Display exceptions without delay
 
-        By default, Ruffus re-throws exceptions in ensemble after pipeline termination.
 
-        To see exceptions as they occur::
+============================================================================================================================================================
+10) Miscellaneous
+============================================================================================================================================================
 
-                pipeline_run(..., log_exceptions = True)
-
-        ``logger.error(...)`` will be invoked with the string representation of the each exception, and associated stack trace.
-
-        The default logger prints to sys.stderr, but this can be changed to any class from the logging module or compatible object via ``pipeline_run(..., logger = ???)``
-
-
+    Better error messages for ``formatter()``, ``suffix()`` and ``regex()`` for ``pipeline_printout(..., verbose >= 3, ...)``
+        * Error messages for showing mismatching regular expression and offending file name
+        * Wrong capture group names or out of range indices will raise informative Exception
 
 ********************************************************************
 version 2.3
@@ -617,7 +139,7 @@ version 2.3
                 run_if_true_1 = True
                 run_if_true_2 = False
 
-                @active_if(run_if_true, lambda: return run_if_true_2)
+                @active_if(run_if_true, lambda: run_if_true_2)
                 def this_task_might_be_inactive():
                     pass
 
@@ -627,61 +149,9 @@ version 2.3
         Dormant tasks behave as if they are up to date and have no output.
 
     * Command line parsing
-        Supports both argparse (python 2.7) and optparse (python 2.6):
-        The following options are defined by default::
-
-                    --verbose
-                    --version
-                    --log_file
-
-                -t, --target_tasks
-                -j, --jobs
-                -n, --just_print
-                    --flowchart
-                    --key_legend_in_graph
-                    --draw_graph_horizontally
-                    --flowchart_format
-                    --forced_tasks
-
-        Usage with argparse (Python > 2.7)::
-
-                from ruffus import *
-
-                parser = cmdline.get_argparse(   description='WHAT DOES THIS PIPELINE DO?')
-
-                # for example...
-                parser.add_argument("--input_file")
-
-                options = parser.parse_args()
-
-                #  optional logger which can be passed to ruffus tasks
-                logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
-
-                #_____________________________________________________________________________________
-                #   pipelined functions go here
-                #_____________________________________________________________________________________
-
-                cmdline.run (options)
-
-        Usage with optparse (Python 2.6)::
-
-                from ruffus import *
-
-                parser = cmdline.get_optgparse(version="%prog 1.0", usage = "\n\n    %prog [options]")
-
-                # for example...
-                parser.add_option("-c", "--custom", dest="custom", action="count")
-
-                (options, remaining_args) = parser.parse_args()
-
-                #  logger which can be passed to ruffus tasks
-                logger, logger_mutex = cmdline.setup_logging ("this_program", options.log_file, options.verbose)
-
-                #_____________________________________________________________________________________
-                #   pipelined functions go here
-                #_____________________________________________________________________________________
-
-                cmdline.run (options)
+        * Supports both argparse (python 2.7) and optparse (python 2.6):
+        * ``Ruffus.cmdline`` module is optional.
+        * See :ref:`manual <new_manual.cmdline>`
     * Optionally terminate pipeline after first exception
         To have all exceptions interrupt immediately::
 

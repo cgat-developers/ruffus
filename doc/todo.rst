@@ -7,35 +7,6 @@ Future plans for *Ruffus*:
 ###################################
 Update documentation
 ###################################
-    There have been major changes in Ruffus and not all of the documentation has caught up yet.
-    This will be the top priority.
-
-    Outstand topics are:
-
-    * Add Manual Chapter for using **@split** with **regex** and **add_inputs**
-        see :ref:`@split syntax <decorators.split_ex>`
-    * Update collate to include **add_inputs**
-    * Add Manual Chapter on "best practices" in constructing pipelines
-    * Revise chapter on :ref:`Design and Architecture <design.scons_and_rake>`
-
-
-
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Completed already:
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. _todo.dependencies:
-.. _todo.combining:
-
-    Theses were previous "Future plan" items
-
-    * Linking the output from one task as the input to the next automatically*
-        See :ref:`split <decorators.split>`, :ref:`transform <decorators.transform>` or :ref:`merge <decorators.merge>`
-    * Combining files*
-        See :ref:`merge <decorators.merge>`
-
-
-
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Left to do:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

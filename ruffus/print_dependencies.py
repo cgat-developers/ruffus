@@ -256,11 +256,11 @@ def write_legend_key (stream, used_task_types, minimal_key_legend, colour_scheme
 
     stream.write( 'rank="min";\n')
     stream.write( 'style=filled;\n')
-    #stream.write( 'fontsize=30;\n')
+    stream.write( 'fontsize=20;\n')
     stream.write( 'color=%s;\n' % (colour_scheme["Key"]["fillcolor"]))
     stream.write( 'label = "%s";\n' % key_name)
     stream.write( 'fontcolor = %s;' % (colour_scheme["Key"]["fontcolor"]))
-    stream.write( 'node[margin=0.2,0.2];\n')
+    stream.write( 'node[margin="0.2,0.2", fontsize="14"];\n')
 
 
     #
@@ -331,9 +331,9 @@ def write_colour_scheme_demo_in_dot_format(stream):
     stream.write( 'digraph "Colour schemes"\n{\n')
     stream.write( 'size="8,11";\n')
     stream.write( 'splines=true;\n')
-    stream.write( 'fontsize="30.12";\n')
+    stream.write( 'fontsize="30";\n')
     stream.write( 'ranksep = 0.3;\n')
-    stream.write( 'node[fontsize="20.12"];\n')
+    stream.write( 'node[fontsize="20"];\n')
     for colour_scheme_index in range(CNT_COLOUR_SCHEMES):
         colour_scheme = get_default_colour_scheme(colour_scheme_index)
         write_legend_key (stream, set("test"), False, colour_scheme, "Colour Scheme %d" % colour_scheme_index, colour_scheme_index)
@@ -432,9 +432,9 @@ def write_flowchart_in_dot_format(  jobs_to_run,
     stream.write( 'digraph "%s"\n{\n' % pipeline_name)
     stream.write( 'size="8,11";\n')
     stream.write( 'splines=true;\n')
-    stream.write( 'fontsize="30.12";\n')
+    stream.write( 'fontsize="30";\n')
     stream.write( 'ranksep = 0.3;\n')
-    stream.write( 'node[fontsize="20.12"];\n')
+    stream.write( 'node[fontsize="20"];\n')
     stream.write( 'graph[clusterrank="local"];\n')
 
     if not vertical:

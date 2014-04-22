@@ -129,25 +129,28 @@ def read_stdout_stderr_from_files( stdout_path, stderr_path, logger = None, cmd_
 #   setup_drmaa_job
 
 #_________________________________________________________________________________________
-def setup_drmaa_job( drmaa_session, job_queue_name, job_queue_priority, job_name, job_other_options):
+def setup_drmaa_job( drmaa_session, job_name, job_environment, working_directory, job_other_options):
 
     job_template = drmaa_session.createJobTemplate()
-    job_template.workingDirectory = os.getcwd()
-    job_template.jobEnvironment = { 'BASH_ENV' : '~/.bashrc' }
+
+    if not working_directory:
+        job_template.workingDirectory = os.getcwd()
+    else:
+        job_template.workingDirectory = working_directory
+    if job_environment:
+        # dictionary e.g. { 'BASH_ENV' : '~/.bashrc' }
+        job_template.jobEnvironment = job_environment
     job_template.args = []
+    if job_name:
+        job_template.jobName = job_name
+    else:
+        # nameless jobs sometimes breaks drmaa implementations...
+        job_template.jobName = "ruffus_job_" + "_".join(map(str, datetime.datetime.now().timetuple()[0:6]))
 
     #
     # optional job parameters
     #
-    job_queue_name      = "-q " + job_queue_name            if job_queue_name                   else ""
-    job_queue_priority  = ("-p %d " % job_queue_priority)   if not job_queue_priority is None   else ""
-    job_name            = "-N " + job_name                  if job_name                         else ""
-
-    job_template.nativeSpecification = "-V {job_queue_name} {job_queue_priority} {job_name} {job_other_options}" .format(
-                                        job_queue_name      = job_queue_name,
-                                        job_queue_priority  = job_queue_priority,
-                                        job_name            = job_name,
-                                        job_other_options   = job_other_options)
+    job_template.nativeSpecification = job_other_options
 
     # separate stdout and stderr
     job_template.joinFiles=False
@@ -159,14 +162,20 @@ def setup_drmaa_job( drmaa_session, job_queue_name, job_queue_priority, job_name
 #   write_job_script_to_temp_file
 
 #_________________________________________________________________________________________
-def write_job_script_to_temp_file( cmd_str, job_queue_name, job_queue_priority, job_name, job_other_options):
+def write_job_script_to_temp_file( cmd_str, job_script_directory):
     '''
         returns (job_script_path, stdout_path, stderr_path)
 
     '''
     import sys
     time_stmp_str = "_".join(map(str, datetime.datetime.now().timetuple()[0:6]))
-    tmpfile = tempfile.NamedTemporaryFile(mode='w+b', prefix='drmaa_script_' + time_stmp_str + "__", dir = os.getcwd(),  delete = False)
+    # create script directory if necessary
+    # Ignore errors rather than test for existence to avoid race conditions
+    try:
+        os.makedirs(job_script_directory)
+    except:
+        pass
+    tmpfile = tempfile.NamedTemporaryFile(mode='w+b', prefix='drmaa_script_' + time_stmp_str + "__", dir = job_script_directory,  delete = False)
 
     tmpfile.write( "#!/bin/bash\n" )
     tmpfile.write( cmd_str + "\n" )
@@ -187,7 +196,7 @@ def write_job_script_to_temp_file( cmd_str, job_queue_name, job_queue_priority, 
 #   run_job_using_drmaa
 
 #_________________________________________________________________________________________
-def run_job_using_drmaa (cmd_str, job_queue_name = None, job_queue_priority = None, job_name = None, job_other_options = "", logger = None, drmaa_session = None):
+def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_script_directory = None, job_environment = None, working_directory = None, retain_job_scripts = False, logger = None, drmaa_session = None):
 
     """
     Runs specified command remotely using drmaa,
@@ -201,19 +210,22 @@ def run_job_using_drmaa (cmd_str, job_queue_name = None, job_queue_priority = No
     if drmaa_session == None:
         raise error_drmaa_job( "Please specify a drmaa_session in run_job()")
 
-
     #
     #   make job template
     #
-    job_template = setup_drmaa_job( drmaa_session, job_queue_name, job_queue_priority, job_name, job_other_options)
+    job_template = setup_drmaa_job( drmaa_session, job_name, job_environment, working_directory, job_other_options)
 
     #
     #   make job script
     #
-    job_script_path, stdout_path, stderr_path = write_job_script_to_temp_file( cmd_str, job_queue_name, job_queue_priority, job_name, job_other_options)
-    job_template.remoteCommand  = job_script_path
-    job_template.outputPath     = ":"+ stdout_path
-    job_template.errorPath      = ":" + stderr_path
+    if not job_script_directory:
+        job_script_directory = os.getcwd()
+    job_script_path, stdout_path, stderr_path = write_job_script_to_temp_file( cmd_str, job_script_directory)
+    job_template.remoteCommand      = job_script_path
+    # drmaa paths specified as [hostname]:file_path.
+    # See http://www.ogf.org/Public_Comment_Docs/Documents/2007-12/ggf-drmaa-idl-binding-v1%2000%20RC7.pdf
+    job_template.outputPath         = ":" + stdout_path
+    job_template.errorPath          = ":" + stderr_path
 
 
     #
@@ -265,11 +277,12 @@ def run_job_using_drmaa (cmd_str, job_queue_name = None, job_queue_priority = No
     #
     #   Cleanup job script
     #
-    try:
-        os.unlink( job_script_path )
-    except OSError:
-        if logger:
-            logger.warn( "Temporary job script wrapper '%s' missing (and ignored) at clean-up" % job_script_path )
+    if not retain_job_scripts:
+        try:
+            os.unlink( job_script_path )
+        except OSError:
+            if logger:
+                logger.warn( "Temporary job script wrapper '%s' missing (and ignored) at clean-up" % job_script_path )
 
 
     return stdout, stderr
@@ -364,7 +377,7 @@ def touch_output_files (cmd_str, output_files, logger = None):
 #   run_job
 
 #_________________________________________________________________________________________
-def run_job(cmd_str, job_queue_name = None, job_queue_priority = None, job_name = None, job_other_options = None, logger = None, drmaa_session = None, run_locally = False, output_files = None, touch_only = False):
+def run_job(cmd_str, job_name = None, job_other_options = None, job_script_directory = None, job_environment = None, working_directory = None, logger = None, drmaa_session = None, retain_job_scripts = False, run_locally = False, output_files = None, touch_only = False):
     """
     Runs specified command either using drmaa, or locally or only in simulation (touch the output files only)
     """
@@ -377,7 +390,4 @@ def run_job(cmd_str, job_queue_name = None, job_queue_priority = None, job_name 
         return run_job_locally (cmd_str, logger)
 
 
-    return run_job_using_drmaa (cmd_str, job_queue_name, job_queue_priority, job_name, job_other_options, logger, drmaa_session)
-
-
-
+    return run_job_using_drmaa (cmd_str, job_name, job_other_options, job_script_directory, job_environment, working_directory, retain_job_scripts, logger, drmaa_session)

@@ -196,16 +196,15 @@ class t_formatter_file_names_transform(t_file_names_transform):
         replacing a specified regular expression
     """
     def __init__ (self, enclosing_task, format_object, error_type, descriptor_string):
+        self.matching_regexes    = []
+        self.matching_regex_strs = []
         if len(format_object.args):
-            self.matching_regex     = compile_regex(enclosing_task, format_object, error_type, descriptor_string)
-            self.matching_regex_str = format_object.args[0]
-        else:
-            self.matching_regex     = None
-            self.matching_regex_str = ""
+            self.matching_regexes    = compile_formatter(enclosing_task, format_object, error_type, descriptor_string)
+            self.matching_regex_strs = list(format_object.args)
 
     def substitute (self, starting_file_names, pattern):
         # note: uses all file names
-        return formatter_replace (starting_file_names, self.matching_regex_str, self.matching_regex, pattern)
+        return formatter_replace (starting_file_names, self.matching_regex_strs, self.matching_regexes, pattern)
 
 
 class t_nested_formatter_file_names_transform(t_file_names_transform):
@@ -219,12 +218,11 @@ class t_nested_formatter_file_names_transform(t_file_names_transform):
 
         for format_object in format_objects:
             if len(format_object.args):
-                self.list_matching_regex.append(compile_regex(enclosing_task, format_object, error_type, descriptor_string))
-                self.list_matching_regex_str.append(format_object.args[0])
-
+                self.list_matching_regex.append(compile_formatter(enclosing_task, format_object, error_type, descriptor_string))
+                self.list_matching_regex_str.append(list(format_object.args))
             else:
-                self.list_matching_regex.append(None)
-                self.list_matching_regex_str.append("")
+                self.list_matching_regex.append([])
+                self.list_matching_regex_str.append([])
 
     def substitute (self, starting_file_names, pattern):
         # note: uses all file names

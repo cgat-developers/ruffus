@@ -212,7 +212,7 @@ def append_to_argparse (parser, **args_dict):
                                     #  "cmap", "cmapx", "cmapx_np", "fig", "gd", "gd2",
                                     # "gv", "imap", "imap_np", "ismap", "jpe", "plain-ext",
                                     # "ps2", "tk", "vml", "vmlz", "vrml", "x11", "xdot", "xlib"
-                                    default = 'svg',
+                                    default = None,
                                     help="format of dependency graph file. Can be 'pdf', " +
                                           "'svg', 'svgz' (Structured Vector Graphics), 'pdf', " +
                                           "'png' 'jpg' (bitmap  graphics) etc ")
@@ -625,9 +625,21 @@ def run (options, **extra_options):
         if not hasattr(options, attr_name):
             setattr(options, attr_name, None)
 
+
+    #
+    #   touch files or not
+    #
+    if options.recreate_database:
+        touch_files_only = CHECKSUM_REGENERATE
+    elif options.touch_files_only:
+        touch_files_only = True
+    else:
+        touch_files_only = False
+
     if options.just_print:
         appropriate_options = get_extra_options_appropriate_for_command (extra_pipeline_printout_options, extra_options)
         task.pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
+                               history_file = options.history_file,
                                 verbose=options.verbose, **appropriate_options)
         return False
 
@@ -637,6 +649,7 @@ def run (options, **extra_options):
                                         options.flowchart_format,
                                         options.target_tasks,
                                         options.forced_tasks,
+                                         history_file = options.history_file,
                                         draw_vertically = not options.draw_horizontally,
                                         no_key_legend   = not options.key_legend_in_graph,
                                         **appropriate_options)
@@ -659,11 +672,6 @@ def run (options, **extra_options):
             multithread = None
 
 
-
-
-
-
-
         if not "logger" in extra_options:
             extra_options["logger"] = None
         if extra_options["logger"] == False:
@@ -671,12 +679,6 @@ def run (options, **extra_options):
         elif extra_options["logger"] == None:
             extra_options["logger"] = task.stderr_logger
         appropriate_options = get_extra_options_appropriate_for_command (extra_pipeline_run_options, extra_options)
-        if options.recreate_database:
-            touch_files_only = CHECKSUM_REGENERATE
-        elif options.touch_files_only:
-            touch_files_only = True
-        else:
-            touch_files_only = False
         task.pipeline_run(  options.target_tasks,
                             options.forced_tasks,
                             multiprocess    = options.jobs,

@@ -1,4 +1,48 @@
 ##########################################
+Implementation Tips
+##########################################
+
+
+******************************************************************************
+how to write new decorators
+******************************************************************************
+
+
+    New placeholder class. E.g. for ``@new_deco``
+
+    .. code-block:: python
+
+        class new_deco(task_decorator):
+            pass
+
+    Add to list of action names and ids:
+
+    .. code-block:: python
+
+        action_names = ["unspecified",
+                        ...
+                        "task_new_deco",
+
+        action_task_new_deco     =  15
+
+    Add function:
+
+    .. code-block:: python
+
+        def task_transform (self, orig_args):
+
+
+    Add documentation to:
+
+        * decorators/NEW_DECORATOR.rst
+        * decorators/decorators.rst
+        * _templates/layout.html
+        * manual
+
+
+
+
+##########################################
 Implementation notes
 ##########################################
 
@@ -20,47 +64,6 @@ Refactoring: parameter handling
 
     unit tests added to ``test_file_name_parameters.py`` and ``test_ruffus_utility.py``
 
-
-************************************************************************************************************************************************************
-Better error messages for ``formatter()``, ``suffix()`` and ``regex()`` for ``pipeline_printout(..., verbose >= 3, ...)``
-************************************************************************************************************************************************************
-
-    * Error messages for showing mismatching regular expression and offending file name
-    * Wrong capture group names or out of range indices will raise informative Exception
-    * ``regex()`` and ``suffix()`` examples in ``test/test_regex_error_messages.py``
-    * ``formatter()`` examples in ``test/test_combinatorics.py``
-
-
-
-************************************************************************************************************************************************************
-@product()
-************************************************************************************************************************************************************
-
-    Similar to ``@transform`` but with extra level of nested-ness
-
-    Retain same code for ``@product`` and ``@transform`` by adding an additional level of indirection:
-        * generator wrap around ``get_strings_in_nested_sequence`` to convert nested input parameters either to a single flat list of file names or to nested lists of file names
-
-          .. code-block:: python
-
-              file_name_parameters.input_param_to_file_name_list (input_params)
-              file_name_parameters.list_input_param_to_file_name_list (input_params)
-
-        * ``t_file_names_transform`` class which stores a list of regular expressions, one for each ``formatter()`` object corresponding to a single set of input parameters
-
-          .. code-block:: python
-
-            t_formatter_file_names_transform
-            t_nested_formatter_file_names_transform
-
-        * string substitution functions which will apply a list of ``formatter`` changes
-
-          .. code-block:: python
-
-                ruffus.utility.t_formatter_replace()
-                ruffus.utility.t_nested_formatter_replace()
-
-        * ``ruffus_uilility.swap_doubly_nested_order()`` makes the syntax / implementation very orthogonal
 
 
 
@@ -137,6 +140,43 @@ Better error messages for ``formatter()``, ``suffix()`` and ``regex()`` for ``pi
 
 
 ************************************************************************************************************************************************************
+@product()
+************************************************************************************************************************************************************
+
+    * Use combinatoric generators from itertools and keep that naming scheme
+    * Put all new generators in an ``combinatorics`` submodule namespace to avoid breaking user code. (They can imported if necessary.)
+    * test code in test/test_combinatorics.py
+    * The ``itertools.product(repeat)`` parameter doesn't make sense for Ruffus and will not be used
+    * Flexible number of pairs of ``task`` / ``glob`` / file names + ``formatter()``
+    * Only ``formatter([OPTIONAl_REGEX])`` provides the necessary flexibility to construct the output so we won't bother with suffix and regex
+
+    * Similar to ``@transform`` but with extra level of nested-ness
+
+    Retain same code for ``@product`` and ``@transform`` by adding an additional level of indirection:
+        * generator wrap around ``get_strings_in_nested_sequence`` to convert nested input parameters either to a single flat list of file names or to nested lists of file names
+
+          .. code-block:: python
+
+              file_name_parameters.input_param_to_file_name_list (input_params)
+              file_name_parameters.list_input_param_to_file_name_list (input_params)
+
+        * ``t_file_names_transform`` class which stores a list of regular expressions, one for each ``formatter()`` object corresponding to a single set of input parameters
+
+          .. code-block:: python
+
+            t_formatter_file_names_transform
+            t_nested_formatter_file_names_transform
+
+        * string substitution functions which will apply a list of ``formatter`` changes
+
+          .. code-block:: python
+
+                ruffus.utility.t_formatter_replace()
+                ruffus.utility.t_nested_formatter_replace()
+
+        * ``ruffus_uilility.swap_doubly_nested_order()`` makes the syntax / implementation very orthogonal
+
+************************************************************************************************************************************************************
 ``@permutations(...),`` ``@combinations(...),`` ``@combinations_with_replacement(...)``
 ************************************************************************************************************************************************************
 
@@ -202,10 +242,16 @@ Task completion monitoring
         * If the local file time looks to be in sync with the underlying file system, saved system time is used instead of file timestamps
 
 
-************************************************************************************************************************************************************
-``@product()``
-************************************************************************************************************************************************************
-    * Flexible number of pairs of ``task`` / ``glob`` / file names + ``formatter()``
-    * Only ``formatter([OPTIONAl_REGEX])`` provides the necessary flexibility to construct the output so we won't bother with suffix and regex
-    * Put all new generators in an ``combinatorics`` submodule namespace to avoid breaking user code. (They can import if necessary.)
-    * The ``itertools.product(repeat)`` parameter doesn't make sense for Ruffus and will not be used
+
+
+******************************************************************************************
+``@mkdir(...),``
+******************************************************************************************
+
+    * ``mkdir`` continues to work seamlessly inside ``@follows``) but also as its own decorator ``@mkdir`` due to the original happy orthogonal design
+    * fixed bug in checking so that Ruffus does't blow up if non strings are in the output (number...)
+    * note: adding the decorator to a previously undecorated function might have unintended consequences. The undecorated function turns into a zombie.
+    * fixed ugly bug in ``pipeline_printout`` for printing single line output
+    * fixed description and printout indent
+
+

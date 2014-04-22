@@ -619,6 +619,75 @@ class Test_apply_func_to_sequence (unittest.TestCase):
                         ]
                     ])
 
+#_________________________________________________________________________________________
+
+#   Test_parameter_list_as_string
+
+#_________________________________________________________________________________________
+class Test_parameter_list_as_string (unittest.TestCase):
+
+    def test_conversion(self):
+
+        self.assertEqual(parameter_list_as_string([1,2,3]),
+                        '1, 2, 3')
+        self.assertEqual(parameter_list_as_string([1,"2",3]),
+                        "1, '2', 3")
+        self.assertEqual(parameter_list_as_string([1,None,3]),
+                        '1, None, 3')
+        self.assertEqual(parameter_list_as_string([1,[2,3],3]),
+                        '1, [2, 3], 3')
+        self.assertEqual(parameter_list_as_string([1,[],3]),
+                        '1, [], 3')
+        self.assertEqual(   parameter_list_as_string(None),
+                        '')
+        self.assertRaises(TypeError, parameter_list_as_string)
+
+#
+#_________________________________________________________________________________________
+
+#   Test_regex_match_str_list
+
+#_________________________________________________________________________________________
+class Test_regex_match_str_list (unittest.TestCase):
+
+    def test_matches(self):
+
+        # first string named and unamed captures, second string no captures
+        test_str_list = ["aaa.bbb.ccc", "ddd.eee.fff"]
+        compiled_regexes = ["aaa.(b+).(?P<CCC>c+)", "ddd.eee.fff"]
+        self.assertEqual(regex_match_str_list(test_str_list, compiled_regexes),
+                         [{0: 'aaa.bbb.ccc', 1: 'bbb', 2: 'ccc', 'CCC': 'ccc'}, {0: 'ddd.eee.fff'}])
+
+        # first string named and unamed captures, second string unnamed captures
+        compiled_regexes = ["aaa.(b+).(?P<CCC>c+)", ".+(f)"]
+        self.assertEqual(regex_match_str_list(test_str_list, compiled_regexes),
+                         [{0: 'aaa.bbb.ccc', 1: 'bbb', 2: 'ccc', 'CCC': 'ccc'}, {0: 'ddd.eee.fff', 1: 'f'}])
+
+        # first string named and unamed captures, second string no capture
+        compiled_regexes = ["aaa.(b+).(?P<CCC>c+)", ".+"]
+        self.assertEqual(regex_match_str_list(test_str_list, compiled_regexes),
+                         [{0: 'aaa.bbb.ccc', 1: 'bbb', 2: 'ccc', 'CCC': 'ccc'}, {0: 'ddd.eee.fff'}])
+
+        # first string named and unamed captures, second string None
+        compiled_regexes = ["aaa.(b+).(?P<CCC>c+)", None]
+        self.assertEqual(regex_match_str_list(test_str_list, compiled_regexes),
+                         [{0: 'aaa.bbb.ccc', 1: 'bbb', 2: 'ccc', 'CCC': 'ccc'}, None])
+
+        # Both None
+        compiled_regexes = []
+        self.assertEqual(regex_match_str_list(test_str_list, compiled_regexes),
+                         [None, None])
+
+        # first string named and unamed captures, second string Failed
+        compiled_regexes = ["aaa.(b+).(?P<CCC>c+)", "PP"]
+        self.assertEqual(regex_match_str_list(test_str_list, compiled_regexes),
+                         [{0: 'aaa.bbb.ccc', 1: 'bbb', 2: 'ccc', 'CCC': 'ccc'}, False])
+
+
+        # first string named and unamed captures, second parameter number not string
+        compiled_regexes = ["aaa.(b+).(?P<CCC>c+)", 3]
+        self.assertRaises(Exception, regex_match_str_list, test_str_list, compiled_regexes)
+
 
 
 #_________________________________________________________________________________________
@@ -644,7 +713,7 @@ class Test_get_all_paths_components (unittest.TestCase):
                     ])
 
         # regex
-        self.helper(["/a/b/c/sample1.bam"],r"(.*)(?P<id>\d+)\..+",
+        self.helper(["/a/b/c/sample1.bam"], [r"(.*)(?P<id>\d+)\..+"],
                     [
                         {
                             0: '/a/b/c/sample1.bam',
@@ -660,7 +729,7 @@ class Test_get_all_paths_components (unittest.TestCase):
                     ])
         # nameclash
         # "basename" overridden by named regular expression capture group
-        self.helper(["/a/b/c/sample1.bam"],r"(.*)(?P<basename>\d+)\..+",
+        self.helper(["/a/b/c/sample1.bam"], [r"(.*)(?P<basename>\d+)\..+"],
                     [
                         {
                             0: '/a/b/c/sample1.bam',
@@ -675,17 +744,18 @@ class Test_get_all_paths_components (unittest.TestCase):
                     ])
 
         # empty path
-        self.helper([""],r"(.*)(?P<basename>\d+)\..+", [{'path': [], 'basename': '', 'ext': '', 'subdir': []}])
+        self.helper([""],[r"(.*)(?P<basename>\d+)\..+"], [{}])
+        self.helper([""],[], [{'path': [], 'basename': '', 'ext': '', 'subdir': []}])
         # not matching regular expression
-        self.helper(["/a/b/c/nonumber.txt"],r"(.*)(?P<id>\d+)\..+", [{'path': '/a/b/c',
-                                                                      'basename': 'nonumber',
-                                                                      'subpath': ['/a/b/c', '/a/b', '/a', '/'],
-                                                                      'ext': '.txt',
-                                                                      'subdir': ['c', 'b', 'a', '/']}])
+        self.helper(["/a/b/c/nonumber.txt"],[r"(.*)(?P<id>\d+)\..+"], [{}])
         # multiple paths
         self.helper(["/a/b/c/sample1.bam",
                      "dbsnp15.vcf",
-                     "/test.txt"] ,r"(.*)(?P<id>\d+)\..+",
+                     "/test.txt"] ,
+                    [
+                        r"(.*)(?P<id>\d+)\..+",
+                        r"(.*)(?P<id>\d+)\..+",
+                        r"(.*)(?P<id>\d+)\..+"],
                     [   {
                             0:          '/a/b/c/sample1.bam',           # captured by index
                             1:          '/a/b/c/sample',                # captured by index
@@ -710,13 +780,9 @@ class Test_get_all_paths_components (unittest.TestCase):
                         },
 
                         # no regular expression match
-                        {   'basename': 'test',
-                            'ext': '.txt',
-                            'path': '/',
-                            'subdir': ['/'],
-                            'subpath': ['/']
-                        }
+                        {}
                     ])
+
 
 
         #_________________________________________________________________________________________
@@ -742,7 +808,8 @@ class Test_get_all_paths_components (unittest.TestCase):
                             ])
 
                 # regex
-                self.helper(["/a/b/c/sample1.bam"],r"(.*)(?P<id>\d+)\..+",
+                self.helper(["/a/b/c/sample1.bam"],
+                            [r"(.*)(?P<id>\d+)\..+"],
                             [
                                 {
                                     0: '/a/b/c/sample1.bam',
@@ -758,7 +825,7 @@ class Test_get_all_paths_components (unittest.TestCase):
                             ])
                 # nameclash
                 # "basename" overridden by named regular expression capture group
-                self.helper(["/a/b/c/sample1.bam"],r"(.*)(?P<basename>\d+)\..+",
+                self.helper(["/a/b/c/sample1.bam"],[r"(.*)(?P<basename>\d+)\..+"],
                             [
                                 {
                                     0: '/a/b/c/sample1.bam',
@@ -772,13 +839,13 @@ class Test_get_all_paths_components (unittest.TestCase):
                             ])
 
                 # empty path
-                self.helper([""],r"(.*)(?P<basename>\d+)\..+", [{}])
+                self.helper([""],[r"(.*)(?P<basename>\d+)\..+"], [{}])
                 # not matching regular expression
-                self.helper(["/a/b/c/nonumber.txt"],r"(.*)(?P<id>\d+)\..+", [{}])
+                self.helper(["/a/b/c/nonumber.txt"], [r"(.*)(?P<id>\d+)\..+"], [{}])
                 # multiple paths
                 self.helper(["/a/b/c/sample1.bam",
                              "dbsnp15.vcf",
-                             "/test.txt"] ,r"(.*)(?P<id>\d+)\..+",
+                             "/test.txt"] , [r"(.*)(?P<id>\d+)\..+"],
                             [   {
                                     0:          '/a/b/c/sample1.bam',           # captured by index
                                     1:          '/a/b/c/sample',                # captured by index
