@@ -143,7 +143,7 @@ def setup_drmaa_job( drmaa_session, job_queue_name, job_queue_priority, job_name
     job_queue_priority  = ("-p %d " % job_queue_priority)   if not job_queue_priority is None   else ""
     job_name            = "-N " + job_name                  if job_name                         else ""
 
-    job_template.nativeSpecification = "-V {job_queue_name} {job_queue_priority} {job_name} {job_other_options}" .format(
+    job_template.nativeSpecification = "{job_queue_name} {job_queue_priority} {job_name} {job_other_options}" .format(
                                         job_queue_name      = job_queue_name,
                                         job_queue_priority  = job_queue_priority,
                                         job_name            = job_name,
@@ -246,7 +246,7 @@ def run_job_using_drmaa (cmd_str, job_queue_name = None, job_queue_priority = No
     #
     #   Throw if failed
     #
-    if retval and not retval.hasExited():
+    if retval and not retval.hasExited:
         raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n"
                                "The original command was:\n%s\n"
                                "The stderr was: \n%s\n\n"
