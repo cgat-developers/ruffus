@@ -25,8 +25,8 @@ Overview
 
     It is often useful to signal the completion of each task by specifying a specific
     action to be taken or function to be called. This can range from
-    printing out some message, or ``touching`` some sentinel file,
-    to emailing the author.This is particular useful if the :term:`task` is a recipe apply to an unspecified number
+    printing out some message, or  `touching  <http://en.wikipedia.org/wiki/Touch_(Unix)>`__ some sentinel file,
+    to emailing the author. This is particular useful if the :term:`task` is a recipe apply to an unspecified number
     of parameters in parallel in different :term:`job`\ s. If the task is never run, or if it
     fails, needless-to-say no task completion action will happen.
 
@@ -84,12 +84,11 @@ Overview
 :ref:`touch_file<decorators.touch_file>`
 ============================================
 
-    The most common way to note the completion of a task is to create some sort of
+    One way to note the completion of a task is to create some sort of
     "flag" file. Each stage in a traditional ``make`` pipeline would contain a
     ``touch completed.flag``.
 
-    This is so common that **Ruffus** provides a special shorthand called
-    :ref:`touch_file<decorators.touch_file>`:
+    This is such a useful idiom that *Ruffus* provides the shorthand :ref:`touch_file<decorators.touch_file>`:
 
         .. code-block:: python
 

@@ -51,9 +51,10 @@ Review
     However, By letting *Ruffus* manage your pipeline parameters, you will get the following features
     for free:
 
-        #. only out-of-date parts of the pipeline will be re-run
-        #. multiple jobs can be run in parallel (on different processors if possible)
-        #. pipeline stages can be chained together automatically
+        #. Only out-of-date parts of the pipeline will be re-run
+        #. Multiple jobs can be run in parallel (on different processors if possible)
+        #. Pipeline stages can be chained together automatically. This means you can apply your
+           pipeline just as easily to 1000 files as to 3.
 
 
 .. _new_manual.transform_in_parallel
@@ -113,7 +114,7 @@ Up-to-date jobs are not re-run unnecessarily
             pipeline_run(multiprocess = 5)
 
 
-    The up to date jobs are cleverly ignored:
+    The up to date jobs are cleverly ignored and only the out of date files are reprocessed.
 
         .. code-block:: pycon
            :emphasize-lines: 3,4,7,8,11,12
@@ -221,7 +222,7 @@ Multiple dependencies
 
 
     ``third_task()`` depends on and follows both ``first_task()`` and ``second_task()``. However, these latter two tasks are independent of each other
-    and will and can run in parallel. This can be clearly shown for our example if we added a little randomness to the run time of each job:
+    and can and will run in parallel. This can be clearly shown for our example if we added a little randomness to the run time of each job:
 
         .. code-block:: python
 
@@ -255,7 +256,7 @@ Multiple dependencies
 :ref:`@follows <decorators.follows>`
 ***************************************
 
-    If there is some reason one task has to precede the other, then this can be specified explicitly using :ref:`@follows <decorators.follows>`:
+    If there is some extrinsic reason one non-dependent task has to precede the other, then this can be specified explicitly using :ref:`@follows <decorators.follows>`:
 
 
         .. code-block:: python
@@ -340,7 +341,7 @@ Globs in the **Input** parameter
 
     * As a syntactic convenience, *Ruffus* also allows you to specify a |glob|_ pattern (e.g. ``*.txt``) in the
       **Input** parameter.
-    * |glob|_ patterns will be expanded automatically to the matching file names
+    * |glob|_ patterns will be automatically specify all matching file names as the **Input**.
     * Any strings within **Input** which contain the letters: ``*?[]`` will be treated as a |glob|_ pattern.
 
     The first function in our initial *Ruffus* pipeline example could have been written as:

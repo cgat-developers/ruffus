@@ -34,9 +34,15 @@ Overview
     .. image:: ../../images/theoretical_pipeline_schematic.png
        :scale: 50
 
-    Computational pipelines transform your data in stages until the final result is produced. One easy way to understand pipelines is by imagining your data flowing across a series of pipes until it reaches its final destination. Even quite complicated processes can be simplified if we broke things down into simple stages. Of course, it helps if we can visualise the whole process.
+    Computational pipelines transform your data in stages until the final result is produced.
+    One easy way to understand pipelines is by imagining your data flowing across a series of
+    pipes until it reaches its final destination. Even quite complicated processes can be
+    broken into simple stages. Of course, it helps to visualise the whole process.
 
-    *Ruffus* is a way of automating the plumbing in your pipeline: You supply the python functions which perform the data transformation, and tell *Ruffus* how these pipeline ``task`` functions are connected up. *Ruffus* will make sure that the right data flows down your pipeline in the right way at the right time.
+    *Ruffus* is a way of automating the plumbing in your pipeline: You supply the python functions
+    which perform the data transformation, and tell *Ruffus* how these pipeline ``task`` functions
+    are connected up. *Ruffus* will make sure that the right data flows down your pipeline in the
+    right way at the right time.
 
 
     .. note::
@@ -69,7 +75,7 @@ Importing *Ruffus*
 
             ruffus.pipeline_printout("...")
 
-    All of *Ruffus* is standard python syntax.
+    *Ruffus* uses only standard python syntax.
 
     There is no need to install anything extra or to have your script "preprocessed" to run
     your pipeline.
@@ -82,19 +88,19 @@ Importing *Ruffus*
     they need to be tagged or annotated using
     *Ruffus* `decorators <https://docs.python.org/2/glossary.html#term-decorator>`__ .
 
-    `Decorators <https://docs.python.org/2/glossary.html#term-decorator>`__ have been part of standard Python syntax since version 2.4.
+    `Decorators <https://docs.python.org/2/glossary.html#term-decorator>`__ have been part of the Python language since version 2.4.
     Common examples from the standard library include `@staticmethod  <https://docs.python.org/2/library/functions.html#staticmethod>`__ and
     `classmethod  <https://docs.python.org/2/library/functions.html#classmethod>`__.
 
-    *Ruffus* `decorators <https://docs.python.org/2/glossary.html#term-decorator>`__  start with a ``@``
+    `decorators <https://docs.python.org/2/glossary.html#term-decorator>`__  start with a ``@``
     prefix, and take a number of parameters in parenthesis, much like in a function call.
 
-    `decorators <https://docs.python.org/2/glossary.html#term-decorator>`__   are always placed before a normal python function.
+    `decorators <https://docs.python.org/2/glossary.html#term-decorator>`__   are placed before a normal python function.
 
         .. image:: ../../images/tutorial_step1_decorator_syntax.png
 
 
-    Multiple decorators can be stacked as needed in whatever order:
+    Multiple decorators can be stacked as necessary in whichever order:
 
         .. code-block:: python
 
@@ -105,7 +111,7 @@ Importing *Ruffus*
                 ""
 
     *Ruffus* `decorators <https://docs.python.org/2/glossary.html#term-decorator>`__ do not
-    otherwise alter the underlying function which can still be called normally.
+    otherwise alter the underlying function. These can still be called normally.
 
 ***************************************
 Your first *Ruffus* pipeline
@@ -116,6 +122,9 @@ Your first *Ruffus* pipeline
 ==============================================================================
 
     *Ruffus* is designed for data moving through a computational pipeline as a series of files.
+
+    It is also possible to use *Ruffus* pipelines without using intermediate data files but for your
+    first efforts, it is probably best not to subvert its canonical design.
 
     The first thing when designing a new *Ruffus* pipeline is to sketch out the set of file names for
     the pipeline on paper:
@@ -157,7 +166,7 @@ Your first *Ruffus* pipeline
 
                 You can otherwise supply as many parameters as is required.
 
-            #. :highlight-red:`Each python function should only take a` **Single Input**
+            #. :highlight-red:`Each python function should only take a` *Single* **Input** at a time
 
                 All the parallelism in your pipeline should be handled by *Ruffus*. Make sure
                 each function analyses one thing at a time.
@@ -238,15 +247,15 @@ Your first *Ruffus* pipeline
 3. Link the python functions into a pipeline
 ==============================================================================
 
-    *Ruffus* makes exactly the same function calls on your behalf. We need to first
-    tell *Ruffus* what the function arguments should be.
+    *Ruffus* makes exactly the same function calls on your behalf. However, first, we need to
+    tell *Ruffus* what the arguments should be for each of the function calls.
 
-    * The **Input** is either the starting file set (``*.fasta``) or whatever is produced
+    * The **Input** is easy: This is either the starting file set (``*.fasta``) or whatever is produced
       by the previous stage.
 
     * The **Output** file name is the same as the **Input** but with the appropriate extension.
 
-    The *Ruffus* syntax involves the :ref:`@transform <decorators.transform>` decorator as follows:
+    These are specified using the *Ruffus* :ref:`@transform <decorators.transform>` decorator as follows:
 
         .. code-block:: python
             :emphasize-lines: 6-8,17-19,29-31
@@ -295,7 +304,7 @@ Your first *Ruffus* pipeline
 
 
 ==============================================================================
-4. @transform parameters
+4. @transform syntax
 ==============================================================================
 
     #. | The 1st parameter for :ref:`@transform <decorators.transform>` is the **Input**.
@@ -305,8 +314,8 @@ Your first *Ruffus* pipeline
     #. | The 2nd parameter is the current :ref:`suffix <decorators.suffix>`
        | (i.e. our **Input** file extensions of ``".fasta"`` or  ``".sam"`` or  ``".bam"``)
 
-    #. |The 3rd parameter is what we want our **Output** file name to be after  :ref:`suffix <decorators.suffix>` string substitution (e.g. ``.fasta - > .sam``).
-       |This is only possible because we are using a sane naming scheme for our data files.
+    #. | The 3rd parameter is what we want our **Output** file name to be after :ref:`suffix <decorators.suffix>` string substitution (e.g. ``.fasta - > .sam``).
+       | This works because we are using a sane naming scheme for our data files.
 
     #. Other parameters can be passed to ``@transform`` and they will be forwarded to our python
        pipeline function.
@@ -317,10 +326,10 @@ Your first *Ruffus* pipeline
     with the right parameters, running in parallel (using multiprocessing if desired).
 
 
-.. _new_manual.pipeline_run::
-
 .. index::
     pair: pipeline_run; Tutorial
+
+.. _new_manual.pipeline_run:
 
 ==============================================================================
 5. Run the pipeline!
@@ -336,7 +345,7 @@ Your first *Ruffus* pipeline
 
         Each **task** or pipeline recipe can thus have many **jobs** each of which can work in parallel on different data.
 
-    All that is left is to run the pipeline with the eponymous  *Ruffus* function :ref:`pipeline_run<pipeline_functions.pipeline_run>`:
+    Now we can run the pipeline with the *Ruffus* function :ref:`pipeline_run<pipeline_functions.pipeline_run>`:
 
         .. code-block:: python
 
@@ -344,7 +353,7 @@ Your first *Ruffus* pipeline
 
 
 
-        The pipeline produces three sets of results in parallel, as you might expect:
+        This produces three sets of results in parallel, as you might expect:
 
         .. code-block:: pycon
 
@@ -364,12 +373,12 @@ Your first *Ruffus* pipeline
 
 
 
-
-    :ref:`pipeline_run<pipeline_functions.pipeline_run>` finds the **last** :term:`task` function of your pipeline,
-    works out what other functions this depends on, following the appropriate chain of
+    To work out which functions to call, :ref:`pipeline_run<pipeline_functions.pipeline_run>`
+    finds the **last** :term:`task` function of your pipeline, then
+    works out all the other functions this depends on, working backwards up the chain of
     dependencies automatically.
 
-    We can also specify this end point of your pipeline explicitly:
+    We can specify this end point of your pipeline explicitly:
 
         ::
 

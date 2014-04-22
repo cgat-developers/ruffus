@@ -7,7 +7,7 @@
 .. _new_manual.deprecated_parallel:
 
 ####################################################################################################################################################
-|new_manual.parallel.chapter_num|: Esoteric: Running jobs in parallel without using files with :ref:`@parallel<decorators.parallel>`
+|new_manual.parallel.chapter_num|: Esoteric: Running jobs in parallel without files using :ref:`@parallel<decorators.parallel>`
 ####################################################################################################################################################
 
 

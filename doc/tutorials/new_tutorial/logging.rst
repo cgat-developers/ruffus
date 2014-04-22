@@ -15,6 +15,10 @@
 
    * :ref:`Manual Table of Contents <new_manual.table_of_contents>`
 
+.. note::
+
+    Remember to look at the :ref:`example code <new_manual.logging.code>`
+
 *************************
 Overview
 *************************
@@ -125,46 +129,9 @@ Customising logging
 
     Instead of writing your own, it is usually more convenient to use the python
     `logging <http://docs.python.org/library/logging.html>`_
-    module which provides logging classes with rich functionality. The following sets up
-    a logger to a rotating set of files:
+    module which provides logging classes with rich functionality.
 
-        .. code-block:: python
-            :emphasize-lines: 10,14,17,31
-
-            import logging
-            import logging.handlers
-
-            LOG_FILENAME = '/tmp/ruffus.log'
-
-            # Set up a specific logger with our desired output level
-            logger = logging.getLogger('My_Ruffus_logger')
-            logger.setLevel(logging.DEBUG)
-
-            # Rotate a set of 5 log files every 2kb
-            handler = logging.handlers.RotatingFileHandler(
-                          LOG_FILENAME, maxBytes=2000, backupCount=5)
-
-            # Add the log message handler to the logger
-            logger.addHandler(handler)
-
-            # Ruffus pipeline
-            from ruffus import *
-
-            # Start with some initial data file of yours...
-            initial_file = "job1.input"
-            open(initial_file, "w")
-
-            @transform( initial_file,
-                        suffix(".input"),
-                        ".output1"),
-            def first_task(input_file, output_file):
-                "Some detailed description"
-                pass
-
-            #   use our custom logging object
-            pipeline_run(logger=logger)
-            print open("/tmp/ruffus.log").read()
-
+    The :ref:`example code<new_manual.logging.code>` sets up a logger to a rotating set of files
 
 
 .. index::

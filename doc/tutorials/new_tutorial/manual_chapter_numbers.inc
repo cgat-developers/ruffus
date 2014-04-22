@@ -7,7 +7,7 @@
 .. |new_manual.pipeline_printout_graph.chapter_num|   replace:: **Chapter 7**
 .. |new_manual.output_file_names.chapter_num|         replace:: **Chapter 8**
 .. |new_manual.mkdir.chapter_num|                     replace:: **Chapter 9**  
-.. |new_manual.task_completion.chapter_num|           replace:: **Chapter 10** 
+.. |new_manual.checkpointing.chapter_num|             replace:: **Chapter 10** 
 .. |new_manual.decorators_compendium.chapter_num|     replace:: **Chapter 11**  
 .. |new_manual.split.chapter_num|                     replace:: **Chapter 12**  
 .. |new_manual.merge.chapter_num|                     replace:: **Chapter 13** 

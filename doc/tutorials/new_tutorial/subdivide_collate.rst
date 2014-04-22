@@ -35,10 +35,10 @@ Overview
     This is the role of :ref:`@subdivide <decorators.subdivide>` and  :ref:`@subdivide <decorators.collate>`.
 
     Like :ref:`@split <decorators.split>`,  the number of output files
-    :ref:`@subdivide <decorators.subdivide>` produces for *each input* is not predetermined.
+    :ref:`@subdivide <decorators.subdivide>` produces for *each* **Input** is not predetermined.
 
     On the other hand, these output files should be named in such a way that they can
-    later be grouped back together at a using :ref:`@subdivide <decorators.collate>`.
+    later be grouped back together later using :ref:`@subdivide <decorators.collate>`.
 
     This will be clearer with some worked examples.
 
@@ -124,30 +124,26 @@ Overview
 
                 Subdivide a.start -> /home/lg/temp/a.1.fragment
             Job  = [a.start -> a.*.fragment, a] completed
+
                 Subdivide b.start -> /home/lg/temp/b.1.fragment
                 Subdivide b.start -> /home/lg/temp/b.2.fragment
                 Subdivide b.start -> /home/lg/temp/b.3.fragment
             Job  = [b.start -> b.*.fragment, b] completed
+
                 Subdivide c.start -> /home/lg/temp/c.1.fragment
                 Subdivide c.start -> /home/lg/temp/c.2.fragment
                 Subdivide c.start -> /home/lg/temp/c.3.fragment
             Job  = [c.start -> c.*.fragment, c] completed
+
         Completed Task = subdivide_files
 
                 Analysing /home/lg/temp/a.1.fragment -> /home/lg/temp/a.1.analysed
             Job  = [a.1.fragment -> a.1.analysed] completed
                 Analysing /home/lg/temp/b.1.fragment -> /home/lg/temp/b.1.analysed
             Job  = [b.1.fragment -> b.1.analysed] completed
-                Analysing /home/lg/temp/b.2.fragment -> /home/lg/temp/b.2.analysed
-            Job  = [b.2.fragment -> b.2.analysed] completed
-                Analysing /home/lg/temp/b.3.fragment -> /home/lg/temp/b.3.analysed
-            Job  = [b.3.fragment -> b.3.analysed] completed
-                Analysing /home/lg/temp/c.1.fragment -> /home/lg/temp/c.1.analysed
-            Job  = [c.1.fragment -> c.1.analysed] completed
-                Analysing /home/lg/temp/c.2.fragment -> /home/lg/temp/c.2.analysed
-            Job  = [c.2.fragment -> c.2.analysed] completed
-                Analysing /home/lg/temp/c.3.fragment -> /home/lg/temp/c.3.analysed
-            Job  = [c.3.fragment -> c.3.analysed] completed
+
+            [ ...SEE EXAMPLE CODE FOR MORE LINES ...]
+
         Completed Task = analyse_fragments
 
 
@@ -164,23 +160,25 @@ Overview
 Grouping using :ref:`@collate <decorators.collate>`
 *********************************************************************
 
-    All that is left in our example is to reassemble the analysed fragments together into
+    All that is left in our example is to reassemble the analysed fragments back together into
     3 sets of results corresponding to the original 3 pieces of starting data.
 
-    This is straightforward by eye: the files all have the same pattern: ``[abc].*.analysed``:
+    This is straightforward by eye: the file names all have the same pattern: ``[abc].*.analysed``:
+
+        ::
 
             a.1.analysed    ->   a.final_result
             b.1.analysed    ->   b.final_result
-            b.2.analysed    ->   ,,
-            b.3.analysed    ->   ,,
+            b.2.analysed    ->   ..
+            b.3.analysed    ->   ..
             c.1.analysed    ->   c.final_result
-            c.2.analysed    ->   ,,
+            c.2.analysed    ->   ..
 
     :ref:`@collate <decorators.collate>` does something similar:
 
-        #. Specify a string substitution e.g. ``b.??.analysed  -> b.final_result`` and
-        #. **Ruffus** will group together **Input** (e.g. ``c.1.analysed``, ``c.2.analysed``)
-           which result in the same **Output** (e.g. ``c.final_result``)
+        #. Specify a string substitution e.g. ``c.??.analysed  -> c.final_result`` and
+        #. Ask *ruffus* to group together any **Input** (e.g. ``c.1.analysed``, ``c.2.analysed``)
+           that will result in the same **Output** (e.g. ``c.final_result``)
 
 
         .. code-block:: python
@@ -221,7 +219,16 @@ Grouping using :ref:`@collate <decorators.collate>`
             Completed Task = recombine_analyses
 
 
-    Note that the fragment files are not guaranteed to be sent to ``recombine_analyses(input_file_names, ...)``
-    in alphabetically or any other useful order. You may want to sort the input_file_names
-    first before concatenating them.
+    .. warning::
 
+        * **Input** file names are grouped together not in a guaranteed order.
+
+              For example, the fragment files may not be sent to ``recombine_analyses(input_file_names, ...)``
+              in alphabetically or any other useful order.
+
+              You may want to sort **Input** before concatenation.
+
+        * All **Input** are grouped together if they have both the same **Output** *and* **Extra**
+          parameters. If any string substitution is specified in any of the other **Extra** parameters
+          to :ref:`@subdivide <decorators.subdivide>`, they must give the same answers for **Input**
+          in the same group.

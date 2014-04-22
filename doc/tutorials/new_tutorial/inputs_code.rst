@@ -4,7 +4,7 @@
 .. _new_manual.inputs.code:
 
 ############################################################################################################################################################################################################
-|new_manual.inputs.chapter_num|: Python Code for Manipulating task inputs via string substitution using :ref:`inputs() <decorators.inputs>`
+|new_manual.inputs.chapter_num|: Python Code for Manipulating task inputs via string substitution using :ref:`inputs() <decorators.inputs>`  and  :ref:`add_inputs() <decorators.add_inputs>`
 ############################################################################################################################################################################################################
 
 .. seealso::

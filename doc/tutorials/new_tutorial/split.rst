@@ -25,10 +25,10 @@ Overview
     A common requirement in computational pipelines is to split up a large task into
     small jobs which can be run on different processors, (or sent to a computational
     cluster). Very often, the number of jobs depends dynamically on the size of the
-    task, and cannot be known for sure beforehand.
+    task, and cannot be known beforehand.
 
     *Ruffus* uses the :ref:`@split <decorators.split>` decorator to indicate that
-    the :term:`task` function will produce an indeterminate number of output files.
+    the :term:`task` function will produce an indeterminate number of independent *Outputs* from a single *Input*.
 
 **************************************************************************************
 Example: Calculate variance for a large list of numbers in parallel
@@ -75,7 +75,7 @@ Output files for :ref:`@split <decorators.split>`
 
     This will split the incoming ``input_file_names`` into ``NNN`` number of *outputs* where ``NNN`` is not predetermined:
 
-    The *output* (second) parameter of **@split** often contains a |glob|_ pattern like the ``*.chunks`` above.
+    The *output* (second) parameter of :ref:`@split<decorators.split>` often contains a |glob|_ pattern like the ``*.chunks`` above.
 
     Only **after** the task function has completed, will Ruffus match the **Output** parameter (``*.chunks``)
     against the files which have been created by ``split_problem()`` (e.g. ``1.chunks``, ``2.chunks``, ``3.chunks``)
@@ -104,8 +104,8 @@ Clean up previous pipeline runs
     Problem arise when the current directory contains results of previous pipeline runs.
 
     * For example, if the previous analysis involved a large data set, there might be 3 chunks: ``1.chunks``, ``2.chunks``, ``3.chunks``.
-    * Now you have a small data set which can be divided into 2 chunks, ``1.chunks`` and ``2.chunks``.
-    *  Unfortunately, ``3.chunks`` from the previous run is still hanging around and will included erroneously by the glob ``*.chunks``.
+    * In the current analysis, there might be a smaller data set which divides into only 2 chunks, ``1.chunks`` and ``2.chunks``.
+    * Unfortunately, ``3.chunks`` from the previous run is still hanging around and will be included erroneously by the glob ``*.chunks``.
 
 
     .. warning::
@@ -195,7 +195,7 @@ Nothing to many
     scratch, for example at the beginning of the pipeline.
 
     However, sometimes, it is not possible to determine ahead of time how many files you
-    will be creating from scratch. ``@split`` can also be useful in such cases:
+    will be creating from scratch. :ref:`@split<decorators.split>` can also be useful even in such cases:
 
         .. code-block:: python
             :emphasize-lines: 6

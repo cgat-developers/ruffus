@@ -5,14 +5,13 @@
 Installation
 ************************************
 
-The :mod:`ruffus` is a lightweight python module to support
-running computational pipelines.
+:mod:`Ruffus` is a lightweight python module for building computational pipelines.
 
 
 The easy way
 ============
 
-    rufus is available as an
+    *Ruffus* is available as an
     `easy-install <http://peak.telecommunity.com/DevCenter/EasyInstall>`_ -able package
     on the `Python Package Index <http://pypi.python.org/pypi/Sphinx>`_.
 
@@ -34,24 +33,20 @@ The easy way
 
 The most up-to-date code:
 ==============================
-    More rarely, the most up-to-date code can be found from
+        * `Download the latest sources <https://pypi.python.org/pypi/ruffus>`_ or
 
-      * download the latest sources from
-        `here <http://code.google.com/p/ruffus/downloads/list>`_
-
-        or check out the latest code from Google using git::
+        * Check out the latest code from Google using git::
 
             git clone https://bunbun68@code.google.com/p/ruffus/ .
 
-        Bleeding edge Ruffus development happens on github::
-
+        * Bleeding edge Ruffus development takes place on github::
 
             git clone git@github.com:bunbun/ruffus.git .
 
 
-      * To install, type::
+        * To install after downloading, change to the , type::
 
-           python ./setup.py install
+          python ./setup.py install
 
 
 ======================

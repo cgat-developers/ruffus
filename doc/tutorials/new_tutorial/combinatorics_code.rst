@@ -4,7 +4,7 @@
 .. _new_manual.combinatorics.code:
 
 ############################################################################################################################################################################################################
-|new_manual.combinatorics.chapter_num|: Python Code for Preparing directories for output with :ref:`@combinatorics() <decorators.combinatorics>`
+|new_manual.combinatorics.chapter_num|: Python Code for :ref:`@combinations<decorators.combinations>`, :ref:`@permutations<decorators.permutations>` and all versus all :ref:`@product<decorators.product>`
 ############################################################################################################################################################################################################
 
 .. seealso::

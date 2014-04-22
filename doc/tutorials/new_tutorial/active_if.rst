@@ -21,14 +21,14 @@
 Overview
 ***************************************
 
-    It is sometimes useful to be able to switch on and off parts of a pipeline. For example, a pipeline 
+    It is sometimes useful to be able to switch on and off parts of a pipeline. For example, a pipeline
     might have two difference code paths depending on the type of data it is being asked to analyse.
 
     One surprisingly easy way to do this is to use a python ``if`` statement around particular task functions:
 
         .. code-block:: python
            :emphasize-lines: 3,5
-        
+
             from ruffus import *
 
             run_task1 = True
@@ -43,7 +43,7 @@ Overview
                 @transform(create_files, suffix(".foo"), ".bar")
                 def foobar(input_file, output_file):
                     open(output_file, "w")
-                    
+
 
             @transform(foobar, suffix(".bar"), ".result")
             def wrap_up(input_file, output_file):
@@ -54,10 +54,10 @@ Overview
 
 
     This simple solution has a number of drawbacks:
-        #. The on/off decision is a one off event that happens when the script is loaded. Ideally, we 
+        #. The on/off decision is a one off event that happens when the script is loaded. Ideally, we
            would like some flexibility, and postpone the decision until ``pipeline_run()`` is invoked.
         #. When ``if`` is false, the entire task function becomes invisible, and if there are any
-           downstreak tasks, as in the above example, *Ruffus* will complain loudly about
+           downstream tasks, as in the above example, *Ruffus* will complain loudly about
            missing dependencies.
 
 
@@ -66,11 +66,9 @@ Overview
 ******************************************************************************
 
 
-    :ref:`@active_if <decorators.active_if>` 
-
-        * Switches tasks on and off at run time depending on its parameters
-        * Evaluated each time ``pipeline_run``, ``pipeline_printout`` or ``pipeline_printout_graph`` is called.
-        * Dormant tasks behave as if they are up to date and have no output.
+    * Switches tasks on and off at run time depending on its parameters
+    * Evaluated each time ``pipeline_run``, ``pipeline_printout`` or ``pipeline_printout_graph`` is called.
+    * Dormant tasks behave as if they are up to date and have no output.
 
     The Design and initial implementation were contributed by Jacob Biesinger
 
@@ -114,32 +112,38 @@ Overview
             pipeline_run(verbose = 3)
 
 
-        Produces the following output:
+    The task starts off inactive:
 
-            .. code-block:: pycon
-                :emphasize-lines: 1,13
 
-                >>> # @active_if switches off task "this_task_might_be_inactive" because run_if_true_2 == False
-                >>> pipeline_run(verbose = 3)
+        .. code-block:: pycon
+            :emphasize-lines: 1
 
-                Task enters queue = create_files
-                create_files
-                    Job  = [None -> a.foo] Missing file [a.foo]
-                    Job  = [None -> b.foo] Missing file [b.foo]
-                    Job  = [None -> a.foo] completed
-                    Job  = [None -> b.foo] completed
-                Completed Task = create_files
-                Inactive Task = this_task_might_be_inactive
+            >>> # @active_if switches off task "this_task_might_be_inactive" because run_if_true_2 == False
+            >>> pipeline_run(verbose = 3)
 
-                >>> # @active_if switches on task "this_task_might_be_inactive" because all run_if_true conditions are met
-                >>> run_if_true_2 = True
-                >>> pipeline_run(verbose = 3)
+            Task enters queue = create_files
+            create_files
+                Job  = [None -> a.foo] Missing file [a.foo]
+                Job  = [None -> b.foo] Missing file [b.foo]
+                Job  = [None -> a.foo] completed
+                Job  = [None -> b.foo] completed
+            Completed Task = create_files
+            Inactive Task = this_task_might_be_inactive
 
-                Task enters queue = this_task_might_be_inactive
+    Now turn on the task:
 
-                    Job  = [a.foo -> a.bar] Missing file [a.bar]
-                    Job  = [b.foo -> b.bar] Missing file [b.bar]
-                    Job  = [a.foo -> a.bar] completed
-                    Job  = [b.foo -> b.bar] completed
-                Completed Task = this_task_might_be_inactive
+        .. code-block:: pycon
+            :emphasize-lines: 1
+
+            >>> # @active_if switches on task "this_task_might_be_inactive" because all run_if_true conditions are met
+            >>> run_if_true_2 = True
+            >>> pipeline_run(verbose = 3)
+
+            Task enters queue = this_task_might_be_inactive
+
+                Job  = [a.foo -> a.bar] Missing file [a.bar]
+                Job  = [b.foo -> b.bar] Missing file [b.bar]
+                Job  = [a.foo -> a.bar] completed
+                Job  = [b.foo -> b.bar] completed
+            Completed Task = this_task_might_be_inactive
 

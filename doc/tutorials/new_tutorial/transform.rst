@@ -6,15 +6,15 @@
 
 .. _new_manual.transform:
 
-######################################################################################################
-|new_manual.transform.chapter_num|: Transforming data in a pipeline with ``@transform``
-######################################################################################################
+############################################################################################################################################################################################################
+|new_manual.transform.chapter_num|: Transforming data in a pipeline with :ref:`@transform <decorators.transform>`
+############################################################################################################################################################################################################
 
 
 .. seealso::
 
    * :ref:`Manual Table of Contents <new_manual.table_of_contents>`
-   * :ref:`@transform syntax in detail <decorators.transform>`
+   * :ref:`@transform <decorators.transform>` syntax
 
 .. note::
 
@@ -41,15 +41,6 @@ Review
             * **write down the names of functions which transforms the data at each stage of the pipeline.**
 
 
-    By letting **Ruffus** manage your pipeline parameters, you will get the following features
-    for free:
-
-        #. only out-of-date parts of the pipeline will be re-run
-        #. multiple jobs can be run in parallel (on different processors if possible)
-        #. pipeline stages can be chained together automatically
-
-
-
 
 ************************************
 Task functions as recipes
@@ -65,23 +56,13 @@ Task functions as recipes
         * a ``count_lines()`` *task* which will count the number of lines in any file or
         * an ``align_dna()`` *task* which will align the DNA of many chromosomes.
 
-    .. note ::
-
-        **Key Ruffus Terminology**:
-
-        A  :term:`task` is an annotated python function which represents a recipe or stage of your pipeline.
-
-        A  :term:`job` is each time your recipe is applied to a piece of data, i.e. each time Ruffus calls your function.
-
-        Each **task** or pipeline recipe can thus have many **jobs** each of which can work in parallel on different data.
-
 
 .. index::
     pair: one to one @transform; Tutorial
 
-***************************************
-@transform is a 1 to 1 operation
-***************************************
+******************************************************************************
+:ref:`@transform <decorators.transform>` is a 1 to 1 operation
+******************************************************************************
 
 
     ``@transform`` is a 1:1 operation because for each input, it generates one output.
@@ -93,19 +74,22 @@ Task functions as recipes
     This is obvious when you count the number of jobs at each step. In our example pipeline, there are always
     three jobs moving through in step at each stage (:term:`task`).
 
-    Each "input" or "output" is not limited, however, to a single filename. Each job can accept, for example,
-    a pair of files as its input, or generate more than one file or a dictionary or numbers as its output.
+    Each **Input** or **Output** is not limited, however, to a single filename. Each job can accept, for example,
+    a pair of files as its **Input**, or generate more than one file or a dictionary or numbers as its **Output**.
 
     When each job outputs a pair of files, this does not generate two jobs downstream. It just means that the successive
     :term:`task` in the pipeline will receive a list or tuple of files as its input parameter.
 
     .. note::
 
-        The different sort of decorators in Ruffus determine the *topology* of your pipeline, i.e. how the jobs from different tasks are linked together seamlessly.
+        The different sort of decorators in Ruffus determine the *topology* of your pipeline,
+        i.e. how the jobs from different tasks are linked together seamlessly.
+
+        :ref:`@transform <decorators.transform>` always generates one **Output** for one **Input**.
 
         In the later parts of the tutorial, we will encounter more decorators which can *split up*, or *join together* or *group* inputs.
 
-            In other words, inputs and output can have **many to one**, **many to many** etc. relationships.
+        In other words, using other decorators **Input** and **Output**  can have **many to one**, **many to many** etc. relationships.
 
 =======================================
 A pair of files as the **Input**
@@ -150,8 +134,7 @@ A pair of files as the **Input**
             Completed Task = map_dna_sequence
 
 
-
-
+    :ref:`suffix <decorators.suffix>` always matches only the first file name in each **Input**.
 
 .. index::
     pair: input / output parameters; Tutorial

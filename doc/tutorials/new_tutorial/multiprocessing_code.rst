@@ -116,6 +116,7 @@
         Processing stage2 8.stage2 ->Finished
         Processing stage2 9.stage2 ->Finished
 
+.. _using_ruffus.drmaa_wrapper:
 
 ************************************************************************************
 Using  ``ruffus.drmaa_wrapper``

@@ -32,14 +32,14 @@ Installation: use pip
     See :ref:`manual <new_manual.cmdline>`
 
 ============================================================================================================================================================
-2) Task completion monitoring
+2) Check pointing
 ============================================================================================================================================================
 
     * Contributed by **Jake Biesinger**
-    * See :ref:`Manual <new_manual.task_completion>`
+    * See :ref:`Manual <new_manual.checkpointing>`
     * Uses a fault resistant sqlite database file to log i/o files, and additional checksums
     * defaults to checking file timestamps stored in the current directory (``ruffus_utilility.RUFFUS_HISTORY_FILE = '.ruffus_history.sqlite'``)
-    * ``pipeline_run(..., checksum_level = N, ...)``
+    * :ref:`pipeline_run(..., checksum_level = N, ...) <pipeline_functions.pipeline_run>`
 
        * level 0 = CHECKSUM_FILE_TIMESTAMPS      : Classic mode. Use only file timestamps (no checksum file will be created)
        * level 1 = CHECKSUM_HISTORY_TIMESTAMPS   : Also store timestamps in a database after successful job completion
@@ -51,59 +51,54 @@ Installation: use pip
     * Can speed up trivial tasks: Previously Ruffus always added an extra 1 second pause between tasks
       to guard against file systems (Ext3, FAT, some NFS) with low timestamp granularity.
 
-    * See :ref:`manual <new_manual.task_completion>`
 
 ============================================================================================================================================================
-3) ``@subdivide``
+3) :ref:`subdivide() <new_manual.subdivide>` (:ref:`syntax <decorators.subdivide>`)
 ============================================================================================================================================================
 
-    * :ref:`subdivide() <new_manual.subdivide>` (:ref:`syntax <decorators.subdivide>`)
-    * Take a list of input jobs (like ``@transform``) but further splits each into multiple jobs, i.e. it is a **many->even more** relationship
-    * synonym for ``@split(..., regex(), ...)``
+    *
+    * Take a list of input jobs (like :ref:`@transform <decorators.transform>`) but further splits each into multiple jobs, i.e. it is a **many->even more** relationship
+    * synonym for the deprecated ``@split(..., regex(), ...)``
 
-============================================================================================================================================================
-4) ``@mkdir`` with ``formatter()``, ``suffix()`` and ``regex()``
-============================================================================================================================================================
+========================================================================================================================================================================================================================================================================================================================
+4) :ref:`mkdir() <new_manual.mkdir>` (:ref:`syntax <decorators.mkdir>`) with :ref:`formatter() <new_manual.formatter>`, :ref:`suffix() <decorators.suffix>`  and :ref:`regex() <decorators.regex>`
+========================================================================================================================================================================================================================================================================================================================
 
-    * :ref:`mkdir() <new_manual.mkdir>` (:ref:`syntax <decorators.mkdir>`)
     * allows directories to be created depending on runtime parameters or the output of previous tasks
-    * behaves just like ``@transform`` but with its own (internal) function which does the actual work of making a directory
-    * Previous behavior is retained:``mkdir`` continues to work seamlessly inside ``@follows``
+    * behaves just like :ref:`@transform <decorators.transform>` but with its own (internal) function which does the actual work of making a directory
+    * Previous behavior is retained:``mkdir`` continues to work seamlessly inside :ref:`@follows <decorators.follows>`
 
 ============================================================================================================================================================
-5) ``@originate``
+5) :ref:`originate() <new_manual.originate>` (:ref:`syntax <decorators.originate>`)
 ============================================================================================================================================================
 
-    * :ref:`originate() <new_manual.originate>` (:ref:`syntax <decorators.originate>`)
     * Generates output files without dependencies from scratch  (*ex nihilo*!)
     * For first step in a pipeline
     * Task function obviously only takes output and not input parameters. (There *are* no inputs!)
-    * synonym for ``@split(None,...)``
+    * synonym for :ref:`@@split(None,...) <decorators.split>`
     * See :ref:`Summary <decorators.originate>` / :ref:`Manual <new_manual.originate>`
 
-============================================================================================================================================================
-6) New flexible ``formatter`` alternative to ``regex`` & ``suffix``
-============================================================================================================================================================
+========================================================================================================================================================================================================================================================================================================================
+6) New flexible :ref:`formatter() <new_manual.formatter>` (:ref:`syntax <decorators.formatter>`) alternative to :ref:`regex() <decorators.regex>`  & :ref:`suffix() <decorators.suffix>`
+========================================================================================================================================================================================================================================================================================================================
 
-    * :ref:`formatter() <new_manual.formatter>` (:ref:`syntax <decorators.formatter>`)
     * Easy manipulation of path subcomponents in the style of `os.path.split()  <http://docs.python.org/2/library/os.path.html#os.path.split>`__
     * Regular expressions are no longer necessary for path manipulation
     * Familiar python syntax
     * Optional regular expression matches
     * Can refer to any in the list of N input files (not only the first file as for ``regex(...)``)
     * Can even refer to individual letters within a match
-    * See :ref:`Summary <decorators.formatter>` / :ref:`Manual <new_manual.formatter>`
 
 ============================================================================================================================================================
-7) Combinatorics (all vs. all decorators)`
+7) Combinatorics (all vs. all decorators)
 ============================================================================================================================================================
 
-    * ``@product`` (See `itertools.product  <http://docs.python.org/2/library/itertools.html#itertools.product>`__)
-    * ``@permutations`` (See `itertools.permutations  <http://docs.python.org/2/library/itertools.html#itertools.permutations>`__)
-    * ``@combinations`` (See `itertools.combinations  <http://docs.python.org/2/library/itertools.html#itertools.combinations>`__)
-    * ``@combinations_with_replacement`` (See `itertools.combinations_with_replacement  <http://docs.python.org/2/library/itertools.html#itertools.combinations_with_replacement>`__)
-    * in optional ``combinatorics`` module
-    * Only ``formatter([OPTIONAl_REGEX])`` provides the necessary flexibility to construct the output. (``suffix`` and ``regex`` are not supported.)
+    * :ref:`product <new_manual.product>`  (See `itertools.product  <http://docs.python.org/2/library/itertools.html#itertools.product>`__)
+    * :ref:`permutations <new_manual.permutations>`  (See `itertools.permutations  <http://docs.python.org/2/library/itertools.html#itertools.permutations>`__)
+    * :ref:`combinations <new_manual.combinations>` (See `itertools.combinations  <http://docs.python.org/2/library/itertools.html#itertools.combinations>`__)
+    * :ref:`combinations_with_replacement <new_manual.combinations_with_replacement>` (See `itertools.combinations_with_replacement  <http://docs.python.org/2/library/itertools.html#itertools.combinations_with_replacement>`__)
+    * in optional :ref:`permutations <new_manual.combinatorics>` module
+    * Only :ref:`formatter() <new_manual.formatter>` provides the necessary flexibility to construct the output. (:ref:`suffix() <decorators.suffix>` and :ref:`regex() <decorators.regex>` are not supported.)
     * See :ref:`Summary <decorators.combinatorics>` / :ref:`Manual <new_manual.combinatorics>`
 
 
@@ -119,26 +114,10 @@ Installation: use pip
 ============================================================================================================================================================
 9) ``pipeline_run(...)`` and exceptions
 ============================================================================================================================================================
+    See :ref:`Manual <new_manual.exceptions>`
+
     * Optionally terminate pipeline after first exception
-        To have all exceptions interrupt immediately::
-
-                pipeline_run(..., exceptions_terminate_immediately = True)
-
-        By default ruffus accumulates ``NN`` errors before interrupting the pipeline prematurely. ``NN`` is the specified parallelism for ``pipeline_run(..., multiprocess = NN)``.
-
-        Otherwise, a pipeline will only be interrupted immediately if exceptions of type ``ruffus.JobSignalledBreak`` are thrown.
-
     * Display exceptions without delay
-
-        By default, Ruffus re-throws exceptions in ensemble after pipeline termination.
-
-        To see exceptions as they occur::
-
-                pipeline_run(..., log_exceptions = True)
-
-        ``logger.error(...)`` will be invoked with the string representation of the each exception, and associated stack trace.
-
-        The default logger prints to sys.stderr, but this can be changed to any class from the logging module or compatible object via ``pipeline_run(..., logger = ???)``
 
 
 ============================================================================================================================================================

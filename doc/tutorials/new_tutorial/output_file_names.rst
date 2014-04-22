@@ -59,7 +59,7 @@ A different file name :ref:`suffix() <decorators.suffix>` for each pipeline stag
     The easiest and cleanest way to write Ruffus pipelines is to use a different suffix
     for each stage of your pipeline.
 
-    We did this in :ref:`code <new_manual.transform_in_parallel.code>` from |new_manual.transform_in_parallel.chapter_num| :ref:`More on @transform-ing data and @originate <new_manual.transform_in_parallel>`:
+    We used this approach in :ref:`new_manual.introduction`  and in :ref:`code <new_manual.transform_in_parallel.code>` from :ref:`new_manual.transform_in_parallel`:
 
 
     .. code-block:: bash
@@ -179,14 +179,14 @@ A different file name :ref:`suffix() <decorators.suffix>` for each pipeline stag
 
 
     Though :ref:`formatter() <decorators.formatter>` is much more powerful, the principle and syntax are the same:
-    we take string elements from the inputs and perform some replacements to generate the output parameters.
+    we take string elements from the **Input** and perform some replacements to generate the **Output** parameters.
 
 
     :ref:`formatter() <decorators.formatter>`
 
         * Allows easy manipulation of path subcomponents in the style of `os.path.split()  <http://docs.python.org/2/library/os.path.html#os.path.split>`__, and `os.path.basename  <http://docs.python.org/2/library/os.path.html#os.path.basename>`__
         * Uses familiar python `string.format  <http://docs.python.org/2/library/string.html#string-formatting>`__ syntax (See `string.format examples  <http://docs.python.org/2/library/string.html#format-examples>`__. )
-        * Supports an optional regular expression (`re   <http://docs.python.org/2/library/re.html#re.MatchObject.group>`__) matches, including named captures.
+        * Supports optional regular expression (`re   <http://docs.python.org/2/library/re.html#re.MatchObject.group>`__) matches including named captures.
         * Can refer to any file path (i.e. python string) in each input and is not limited like :ref:`suffix() <decorators.suffix>` to the first string.
         * Can even refer to individual letters within a match
 
@@ -213,16 +213,25 @@ Path name components
         * ``subpath`` : A list of descending sub-paths in reverse order, ``["/directory/to/a", "/directory/to", "/directory", "/"]``
 
 
-    The replacement string refers to these components using python `string.format <http://docs.python.org/2/library/string.html#string-formatting>`__ style curly braces. ``{NAME}``
+    The replacement string refers to these components by using python `string.format <http://docs.python.org/2/library/string.html#string-formatting>`__ style curly braces. ``"{NAME}"``
 
     We refer to an element from the Nth input string by index, for example:
 
-       * ``"{ext[0]}"``     is the extension of the first input string.
-       * ``"{basename[1]}"`` is the basename of the second input string.
-       * ``"{basename[1][0:3]}"`` are the first three letters from the basename of the second input string.
+       * ``"{ext[0]}"``     is the extension of the first file name string in **Input**.
+       * ``"{basename[1]}"`` is the basename of the second file name in **Input**.
+       * ``"{basename[1][0:3]}"`` are the first three letters from the basename of the second file name in **Input**.
 
 
-    ``subdir``, ``subpath`` were designed to help you navigate your directory hierachy with the minimum of fuss. For example, you might want to maintain the
+    ``subdir``, ``subpath`` were designed to help you navigate directory hierachies with the minimum of fuss.
+    For example, you might want to graft a hierachical path to another location:
+    ``"{subpath[0][2]}/from/{subdir[0][0]}/{basename[0]}"`` neatly replaces just one directory (``"to"``) in the path with another  (``"from"``):
+
+        .. code-block:: python
+
+            replacement_string = "{subpath[0][2]}/from/{subdir[0][0]}/{basename[0]}"
+
+            input_string    = "/directory/to/a/file.name.ext"
+            result_string   = "/directory/from/a/file.name.ext"
 
 
 .. _new_manual.formatter.regex:
@@ -237,19 +246,19 @@ Filter and parse using regular expressions
         .. code-block:: python
 
             input_string = "/directory/to/a/file.name.ext"
-            formatter(r"/directory/(.+)/(?P<FILENAME>)\.ext")
+            formatter(r"/directory/(.+)/(?P<MYFILENAME>)\.ext")
 
-        We capture part of the path using ``(.+)``, and the base name using ``(?P<FILENAME>)``.
+        We capture part of the path using ``(.+)``, and the base name using ``(?P<MYFILENAME>)``.
         These `matching subgroups  <http://docs.python.org/2/library/re.html#re.MatchObject.group>`__ can be referred to by index
-        but for greater clarity the second named capture can also be referred to by name, i.e. ``FILENAME``.
+        but for greater clarity the second named capture can also be referred to by name, i.e. ``{MYFILENAME}``.
 
 
     The regular expression components for the first string can thus be referred to as follows:
 
-        * ``{0[0]}``         : The entire match captured by index, ``"/directory/to/a/file.name.ext"``
-        * ``{1[0]}``         : The first match captured by index, ``"to/a"``
-        * ``{2[0]}``         : The second match captured by index, ``"file.name"``
-        * ``{FILENAME[0]}``  : The match captured by name, ``"file.name"``
+        * ``{0[0]}``          : The entire match captured by index, ``"/directory/to/a/file.name.ext"``
+        * ``{1[0]}``          : The first match captured by index, ``"to/a"``
+        * ``{2[0]}``          : The second match captured by index, ``"file.name"``
+        * ``{MYFILENAME[0]}`` : The match captured by name, ``"file.name"``
 
 
     If each input consists of a list of paths such as ``['job1.a.start', 'job1.b.start', 'job1.c.start']``, we can match each of them separately
@@ -274,7 +283,7 @@ Filter and parse using regular expressions
 Using :ref:`@transform() <decorators.transform>` with :ref:`formatter() <decorators.formatter>`
 ================================================================================================
 
-    We can put these together for our the ``@transform`` example from step 3:
+    We can put these together in the following example:
 
         .. code-block:: python
             :emphasize-lines: 21,22
@@ -342,7 +351,7 @@ Using :ref:`@transform() <decorators.transform>` with :ref:`formatter() <decorat
             files which do not match your specified criteria.
 
             If your some of your task inputs have a mixture of different file types, a simple ``Formatter(".txt$")``, for example, will make
-            your life a lot easier...
+            your code a lot simpler...
 
 
 
@@ -350,7 +359,7 @@ Using :ref:`@transform() <decorators.transform>` with :ref:`formatter() <decorat
 string substitution for "extra" arguments
 ================================================================================================
 
-    The first two arguments for Ruffus task functions are special because they are the *input* and *output*
+    The first two arguments for Ruffus task functions are special because they are the **Input** and **Output**
     parameters which link different stages of a pipeline.
 
 
@@ -360,9 +369,9 @@ string substitution for "extra" arguments
     Any python strings they contain do not need to be file names. These extra arguments are very useful
     for passing data to pipelined tasks, such as shared values, loggers, programme options etc.
 
-    One helpful feature is that strings in these extra arguments are also subject to :ref:`formatter() <decorators.formatter>` string substitution .
-    This means you can leverage the parsing capabilities of Ruffus to decode any information about the pipeline data files, For example,
-    the directories you are running in, parts of the file name etc.
+    One helpful feature is that strings in these extra arguments are also subject to :ref:`formatter() <decorators.formatter>` string substitution.
+    This means you can leverage the parsing capabilities of Ruffus to decode any information about the pipeline data files,
+    These might include the directories you are running in and parts of the file name.
 
     For example, if we would want to know which files go with which "job number" in the previous example:
 
@@ -422,7 +431,7 @@ Changing directories using :ref:`formatter() <decorators.formatter>` in a zoo...
 
     I have colour coded the input and output files for this task to show how we would like to rearrange them:
 
-        .. image:: ../../images/simple_tutorial_zoo_animals.formatter_example.jpg
+        .. image:: ../../images/simple_tutorial_zoo_animals_formatter_example.jpg
            :scale: 50
 
         .. code-block:: python

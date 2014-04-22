@@ -43,11 +43,11 @@ Overview
             pass
 
 
-    This ensures that the decorated task *follows* (:ref:`@follows <new_manual.follows.mkdir>`) the
+    This ensures that the decorated task follows (:ref:`@follows <new_manual.follows.mkdir>`) the
     making of the specified directory (``mkdir()``).
 
-    Sometimes, however, the *output* is intended not for any single directory but a group
-    of destinations depending on the nature of the file name.
+    Sometimes, however, the **Output** is intended not for any single directory but a group
+    of destinations depending on the parsed contents of **Input** paths.
 
 *********************************************************************************************************************
 Creating directories after string substitution in a zoo...
@@ -58,7 +58,7 @@ Creating directories after string substitution in a zoo...
     We want to feed the denizens of a zoo. The original file names are spread over several directories and we
     group their food supply by the *clade* of the animal in the following manner:
 
-        .. image:: ../../images/simple_tutorial_zoo_animals.formatter_example.jpg
+        .. image:: ../../images/simple_tutorial_zoo_animals_formatter_example.jpg
            :scale: 50
 
         .. code-block:: python
@@ -87,9 +87,12 @@ Creating directories after string substitution in a zoo...
 using :ref:`formatter() <decorators.formatter>`
 ==============================================================================
 
-    We could of course do this manually, but why don't we use the same logic for the directories as the file names?
+    We could of course create directories manually.
+    However, apart from being tedious and error prone, we have already gone to some lengths
+    to parse out the diretories for :ref:`@transform <decorators.transform>`.
+    Why don't we use the same logic to make the directories?
 
-    Can you see the parallels between the syntax for @mkdir and @transform?
+    Can you see the parallels between the syntax for :ref:`@mkdir <decorators.mkdir>` and :ref:`@transform <decorators.transform>`?
 
         .. code-block:: python
 
@@ -99,7 +102,7 @@ using :ref:`formatter() <decorators.formatter>`
                        formatter(".+/(?P<clade>\w+).(?P<tame>\w+).animals"),       # Only animals: ignore plants!
                        "{subpath[0][1]}/{clade[0]})                                # new_directory
 
-            #   Put different animals in different directories depending on their clade
+            #   Put animals of each clade in the same directory
             @transform(create_initial_files,                                       # Input
 
                        formatter(".+/(?P<clade>\w+).(?P<tame>\w+).animals"),       # Only animals: ignore plants!
@@ -132,7 +135,7 @@ using :ref:`regex() <decorators.regex>`
                        regex(r"(.*?)/?(\w+)/(?P<clade>\w+).(?P<tame>\w+).animals"), # Only animals: ignore plants!
                        r"\1/\g<clade>")                                             # new_directory
 
-            #   Put different animals in different directories depending on their clade
+            #   Put animals of each clade in the same directory
             @transform(create_initial_files,                                       # Input
 
                        formatter(".+/(?P<clade>\w+).(?P<tame>\w+).animals"),       # Only animals: ignore plants!

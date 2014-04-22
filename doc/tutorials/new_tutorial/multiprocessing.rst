@@ -62,15 +62,14 @@ Data sharing
 =====================
 
     Running jobs in separate processes allows *Ruffus* to make full use of the multiple
-    processors in modern computers. However, some of the
-    `multiprocessing guidelines <http://docs.python.org/library/multiprocessing.html#multiprocessing-programming>`_
+    processors in modern computers. However, some `multiprocessing guidelines <http://docs.python.org/library/multiprocessing.html#multiprocessing-programming>`_
     should be borne in mind when writing *Ruffus* pipelines. In particular:
 
     * Try not to pass large amounts of data between jobs, or at least be aware that this has to be marshalled
       across process boundaries.
 
     * Only data which can be `pickled <http://docs.python.org/library/pickle.html>`_ can be passed as
-      parameters to *Ruffus* task functions. Happily, that applies to almost any Python data type.
+      parameters to *Ruffus* task functions. Happily, that applies to almost any native Python data type.
       The use of the rare, unpicklable object will cause python to complain (fail) loudly when *Ruffus* pipelines
       are run.
 
@@ -88,7 +87,7 @@ Restricting parallelism with :ref:`@jobs_limit <decorators.jobs_limit>`
 
     Calling :ref:`pipeline_run(multiprocess = NNN)<pipeline_functions.pipeline_run>` allows
     multiple jobs (from multiple independent tasks) to be run in parallel. However, there
-    are some operations which consume so many resources that we might want them to run
+    are some operations that consume so many resources that we might want them to run
     with less or no concurrency.
 
     For example, we might want to download some files via FTP but the server restricts
@@ -98,60 +97,16 @@ Restricting parallelism with :ref:`@jobs_limit <decorators.jobs_limit>`
     or with little concurrency.
 
 
-    If setting ``multiprocess = NNN`` sets the pipeline-wide concurrency to ``NNN``, then
-    ``@jobs_limit(MMM)`` sets concurrency at a much finer level, at ``MMM`` just for jobs
-    in the indicated task.
+    * :ref:`pipeline_run(multiprocess = NNN)<pipeline_functions.pipeline_run>` sets the pipeline-wide concurrency but
+    * :ref:`@jobs_limit(MMM)<decorators.jobs_limit>` sets concurrency at ``MMM`` only for jobs in the decorated task.
 
     The optional name (e.g. ``@jobs_limit(3, "ftp_download_limit")``) allows the same limit to
     be shared across multiple tasks. To be pedantic: a limit of ``3`` jobs at a time would be applied
-    across all tasks which have a ``@jobs_limit`` named ``"ftp_download_limit"``:
+    across all tasks which have a ``@jobs_limit`` named ``"ftp_download_limit"``.
 
-        ::
-
-            from ruffus import *
-            import time
-
-            # make list of 10 files
-            @split(None, "*stage1")
-            def make_files(input_files, output_files):
-                for i in range(10):
-                    if i < 5:
-                        open("%d.small_stage1" % i, "w")
-                    else:
-                        open("%d.big_stage1" % i, "w")
-
-            @jobs_limit(3, "ftp_download_limit")
-            @transform(make_files, suffix(".small_stage1"), ".stage2")
-            def stage1_small(input_file, output_file):
-                print "FTP downloading %s" % input_file
-                time.sleep(2)
-                open(output_file, "w")
-                print "FTP Finished downloading %s" % input_file
-
-            @jobs_limit(3, "ftp_download_limit")
-            @transform(make_files, suffix(".big_stage1"), ".stage2")
-            def stage1_big(input_file, output_file):
-                print "FTP downloading %s" % input_file
-                time.sleep(2)
-                open(output_file, "w")
-                print "FTP Finished downloading %s" % input_file
-
-            @jobs_limit(5)
-            @transform([stage1_small, stage1_big], suffix(".stage2"), ".stage3")
-            def stage2(input_file, output_file):
-                print "Processing stage2 %s" % input_file
-                time.sleep(2)
-                open(output_file, "w")
-                print "Processing stage2 %s" % input_file
-
-            pipeline_run(multiprocess = 10, verbose = 0)
-
-
-
-        will run the 10 jobs of ``stage1_big`` and ``stage1_small`` 3 at a time (highlighted in blue),
-        a limit shared across the two tasks. ``stage2`` jobs run 5 at a time (in red).
-        These limits override the numbers set in ``pipeline_run`` (``multiprocess = 10``):
-
+    The :ref:`example code<new_manual.multiprocessing.code>` uses up to 10 processes across the
+    pipeline, but runs the ``stage1_big`` and ``stage1_small`` tasks 3 at a time (shared across
+    both tasks). ``stage2`` jobs run 5 at a time.
 
 
 
@@ -163,7 +118,7 @@ Using ``drmaa`` to dispatch work to Computational Clusters or Grid engines from 
 
     Ruffus has been widely used to manage work on computational clusters or grid engines. Though Ruffus
     task functions cannot (yet!) run natively and transparently on remote cluster nodes, it is trivial
-    to dispatch work items across the cluster.
+    to dispatch work across the cluster.
 
     From version 2.4 onwards, Ruffus includes an optional helper module which interacts with
     `python bindings  <https://github.com/drmaa-python/drmaa-python>`__ for the widely used `drmaa  <http://en.wikipedia.org/wiki/DRMAA>`__
@@ -222,63 +177,22 @@ Using ``drmaa`` to dispatch work to Computational Clusters or Grid engines from 
     `subprocess.check_output  <http://docs.python.org/2/library/subprocess.html#subprocess.check_call>`__ but the code will run remotely as specified:
 
         .. code-block:: python
-            :emphasize-lines: 30
+            :emphasize-lines: 1
 
-            #!/usr/bin/python
-            job_queue_name    = "YOUR_QUEUE_NAME_GOES_HERE"
-            job_other_options = "-P YOUR_PROJECT_NAME_GOES_HERE"
+                # ruffus.drmaa_wrapper.run_job
+                stdout_res, stderr_res  = run_job(cmd_str           = "touch " + output_file,
+                                                  job_name          = job_name,
+                                                  logger            = logger,
+                                                  drmaa_session     = drmaa_session,
+                                                  run_locally       = options.local_run,
+                                                  job_queue_name    = job_queue_name,
+                                                  job_other_options = job_other_options)
 
-            from ruffus import *
-            from ruffus.drmaa_wrapper import run_job, error_drmaa_job
-
-            parser = cmdline.get_argparse(description='WHAT DOES THIS PIPELINE DO?')
-
-            options = parser.parse_args()
-
-            #  logger which can be passed to multiprocessing ruffus tasks
-            logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
-
-
-            #
-            #   start shared drmaa session for all jobs / tasks in pipeline
-            #
-            import drmaa
-            drmaa_session = drmaa.Session()
-            drmaa_session.initialize()
-
-            @originate(["1.chromosome", "X.chromosome"],
-                       logger, logger_mutex)
-            def create_test_files(output_file):
-                try:
-                    stdout_res, stderr_res = "",""
-                    job_queue_name, job_other_options = get_queue_options()
-
-                    # ruffus.drmaa_wrapper.run_job
-                    stdout_res, stderr_res  = run_job(cmd_str           = "touch " + output_file,
-                                                      job_name          = job_name,
-                                                      logger            = logger,
-                                                      drmaa_session     = drmaa_session,
-                                                      run_locally       = options.local_run,
-                                                      job_queue_name    = job_queue_name,
-                                                      job_other_options = job_other_options)
-
-                # relay all the stdout, stderr, drmaa output to diagnose failures
-                except error_drmaa_job as err:
-                    raise Exception("\n".join(map(str,
-                                        "Failed to run:"
-                                        cmd,
-                                        err,
-                                        stdout_res,
-                                        stderr_res)))
-
-
-            if __name__ == '__main__':
-                cmdline.run (options, multithread = options.jobs)
-                drmaa_session.exit()
+        The complete code is available :ref:`here <using_ruffus.drmaa_wrapper>`
 
     * :ref:`drmaa_wrapper.run_job() <drmaa_wrapper.run_job>` is a convenience wrapper around the `python drmaa bindings <https://github.com/drmaa-python/drmaa-python>`__
-      `RunJob <http://drmaa-python.readthedocs.org/en/latest/tutorials.html#waiting-for-a-job>`__ function
-      which takes care of writing the drmaa *job template* for you.
+      `RunJob <http://drmaa-python.readthedocs.org/en/latest/tutorials.html#waiting-for-a-job>`__ function.
+      It takes care of writing drmaa *job templates* for you.
     * Each call creates a separate drmaa *job template*.
 
 ==================================================================================================
@@ -331,4 +245,50 @@ Using ``drmaa`` to dispatch work to Computational Clusters or Grid engines from 
               run_job(cmd_str, touch_only = True)
 
 
+.. index::
+    pair: pipeline_run touch mode; Tutorial
+    pair: touch mode pipeline_run; Tutorial
+
+.. _new_manual.pipeline_run_touch:
+
+
+********************************************************************************************
+Forcing a pipeline to appear up to date
+********************************************************************************************
+
+    Sometimes, we *know* that a pipeline has run to completion, that everything is up-to-date. However, Ruffus still insists on the basis
+    of file modification times that you need to rerun.
+
+    For example, sometimes a trivial accounting modification needs to be made to a data file.
+    Even though you know that this changes nothing in practice, Ruffus will detect the modification and
+    ask to rerun everything from that point forwards.
+
+    One way to convince Ruffus that everything is fine is to manually `touch  <http://en.wikipedia.org/wiki/Touch_(Unix)>`__
+    all subsequent data files one by one in sequence so that the file timestamps follow the appropriate progression.
+
+    You can also ask *Ruffus* to do this automatically for you by running the pipeline in `touch  <http://en.wikipedia.org/wiki/Touch_(Unix)>`__
+    mode:
+
+        .. code-block:: python
+
+            pipeline_run( touch_files_only = True)
+
+
+    :ref:`pipeline_run <pipeline_functions.pipeline_run>` will run your pipeline script normally working backwards from any specified final target, or else the
+    last task in the pipeline. It works out where it should begin running, i.e. with the first out-of-date data files.
+    After that point, instead of calling your pipeline task functions, each missing or out-of-date file is
+    `touch-ed  <http://en.wikipedia.org/wiki/Touch_(Unix)>`__ in turn so that the file modification dates
+    follow on successively.
+
+
+    This turns out to be useful way to check that your pipeline runs correctly by creating a series of dummy (empty files).
+    However, *Ruffus* does not know how to read your mind to know which files to create from :ref:`@split <decorators.split>` or
+    :ref:`@subdivide <decorators.subdivide>` tasks.
+
+
+    Using :ref:`ruffus.cmdline <new_manual.cmdline>` from version 2.4, you can just specify:
+
+        .. code-block:: bash
+
+            your script --touch_files_only [--other_options_of_your_own_etc]
 

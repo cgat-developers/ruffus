@@ -6,9 +6,9 @@
 
 .. _new_manual.pipeline_printout_graph:
 
-######################################################################################################
-|new_manual.pipeline_printout_graph.chapter_num|: Displaying the pipeline visually
-######################################################################################################
+############################################################################################################################################################################################################
+|new_manual.pipeline_printout_graph.chapter_num|: Displaying the pipeline visually with :ref:`pipeline_printout_graph(...) <pipeline_functions.pipeline_printout_graph>`
+############################################################################################################################################################################################################
 
 .. seealso::
 
@@ -25,7 +25,7 @@
 Printing out a flowchart of our pipeline
 =============================================
 
-    It is all very well being able to trace the data flow through the pipeline in text.
+    It is all very well being able to trace the data flow through the pipeline as text.
     Sometimes, however, we need a bit of eye-candy!
 
     We can see a flowchart for our fledgling pipeline by executing:
@@ -38,15 +38,15 @@ Printing out a flowchart of our pipeline
                                         no_key_legend = False)
 
         .. image:: ../../images/simple_tutorial_stage5_flowchart.png
+           :scale: 70
 
 
-    Flowcharts can be printed in a large number of formats including jpg, svg,
-    png and pdf.
+    Flowcharts can be printed in a large number of formats including ``jpg``, ``svg``, ``png`` and ``pdf``.
 
 
-    ..note ::
+    .. note::
 
-        Flowcharts rely on the ``dot`` programme from `Graphviz <http://www.graphviz.org/>`_.
+        Flowcharts rely on the ``dot`` programme from `Graphviz <http://www.graphviz.org/>`__.
 
         Please make sure this is installed.
 
@@ -97,6 +97,7 @@ Horribly complicated pipelines!
     Flowcharts are especially useful if you have really complicated pipelines, such as
 
         .. image:: ../../images/simple_tutorial_complex_flowchart.png
+           :scale: 70
 
 
 =============================================
@@ -105,5 +106,6 @@ Circular dependency errors in pipelines!
     Especially, if the pipeline is not set up properly, and vicious circular dependencies
     are present:
 
-
         .. image:: ../../images/simple_tutorial_complex_flowchart_error.png
+           :scale: 70
+

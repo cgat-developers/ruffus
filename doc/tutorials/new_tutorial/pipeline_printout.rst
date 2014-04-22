@@ -6,9 +6,9 @@
 
 .. _new_manual.pipeline_printout:
 
-######################################################################################################
-|new_manual.pipeline_printout.chapter_num|: Understanding how your pipeline works
-######################################################################################################
+############################################################################################################################################################################################################
+|new_manual.pipeline_printout.chapter_num|: Understanding how your pipeline works with :ref:`pipeline_printout(...) <pipeline_functions.pipeline_printout>`
+############################################################################################################################################################################################################
 
 
 .. seealso::
@@ -61,8 +61,7 @@ Printing out which jobs will be run
     To see the input and output parameters of each job in the pipeline, try increasing the verbosity from the default (``1``) to ``3``
     (See :ref:`code  <new_manual.pipeline_printout.code>`)
 
-    This is very useful for checking that the input and output parameters have been specified
-        correctly.
+    This is very useful for checking that the input and output parameters have been specified correctly.
 
 =============================================
 Determining which jobs are out-of-date or not

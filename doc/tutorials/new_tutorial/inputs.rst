@@ -8,9 +8,9 @@
 
 .. _new_manual.inputs:
 
-####################################################################################################################################################
-|new_manual.inputs.chapter_num|: Manipulating task inputs via string substitution using :ref:`inputs() <decorators.inputs>`
-####################################################################################################################################################
+###########################################################################################################################################################################################################################################################################################
+|new_manual.inputs.chapter_num|: Manipulating task inputs via string substitution using :ref:`inputs() <decorators.inputs>` and  :ref:`add_inputs() <decorators.add_inputs>`
+###########################################################################################################################################################################################################################################################################################
 
 
 .. seealso::
@@ -29,18 +29,17 @@
 Overview
 ***********************
 
-    The previous chapters have been described how *Ruffus* allows the *Output* names for each job
+    The previous chapters have been described how *Ruffus* allows the **Output** names for each job
     to be generated from the *Input* names via string substitution. This is how *Ruffus* can
     automatically chain multiple tasks in a pipeline together seamlessly.
 
-    Sometimes it is useful to be able to modify the *Input* parameters by string substitution
+    Sometimes it is useful to be able to modify the **Input**  by string substitution
     as well. There are two situations where this additional flexibility is needed:
 
-        #. You need to add additional prequisites or filenames to the *Input* of every single one
-           of your jobs
-        #. You need to add additional *Input* file names which are some variant of the existing ones.
+        #. You need to add additional prequisites or filenames to the **Input** of every single job
+        #. You need to add additional **Input** file names which are some variant of the existing ones.
 
-    Again, both will be much more obviouis with some examples
+    Both will be much more obvious with some examples
 
 
 *******************************************************************************************************************
@@ -119,8 +118,8 @@ Adding additional *input* prerequisites per job with :ref:`add_inputs() <decorat
 =====================================================================
 
     We can also add a task name to :ref:`add_inputs() <decorators.add_inputs>`.
-    This chains the *Output*, i.e. run time results, of any previous task as
-    an additional *Input* to every single job in the task.
+    This chains the **Output**, i.e. run time results, of any previous task as
+    an additional **Input** to every single job in the task.
 
         .. code-block:: python
             :emphasize-lines: 1,7,9
@@ -153,7 +152,7 @@ Adding additional *input* prerequisites per job with :ref:`add_inputs() <decorat
 4. Example: Add corresponding files using :ref:`add_inputs() <decorators.add_inputs>` with :ref:`formatter <decorators.formatter>` or :ref:`regex <decorators.regex>`
 ================================================================================================================================================================================================================================================
     The previous example created headers corresponding to our source files and added them
-    as the *Input* to the compilation. That is generally not what you want. Instead,
+    as the **Input** to the compilation. That is generally not what you want. Instead,
     what is generally need is a way to
 
         1) Look up the exact corresponding header for the *specific* job, and not add all
@@ -170,8 +169,8 @@ Adding additional *input* prerequisites per job with :ref:`add_inputs() <decorat
     and look up the other.
 
      :ref:`add_inputs() <decorators.add_inputs>` uses standard *Ruffus* string substitution
-     via :ref:`formatter <decorators.formatter>` and :ref:`regex <decorators.regex>` to lookup (generate) *input* file names.
-     (As a rule :ref:`suffix <decorators.suffix>` only substitutes *Output* file names.)
+     via :ref:`formatter <decorators.formatter>` and :ref:`regex <decorators.regex>` to lookup (generate) **Input** file names.
+     (As a rule :ref:`suffix <decorators.suffix>` only substitutes **Output** file names.)
 
     .. code-block:: python
         :emphasize-lines: 3,5
@@ -201,8 +200,8 @@ Adding additional *input* prerequisites per job with :ref:`add_inputs() <decorat
 Replacing all input parameters with :ref:`inputs() <decorators.inputs>`
 ********************************************************************************
 
-    The previous examples all *added* to the set of *Input* file names.
-    Sometimes it is necessary to replace all the *Input* parameters altogether.
+    The previous examples all *added* to the set of **Input** file names.
+    Sometimes it is necessary to replace all the **Input** parameters altogether.
 
 ================================================================================================================================================================================================================================================
 5. Example: Running matching python scripts using :ref:`inputs() <decorators.inputs>`

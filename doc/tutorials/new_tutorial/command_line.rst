@@ -7,7 +7,7 @@
 .. _new_manual.cmdline:
 
 ######################################################################################################
-|new_manual.cmdline.chapter_num|: Running *Ruffus* from the command line
+|new_manual.cmdline.chapter_num|: Running *Ruffus* from the command line with ruffus.cmdline
 ######################################################################################################
 
 .. seealso::
@@ -18,8 +18,8 @@
 We find that much of our *Ruffus* pipeline code is built on the same template and this is generally
 a good place to start developing a new pipeline.
 
-From version 2.4 up, *Ruffus* therefore includes an optional ``Ruffus.cmdline`` module which provides
-support for a set of common command line arguments which make writing *Ruffus* much more pleasant
+From version 2.4, *Ruffus* includes an optional ``Ruffus.cmdline`` module that provides
+support for a set of common command line arguments. This makes writing *Ruffus* pipelines much more pleasant.
 
 
 .. _new_manual.cmdline.get_argparse:
@@ -113,9 +113,8 @@ Command Line Arguments
 
     Logging is ignored if neither ``--verbose`` or ``--log_file`` are specified on the command line
 
-    ``Ruffus.cmdline`` automatically allows you to access the same log file from multiple processes, via a proxy.
-
-    However, you need to use ``logging_mutex`` for the log files to be synchronised properly across different jobs:
+    ``Ruffus.cmdline`` automatically allows you to write to a shared log file via a proxy from multiple processes.
+    However, you do need to use ``logging_mutex`` for the log files to be synchronised properly across different jobs:
 
         .. code-block:: python
 
@@ -205,7 +204,9 @@ Command Line Arguments
 ******************************************************
 
 
-    Optionally specify the number of parallel strands of execution and which is the final task.
+    Optionally specify the number of parallel strands of execution and which is the last *target* task to run.
+    The pipeline will run starting from any out-of-date tasks which precede the *target* and proceed no further
+    beyond the *target*.
 
         .. code-block:: bash
 
@@ -218,13 +219,18 @@ Command Line Arguments
 ******************************************************************************************************
 5) Setup checkpointing so that *Ruffus* knows which files are out of date
 ******************************************************************************************************
-    The checkpoint file defaults to ``.ruffus_history.sqlite`` in the script current working directory. This file name can be set via
+
+    The :ref:`checkpoint file <new_manual.checkpointing>` uses to the value set in the
+    environment (``DEFAULT_RUFFUS_HISTORY_FILE``).
+
+    If this is not set, it will default to ``.ruffus_history.sqlite`` in the current working directory.
+
+    Either can be changed on the command line:
 
         .. code-block:: bash
 
             myscript --checksum_file_name mychecksum.sqlite
 
-    The command line settings override what is set in the environment (``DEFAULT_RUFFUS_HISTORY_FILE``)
 
 ============================================================================================================================================================
 Recreating checkpoints
@@ -250,7 +256,7 @@ Touch files
 
 
 ******************************************************************************************************
-7) Skipping specified options
+6) Skipping specified options
 ******************************************************************************************************
     Note that particular options can be skipped (not added to the command line), if they conflict with your own options, for example:
 
@@ -264,7 +270,7 @@ Touch files
 
 
 ******************************************************************************************************
-8) Displaying the version
+7) Displaying the version
 ******************************************************************************************************
     Note that the version for your script will default to ``"%(prog)s 1.0"`` unless specified:
 
