@@ -75,7 +75,7 @@ Installation: use pip
     * Generates output files without dependencies from scratch  (*ex nihilo*!)
     * For first step in a pipeline
     * Task function obviously only takes output and not input parameters. (There *are* no inputs!)
-    * synonym for :ref:`@@split(None,...) <decorators.split>`
+    * synonym for :ref:`@split(None,...) <decorators.split>`
     * See :ref:`Summary <decorators.originate>` / :ref:`Manual <new_manual.originate>`
 
 ========================================================================================================================================================================================================================================================================================================================
@@ -93,11 +93,11 @@ Installation: use pip
 7) Combinatorics (all vs. all decorators)
 ============================================================================================================================================================
 
-    * :ref:`product <new_manual.product>`  (See `itertools.product  <http://docs.python.org/2/library/itertools.html#itertools.product>`__)
-    * :ref:`permutations <new_manual.permutations>`  (See `itertools.permutations  <http://docs.python.org/2/library/itertools.html#itertools.permutations>`__)
-    * :ref:`combinations <new_manual.combinations>` (See `itertools.combinations  <http://docs.python.org/2/library/itertools.html#itertools.combinations>`__)
-    * :ref:`combinations_with_replacement <new_manual.combinations_with_replacement>` (See `itertools.combinations_with_replacement  <http://docs.python.org/2/library/itertools.html#itertools.combinations_with_replacement>`__)
-    * in optional :ref:`permutations <new_manual.combinatorics>` module
+    * :ref:`@product <new_manual.product>`  (See `itertools.product  <http://docs.python.org/2/library/itertools.html#itertools.product>`__)
+    * :ref:`@permutations <new_manual.permutations>`  (See `itertools.permutations  <http://docs.python.org/2/library/itertools.html#itertools.permutations>`__)
+    * :ref:`@combinations <new_manual.combinations>` (See `itertools.combinations  <http://docs.python.org/2/library/itertools.html#itertools.combinations>`__)
+    * :ref:`@combinations_with_replacement <new_manual.combinations_with_replacement>` (See `itertools.combinations_with_replacement  <http://docs.python.org/2/library/itertools.html#itertools.combinations_with_replacement>`__)
+    * in optional :ref:`combinatorics <new_manual.combinatorics>` module
     * Only :ref:`formatter() <new_manual.formatter>` provides the necessary flexibility to construct the output. (:ref:`suffix() <decorators.suffix>` and :ref:`regex() <decorators.regex>` are not supported.)
     * See :ref:`Summary <decorators.combinatorics>` / :ref:`Manual <new_manual.combinatorics>`
 
@@ -274,7 +274,7 @@ version 2.2
 
     * Ruffus will complain about unescaped regular expression special characters:
 
-        Ruffus uses "\1" and "\2" in regular expression substitutions. Even seasoned python
+        Ruffus uses "\\1" and "\\2" in regular expression substitutions. Even seasoned python
         users may not remember that these have to be 'escaped' in strings. The best option is
         to use 'raw' python strings e.g.
 
@@ -282,7 +282,7 @@ version 2.2
 
                 r"\1_substitutes\2correctly\3four\4times"
 
-        Ruffus will throw an exception if it sees an unescaped "\1" or "\2" in a file name,
+        Ruffus will throw an exception if it sees an unescaped "\\1" or "\\2" in a file name,
         which should catch most of these bugs.
 
     * Prettier output from *pipeline_printout_graph*
@@ -301,6 +301,54 @@ version 2.2
 
         An SVG bug in firefox has been worked around so that font size are displayed correctly.
 
+
+
+
+********************************************************************
+version 2.1.1
+********************************************************************
+    * **@transform(.., add_inputs(...))**
+        ``add_inputs(...)`` allows the addition of extra input dependencies / parameters for each job.
+
+        Unlike ``inputs(...)``, the original input parameter is retained:
+            ::
+
+                from ruffus import *
+                @transform(["a.input", "b.input"], suffix(".input"), add_inputs("just.1.more","just.2.more"), ".output")
+                def task(i, o):
+                ""
+
+        Produces:
+            ::
+
+                Job = [[a.input, just.1.more, just.2.more] ->a.output]
+                Job = [[b.input, just.1.more, just.2.more] ->b.output]
+
+
+        Like ``inputs``, ``add_inputs`` accepts strings, tasks and ``glob`` s
+        This minor syntactic change promises add much clarity to Ruffus code.
+        ``add_inputs()`` is available for ``@transform``, ``@collate`` and ``@split``
+
+
+********************************************************************
+version 2.1.0
+********************************************************************
+    * **@jobs_limit**
+      Some tasks are resource intensive and too many jobs should not be run at the
+      same time. Examples include disk intensive operations such as unzipping, or
+      downloading from FTP sites.
+
+      Adding::
+
+          @jobs_limit(4)
+          @transform(new_data_list, suffix(".big_data.gz"), ".big_data")
+          def unzip(i, o):
+            "unzip code goes here"
+
+      would limit the unzip operation to 4 jobs at a time, even if the rest of the
+      pipeline runs highly in parallel.
+
+      (Thanks to Rob Young for suggesting this.)
 
 ********************************************************************
 version 2.0.10
@@ -352,54 +400,6 @@ version 2.0.10
 
                 "dir/1.more"
                 "dir/2.more"
-
-
-********************************************************************
-version 2.1.1
-********************************************************************
-    * **@transform(.., add_inputs(...))**
-        ``add_inputs(...)`` allows the addition of extra input dependencies / parameters for each job.
-
-        Unlike ``inputs(...)``, the original input parameter is retained:
-            ::
-
-                from ruffus import *
-                @transform(["a.input", "b.input"], suffix(".input"), add_inputs("just.1.more","just.2.more"), ".output")
-                def task(i, o):
-                ""
-
-        Produces:
-            ::
-
-                Job = [[a.input, just.1.more, just.2.more] ->a.output]
-                Job = [[b.input, just.1.more, just.2.more] ->b.output]
-
-
-        Like ``inputs``, ``add_inputs`` accepts strings, tasks and ``glob`` s
-        This minor syntactic change promises add much clarity to Ruffus code.
-        ``add_inputs()`` is available for ``@transform``, ``@collate`` and ``@split``
-
-
-********************************************************************
-version 2.1.0
-********************************************************************
-    * **@jobs_limit**
-      Some tasks are resource intensive and too many jobs should not be run at the
-      same time. Examples include disk intensive operations such as unzipping, or
-      downloading from FTP sites.
-
-      Adding::
-
-          @jobs_limit(4)
-          @transform(new_data_list, suffix(".big_data.gz"), ".big_data")
-          def unzip(i, o):
-            "unzip code goes here"
-
-      would limit the unzip operation to 4 jobs at a time, even if the rest of the
-      pipeline runs highly in parallel.
-
-      (Thanks to R. Young for suggesting this.)
-
 
 
 ********************************************************************
