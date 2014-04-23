@@ -952,8 +952,41 @@ def yield_io_params_per_job (input_params,
         collate_param_factory and
         subdivide_param_factory
 
-    subdivide_param_factory requires globs patterned to be expanded
-        also yields the useful and for display parameters separately
+
+    *********************************************************
+    *                                                       *
+    *  Bad (non-orthogonal) design here. Needs refactoring  *
+    *                                                       *
+    *********************************************************
+
+        subdivide_param_factory requires globs patterns to be expanded
+
+            yield (function call parameters, display parameters)
+
+        all others
+
+            yield function call parameters
+
+
+        This means that
+
+            all but @subdivide have
+
+                for y in yield_io_params_per_job (...):
+                    yield y, y
+
+            subdivide_param_factory has:
+
+                return yield_io_params_per_job
+
+        We would make everything more orthogonal but the current code makes collate easier to write...
+
+            collate_param_factory
+
+                for output_extra_params, grouped_params in groupby(sorted(io_params_iter, key = get_output_extras), key = get_output_extras):
+
+
+
 
     """
     #
@@ -1046,8 +1079,6 @@ def yield_io_params_per_job (input_params,
 
 
 
-
-
 #_________________________________________________________________________________________
 
 #   subdivide_param_factory
@@ -1075,7 +1106,7 @@ def subdivide_param_factory (input_files_task_globs,
             input_params = get_strings_in_nested_sequence(input_params)
 
         if not len(input_params):
-            return
+            return []
 
         return yield_io_params_per_job (input_param_to_file_name_list(sorted(input_params)),
                                         file_names_transform,
