@@ -1,9 +1,11 @@
 .. include:: ../global.inc
 .. _decorators.split:
-.. index:: 
+.. index::
     pair: @split; Syntax
 
-See :ref:`Decorators <decorators>` for more decorators
+.. seealso::
+
+    * :ref:`Decorators <decorators>` for more decorators
 
 
 ########################
@@ -22,9 +24,9 @@ See :ref:`Decorators <decorators>` for more decorators
 *****************************************************************************************************************************************
     **Purpose:**
         | Splits a single set of input files into multiple output file names, where the number of
-          output files may not be known beforehand. 
+          output files may not be known beforehand.
         | Only out of date tasks (comparing input and output files) will be run
-        
+
     **Example**::
 
         @split("big_file", '*.little_files')
@@ -33,18 +35,18 @@ See :ref:`Decorators <decorators>` for more decorators
             print "output_file = %s" % output_file
 
     .
-    
+
         will produce::
-    
+
             input_file = big_file
             output_file = *.little_files
-        
-        
+
+
     **Parameters:**
-                
+
 .. _decorators.split.tasks_or_file_names:
 
-                
+
     * *tasks_or_file_names*
        can be a:
 
@@ -52,12 +54,12 @@ See :ref:`Decorators <decorators>` for more decorators
 
             | File names containing ``*[]?`` will be expanded as a |glob|_.
             | E.g.:``"a.*" => "a.1", "a.2"``
-           
+
        #.  Task / list of tasks.
 
             File names are taken from the output of the specified task(s)
 
-                
+
 .. _decorators.split.output_files:
 
     * *output_files*
@@ -65,19 +67,26 @@ See :ref:`Decorators <decorators>` for more decorators
 
        | These are used **only** to check if the task is up to date.
        | Normally you would use either a |glob|_ (e.g. ``*.little_files`` as above) or  a "sentinel file"
-         to indicate that the task has completed successfully. 
+         to indicate that the task has completed successfully.
        | You can of course do both:
 
         ::
-        
+
             @split("big_file", ["sentinel.file", "*.little_files"])
             def split_big_to_small(input_file, output_files):
-                pass    
-                
-                
+                pass
+
+
 .. _decorators.split.extra_parameters:
 
     * [*extra_parameters, ...*]
         Any extra parameters are passed verbatim to the task function
 
+
+
+########################################################################
+@split with ``regex(...)``, ``add_inputs`` and ``inputs``
+########################################################################
+
+    This deprecated syntax is a synonym for :ref:`@subdivide <decorators.subdivide>`.
 

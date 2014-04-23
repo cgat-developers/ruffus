@@ -42,12 +42,12 @@
         "/a_directory/dataset1.*.bam",
         formatter( ".*/dataset1\.(?P<ID>\d+).bam" ),
         "/a_different/directory/dataset2.*.bam",
-        formatter( ".*/dataset2\.(?P<ID>\d+).bam" ),
+        formatter(".species", ".*/dataset2\.(?P<ID>\d+).bam" ),
         "{path[0][0]}/{base_name[0][0]}.{base_name[0][0]}.out",
         "{path[0][0]}",       # extra: path for 1st input, 1st file
         "{path[1][0]}",       # extra: path for 2nd input, 1st file
         "{basename[0][1]}",   # extra: file name for 1st input, 2nd file
-        "{ID[1][2]}",         # extra: regular expression named capture group for 2nd input, 3rd file
+        "{ID[1][1]}",         # extra: regular expression named capture group for 2nd input, 2nd file
         )
     def task1( infiles, outfile,
                 input_1__path,
