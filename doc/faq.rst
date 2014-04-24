@@ -71,16 +71,14 @@ Q. Regular expression substitutions don't work
     Ruffus will throw an exception if it sees an unescaped ``"\1"`` or ``"\2"`` in a file name.
 
 ========================================================================================
-Q. How to make a force a pipeline appear up to date?
+Q. How to force a pipeline to appear up to date?
 ========================================================================================
 
-    I have made a trivial modification to one of my data files and now Ruffus wants to rerun
-    my month long pipeline. How can I convince Ruffus that everything is fine and to leave
-    things as they are?
+    *I have made a trivial modification to one of my data files and now Ruffus wants to rerun my month long pipeline. How can I convince Ruffus that everything is fine and to leave things as they are?*
 
     The standard way to do what you are trying to do is to touch all the files downstream...
     That way the modification times of your analysis files would postdate your existing files.
-    You can do this manually but Ruffus also has direct support for this:
+    You can do this manually but Ruffus also provides direct support:
 
     .. code-block:: python
 
@@ -91,7 +89,7 @@ Q. How to make a force a pipeline appear up to date?
     will be called, instead, each non-up-to-date file is `touch  <https://en.wikipedia.org/wiki/Touch_(Unix)>`__-ed in
     turn so that the file modification dates follow on successively.
 
-    See the documentation at http://www.ruffus.org.uk/pipeline_functions.html#pipeline-functions-pipeline-run
+    See the documentation for :ref:`pipeline_run() <pipeline_functions.pipeline_run>`
 
     It is even simpler if you are using the new Ruffus.cmdline support from version 2.4. You can just type
 
@@ -99,7 +97,7 @@ Q. How to make a force a pipeline appear up to date?
 
             your script --touch_files_only [--other_options_of_your_own_etc]
 
-    See http://www.ruffus.org.uk/examples/code_template/code_template.html
+    See :ref:`command line <new_manual.cmdline>` documentation.
 
 ========================================================================================
 Q. How to use decorated functions in Ruffus
@@ -143,37 +141,39 @@ Q. Can a task function in a *Ruffus* pipeline be called normally outside of Ruff
 
     This means the original task function can be called just like any other python function.
 
-========================================================================================
-Q. My tasks creates two files but why does only one survive in the *Ruffus* pipeline?
-========================================================================================
-    ::
+=====================================================================================================================
+Q. My  *Ruffus* tasks create two files at a time. Why is the second one ignored in successive stages of my pipeline?
+=====================================================================================================================
+    *This is my code:*
 
-        from ruffus import *
-        import sys
-        @transform("start.input", regex(".+"), ("first_output.txt", "second_output.txt"))
-        def task1(i,o):
-            pass
+        ::
 
-        @transform(task1, suffix(".txt"), ".result")
-        def task2(i, o):
-            pass
+            from ruffus import *
+            import sys
+            @transform("start.input", regex(".+"), ("first_output.txt", "second_output.txt"))
+            def task1(i,o):
+                pass
 
-        pipeline_printout(sys.stdout, [task2], verbose=3)
+            @transform(task1, suffix(".txt"), ".result")
+            def task2(i, o):
+                pass
 
-    ::
+            pipeline_printout(sys.stdout, [task2], verbose=3)
 
-        ________________________________________
-        Tasks which will be run:
+        ::
 
-        Task = task1
-               Job = [start.input
-                     ->[first_output.txt, second_output.txt]]
+            ________________________________________
+            Tasks which will be run:
 
-        Task = task2
-               Job = [[first_output.txt, second_output.txt]
-                     ->first_output.result]
+            Task = task1
+                   Job = [start.input
+                         ->[first_output.txt, second_output.txt]]
 
-        ________________________________________
+            Task = task2
+                   Job = [[first_output.txt, second_output.txt]
+                         ->first_output.result]
+
+            ________________________________________
 
     A: This code produces a single output of a tuple of 2 files. In fact, you want two
     outputs, each consisting of 1 file.
@@ -324,13 +324,13 @@ _____________________________________________________
     *
 
 
-    The level of timestamping / checksumming can be set via the ``checksum_level`` parameter::
+    The level of timestamping / checksumming can be set via the ``checksum_level`` parameter:
 
     .. code-block::
 
         pipeline_run(..., checksum_level = N, ...)
 
-    where the default is 1:
+    where the default is 1::
 
        level 0 : Use only file timestamps
        level 1 : above, plus timestamp of successful job completion
@@ -413,9 +413,9 @@ _____________________________________________________
 A. Use a temp file
 _____________________________________________________
 
-    (Thanks to Martin Goodson for suggesting this and providing an example.)
+    Thanks to Martin Goodson for suggesting this and providing an example. In his words:
 
-    I normally use a decorator to create a temporary file which is only renamed after the task has completed without any problems. This seems a more elegant solution to the problem:
+    "I normally use a decorator to create a temporary file which is only renamed after the task has completed without any problems. This seems a more elegant solution to the problem:"
 
 
         .. code-block:: python
@@ -490,7 +490,7 @@ Q. Windows seems to spawn *ruffus* processes recursively
 
 
 **********************************************************
-Sun Grid Engine / PBS etc
+Sun Grid Engine / PBS / SLURM etc
 **********************************************************
 
 ==========================================================================================================================================
@@ -498,99 +498,16 @@ Q. Can Ruffus be used to manage a cluster or grid based pipeline?
 ==========================================================================================================================================
     A. Some minimum modifications have to be made to your *Ruffus* script to allow it to submit jobs to a cluster
 
-        Thanks to Andreas Heger and others at CGAT for contributing ideas and code.
+    See :ref:`ruffus.drmaa_wrapper <new_manual.ruffus.drmaa_wrapper.run_job>`
 
-    1) You need to have the `python drmaa <https://code.google.com/p/drmaa-python/wiki/Tutorial>`_ module installed:
-
-        .. code-block:: bash
-
-            easy_install -U drmaa
-
-        `DRMAA <http://www.drmaa.org/>`_ is the standard way to talk to grid/cluster systems. It has been, for example, built into the Sun / Oracle Grid Engine (SGE) for some time.
-
-        .. note:: You may need to tell the python drmaa module where the (correct) drmaa API files live on your system, e.g.
-
-            .. code-block:: bash
-
-                export DRMAA_LIBRARY_PATH=/some/path/on/your/system/libdrmaa.so
-
-
-    2) You need to switch *Ruffus* into multi-threading rather than multi-processing mode.
-
-
-        .. code-block:: python
-           :emphasize-lines: 4
-
-           pipeline_run(target_tasks,
-                        multiprocess = 230,
-                        logger = stderr_logger,
-                        use_multi_threading = True)
-
-
-        .. note:: Embarrassingly, the degree of pipeline parallelism is specified via `multiprocess = NNN`, even in multi threading mode!!
-
-        This is necessary for two reasons:
-
-        A) To allow drmaa sessions to be shared
-
-            Each drmaa session opens up a channel of communication with the cluster / grid management sofware. Especially for older versions of SGE (<6.2?), each persistent connection with
-            the grid management system consumes a precious file descriptor.
-
-
-        B) To prevent the cluster / grid submission node from being overwhelmed
-
-            Most calculations will be carried out on cluster nodes, but even with the best designed pipelines, there will still be some *Ruffus* bookkeeping which will take place on the
-            submisison node where *Ruffus* is running. In the overall scheme, this may be insignificant, but if thousands of cluster nodes return at the same time, and thousand of *Ruffus* jobs
-            perform their bookkeeping at the same time, this could cause a "processor storm" and overwhelm or even kill the grid submission node. This will have a decided effect on your popularity.
-
-            Normally, multi-processing is the preferable way to run code in parallel in python because of the python `Global Interpreter Lock (GIL) <https://wiki.python.org/moin/GlobalInterpreterLock>`_ .
-            Multiple native *threads* cannot execute python byte codes at the same time. Obviously that would severely cut down on parallelism in your *Ruffus* scripts.
-
-            For grid pipelines, this is an advantage: the Global Interpreter Lock (GIL) keeps all your python code serialised rather than swamping the cluster submission node.
-
-            If your *Ruffus* script is just forwarding calls to run on the cluster, the reduction in parallelism on the head node is no big deal, so long as all the parallelism occurs on the cluster.
-            Each *Ruffus* job on the submission node is mostly quiescent, forwarding all the hard work to separate grid or cluster nodes.
-
-
-    3) Run code on the cluster using drmaa
-
-        The *Ruffus* `drmaa_wrapper` module provides a convenience function which can be used as a drop in replacement for `os.system()` or `subprocess.check_output()` to run commands directly on the cluster.
-
-        .. code-block:: python
-
-            import ruffus
-            from ruffus.drmaa_wrapper import run_job
-
-            stdout_lines, stderr_lines = run_job("ls", "short_queue")
-
-        (You can of course continue to use `qrsh` or `qsub` to run commands on the cluster.)
-
-
-        `run_job` allows the
-            * queue name
-            * job name
-            * priority
-            * other custom drmaa options to be specified
-
-        * If a drmaa_session is not provided, it will create a shared session for you.
-        * Error messages are optionally sent to a supplied object with `python logging <http://docs.python.org/2/library/logging.html>`_ semantics, much like in the rest of Ruffus.
-        * For testing and developing, `run_locally` and `touch_only` flags allow the specified command to be run locally (without forwarding to the grid via drmaa), or for specified output files to be created (`touch`) with running any code at all.
-
-        The full signature is:
-
-        .. code-block:: python
-
-            def run_job(cmd_str, job_queue_name = None, job_queue_priority = None, job_name = None, job_other_options = None, logger = None, drmaa_session = None, run_locally = False, output_files = None, touch_only = False):
-                ""
-
+    Thanks to Andreas Heger and others at CGAT and Bernie Pope for contributing ideas and code.
 
 
 ==========================================================================================================================================
 Q. When I submit lots of jobs via Sun Grid Engine (SGE), the head node occassionally freezes and dies
 ==========================================================================================================================================
 
-    A. See Running *Ruffus* on a cluster head node with drmaa
-
+    A. You need to use multithreading rather than multiprocessing. See :ref:`ruffus.drmaa_wrapper <new_manual.ruffus.drmaa_wrapper.run_job>`
 
 
 =====================================================================
@@ -805,7 +722,7 @@ How do I send python objects back and forth without tangling myself in horrible 
 
 
 ==============================================================================
-How do I sharing large amounts of data efficiently?
+How do I share large amounts of data efficiently across processes?
 ==============================================================================
 
     A. If it is really impractical to use data files on disk, you can put the data in shared memory.

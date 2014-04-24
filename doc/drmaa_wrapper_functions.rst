@@ -71,6 +71,29 @@ drmaa functions
 
         .. code-block:: python
 
+            from ruffus.drmaa_wrapper import run_job, error_drmaa_job
+            import drmaa
+            my_drmaa_session = drmaa.Session()
+            my_drmaa_session.initialize()
+
+            run_job("ls",
+                    job_name = "test",
+                    job_other_options="-P mott-flint.prja -q short.qa",
+                    job_script_directory = "test_dir",
+                    job_environment={ 'BASH_ENV' : '~/.bashrc' },
+                    retain_job_scripts = True, drmaa_session=my_drmaa_session)
+            run_job("ls",
+                    job_name = "test",
+                    job_other_options="-P mott-flint.prja -q short.qa",
+                    job_script_directory = "test_dir",
+                    job_environment={ 'BASH_ENV' : '~/.bashrc' },
+                    retain_job_scripts = True,
+                    drmaa_session=my_drmaa_session,
+                    working_directory = "/gpfs1/well/mott-flint/lg/src/oss/ruffus/doc")
+
+            #
+            #   catch exceptions
+            #
             try:
                 stdout_res, stderr_res  = run_job(cmd,
                                                   job_name          = job_name,
@@ -87,6 +110,9 @@ drmaa functions
                                      err,
                                      stdout_res,
                                      stderr_res])))
+
+            my_drmaa_session.exit()
+
 
 
     **Parameters:**
@@ -135,7 +161,9 @@ drmaa functions
 
     * *working_directory*
 
-        Sets the working directory. Defaults to the current working directory.
+        * Sets the working directory.
+        * Should be a fully qualified path.
+        * Defaults to the current working directory.
 
 
 .. _drmaa_wrapper.run_job.retain_job_scripts:
