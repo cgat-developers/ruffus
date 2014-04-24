@@ -163,7 +163,7 @@ def setup_drmaa_job( drmaa_session, job_name, job_environment, working_directory
 #   write_job_script_to_temp_file
 
 #_________________________________________________________________________________________
-def write_job_script_to_temp_file( cmd_str, job_script_directory):
+def write_job_script_to_temp_file( cmd_str, job_script_directory, job_name, job_other_options, job_environment, working_directory):
     '''
         returns (job_script_path, stdout_path, stderr_path)
 
@@ -178,7 +178,16 @@ def write_job_script_to_temp_file( cmd_str, job_script_directory):
         pass
     tmpfile = tempfile.NamedTemporaryFile(mode='w+b', prefix='drmaa_script_' + time_stmp_str + "__", dir = job_script_directory,  delete = False)
 
-    tmpfile.write( "#!/bin/bash\n" )
+    #
+    #   hopefully #!/bin/sh is universally portable among unix-like operating systems
+    #
+    tmpfile.write( "#!/bin/sh\n" )
+    #
+    # log parameters as suggested by Bernie Pope
+    #
+    for parameter in (job_name, job_other_options, job_environment, working_directory):
+        if parameter:
+            tmpfile.write( "#%s\n" % parameter)
     tmpfile.write( cmd_str + "\n" )
     tmpfile.close()
 
@@ -221,7 +230,7 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
     #
     if not job_script_directory:
         job_script_directory = os.getcwd()
-    job_script_path, stdout_path, stderr_path = write_job_script_to_temp_file( cmd_str, job_script_directory)
+    job_script_path, stdout_path, stderr_path = write_job_script_to_temp_file( cmd_str, job_script_directory, job_name, job_other_options, job_environment, working_directory)
     job_template.remoteCommand      = job_script_path
     # drmaa paths specified as [hostname]:file_path.
     # See http://www.ogf.org/Public_Comment_Docs/Documents/2007-12/ggf-drmaa-idl-binding-v1%2000%20RC7.pdf
