@@ -7,6 +7,8 @@
 **Ruffus** Manual: List of Chapters and Example code
 ####################################################################
 
+    Download as :download:`pdf <../../static_data/ruffus.pdf>`.
+
     * |new_manual.introduction.chapter_num|: :ref:`An introduction to basic Ruffus syntax <new_manual.introduction>`
     * |new_manual.transform.chapter_num|: :ref:`Transforming data in a pipeline with @transform <new_manual.transform>`
     * |new_manual.transform_in_parallel.chapter_num|: :ref:`More on @transform-ing data <new_manual.transform_in_parallel>`
