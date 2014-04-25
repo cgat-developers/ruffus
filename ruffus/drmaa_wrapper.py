@@ -185,9 +185,13 @@ def write_job_script_to_temp_file( cmd_str, job_script_directory, job_name, job_
     #
     # log parameters as suggested by Bernie Pope
     #
-    for parameter in (job_name, job_other_options, job_environment, working_directory):
+    for title, parameter in (   "job_name",             job_name,
+                                "job_other_options",    job_other_options,
+                                "job_environment",      job_environment,
+                                "working_directory",     working_directory       ):
         if parameter:
-            tmpfile.write( "#%s\n" % parameter)
+            tmpfile.write( "#%s=%s\n" % (title, parameter))
+
     tmpfile.write( cmd_str + "\n" )
     tmpfile.close()
 
@@ -255,8 +259,8 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
         if not msg.message.startswith("code 24"): raise
         if logger:
             logger.log(MESSAGE, "Warning %s\n"
-                                   "The original command was:\n%s\n"
-                                     (msg.message, cmd_str,) )
+                                   "The original command was:\n%s\njobid=jobid\n"
+                                     (msg.message, cmd_str,jobid) )
         retval = None
 
 
@@ -271,9 +275,13 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
     if retval and not retval.hasExited:
         raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n"
                                "The original command was:\n%s\n"
+                               "The jobid was: %s\n"
+                               "The job script name was: %s\n"
                                "The stderr was: \n%s\n\n"
                                "The stdout was: \n%s\n\n" %
                                  (retval.exitStatus, cmd_str,
+                                     jobid,
+                                     job_script_path,
                                     "".join( stderr),
                                     "".join( stdout)
                                      ) )
@@ -293,7 +301,9 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
         except OSError:
             if logger:
                 logger.warn( "Temporary job script wrapper '%s' missing (and ignored) at clean-up" % job_script_path )
-
+    else:
+        # job scripts have the jobid as an extension
+        os.rename(job_script_path, job_script_path + ".%s" % jobid )
 
     return stdout, stderr
 
