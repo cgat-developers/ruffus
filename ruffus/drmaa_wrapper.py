@@ -185,10 +185,10 @@ def write_job_script_to_temp_file( cmd_str, job_script_directory, job_name, job_
     #
     # log parameters as suggested by Bernie Pope
     #
-    for title, parameter in (   "job_name",             job_name,
-                                "job_other_options",    job_other_options,
-                                "job_environment",      job_environment,
-                                "working_directory",     working_directory       ):
+    for title, parameter in (   ("job_name",             job_name,         )
+                                ("job_other_options",    job_other_options,)
+                                ("job_environment",      job_environment,  )
+                                ("working_directory",     working_directory)       ):
         if parameter:
             tmpfile.write( "#%s=%s\n" % (title, parameter))
 
