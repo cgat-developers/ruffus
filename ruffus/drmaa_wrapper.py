@@ -272,7 +272,7 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
     #
     #   Throw if failed
     #
-    if retval and not retval.hasExited:
+    if retval and (not retval.hasExited or retval.exitStatus):
         raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n"
                                "The original command was:\n%s\n"
                                "The jobid was: %s\n"
