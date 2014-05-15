@@ -832,8 +832,24 @@ def shorten_filenames_encoder (obj):
     if non_str_sequence (obj):
         return "[%s]" % ", ".join(map(shorten_filenames_encoder, obj))
     if isinstance(obj, basestring):
-        if os.path.isabs(obj) and obj[1:].count('/') > 1:
-            return os.path.split(obj)[1]
+        # only shorten absolute (full) paths
+        if not os.path.isabs(obj):
+            return ignore_unknown_encoder(obj)
+        else:
+            # if only one nested level, return that
+            if obj[1:].count('/') <= 1:
+                return ignore_unknown_encoder(rel_path)
+
+            # use relative path if that has <= 1 nested level
+            rel_path = os.path.relpath(obj)
+            if rel_path.count('/') <= 1:
+                return ignore_unknown_encoder(rel_path)
+                # get last two subdirectories
+
+            # get last two nested levels
+            full_path, base_level = os.path.split(obj)
+            full_path, sub_path  = os.path.split(full_path)
+            return ignore_unknown_encoder(os.path.join(sub_path, base_level))
     return ignore_unknown_encoder(obj)
 
 
