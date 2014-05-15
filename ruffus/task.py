@@ -3330,6 +3330,30 @@ def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE, logg
     log_at_level (logger, 10, verbose, "    fill_queue_with_job_parameters END")
 
 
+
+
+#_________________________________________________________________________________________
+
+#   pipeline_get_task_names
+
+#_________________________________________________________________________________________
+def pipeline_get_task_names ():
+    """
+    Get all task names in a pipeline
+    Not that does not check if pipeline is wired up properly
+    """
+
+    #
+    #   Make sure all tasks in dependency list are linked to real functions
+    #
+    link_task_names_to_functions ()
+
+    #
+    #   Return task names for all nodes willy nilly
+    #
+    return [n.get_task_name() for n in node._all_nodes]
+
+
 #
 #   How the job queue works:
 #
@@ -3351,7 +3375,6 @@ def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE, logg
 #               until waiting_for_more_tasks_to_complete
 #               until queue is full (check *after*)
 #
-
 #_________________________________________________________________________________________
 
 #   pipeline_run
