@@ -34,7 +34,7 @@ Overview
 ***************************************
 
 
-    The ruffus module is a lightweight way to add support
+    The Ruffus module is a lightweight way to add support
     for running computational pipelines.
 
     Computational pipelines are often conceptually quite simple, especially
@@ -50,10 +50,10 @@ Overview
 Documentation
 ***************************************
 
-    Ruffus documentation can be found `here <http://www.ruffus.org.uk>`_ ,
-    with an `download notes <http://www.ruffus.org.uk/installation.html>`_ ,
-    a `short tutorial <http://http://www.ruffus.org.uk/tutorials/simple_tutorial/simple_tutorial.html>`_ and
-    an `in-depth tutorial <http://www.ruffus.org.uk/tutorials/manual/manual_introduction.html>`_ .
+    Ruffus documentation can be found `here <http://www.ruffus.org.uk>`__ ,
+    with `download notes <http://www.ruffus.org.uk/installation.html>`__ ,
+    a `tutorial <http://www.ruffus.org.uk/tutorials/new_tutorial/introduction.html>`__ and
+    an `in-depth manual <http://www.ruffus.org.uk/tutorials/new_tutorial/manual_contents.html>`__ .
 
 
 ***************************************
@@ -66,18 +66,18 @@ Background
     Computational pipelines, especially for analysing large scientific datasets are
     in widespread use.
     However, even a conceptually simple series of steps can be difficult to set up and
-    to maintain, perhaps because the right tools are not available.
+    maintain.
 
 ***************************************
 Design
 ***************************************
     The ruffus module has the following design goals:
 
-        * Simplicity. Can be picked up in 10 minutes
-        * Elegance
         * Lightweight
+        * Scalable / Flexible / Powerful
+        * Standard Python
         * Unintrusive
-        * Flexible/Powerful
+        * As simple as possible
 
 ***************************************
 Features
@@ -86,10 +86,10 @@ Features
     Automatic support for
 
         * Managing dependencies
-        * Parallel jobs
-        * Re-starting from arbitrary points, especially after errors
+        * Parallel jobs, including dispatching work to computational clusters
+        * Re-starting from arbitrary points, especially after errors (checkpointing)
         * Display of the pipeline as a flowchart
-        * Reporting
+        * Managing complex pipeline topologies
 
 
 ***************************************
@@ -117,6 +117,9 @@ A Simple example
 
         the ``@follows`` decorator indicate that the ``first_task`` function precedes ``second_task`` in
         the pipeline.
+        
+        The canonical Ruffus decorator is ``@transform`` which **transforms** data flowing down a
+        computational pipeline from one stage to teh next.
 
 ********
 Usage
@@ -136,25 +139,23 @@ Usage
 
         - For a graphical flowchart in ``jpg``, ``svg``, ``dot``, ``png``, ``ps``, ``gif`` formats::
 
-            graph_printout ( open("flowchart.svg", "w"),
-                             "svg",
-                             list_of_target_tasks)
+            pipeline_printout_graph ("flowchart.svg")
 
         This requires ``dot`` to be installed
 
         - For a text printout of all jobs ::
 
-            pipeline_printout(sys.stdout, list_of_target_tasks)
+            pipeline_printout(sys.stdout)
 
 
     3. Run the pipeline::
 
-        pipeline_run(list_of_target_tasks, [list_of_tasks_forced_to_rerun, multiprocess = N_PARALLEL_JOBS])
+        pipeline_run()
 
 
 """,
         url='http://www.ruffus.org.uk',
-        download_url = "https://code.google.com/p/ruffus/",
+        download_url = "https://pypi.python.org/pypi/ruffus",
 
         install_requires = module_dependencies, #['multiprocessing>=1.0', 'json' ], #, 'python>=2.5'],
         setup_requires   = module_dependencies, #['multiprocessing>=1.0', 'json'],    #, 'python>=2.5'],
