@@ -1,2 +1,3 @@
 include *.TXT
-recursive-include doc ruffus
+recursive-include doc *
+recursive-include ruffus *.py
