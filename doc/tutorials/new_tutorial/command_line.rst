@@ -289,7 +289,7 @@ Touch files
 .. _code_template.optparse:
 
 ************************************************************************************************************
-Template for `argparse  <http://docs.python.org/2.7/library/optparse.html>`__
+Template for `optparse  <http://docs.python.org/2.7/library/optparse.html>`__
 ************************************************************************************************************
 
     deprecated since python 2.7

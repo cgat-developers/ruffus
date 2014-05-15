@@ -4,6 +4,12 @@ Major Features added to Ruffus
 ########################################
 
 ********************************************************************
+version 2.4.1
+********************************************************************
+
+    * Breaking changes to drmaa API suggested by Bernie Pope to ensure portability across different drmaa implementations (SGE, SLURM etc.)
+
+********************************************************************
 version 2.4
 ********************************************************************
 
