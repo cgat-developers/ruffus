@@ -4,6 +4,19 @@ Major Features added to Ruffus
 ########################################
 
 ********************************************************************
+version 2.4.2
+********************************************************************
+
+    * Added :ref:`pipeline_get_task_names(...) <pipeline_functions.pipeline_get_task_names>` which returns all task name as a list of strings
+
+
+********************************************************************
+version 2.4.1
+********************************************************************
+
+    * Breaking changes to drmaa API suggested by Bernie Pope to ensure portability across different drmaa implementations (SGE, SLURM etc.)
+
+********************************************************************
 version 2.4
 ********************************************************************
 

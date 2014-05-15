@@ -163,7 +163,7 @@ def setup_drmaa_job( drmaa_session, job_name, job_environment, working_directory
 #   write_job_script_to_temp_file
 
 #_________________________________________________________________________________________
-def write_job_script_to_temp_file( cmd_str, job_script_directory):
+def write_job_script_to_temp_file( cmd_str, job_script_directory, job_name, job_other_options, job_environment, working_directory):
     '''
         returns (job_script_path, stdout_path, stderr_path)
 
@@ -178,7 +178,20 @@ def write_job_script_to_temp_file( cmd_str, job_script_directory):
         pass
     tmpfile = tempfile.NamedTemporaryFile(mode='w+b', prefix='drmaa_script_' + time_stmp_str + "__", dir = job_script_directory,  delete = False)
 
-    tmpfile.write( "#!/bin/bash\n" )
+    #
+    #   hopefully #!/bin/sh is universally portable among unix-like operating systems
+    #
+    tmpfile.write( "#!/bin/sh\n" )
+    #
+    # log parameters as suggested by Bernie Pope
+    #
+    for title, parameter in (   ("job_name",             job_name,         ),
+                                ("job_other_options",    job_other_options,),
+                                ("job_environment",      job_environment,  ),
+                                ("working_directory",     working_directory),       ):
+        if parameter:
+            tmpfile.write( "#%s=%s\n" % (title, parameter))
+
     tmpfile.write( cmd_str + "\n" )
     tmpfile.close()
 
@@ -221,7 +234,7 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
     #
     if not job_script_directory:
         job_script_directory = os.getcwd()
-    job_script_path, stdout_path, stderr_path = write_job_script_to_temp_file( cmd_str, job_script_directory)
+    job_script_path, stdout_path, stderr_path = write_job_script_to_temp_file( cmd_str, job_script_directory, job_name, job_other_options, job_environment, working_directory)
     job_template.remoteCommand      = job_script_path
     # drmaa paths specified as [hostname]:file_path.
     # See http://www.ogf.org/Public_Comment_Docs/Documents/2007-12/ggf-drmaa-idl-binding-v1%2000%20RC7.pdf
@@ -246,8 +259,8 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
         if not msg.message.startswith("code 24"): raise
         if logger:
             logger.log(MESSAGE, "Warning %s\n"
-                                   "The original command was:\n%s\n"
-                                     (msg.message, cmd_str,) )
+                                   "The original command was:\n%s\njobid=jobid\n"
+                                     (msg.message, cmd_str,jobid) )
         retval = None
 
 
@@ -259,12 +272,16 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
     #
     #   Throw if failed
     #
-    if retval and not retval.hasExited:
+    if retval and (not retval.hasExited or retval.exitStatus):
         raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n"
                                "The original command was:\n%s\n"
+                               "The jobid was: %s\n"
+                               "The job script name was: %s\n"
                                "The stderr was: \n%s\n\n"
                                "The stdout was: \n%s\n\n" %
                                  (retval.exitStatus, cmd_str,
+                                     jobid,
+                                     job_script_path,
                                     "".join( stderr),
                                     "".join( stdout)
                                      ) )
@@ -276,15 +293,17 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
     drmaa_session.deleteJobTemplate(job_template)
 
     #
-    #   Cleanup job script
+    #   Cleanup job script unless retain_job_scripts is set
     #
-    if not retain_job_scripts:
+    if retain_job_scripts:
+        # job scripts have the jobid as an extension
+        os.rename(job_script_path, job_script_path + ".%s" % jobid )
+    else:
         try:
             os.unlink( job_script_path )
         except OSError:
             if logger:
                 logger.warn( "Temporary job script wrapper '%s' missing (and ignored) at clean-up" % job_script_path )
-
 
     return stdout, stderr
 

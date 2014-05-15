@@ -96,11 +96,12 @@ See :ref:`Decorators <decorators>` for more decorators
 Pipeline functions
 ################################################
 
-    There are only three functions for **Ruffus** pipelines:
+    There are only four functions for **Ruffus** pipelines:
 
         * |pipeline_run|_ executes a pipeline
         * |pipeline_printout|_ prints a list of tasks and jobs which will be run in a pipeline
         * |pipeline_printout_graph|_ prints a schematic flowchart of pipeline tasks in various graphical formats
+        * |pipeline_get_task_names|_ returns a list of all task names in the pipeline
 
 .. _pipeline_functions.pipeline_run:
 
@@ -519,3 +520,47 @@ Pipeline functions
      * *runtime_data*
         Experimental feature for passing data to tasks at run time
 
+
+
+.. _pipeline_functions.pipeline_get_task_names:
+
+.. index::
+    single: pipeline functions; pipeline_get_task_names
+    pair: pipeline_get_task_names; print list of task names without running the pipeline
+
+
+**************************************************************************************************************************************************************************************
+*pipeline_get_task_names*
+**************************************************************************************************************************************************************************************
+**pipeline_get_task_names** ()
+
+    **Purpose:**
+
+        Returns a list of all task names in the pipeline without running the pipeline or checking to see if the tasks are connected correctly
+
+    **Example**:
+
+        Given:
+
+        .. code-block:: python
+
+            from ruffus import *
+
+            @originate([])
+            def create_data(output_files):
+                pass
+
+            @transform(create_data, suffix(".txt"), ".task1")
+            def task1(input_files, output_files):
+                pass
+
+            @transform(task1, suffix(".task1"), ".task2")
+            def task2(input_files, output_files):
+                pass
+
+        Produces a list of three task names:
+
+        .. code-block:: pycon
+
+            >>> pipeline_get_task_names ()
+            ['create_data', 'task1', 'task2']

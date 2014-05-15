@@ -51,6 +51,9 @@ Review
               Do these file names follow a *pattern* ?
             * **Write down the names of functions which transforms the data at each stage of the pipeline.**
 
+
+.. _new_manual.suffix:
+
 **********************************************************************************************************************************************
 A different file name :ref:`suffix() <decorators.suffix>` for each pipeline stage
 **********************************************************************************************************************************************
