@@ -103,42 +103,44 @@ Q. How to force a pipeline to appear up to date?
 Q. How can I use my own decorators with Ruffus?
 ========================================================================================
 
+(Thanks to Radhouane Aniba for contributing to this answer.)
+
 A. With care! If the following two points are observed:
 
-__________________________________________________________________________________________________________
-1. Use ``@wraps`` from ``functools`` or the `decorator <https://pypi.python.org/pypi/decorator>`__ module
-__________________________________________________________________________________________________________
+____________________________________________________________________________________________________________________________________________________________________________________________________________________
+1. Use `@wraps <https://docs.python.org/2/library/functools.html#functools.wraps>`__  from ``functools`` or Michele Simionato's `decorator <https://pypi.python.org/pypi/decorator>`__ module
+____________________________________________________________________________________________________________________________________________________________________________________________________________________
 
     These will automatically forward attributes from the task function correctly:
 
-    * ``__name__`` and ``__module__`` is used to identify functions uniquely in a Ruffus pipeline, and 
+    * ``__name__`` and ``__module__`` is used to identify functions uniquely in a Ruffus pipeline, and
     * ``pipeline_task`` is used to hold per task data
 
 __________________________________________________________________________________________________________
 2. Always write Ruffus decorators first before your own decorators.
 __________________________________________________________________________________________________________
 
-    Otherwise, your decorator will be ignored. 
+    Otherwise, your decorator will be ignored.
 
     So this works:
 
     .. code-block:: python
-   
+
       @follows(prev_task)
       @custom_decorator(something)
       def test():
           pass
-   
+
     This is a bit futile
 
     .. code-block:: python
-   
-        # ignore @custom_decorator       
+
+        # ignore @custom_decorator
         @custom_decorator(something)
         @follows(prev_task)
         def test():
             pass
-       
+
 
     This order dependency is an unfortunate quirk of how python decorators work. The last (rather futile)
     piece of code is equivalent to:
@@ -147,8 +149,8 @@ ________________________________________________________________________________
 
         test = custom_decorator(something)(ruffus.follows(prev_task)(test))
 
-    Unfortunately, Ruffus has no idea that someone else is also modifying (decorating) the ``test()`` 
-    after it has had its go. 
+    Unfortunately, Ruffus has no idea that someone else (``custom_decorator``) is also modifying the ``test()`` function
+    after it (``ruffus.follows``) has had its go.
 
 
 
@@ -159,7 +161,7 @@ _____________________________________________________
     Let us look at a decorator to time jobs:
 
     .. code-block:: python
-       
+
         import sys, time
         def time_func_call(func, stream, *args, **kwargs):
             """prints elapsed time to standard out, or any other file-like object with a .write() method.
@@ -199,9 +201,9 @@ _____________________________________________________
 
     What would ``@time_job`` look like?
 
-_____________________________________________________
-1. Using functools 
-_____________________________________________________
+__________________________________________________________________________________________________________
+1. Using functools `@wraps <https://docs.python.org/2/library/functools.html#functools.wraps>`__
+__________________________________________________________________________________________________________
 
 
     .. code-block:: python
@@ -215,9 +217,9 @@ _____________________________________________________
                 return wrapper
             return actual_time_job
 
-_____________________________________________________
-2. Using decorator
-_____________________________________________________
+__________________________________________________________________________________________________________
+2. Using Michele Simionato's `decorator <https://pypi.python.org/pypi/decorator>`__ module
+__________________________________________________________________________________________________________
 
 
     .. code-block:: python
@@ -229,9 +231,9 @@ _____________________________________________________
             return decorator.decorator(time_job)
 
 
-_____________________________________________________
-2. By hand
-_____________________________________________________
+_______________________________________________________________________________________________________________________________________________________________
+2. By hand, using a `callable object <https://docs.python.org/2/reference/datamodel.html#emulating-callable-objects>`__
+_______________________________________________________________________________________________________________________________________________________________
 
 
     .. code-block:: python
