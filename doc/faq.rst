@@ -100,36 +100,155 @@ Q. How to force a pipeline to appear up to date?
     See :ref:`command line <new_manual.cmdline>` documentation.
 
 ========================================================================================
-Q. How to use decorated functions in Ruffus
+Q. How can I use my own decorators with Ruffus?
 ========================================================================================
-    A. Place your decorator after *Ruffus* decorators. This ensures that by the time *Ruffus* sees
-    your function, it has already been decorated.
 
-        ::
+A. With care! If the following two points are observed:
 
-            @transform(["example.abc"], suffix(".abc"), ".xyz")
-            @custom_decoration
-            def func(input, output):
-                pass
+__________________________________________________________________________________________________________
+1. Use ``@wraps`` from ``functools`` or the `decorator <https://pypi.python.org/pypi/decorator>`__ module
+__________________________________________________________________________________________________________
 
-    You will also need to use either ``@wraps`` or ``update_wrapper`` from ``functools``
-    to write your decorator:
+    These will automatically forward attributes from the task function correctly:
 
-        ::
+    * ``__name__`` and ``__module__`` is used to identify functions uniquely in a Ruffus pipeline, and 
+    * ``pipeline_task`` is used to hold per task data
 
-            def custom(task_func):
-                """ Decorate a function to print progress
-                """
-                @wraps(task_func)
-                def wrapper_function(*args, **kwargs):
-                    print "Before"
-                    task_func(*args, **kwargs)
-                    print "After"
+__________________________________________________________________________________________________________
+2. Always write Ruffus decorators first before your own decorators.
+__________________________________________________________________________________________________________
 
-                return wrapper_function
+    Otherwise, your decorator will be ignored. 
 
-    This ensures that the ``__name__`` and ``__module__`` attributes from the task function
-    are made available to *Ruffus* via your decorator.
+    So this works:
+
+    .. code-block:: python
+   
+      @follows(prev_task)
+      @custom_decorator(something)
+      def test():
+          pass
+   
+    This is a bit futile
+
+    .. code-block:: python
+   
+        # ignore @custom_decorator       
+        @custom_decorator(something)
+        @follows(prev_task)
+        def test():
+            pass
+       
+
+    This order dependency is an unfortunate quirk of how python decorators work. The last (rather futile)
+    piece of code is equivalent to:
+
+    .. code-block:: python
+
+        test = custom_decorator(something)(ruffus.follows(prev_task)(test))
+
+    Unfortunately, Ruffus has no idea that someone else is also modifying (decorating) the ``test()`` 
+    after it has had its go. 
+
+
+
+_____________________________________________________
+Example decorator:
+_____________________________________________________
+
+    Let us look at a decorator to time jobs:
+
+    .. code-block:: python
+       
+        import sys, time
+        def time_func_call(func, stream, *args, **kwargs):
+            """prints elapsed time to standard out, or any other file-like object with a .write() method.
+            """
+           start = time.time()
+           # Run the decorated function.
+           ret = func(*args, **kwargs)
+           # Stop the timer.
+           end = time.time()
+           elapsed = end - start
+           stream.write("{} took {} seconds\n".format(func.__name__, elapsed))
+           return ret
+
+
+        from ruffus import *
+        import sys
+        import time
+
+        @time_job(sys.stderr)
+        def first_task():
+            print "First task"
+
+
+        @follows(first_task)
+        @time_job(sys.stderr)
+        def second_task():
+            print "Second task"
+
+
+        @follows(second_task)
+        @time_job(sys.stderr)
+        def final_task():
+            print "Final task"
+
+        pipeline_run()
+
+
+    What would ``@time_job`` look like?
+
+_____________________________________________________
+1. Using functools 
+_____________________________________________________
+
+
+    .. code-block:: python
+
+        import functools
+        def time_job(stream=sys.stdout):
+            def actual_time_job(func):
+                @functools.wraps(func)
+                def wrapper(*args, **kwargs):
+                    return time_func_call(func, stream, *args, **kwargs)
+                return wrapper
+            return actual_time_job
+
+_____________________________________________________
+2. Using decorator
+_____________________________________________________
+
+
+    .. code-block:: python
+
+        import decorator
+        def time_job(stream=sys.stdout):
+            def time_job(func, *args, **kwargs):
+                return time_func_call(func, stream, *args, **kwargs)
+            return decorator.decorator(time_job)
+
+
+_____________________________________________________
+2. By hand
+_____________________________________________________
+
+
+    .. code-block:: python
+
+        class time_job(object):
+            def __init__(self, stream=sys.stdout):
+                self.stream = stream
+            def __call__(self, func):
+                def inner(*args, **kwargs):
+                    return time_func_call(func, self.stream, *args, **kwargs)
+                # remember to forward __name__
+                inner.__name__ = func.__name__
+                inner.__module__ = func.__module__
+                inner.__doc__ = func.__doc__
+                if hasattr(func, "pipeline_task"):
+                    inner.pipeline_task = func.pipeline_task
+                return inner
 
 
 ========================================================================================
