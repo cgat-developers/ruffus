@@ -918,6 +918,38 @@ class Test_swap_nesting_order (unittest.TestCase):
                         }))
 
 
+#
+#_________________________________________________________________________________________
+
+#   Test_shorten_filenames_encoder
+
+#_________________________________________________________________________________________
+class Test_shorten_filenames_encoder (unittest.TestCase):
+
+    def test_shorten_filenames_encoder(self):
+        relative_path = os.path.abspath("../test1/something.py")
+        absolute_path = "/a/long/path/to/oss/ruffus/ruffus/test/something.py"
+
+        #
+        # test relative path
+        #
+        self.assertEqual(shorten_filenames_encoder(relative_path, 4),
+                        '../test1/something.py')
+
+        # list of paths
+        self.assertEqual(shorten_filenames_encoder([[relative_path, relative_path]] * 2 + [6], 4),
+                        '[[../test1/something.py, ../test1/something.py], [../test1/something.py, ../test1/something.py], 6]')
+
+        #
+        # test full path
+        #
+        self.assertEqual(shorten_filenames_encoder(absolute_path, 4),
+                        'ruffus/ruffus/test/something.py')
+
+        # list of paths
+        self.assertEqual(shorten_filenames_encoder([[absolute_path, absolute_path]] * 2 + [6], 4),
+                        '[[ruffus/ruffus/test/something.py, ruffus/ruffus/test/something.py], '
+                         '[ruffus/ruffus/test/something.py, ruffus/ruffus/test/something.py], 6]')
 
 #
 #

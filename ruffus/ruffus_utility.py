@@ -879,28 +879,32 @@ def ignore_unknown_encoder(obj):
     except:
         return "<%s>" % str(obj.__class__).replace('"', "'")
 
-def shorten_filenames_encoder (obj):
+def shorten_filenames_encoder (obj, n_levels = 2):
+    """
+    Convert a set of parameters into a string
+        Paths with > N levels of nested-ness are truncated
+    """
     if non_str_sequence (obj):
-        return "[%s]" % ", ".join(map(shorten_filenames_encoder, obj))
+        return "[%s]" % ", ".join(map(shorten_filenames_encoder, obj, [n_levels] * len(obj)))
     if isinstance(obj, basestring):
         # only shorten absolute (full) paths
         if not os.path.isabs(obj):
             return ignore_unknown_encoder(obj)
         else:
             # if only one nested level, return that
-            if obj[1:].count('/') <= 1:
-                return ignore_unknown_encoder(rel_path)
+            if obj[1:].count('/') < n_levels:
+                #print >>sys.stderr, "absolute path only one nested level"
+                return ignore_unknown_encoder(obj)
 
             # use relative path if that has <= 1 nested level
             rel_path = os.path.relpath(obj)
-            if rel_path.count('/') <= 1:
+            if rel_path.count('/') <= n_levels:
+                #print >>sys.stderr, "relative path only one nested level"
                 return ignore_unknown_encoder(rel_path)
-                # get last two subdirectories
 
-            # get last two nested levels
-            full_path, base_level = os.path.split(obj)
-            full_path, sub_path  = os.path.split(full_path)
-            return ignore_unknown_encoder(os.path.join(sub_path, base_level))
+            # get last N nested levels
+            #print >>sys.stderr, "full path last N nested level"
+            return ignore_unknown_encoder(get_nth_nested_level_of_path (obj, n_levels))
     return ignore_unknown_encoder(obj)
 
 
