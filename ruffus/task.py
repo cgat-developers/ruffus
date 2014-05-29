@@ -3480,6 +3480,9 @@ def pipeline_run(target_tasks                     = [],
     if verbose == 0:
         logger = black_hole_logger
     elif verbose >= 11:
+        #   debugging aid: See t_stderr_logger
+        #   Each invocation of add_unique_prefix adds a unique prefix to all subsequent output
+        #       So that individual runs of pipeline run are tagged
         if hasattr(logger, "add_unique_prefix"):
             logger.add_unique_prefix()
 
