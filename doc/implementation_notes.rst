@@ -219,6 +219,17 @@ Task completion monitoring
       and down the function call chain. ``dbdict`` would then be drop-in replaceable by our custom (e.g. flat-file-based) dbdict alternative.
 
 
+    To peek into the database:
+
+        .. code-block:: bash
+
+            $ sqlite3 .ruffus_history.sqlite
+            sqlite> .tables
+            data
+            sqlite> .schema data
+            CREATE TABLE data (key PRIMARY KEY,value);
+            sqlite> select key from data order by key;
+
 ======================================================================================================
  Can we query the database, get Job history / stats?
 ======================================================================================================

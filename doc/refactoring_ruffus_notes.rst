@@ -61,6 +61,117 @@ Todo: Running python code (task functions) transparently on remote cluster nodes
        * resubmit if die (Don't do sophisticated stuff like libpythongrid).
 
 
+********************************************************************************************************
+Mark input strings as non-file names, and add support for dynamically returned parameters
+********************************************************************************************************
+
+    1. Use indicator object like "ouput_from"
+    2. What is a good name?
+    3. They will still participate in suffix, formatter and regex replacement
+
+    Bernie Pope suggests that we should generalise this:
+
+
+    If any object in the input parameters is a (non-list/tuple) class instance, check (getattr) whether it has a "ruffus_params()" function.
+    If it does, call it to obtain a list which is substituted in place.
+    If there are string nested within, these will take part in Ruffus string substitution.
+
+    "output_from" would be a simple wrapper which returns the internal string via ruffus_params()
+
+    .. code-block:: python
+
+        class output_from (object):
+            def __init__(self, str):
+                self.str = str
+            def ruffus_params(self):
+                return [self.str]
+
+    Returning a list should be like wildcards and should not introduce an unnecessary level of indirection for output parameters, i.e. suffix(".txt") or formatter() / "{basename[0]}" should work.
+
+    Check!
+
+
+********************************************************************************************************
+Allow "extra" parameters to be used in output substitution
+********************************************************************************************************
+
+    Formatter substitution can refer to the original elements in the input and extra parameters (without converting them to strings either). This refers to the original (nested) data structure.
+
+    This will allow normal python datatypes to be handed down and slipstreamed into a pipeline more easily.
+
+    The syntax would use Ruffus (> version 2.4) formatter:
+
+    ::
+
+        @transform( ..., formatter(), ["{EXTRAS[0][1][3]}", "[INPUTS[1][2]]"],...)
+
+    EXTRA and INPUTS indicate that we are referring to the input and extra parameters.
+
+    These are the full (nested) parameters in all their original form. In the case of the input parameters, this obvious depends on the decorator, so
+
+    ::
+
+        @transform(["a.text", [1, "b.text"]], formatter(), "{INPUTS[0][0]}")
+
+    would give
+
+    ::
+
+        job #1
+           input  == "a.text"
+           output == "a"
+
+        job #2
+           input  == [1, "b.text"]
+           output == 1
+
+
+    The entire string must consist of INPUTS or EXTRAS followed by optionally N levels of square brackets. i.e. They must match "(INPUTS|EXTRAS)(\[\d+\])+"
+
+    No string conversion takes place.
+
+
+********************************************************************************************************
+Refactor verbosity levels
+********************************************************************************************************
+
+    Verbosity levels for pipeline_printout and pipeline_run do not seem to be synchronised. It is not clear what exactly increasing verbosity does at each level. What is more, different things seem to happen differently at run time and print_out.
+
+        verbosity=
+
+        1) Out-of-date Tasks
+        2) All Tasks
+        3) Out-of-date Jobs in Out-of-date Tasks
+        4) All Jobs in Out-of-date Tasks
+        5) All jobs in All Tasks whether out of date or not
+
+        path_verbosity =
+
+        (default = 2)
+
+        0) the full path
+        1-N) N levels of subpath,
+
+            for "what/is/this.txt"
+            N = 1 "this.txt"
+            N = 2 "is/this.txt"
+            N >=3 "what/is/this.txt"
+
+        -N) As above but with the input/output parameter chopped off after 40 letters, and ending in "..."
+
+        Getting the Nth levels of a path use code from ruffus.ruffus_utility
+
+        ::
+
+            from ruffus.ruffus_utility import *
+            for aa in range(10):
+               print get_nth_nested_level_of_path ("/test/this/now/or/not.txt", aa)
+
+        1) pipeline_printout forwards printing to _task.printout
+        2) pipeline_run needs to borrow code from pipeline_printout to print up to date tasks including their jobs
+        3) See file_name_parameters.py::get_readable_path_str()
+
+
 
 ***************************************
 New decorators
@@ -69,8 +180,12 @@ New decorators
 Planned: ``@split`` / ``@subdivide``
 ==============================================================================
 
-    Return output parameters so that we can stop using wild cards, and the whole
-    things become so much cleaner
+    Can't see how we can stop using wild cards but at least if we return output strings in the task functions, we
+    don't include extraneous files which were not created in the pipeline but which just happened to match the
+    wild card in the function.
+
+    We should check whether we have ever run the function before, and if we have to also only check the files
+    which we generated last time...
 
 
 ==============================================================================

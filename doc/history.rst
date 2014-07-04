@@ -7,7 +7,20 @@ Major Features added to Ruffus
 version 2.4.2
 ********************************************************************
 
+    * BUG FIX: Output producing wild cards was not saved in the checksum files!!!
     * Added :ref:`pipeline_get_task_names(...) <pipeline_functions.pipeline_get_task_names>` which returns all task name as a list of strings
+    * Reorganised verbosity for pipeline_printout and pipeline_run
+        * level 0 : nothing
+        * level 1 : Out-of-date Tasks (names and warnings)
+        * level 2 : All Tasks (including any task function docstrings)
+        * level 3 : Out-of-date Jobs in Out-of-date Tasks, no explanation
+        * level 4 : Out-of-date Jobs in Out-of-date Tasks, with explanation
+        * level 5 : All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)
+        * level 6 : All jobs in All Tasks whether out of date or not
+        * level 10: logs messages useful only for debugging ruffus pipeline code
+    (Need to update docs)
+
+
 
 
 ********************************************************************

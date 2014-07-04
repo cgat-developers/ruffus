@@ -9,6 +9,8 @@ See :ref:`Decorators <decorators>` for more decorators
 .. _pipeline_printout: `pipeline_functions.pipeline_printout`_
 .. |pipeline_printout_graph| replace:: `pipeline_printout_graph`
 .. _pipeline_printout_graph: `pipeline_functions.pipeline_printout_graph`_
+.. |pipeline_get_task_names| replace:: `pipeline_get_task_names`
+.. _pipeline_get_task_names: `pipeline_functions.pipeline_get_task_names`_
 
 .. |pr_target_tasks| replace:: `target_tasks`
 .. _pr_target_tasks: `pipeline_functions.pipeline_run.target_tasks`_

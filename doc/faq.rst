@@ -447,7 +447,7 @@ _____________________________________________________
 
     The level of timestamping / checksumming can be set via the ``checksum_level`` parameter:
 
-    .. code-block::
+    .. code-block:: python
 
         pipeline_run(..., checksum_level = N, ...)
 

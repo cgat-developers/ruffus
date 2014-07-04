@@ -46,7 +46,7 @@ The most up-to-date code:
 
         * To install after downloading, change to the , type::
 
-          python ./setup.py install
+             python ./setup.py install
 
 
 ======================
