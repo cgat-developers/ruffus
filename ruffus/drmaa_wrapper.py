@@ -308,9 +308,9 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
                     resource_usage_str = []
                     if 'maxvmem' in job_info.resourceUsage:
                         if 'mem' in job_info.resourceUsage:
-                            resource_usage_str.append("Mem=%d(%s)" % (nice_mem_str(job_info.resourceUsage['maxvmem']), job_info.resourceUsage['mem']))
+                            resource_usage_str.append("Mem=%s(%s)" % (nice_mem_str(job_info.resourceUsage['maxvmem']), job_info.resourceUsage['mem']))
                         else:
-                            resource_usage_str.append("Mem=%d" % nice_mem_str(job_info.resourceUsage['maxvmem']))
+                            resource_usage_str.append("Mem=%s" % nice_mem_str(job_info.resourceUsage['maxvmem']))
                     if 'ru_wallclock' in job_info.resourceUsage:
                         resource_usage_str.append("CPU wallclock= %.2gs" % float(job_info.resourceUsage['ru_wallclock']))
                     if len(resource_usage_str):
