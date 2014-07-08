@@ -286,8 +286,6 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
     #
     if job_info:
         job_info_str += "Resources used = %s " % (job_info.resourceUsage)
-        raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n%s:%s:%s"
-                                         % (job_info.exitStatus, job_info_str, job_info.hasExited, job_info.exitStatus))
         if job_info.hasExited:
             if job_info.exitStatus:
                 raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n%s"
@@ -300,8 +298,6 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
         elif job_info.hasSignaled:
             raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n%s"
                                      % (job_info.terminatingSignal, job_info_str))
-    else:
-        raise error_drmaa_job( "job_info == Null")
 
     #
     #   clean up job template
