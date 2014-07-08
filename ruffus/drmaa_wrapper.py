@@ -285,18 +285,20 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
     #   Throw if failed
     #
     if job_info:
+        job_info_str += "Resources used = "
+        job_info.resourceUsage
         if job_info.hasExited:
             if job_info.exitStatus:
                 raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n%s"
-                                         (job_info.exitStatus, job_info_str))
+                                         % (job_info.exitStatus, job_info_str))
             else:
                 logger.info("Drmaa command used %s\n" % job_info.resourceUsage)
         elif job_info.wasAborted:
             raise error_drmaa_job( "The drmaa command was never ran but used %s:\n%s"
-                                     (job_info.resourceUsage, job_info_str))
+                                     % (job_info.resourceUsage, job_info_str))
         elif job_info.hasSignaled:
             raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n%s"
-                                     (job_info.terminatingSignal, job_info_str))
+                                     % (job_info.terminatingSignal, job_info_str))
 
     #
     #   clean up job template
