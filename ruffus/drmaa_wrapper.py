@@ -285,8 +285,6 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
     #   Throw if failed
     #
     if job_info:
-        if job_info.was Aborted:
-
         if job_info.hasExited:
             if job_info.exitStatus:
                 raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n%s"
