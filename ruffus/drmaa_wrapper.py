@@ -291,15 +291,28 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
                 raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n%s"
                                          % (job_info.exitStatus, job_info_str))
             elif verbose:
+
+                def nice_mem_str(num):
+                    """
+                    Format memory sizes
+                    http://stackoverflow.com/questions/1094841/reusable-library-to-get-human-readable-version-of-file-size
+                    """
+                    num = int(float(num))
+                    for x in ['bytes','KB','MB','GB']:
+                        if num < 1024.0:
+                            return "%3.1f%s" % (num, x)
+                        num /= 1024.0
+                    return "%3.1f%s" % (num, 'TB')
+
                 try:
                     resource_usage_str = []
                     if 'maxvmem' in job_info.resourceUsage:
                         if 'mem' in job_info.resourceUsage:
-                            resource_usage_str.append("Mem=%d(%s)" % (int(float(job_info.resourceUsage['maxvmem'])), job_info.resourceUsage['mem']))
+                            resource_usage_str.append("Mem=%d(%s)" % (nice_mem_str(job_info.resourceUsage['maxvmem']), job_info.resourceUsage['mem']))
                         else:
-                            resource_usage_str.append("Mem=%d" % int(float(job_info.resourceUsage['maxvmem'])))
+                            resource_usage_str.append("Mem=%d" % nice_mem_str(job_info.resourceUsage['maxvmem']))
                     if 'ru_wallclock' in job_info.resourceUsage:
-                        resource_usage_str.append("CPU wallclock= %.2g" % float(job_info.resourceUsage['ru_wallclock']))
+                        resource_usage_str.append("CPU wallclock= %.2gs" % float(job_info.resourceUsage['ru_wallclock']))
                     if len(resource_usage_str):
                         logger.info("Drmaa command used %s in running %s" % (", ".join(resource_usage_str), cmd_str))
                     else:
