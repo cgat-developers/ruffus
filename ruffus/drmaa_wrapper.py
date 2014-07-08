@@ -210,7 +210,7 @@ def write_job_script_to_temp_file( cmd_str, job_script_directory, job_name, job_
 #   run_job_using_drmaa
 
 #_________________________________________________________________________________________
-def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_script_directory = None, job_environment = None, working_directory = None, retain_job_scripts = False, logger = None, drmaa_session = None):
+def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_script_directory = None, job_environment = None, working_directory = None, retain_job_scripts = False, logger = None, drmaa_session = None, verbose = False):
 
     """
     Runs specified command remotely using drmaa,
@@ -290,8 +290,20 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
             if job_info.exitStatus:
                 raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n%s"
                                          % (job_info.exitStatus, job_info_str))
-            else:
-                logger.info("Drmaa command used %s\n" % job_info.resourceUsage)
+            elif verbose:
+
+                resource_usage_str = []
+                if 'maxvmem' in job_info.resourceUsage:
+                    if 'mem' in job_info.resourceUsage:
+                        resource_usage_str.append("Mem=%d(%s)" % (int(job_info.resourceUsage['maxvmem']), job_info.resourceUsage['mem']))
+                    else:
+                        resource_usage_str.append("Mem=%d" % int(job_info.resourceUsage['maxvmem']))
+                if 'ru_wallclock' in job_info.resourceUsage:
+                    resource_usage_str.append("CPU wallclock= %.2g" % job_info.resourceUsage['ru_wallclock'])
+                if len(resource_usage_str):
+                    logger.info("Drmaa command used %s in running %s" % (", ".join(resource_usage_str), cmd_str))
+                else:
+                    logger.info("Drmaa command successfully ran %s" % cmd_str)
         elif job_info.wasAborted:
             raise error_drmaa_job( "The drmaa command was never ran but used %s:\n%s"
                                      % (job_info.resourceUsage, job_info_str))
@@ -409,7 +421,10 @@ def touch_output_files (cmd_str, output_files, logger = None):
 #   run_job
 
 #_________________________________________________________________________________________
-def run_job(cmd_str, job_name = None, job_other_options = None, job_script_directory = None, job_environment = None, working_directory = None, logger = None, drmaa_session = None, retain_job_scripts = False, run_locally = False, output_files = None, touch_only = False):
+def run_job(cmd_str, job_name = None, job_other_options = None, job_script_directory = None,
+            job_environment = None, working_directory = None, logger = None,
+            drmaa_session = None, retain_job_scripts = False,
+            run_locally = False, output_files = None, touch_only = False, verbose = False):
     """
     Runs specified command either using drmaa, or locally or only in simulation (touch the output files only)
     """
@@ -422,4 +437,4 @@ def run_job(cmd_str, job_name = None, job_other_options = None, job_script_direc
         return run_job_locally (cmd_str, logger)
 
 
-    return run_job_using_drmaa (cmd_str, job_name, job_other_options, job_script_directory, job_environment, working_directory, retain_job_scripts, logger, drmaa_session)
+    return run_job_using_drmaa (cmd_str, job_name, job_other_options, job_script_directory, job_environment, working_directory, retain_job_scripts, logger, drmaa_session, verbose)
