@@ -250,7 +250,7 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
         logger.debug( "job has been submitted with jobid %s" % str(jobid ))
 
     try:
-        retval = drmaa_session.wait(jobid, drmaa.Session.TIMEOUT_WAIT_FOREVER)
+        job_info = drmaa_session.wait(jobid, drmaa.Session.TIMEOUT_WAIT_FOREVER)
     except Exception:
         exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
         msg = str(exceptionValue)
@@ -261,7 +261,7 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
             logger.log(MESSAGE, "Warning %s\n"
                                    "The original command was:\n%s\njobid=jobid\n"
                                      (msg.message, cmd_str,jobid) )
-        retval = None
+        job_info = None
 
 
     #
@@ -269,23 +269,36 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
     #
     stdout, stderr = read_stdout_stderr_from_files( stdout_path, stderr_path, logger, cmd_str)
 
+
+    job_info_str = ("The original command was:\n%s\n"
+                    "The jobid was: %s\n"
+                    "The job script name was: %s\n" %
+                            (cmd_str,
+                             jobid,
+                             job_script_path))
+    if stderr:
+        job_info_str += "The stderr was: \n%s\n\n" % ("".join( stderr))
+    if stdout:
+        job_info_str += "The stdout was: \n%s\n\n" % ("".join( stdout))
+
     #
     #   Throw if failed
     #
-    if retval and (not retval.hasExited or retval.exitStatus):
-        raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n"
-                               "The original command was:\n%s\n"
-                               "The jobid was: %s\n"
-                               "The job script name was: %s\n"
-                               "The stderr was: \n%s\n\n"
-                               "The stdout was: \n%s\n\n" %
-                                 (retval.exitStatus, cmd_str,
-                                     jobid,
-                                     job_script_path,
-                                    "".join( stderr),
-                                    "".join( stdout)
-                                     ) )
+    if job_info:
+        if job_info.was Aborted:
 
+        if job_info.hasExited:
+            if job_info.exitStatus:
+                raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n%s"
+                                         (job_info.exitStatus, job_info_str))
+            else:
+                logger.info("Drmaa command used %s\n" % job_info.resourceUsage)
+        elif job_info.wasAborted:
+            raise error_drmaa_job( "The drmaa command was never ran but used %s:\n%s"
+                                     (job_info.resourceUsage, job_info_str))
+        elif job_info.hasSignaled:
+            raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n%s"
+                                     (job_info.terminatingSignal, job_info_str))
 
     #
     #   clean up job template
