@@ -297,7 +297,7 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
                     Format memory sizes
                     http://stackoverflow.com/questions/1094841/reusable-library-to-get-human-readable-version-of-file-size
                     """
-                    num = int(float(num))
+                    num = float(num)
                     for x in ['bytes','KB','MB','GB']:
                         if num < 1024.0:
                             return "%3.1f%s" % (num, x)
