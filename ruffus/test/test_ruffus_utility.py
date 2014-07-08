@@ -645,48 +645,53 @@ class Test_parameter_list_as_string (unittest.TestCase):
 #
 #_________________________________________________________________________________________
 
-#   Test_regex_match_str_list
+#   Test_regex_match_str
 
 #_________________________________________________________________________________________
-class Test_regex_match_str_list (unittest.TestCase):
+class Test_regex_match_str (unittest.TestCase):
 
     def test_matches(self):
 
         # first string named and unamed captures, second string no captures
         test_str_list = ["aaa.bbb.ccc", "ddd.eee.fff"]
         compiled_regexes = ["aaa.(b+).(?P<CCC>c+)", "ddd.eee.fff"]
-        self.assertEqual(regex_match_str_list(test_str_list, compiled_regexes),
-                         [{0: 'aaa.bbb.ccc', 1: 'bbb', 2: 'ccc', 'CCC': 'ccc'}, {0: 'ddd.eee.fff'}])
+        results = [{0: 'aaa.bbb.ccc', 1: 'bbb', 2: 'ccc', 'CCC': 'ccc'}, {0: 'ddd.eee.fff'}]
+        for ss, rr, result in zip(test_str_list, compiled_regexes, results):
+            self.assertEqual(regex_match_str(ss, rr), result)
 
         # first string named and unamed captures, second string unnamed captures
         compiled_regexes = ["aaa.(b+).(?P<CCC>c+)", ".+(f)"]
-        self.assertEqual(regex_match_str_list(test_str_list, compiled_regexes),
-                         [{0: 'aaa.bbb.ccc', 1: 'bbb', 2: 'ccc', 'CCC': 'ccc'}, {0: 'ddd.eee.fff', 1: 'f'}])
+        results = [{0: 'aaa.bbb.ccc', 1: 'bbb', 2: 'ccc', 'CCC': 'ccc'}, {0: 'ddd.eee.fff', 1: 'f'}]
+        for ss, rr, result in zip(test_str_list, compiled_regexes, results):
+            self.assertEqual(regex_match_str(ss, rr), result)
 
         # first string named and unamed captures, second string no capture
         compiled_regexes = ["aaa.(b+).(?P<CCC>c+)", ".+"]
-        self.assertEqual(regex_match_str_list(test_str_list, compiled_regexes),
-                         [{0: 'aaa.bbb.ccc', 1: 'bbb', 2: 'ccc', 'CCC': 'ccc'}, {0: 'ddd.eee.fff'}])
+        results = [{0: 'aaa.bbb.ccc', 1: 'bbb', 2: 'ccc', 'CCC': 'ccc'}, {0: 'ddd.eee.fff'}]
+        for ss, rr, result in zip(test_str_list, compiled_regexes, results):
+            self.assertEqual(regex_match_str(ss, rr), result)
 
         # first string named and unamed captures, second string None
         compiled_regexes = ["aaa.(b+).(?P<CCC>c+)", None]
-        self.assertEqual(regex_match_str_list(test_str_list, compiled_regexes),
-                         [{0: 'aaa.bbb.ccc', 1: 'bbb', 2: 'ccc', 'CCC': 'ccc'}, None])
+        results = [{0: 'aaa.bbb.ccc', 1: 'bbb', 2: 'ccc', 'CCC': 'ccc'}, None]
+        for ss, rr, result in zip(test_str_list, compiled_regexes, results):
+           self.assertEqual(regex_match_str(ss, rr), result)
 
         # Both None
         compiled_regexes = []
-        self.assertEqual(regex_match_str_list(test_str_list, compiled_regexes),
-                         [None, None])
+        results = [None, None]
+        for ss, rr, result in zip(test_str_list, compiled_regexes, results):
+           self.assertEqual(regex_match_str(ss, rr), result)
 
         # first string named and unamed captures, second string Failed
         compiled_regexes = ["aaa.(b+).(?P<CCC>c+)", "PP"]
-        self.assertEqual(regex_match_str_list(test_str_list, compiled_regexes),
-                         [{0: 'aaa.bbb.ccc', 1: 'bbb', 2: 'ccc', 'CCC': 'ccc'}, False])
+        results = [{0: 'aaa.bbb.ccc', 1: 'bbb', 2: 'ccc', 'CCC': 'ccc'}, False]
+        for ss, rr, result in zip(test_str_list, compiled_regexes, results):
+           self.assertEqual(regex_match_str(ss, rr), result)
 
 
         # first string named and unamed captures, second parameter number not string
-        compiled_regexes = ["aaa.(b+).(?P<CCC>c+)", 3]
-        self.assertRaises(Exception, regex_match_str_list, test_str_list, compiled_regexes)
+        self.assertRaises(Exception, regex_match_str, test_str_list[0], 6)
 
 
 
@@ -913,6 +918,38 @@ class Test_swap_nesting_order (unittest.TestCase):
                         }))
 
 
+#
+#_________________________________________________________________________________________
+
+#   Test_shorten_filenames_encoder
+
+#_________________________________________________________________________________________
+class Test_shorten_filenames_encoder (unittest.TestCase):
+
+    def test_shorten_filenames_encoder(self):
+        relative_path = os.path.abspath("../test1/something.py")
+        absolute_path = "/a/long/path/to/oss/ruffus/ruffus/test/something.py"
+
+        #
+        # test relative path
+        #
+        self.assertEqual(shorten_filenames_encoder(relative_path, 4),
+                        '../test1/something.py')
+
+        # list of paths
+        self.assertEqual(shorten_filenames_encoder([[relative_path, relative_path]] * 2 + [6], 4),
+                        '[[../test1/something.py, ../test1/something.py], [../test1/something.py, ../test1/something.py], 6]')
+
+        #
+        # test full path
+        #
+        self.assertEqual(shorten_filenames_encoder(absolute_path, 4),
+                        'ruffus/ruffus/test/something.py')
+
+        # list of paths
+        self.assertEqual(shorten_filenames_encoder([[absolute_path, absolute_path]] * 2 + [6], 4),
+                        '[[ruffus/ruffus/test/something.py, ruffus/ruffus/test/something.py], '
+                         '[ruffus/ruffus/test/something.py, ruffus/ruffus/test/something.py], 6]')
 
 #
 #

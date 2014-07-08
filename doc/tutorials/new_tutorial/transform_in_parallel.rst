@@ -57,8 +57,6 @@ Review
            pipeline just as easily to 1000 files as to 3.
 
 
-.. _new_manual.transform_in_parallel
-
 
 ************************************
 Running pipelines in parallel

@@ -293,17 +293,17 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
     drmaa_session.deleteJobTemplate(job_template)
 
     #
-    #   Cleanup job script
+    #   Cleanup job script unless retain_job_scripts is set
     #
-    if not retain_job_scripts:
+    if retain_job_scripts:
+        # job scripts have the jobid as an extension
+        os.rename(job_script_path, job_script_path + ".%s" % jobid )
+    else:
         try:
             os.unlink( job_script_path )
         except OSError:
             if logger:
                 logger.warn( "Temporary job script wrapper '%s' missing (and ignored) at clean-up" % job_script_path )
-    else:
-        # job scripts have the jobid as an extension
-        os.rename(job_script_path, job_script_path + ".%s" % jobid )
 
     return stdout, stderr
 

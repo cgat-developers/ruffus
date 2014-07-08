@@ -308,6 +308,34 @@ def path_decomposition (orig_path):
             'path':     path_part}
 
 
+#_________________________________________________________________________________________
+#
+#   get_nth_nested_level_of_path
+#
+#_________________________________________________________________________________________
+def get_nth_nested_level_of_path (orig_path, n_levels):
+    """
+    Return path with up to N levels of subdirectories
+    0 = full path
+    N = 1 : basename
+    N = 2 : basename + one subdirectory
+
+    For example
+        0   /test/this/now/or/not.txt
+        1   not.txt
+        2   or/not.txt
+        3   now/or/not.txt
+        4   this/now/or/not.txt
+        5   test/this/now/or/not.txt
+        6   /test/this/now/or/not.txt
+        7   /test/this/now/or/not.txt
+    """
+    if not n_levels or n_levels < 0:
+        return orig_path
+    res = path_decomposition(orig_path)
+    basename = os.path.split(orig_path)[1]
+    return os.path.join(*(list(reversed(res["subdir"][0:(n_levels - 1)]))+[basename]))
+
 
 #_________________________________________________________________________________________
 #
@@ -362,20 +390,140 @@ def swap_doubly_nested_order (orig_coll):
 
 #_________________________________________________________________________________________
 #
-#   regex_match_str_list
+#   regex_match_str
 #
 #_________________________________________________________________________________________
-def regex_match_str_list(test_str_list, compiled_regexes):
+def regex_match_str(test_str, compiled_regex):
     """
-    Returns a list of regular expression matches for a string and its corresponding regex
-    Each match consists of a dictionary combining both named and unnamed captures
+    Returns result of regular expression match in a dictionary
+        combining both named and unnamed captures
     """
+    if compiled_regex:
+        if isinstance(compiled_regex, basestring):
+            compiled_regex = re.compile(compiled_regex)
+        mm = compiled_regex.search(test_str)
+        # Match failed
+        if mm == None:
+            return False
+        else:
+            # No capture
+            if mm.lastindex == None:
+                return {0: mm.group(0)}
+            # Combined named and unnamed captures
+            else:
+                # no dictionary comprehensions in python 2.6 :-(
+                #matchdicts.append({i : mm.group(i) for i in (range(mm.lastindex) + mm.groupdict().keys())})
+                return dict((i, mm.group(i)) for i in (range(mm.lastindex + 1) + mm.groupdict().keys()))
+    else:
+        return None
+
+
+#_________________________________________________________________________________________
+#
+#   path_decomposition_regex_match
+#
+#_________________________________________________________________________________________
+def path_decomposition_regex_match (test_str, compiled_regex):
+    """
+    Returns a dictionary identifying the components of a file path.
+
+    This includes both the components of a path:
+        basename: (any) base (file) name of the path not including the extension. No slash included
+        ext:      (any) extension of the path including the "."
+        path:     a list of subpaths created by removing subdirectory names
+        subdir:   a list of subdirectory names from the most nested to the root
+    and regular expression matches
+        The keys are the index or name of the capturing group.
+
+
+    If compiled_regexes is not specified, return path decomposition only
+
+    If compiled_regexes is specified, and the corresponding regular expression does not match,
+        the entire match fails
+
+    For example
+
+        path_decomposition_regex_match("/a/b/c/sample1.bam", r"(.*)(?P<id>\d+)\..+")
+
+            {
+                0:          '/a/b/c/sample1.bam',           // captured by index
+                1:          '/a/b/c/sample',                // captured by index
+                'id':       '1'                             // captured by name
+                'ext':      '.bam',
+                'subdir':   ['c', 'b', 'a', '/'],
+                'subpath':  ['/a/b/c', '/a/b', '/a', '/'],
+                'path':     '/a/b/c',
+                'basename': 'sample1',
+            },
+
+        path_decomposition_regex_match("dbsnp15.vcf", r"(.*)(?P<id>\d+)\..+")
+            {
+                0: 'dbsnp15.vcf',                           // captured by index
+                1: 'dbsnp1',                                // captured by index
+                'id': '5'                                   // captured by name
+                'ext': '.vcf',
+                'subdir': [],
+                'path': [],
+                'basename': 'dbsnp15',
+            },
+
+
+        // fail
+        path_decomposition_regex_match("/test.txt", r"(.*)(?P<id>\d+)\..+")
+            {}
+
+        // path components only
+        path_decomposition_regex_match("/test.txt", None)
+            {
+                'ext': '.txt',
+                'subdir': ['/']
+                'subpath': ['/'],
+                'path': '/',
+                'basename': 'test',
+            }
+
+    """
+    pp = path_decomposition(test_str)
+
+    # regular expression not specified
+    # just path
+    if compiled_regex == None:
+        return pp
+
+    rr = regex_match_str(test_str, compiled_regex)
+
+    # regular expression match failed
+    # nothing
+    if rr == False:
+        return {}
+
+    #
+    #   regular expression matches override file decomposition values in
+    #       case of clashes between predefined keys such as "basename" and
+    #       regular expression named capture groups
+    #
+    pp.update(rr)
+    return pp
+
+
+#_________________________________________________________________________________________
+#
+#   check_compiled_regexes
+#
+#_________________________________________________________________________________________
+def check_compiled_regexes (compiled_regexes, expected_num):
+    """
+    check compiled_regexes are of the right type and number
+    """
+    if compiled_regexes == None:
+        return [None] * expected_num
+
     if not isinstance(compiled_regexes, list):
         raise Exception("Expecting list of None and strings")
 
     #   pad compiled_regexes with None
-    if len(compiled_regexes) < len(test_str_list):
-        compiled_regexes.extend([None] * (len(test_str_list) - len(compiled_regexes)))
+    if len(compiled_regexes) < expected_num:
+        compiled_regexes.extend([None] * (expected_num - len(compiled_regexes)))
 
     #   Turn strings to regular expression just in case
     #   We don't want to do this here because the error messages are not very nice:
@@ -388,35 +536,8 @@ def regex_match_str_list(test_str_list, compiled_regexes):
         if not isinstance(rr, regex_types):
             raise Exception("Unexpected type %s ('%s') specified in regular expression list. Expecting string or compiled regular expression" % (type(rr), rr))
 
-    #
-    #   match against regular expressions
-    #
-    matches = [rr.search(ss) if rr else None for rr, ss in izip(compiled_regexes, test_str_list)]
+    return compiled_regexes
 
-    #
-    #   convert regular expression matches into a dictionary for named and unamed captures
-    #
-    matchdicts = []
-    for rr, mm in izip(compiled_regexes, matches):
-
-        # Ignore: no regular expression match attempted
-        if rr == None:
-            matchdicts.append(None)
-
-        # Match failed
-        elif mm == None:
-            matchdicts.append(False)
-        else:
-            # No capture
-            if mm.lastindex == None:
-                matchdicts.append({0: mm.group(0)})
-
-            # Combined named and unnamed captures
-            else:
-                # no dictionary comprehensions in python 2.6 :-(
-                #matchdicts.append({i : mm.group(i) for i in (range(mm.lastindex) + mm.groupdict().keys())})
-                matchdicts.append(dict((i, mm.group(i)) for i in (range(mm.lastindex + 1) + mm.groupdict().keys())))
-    return matchdicts
 
 #_________________________________________________________________________________________
 #
@@ -426,82 +547,12 @@ def regex_match_str_list(test_str_list, compiled_regexes):
 def get_all_paths_components(paths, compiled_regexes):
     """
         For each path in a list,
-            returns a dictionary identifying the components of a file path.
-            This includes both the components of a path:
-                basename: (any) base (file) name of the path not including the extension. No slash included
-                ext:      (any) extension of the path including the "."
-                path:     a list of subpaths created by removing subdirectory names
-                subdir:   a list of subdirectory names from the most nested to the root
-            and regular expression matches
-                The keys are the index or name of the capturing group.
-
-            If compiled_regexes is specified, and the corresponding regular expression does not match,
-                the entire match fails
-
-        For example, the following three paths give:
-            get_all_paths_components(["/a/b/c/sample1.bam",
-                                      "dbsnp15.vcf",
-                                      "/test.txt"],
-                                     r"(.*)(?P<id>\d+)\..+")
-
-            [   {
-                    0:          '/a/b/c/sample1.bam',           // captured by index
-                    1:          '/a/b/c/sample',                // captured by index
-                    'id':       '1'                             // captured by name
-                    'ext':      '.bam',
-                    'subdir':   ['c', 'b', 'a', '/'],
-                    'subpath':  ['/a/b/c', '/a/b', '/a', '/'],
-                    'path':     '/a/b/c',
-                    'basename': 'sample1',
-                },
-                {
-                    0: 'dbsnp15.vcf',                           // captured by index
-                    1: 'dbsnp1',                                // captured by index
-                    'id': '5'                                   // captured by name
-                    'ext': '.vcf',
-                    'subdir': [],
-                    'path': [],
-                    'basename': 'dbsnp15',
-                },
-
-                // path components only
-                //
-                {
-                    'ext': '.txt',
-                    'subdir': ['/']
-                    'subpath': ['/'],
-                    'path': '/',
-                    'basename': 'test',
-                }
-            ]
     """
     #
     #   merge regular expression matches and path decomposition
     #
-    path_components = [path_decomposition(pp) for pp in paths]
-    if compiled_regexes == None:
-        return path_components
-    else:
-        regex_match_components = regex_match_str_list(paths, compiled_regexes)
-        both_components = []
-        for rr, pp in izip(regex_match_components, path_components):
-            # regular expression not specified
-            # just path
-            if rr == None:
-                both_components.append(pp)
-            # regular expression match failed
-            # nothing
-            elif rr == False:
-                both_components.append({})
-            else:
-                #
-                #   regular expression matches override file decomposition values in
-                #       case of clashes between predefined keys such as "basename" and
-                #       regular expression named capture groups
-                #
-                pp.update(rr)
-                both_components.append(pp)
-        return both_components
+    compiled_regexes = check_compiled_regexes (compiled_regexes, len(paths))
+    return [path_decomposition_regex_match (pp, rr) for (pp, rr) in izip(paths, compiled_regexes)]
 
 
 
@@ -828,12 +879,32 @@ def ignore_unknown_encoder(obj):
     except:
         return "<%s>" % str(obj.__class__).replace('"', "'")
 
-def shorten_filenames_encoder (obj):
+def shorten_filenames_encoder (obj, n_levels = 2):
+    """
+    Convert a set of parameters into a string
+        Paths with > N levels of nested-ness are truncated
+    """
     if non_str_sequence (obj):
-        return "[%s]" % ", ".join(map(shorten_filenames_encoder, obj))
+        return "[%s]" % ", ".join(map(shorten_filenames_encoder, obj, [n_levels] * len(obj)))
     if isinstance(obj, basestring):
-        if os.path.isabs(obj) and obj[1:].count('/') > 1:
-            return os.path.split(obj)[1]
+        # only shorten absolute (full) paths
+        if not os.path.isabs(obj):
+            return ignore_unknown_encoder(obj)
+        else:
+            # if only one nested level, return that
+            if obj[1:].count('/') < n_levels:
+                #print >>sys.stderr, "absolute path only one nested level"
+                return ignore_unknown_encoder(obj)
+
+            # use relative path if that has <= 1 nested level
+            rel_path = os.path.relpath(obj)
+            if rel_path.count('/') <= n_levels:
+                #print >>sys.stderr, "relative path only one nested level"
+                return ignore_unknown_encoder(rel_path)
+
+            # get last N nested levels
+            #print >>sys.stderr, "full path last N nested level"
+            return ignore_unknown_encoder(get_nth_nested_level_of_path (obj, n_levels))
     return ignore_unknown_encoder(obj)
 
 

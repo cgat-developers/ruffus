@@ -198,9 +198,12 @@ class t_verbose_logger:
 def log_at_level (logger, message_level, verbose_level, msg):
     """
     writes to log if message_level > verbose level
+    Returns anything written in case we might want to drop down and output at a lower log level
     """
     if message_level <= verbose_level:
         logger.info(msg)
+        return True
+    return False
 
 
 
@@ -1016,10 +1019,14 @@ class _task (node):
         """
         Print out all jobs for this task
 
-                verbose = 1 : print task name
-                          2 : print task description if exists
-                          3 : print job names for jobs to be run
-                          4 : print job names for up-to- date jobs
+            verbose =
+                    level 1 : logs Out-of-date Tasks (names and warnings)
+                    level 2 : logs All Tasks (including any task function docstrings)
+                    level 3 : logs Out-of-date Jobs in Out-of-date Tasks, no explanation
+                    level 4 : logs Out-of-date Jobs in Out-of-date Tasks, saying why they are out of date (include only list of up-to-date tasks)
+                    level 5 : All Jobs in Out-of-date Tasks (include only list of up-to-date tasks)
+                    level 6 : All jobs in All Tasks whether out of date or not
+
         """
 
         def get_job_names (param, indent_str):
@@ -1040,17 +1047,19 @@ class _task (node):
 
         messages = []
 
+        # LOGGER: level 1 : logs Out-of-date Tasks (names and warnings)
         messages.append("Task = " + self.get_task_name() + ("    >>Forced to rerun<<" if force_rerun else ""))
         if verbose ==1:
             return messages
 
+        # LOGGER: level 2 : logs All Tasks (including any task function docstrings)
         if verbose >= 2 and len(self._description):
             messages.append(indent_str + '"' + self._description + '"')
 
         #
         #   single job state
         #
-        if verbose > 5:
+        if verbose >= 10:
             if self._single_job_single_output == self.single_job_single_output:
                 messages.append("    Single job single output")
             elif self._single_job_single_output == self.multiple_jobs_outputs:
@@ -1059,6 +1068,7 @@ class _task (node):
                 messages.append("    Single jobs status depends on %s" % self._single_job_single_output._name)
 
 
+        # LOGGER: No job if less than 2
         if verbose <= 2 :
             return messages
 
@@ -1070,6 +1080,7 @@ class _task (node):
         #       @active_if parameters may be call back functions or booleans
         #
         if not self.is_active:
+            # LOGGER
             if verbose <= 3:
                 return messages
             messages.append(indent_str + "Task is inactive")
@@ -1081,6 +1092,7 @@ class _task (node):
         #   No parameters: just call task function
         #
         if self.param_generator_func == None:
+            # LOGGER
             if verbose <= 3:
                 return messages
 
@@ -1128,6 +1140,7 @@ class _task (node):
                     per_job_messages = [(indent_str + s) for s in ("  Job needs update: %s" % msg).split("\n")]
                     messages.extend(per_job_messages)
                 else:
+                    # LOGGER
                     if verbose > 4:
                         messages.extend(get_job_names (descriptive_param, indent_str))
                         messages.append(indent_str + "  Job up-to-date")
@@ -1136,6 +1149,7 @@ class _task (node):
                 messages.append(indent_str + "!!! No jobs for this task. "
                                              "Are you sure there is not a error in your "
                                              "code / regular expression?")
+            # LOGGER
             if verbose >= 3 or (verbose and cnt_jobs == 0):
                 if runtime_data and "MATCH_FAILURE" in runtime_data:
                     for s in runtime_data["MATCH_FAILURE"]:
@@ -1169,7 +1183,7 @@ class _task (node):
             logger       = verbose_logger.logger
             verbose      = verbose_logger.verbose
             runtime_data = verbose_logger.runtime_data
-            log_at_level (logger, 4, verbose,
+            log_at_level (logger, 10, verbose,
                             "  Task = " + self.get_task_name())
 
             #
@@ -1178,7 +1192,7 @@ class _task (node):
             if (self.active_if_checks != None and
                 any( not arg() if isinstance(arg, collections.Callable) else not arg
                          for arg in self.active_if_checks)):
-                log_at_level (logger, 4, verbose,
+                log_at_level (logger, 10, verbose,
                                 "    Inactive task: treat as Up to date")
                 #print 'signaling that the inactive task is up to date'
                 return True
@@ -1187,7 +1201,7 @@ class _task (node):
             #   Always needs update if no way to check if up to date
             #
             if self.needs_update_func == None:
-                log_at_level (logger, 4, verbose,
+                log_at_level (logger, 10, verbose,
                                 "    No update function: treat as out of date")
                 return False
 
@@ -1200,7 +1214,7 @@ class _task (node):
                         needs_update, msg = self.needs_update_func (task=self, job_history = job_history)
                     else:
                         needs_update, msg = self.needs_update_func ()
-                    log_at_level (logger, 4, verbose,
+                    log_at_level (logger, 10, verbose,
                                     "    Needs update = %s" % needs_update)
                     return not needs_update
                 else:
@@ -1215,10 +1229,7 @@ class _task (node):
                     else:
                         needs_update, msg = self.needs_update_func (*param)
                     if needs_update:
-                        if verbose >= 4:
-                            job_name = self.get_job_name(descriptive_param, runtime_data)
-                            log_at_level (logger, 4, verbose,
-                                            "    Needing update:\n      %s" % job_name)
+                        log_at_level (logger, 10, verbose, "    Needing update:\n      %s" % self.get_job_name(descriptive_param, runtime_data))
                         return False
 
                 #
@@ -1229,8 +1240,7 @@ class _task (node):
                     for msg in runtime_data["ruffus_WARNING"][self.param_generator_func]:
                         logger.warning("    'In Task %s' %s " % (self.get_task_name(True), msg))
 
-
-                log_at_level (logger, 4, verbose, "    All jobs up to date")
+                log_at_level (logger, 10, verbose, "    All jobs up to date")
 
 
 
@@ -1408,24 +1418,18 @@ class _task (node):
 
     #   completed
     #
-    #
+    #       All logging logic moved to caller site
     #_____________________________________________________________________________________
-    def completed (self, logger, jobs_uptodate = False):
+    def completed (self):
         """
         called even when all jobs are up to date
         """
         if not self.is_active:
-            logger.info("Inactive Task = " + self.get_task_name())
             self.output_filenames = None
             return
 
         for f in self.posttask_functions:
             f()
-        if jobs_uptodate:
-            logger.info("Uptodate Task = " + self.get_task_name())
-        else:
-            logger.info("Completed Task = " + self.get_task_name())
-
 
         #
         #   indeterminate output. Check actual output again if someother tasks job function depend on it
@@ -2847,6 +2851,36 @@ def pipeline_printout_graph (stream,
                       extra_data_for_signal = [t_verbose_logger(0, None, runtime_data), job_history])
 
 
+#_________________________________________________________________________________________
+
+#   get_completed_task_strings
+
+#_________________________________________________________________________________________
+def get_completed_task_strings (incomplete_tasks, all_tasks, forcedtorun_tasks, verbose, indent, runtime_data, job_history):
+    """
+    Printout list of completed tasks
+    """
+    completed_task_strings = []
+    if len(all_tasks) > len(incomplete_tasks):
+        completed_task_strings.append("\n")
+        completed_task_strings.append("_" * 40)
+        completed_task_strings.append("Tasks which are up-to-date:")
+        completed_task_strings.append("\n")
+        completed_task_strings.append("\n")
+        set_of_incomplete_tasks = set(incomplete_tasks)
+
+        for t in all_tasks:
+            # Only print Up to date tasks
+            if t in set_of_incomplete_tasks:
+                continue
+            # LOGGER
+            completed_task_strings.extend(t.printout(runtime_data, t in forcedtorun_tasks, job_history, verbose, indent))
+
+        completed_task_strings.append("_" * 40)
+        completed_task_strings.append("\n")
+        completed_task_strings.append("\n")
+
+    return completed_task_strings
 
 #_________________________________________________________________________________________
 
@@ -2886,11 +2920,12 @@ def pipeline_printout(  output_stream                   = None,
     :param target_tasks: targets task functions which will be run if they are out-of-date
     :param forcedtorun_tasks: task functions which will be run whether or not they are out-of-date
     :param verbose: level 0 : nothing
-                    level 1 : logs task names and warnings
-                    level 2 : logs task description if exists
-                    level 3 : logs job names for jobs to be run
-                    level 4 : logs list of up-to-date tasks and job names for jobs to be run
-                    level 5 : logs job names for all jobs whether up-to-date or not
+                    level 1 : Out-of-date Tasks (names and warnings)
+                    level 2 : All Tasks (including any task function docstrings)
+                    level 3 : Out-of-date Jobs in Out-of-date Tasks, no explanation
+                    level 4 : Out-of-date Jobs in Out-of-date Tasks, with explanation
+                    level 5 : All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)
+                    level 6 : All jobs in All Tasks whether out of date or not
                     level 10: logs messages useful only for debugging ruffus pipeline code
     :param indent: How much indentation for pretty format.
     :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all* out-of-date tasks. Runs minimal
@@ -2954,7 +2989,7 @@ def pipeline_printout(  output_stream                   = None,
     #
     job_history = open_job_history (history_file)
 
-    (topological_sorted,
+    (incomplete_tasks,
     self_terminated_nodes,
     dag_violating_edges,
     dag_violating_nodes) = topologically_sorted_nodes(target_tasks, forcedtorun_tasks,
@@ -2978,30 +3013,24 @@ def pipeline_printout(  output_stream                   = None,
     #
     #   Get updated nodes as all_nodes - nodes_to_run
     #
-    if verbose >= 4:
+    #   LOGGER level 6 : All jobs in All Tasks whether out of date or not
+    if verbose >= 6:
         (all_tasks, ignore_param1, ignore_param2,
          ignore_param3) = topologically_sorted_nodes(target_tasks, True,
                                                      gnu_make_maximal_rebuild_mode,
                                                      extra_data_for_signal = [t_verbose_logger(0, None, runtime_data), job_history])
-
-        if len(all_tasks) > len(topological_sorted):
-            output_stream.write("\n" + "_" * 40 + "\nTasks which are up-to-date:\n\n")
-            pipelined_tasks_to_run = set(topological_sorted)
-
-            for t in all_tasks:
-                if t in pipelined_tasks_to_run:
-                    continue
-                messages = t.printout(runtime_data, t in forcedtorun_tasks, job_history, verbose, indent)
-                for m in messages:
-                    output_stream.write(textwrap.fill(m, subsequent_indent = wrap_indent, width = wrap_width) + "\n")
+        for m in get_completed_task_strings (incomplete_tasks, all_tasks, forcedtorun_tasks, verbose, indent, runtime_data, job_history):
+            output_stream.write(textwrap.fill(m, subsequent_indent = wrap_indent, width = wrap_width) + "\n")
 
     output_stream.write("\n" + "_" * 40 + "\nTasks which will be run:\n\n")
-    for t in topological_sorted:
+    for t in incomplete_tasks:
+        # LOGGER
         messages = t.printout(runtime_data, t in forcedtorun_tasks, job_history, verbose, indent)
         for m in messages:
             output_stream.write(textwrap.fill(m, subsequent_indent = wrap_indent, width = wrap_width) + "\n")
 
     if verbose:
+        # LOGGER
         output_stream.write("_" * 40 + "\n")
 
 #_________________________________________________________________________________________
@@ -3073,7 +3102,10 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     if count_remaining_jobs[job_completed_task] == 0:
                         log_at_level (logger, 10, verbose, "   Last job for %s. Retired from incomplete tasks in pipeline_run " % job_completed_task._name)
                         incomplete_tasks.remove(job_completed_task)
-                        job_completed_task.completed (logger)
+                        job_completed_task.completed ()
+                        # LOGGER: Out-of-date Tasks
+                        log_at_level (logger, 1, verbose, "Completed Task = " + job_completed_task.get_task_name())
+
                 except Queue.Empty:
                     break
 
@@ -3105,8 +3137,12 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     # Only log active task
                     #
                     if t.is_active:
-                        log_at_level (logger, 3, verbose, "Task enters queue = " + t.get_task_name() + (": Forced to rerun" if force_rerun else ""))
-                        log_at_level (logger, 3, verbose, t._description)
+                        # LOGGER: Out-of-date Tasks
+                        log_at_level (logger, 1, verbose, "Task enters queue = " + t.get_task_name() + (": Forced to rerun" if force_rerun else ""))
+                        # LOGGER: logs All Tasks (including any task function docstrings)
+                        # indent string
+                        if len(t._description):
+                            log_at_level (logger, 2, verbose, "    " + t._description)
                     inprogress_tasks.add(t)
                     cnt_tasks_processed += 1
 
@@ -3155,9 +3191,11 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                         #    don't run if up to date unless force to run
                         #
                         if force_rerun:
+                            # LOGGER: Out-of-date Jobs in Out-of-date Tasks
                             log_at_level (logger, 3, verbose, "    force task %s to rerun " % job_name)
                         else:
                             if not t.needs_update_func:
+                                # LOGGER: Out-of-date Jobs in Out-of-date Tasks
                                 log_at_level (logger, 3, verbose, "    %s no function to check if up-to-date " % job_name)
                             else:
                                 # extra clunky hack to also pass task info--
@@ -3168,10 +3206,15 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                                     needs_update, msg = t.needs_update_func (*param)
 
                                 if not needs_update:
-                                    log_at_level (logger, 2, verbose, "    %s unnecessary: already up to date " % job_name)
+                                    # LOGGER: All Jobs in Out-of-date Tasks
+                                    log_at_level (logger, 5, verbose, "    %s unnecessary: already up to date " % job_name)
                                     continue
                                 else:
-                                    log_at_level (logger, 3, verbose, "    %s %s " % (job_name, msg))
+                                    # LOGGER: Out-of-date Jobs in Out-of-date Tasks: Why out of date
+                                    if not log_at_level (logger, 4, verbose, "    %s %s " % (job_name, msg)):
+
+                                        # LOGGER: Out-of-date Jobs in Out-of-date Tasks: No explanation
+                                        log_at_level (logger, 3, verbose, "    %s" % (job_name))
 
                         #
                         #   Clunky hack to make sure input files exists right before
@@ -3206,7 +3249,12 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     #   precisely because it created no jobs
                     if cnt_jobs_created == 0:
                         incomplete_tasks.remove(t)
-                        t.completed (logger, True)
+                        t.completed ()
+                        if not t.is_active:
+                            log_at_level (logger, 2, verbose, "Inactive Task = " + t.get_task_name())
+                        else:
+                            log_at_level (logger, 2, verbose, "Uptodate Task = " + t.get_task_name())
+                        # LOGGER: logs All Tasks (including any task function docstrings)
                         log_at_level (logger, 10, verbose, "   No jobs created for %s. Retired in parameter_generator " % t._name)
 
                         #
@@ -3330,6 +3378,30 @@ def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE, logg
     log_at_level (logger, 10, verbose, "    fill_queue_with_job_parameters END")
 
 
+
+
+#_________________________________________________________________________________________
+
+#   pipeline_get_task_names
+
+#_________________________________________________________________________________________
+def pipeline_get_task_names ():
+    """
+    Get all task names in a pipeline
+    Not that does not check if pipeline is wired up properly
+    """
+
+    #
+    #   Make sure all tasks in dependency list are linked to real functions
+    #
+    link_task_names_to_functions ()
+
+    #
+    #   Return task names for all nodes willy nilly
+    #
+    return [n.get_task_name() for n in node._all_nodes]
+
+
 #
 #   How the job queue works:
 #
@@ -3351,7 +3423,6 @@ def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE, logg
 #               until waiting_for_more_tasks_to_complete
 #               until queue is full (check *after*)
 #
-
 #_________________________________________________________________________________________
 
 #   pipeline_run
@@ -3383,11 +3454,12 @@ def pipeline_run(target_tasks                     = [],
     :param logger: Where progress will be logged. Defaults to stderr output.
     :type logger: `logging <http://docs.python.org/library/logging.html>`_ objects
     :param verbose: level 0 : nothing
-                    level 1 : logs task names and warnings
-                    level 2 : logs task description if exists
-                    level 3 : logs job names for jobs to be run
-                    level 4 : logs list of up-to-date tasks and job names for jobs to be run
-                    level 5 : logs job names for all jobs whether up-to-date or not
+                    level 1 : Out-of-date Tasks (names and warnings)
+                    level 2 : All Tasks (including any task function docstrings)
+                    level 3 : Out-of-date Jobs in Out-of-date Tasks, no explanation
+                    level 4 : Out-of-date Jobs in Out-of-date Tasks, with explanation
+                    level 5 : All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)
+                    level 6 : All jobs in All Tasks whether out of date or not
                     level 10: logs messages useful only for debugging ruffus pipeline code
     :param touch_files_only: Create or update input/output files only to simulate running the pipeline. Do not run jobs. If set to CHECKSUM_REGENERATE, will regenerate the checksum history file to reflect the existing i/o files on disk.
     :param exceptions_terminate_immediately: Exceptions cause immediate termination
@@ -3444,19 +3516,22 @@ def pipeline_run(target_tasks                     = [],
     #
     if one_second_per_job == None:
          if checksum_level == CHECKSUM_FILE_TIMESTAMPS:
-            log_at_level (logger, 5, verbose, "   Checksums rely on FILE TIMESTAMPS only and we don't know if the system file time resolution: Pause 1 second...")
+            log_at_level (logger, 10, verbose, "   Checksums rely on FILE TIMESTAMPS only and we don't know if the system file time resolution: Pause 1 second...")
             runtime_data["ONE_SECOND_PER_JOB"] = True
          else:
-            log_at_level (logger, 5, verbose, "   Checksum use calculated time as well: No 1 second pause...")
+            log_at_level (logger, 10, verbose, "   Checksum use calculated time as well: No 1 second pause...")
             runtime_data["ONE_SECOND_PER_JOB"] = False
     else:
-        log_at_level (logger, 5, verbose, "   One second per job specified to be %s" % one_second_per_job)
+        log_at_level (logger, 10, verbose, "   One second per job specified to be %s" % one_second_per_job)
         runtime_data["ONE_SECOND_PER_JOB"] = one_second_per_job
 
 
     if verbose == 0:
         logger = black_hole_logger
     elif verbose >= 11:
+        #   debugging aid: See t_stderr_logger
+        #   Each invocation of add_unique_prefix adds a unique prefix to all subsequent output
+        #       So that individual runs of pipeline run are tagged
         if hasattr(logger, "add_unique_prefix"):
             logger.add_unique_prefix()
 
@@ -3508,7 +3583,12 @@ def pipeline_run(target_tasks                     = [],
 
 
 
-    (topological_sorted,
+    #
+    #   If verbose >=10, for debugging:
+    #       Prints which tasks trigger the pipeline rerun...
+    #       i.e. start from the farthest task, prints out all the up to date tasks, and the first out of date task
+    #
+    (incomplete_tasks,
     self_terminated_nodes,
     dag_violating_edges,
     dag_violating_nodes) = topologically_sorted_nodes(  target_tasks, forcedtorun_tasks,
@@ -3528,17 +3608,36 @@ def pipeline_run(target_tasks                     = [],
     #
     # get dependencies. Only include tasks which will be run
     #
-    incomplete_tasks = set(topological_sorted)
+    set_of_incomplete_tasks = set(incomplete_tasks)
     task_parents = defaultdict(set)
-    for t in incomplete_tasks:
+    for t in set_of_incomplete_tasks:
         task_parents[t] = set()
         for parent in t._outward:
-            if parent in incomplete_tasks:
+            if parent in set_of_incomplete_tasks:
                 task_parents[t].add(parent)
+
+
+    #
+    #   Print Complete tasks
+    #
+    #   LOGGER level 6 : All jobs in All Tasks whether out of date or not
+    if verbose >= 6:
+        (all_tasks, ignore_param1, ignore_param2,
+         ignore_param3) = topologically_sorted_nodes(target_tasks, True,
+                                                     gnu_make_maximal_rebuild_mode,
+                                                     extra_data_for_signal = [t_verbose_logger(0, None, runtime_data), job_history])
+        for m in get_completed_task_strings (incomplete_tasks, all_tasks, forcedtorun_tasks, verbose, indent, runtime_data, job_history):
+            logger.info(m)
+
+
     #print json.dumps(task_parents.items(), indent=4, cls=task_encoder)
 
 
-    # prepare tasks for pipeline run
+    # prepare tasks for pipeline run:
+    #
+    #   clear task outputs
+    #       task.output_filenames = None
+    #
     #    **********
     #      BEWARE
     #    **********
@@ -3548,7 +3647,7 @@ def pipeline_run(target_tasks                     = [],
     #    **********
     #      BEWARE
     #    **********
-    for t in topological_sorted:
+    for t in incomplete_tasks:
         t.init_for_pipeline()
 
 
@@ -3647,7 +3746,7 @@ def pipeline_run(target_tasks                     = [],
 
         # only save poolsize number of errors
         if job_result.state == JOB_ERROR:
-            log_at_level (logger, 6, verbose, "   Exception caught for %s" % job_result.job_name)
+            log_at_level (logger, 10, verbose, "   Exception caught for %s" % job_result.job_name)
             job_errors.append(job_result.exception)
             tasks_with_errors.add(t)
 
@@ -3655,14 +3754,14 @@ def pipeline_run(target_tasks                     = [],
             # print to logger immediately
             #
             if log_exceptions:
-                log_at_level (logger, 6, verbose, "   Log Exception")
+                log_at_level (logger, 10, verbose, "   Log Exception")
                 logger.error(job_errors.get_nth_exception_str())
 
             #
             # break if too many errors
             #
             if len(job_errors) >= parallelism or exceptions_terminate_immediately:
-                log_at_level (logger, 6, verbose, "   Break loop %s %s %s " % (exceptions_terminate_immediately, len(job_errors), parallelism) )
+                log_at_level (logger, 10, verbose, "   Break loop %s %s %s " % (exceptions_terminate_immediately, len(job_errors), parallelism) )
                 parameter_q.put(all_tasks_complete())
                 break
 
@@ -3671,17 +3770,17 @@ def pipeline_run(target_tasks                     = [],
         elif job_result.state == JOB_SIGNALLED_BREAK:
             job_errors.append(job_result.exception)
             job_errors.specify_task(t, "Exceptions running jobs")
-            log_at_level (logger, 6, verbose, "   Break loop JOB_SIGNALLED_BREAK %s %s " % (len(job_errors), parallelism) )
+            log_at_level (logger, 10, verbose, "   Break loop JOB_SIGNALLED_BREAK %s %s " % (len(job_errors), parallelism) )
             parameter_q.put(all_tasks_complete())
             break
 
         else:
             if job_result.state == JOB_UP_TO_DATE:
-                if verbose > 1:
-                    logger.info("    %s unnecessary: already up to date" % job_result.job_name)
+                # LOGGER: All Jobs in Out-of-date Tasks
+                log_at_level (logger, 5, verbose, "    %s unnecessary: already up to date" % job_result.job_name)
             else:
-                if verbose:
-                    logger.info("    %s completed" % job_result.job_name)
+                # LOGGER: Out-of-date Jobs in Out-of-date Tasks
+                log_at_level (logger, 3, verbose, "    %s completed" % job_result.job_name)
                 # save this task name and the job (input and output files)
                 # alternatively, we could just save the output file and its
                 # completion time, or on the other end of the spectrum,
@@ -3701,33 +3800,35 @@ def pipeline_run(target_tasks                     = [],
                     # N.B. output parameters are not necessary all strings
                     #       and not all files have been successfully created,
                     #       even though the task apparently completed properly!
+                    # Remember to expand globs
                     #
-                    for o_f_n in get_strings_in_nested_sequence(output_file_name):
-                        #
-                        # use paths relative to working directory
-                        #
-                        o_f_n = os.path.relpath(o_f_n)
-                        try:
-                            log_at_level (logger, 6, verbose, "   Job History for : " + o_f_n)
-                            mtime = os.path.getmtime(o_f_n)
+                    for possible_glob_str in get_strings_in_nested_sequence(output_file_name):
+                        for o_f_n in glob.glob(possible_glob_str):
                             #
-                            #   use probably higher resolution time.time() over mtime
-                            #       which might have 1 or 2s resolutions, unless there is
-                            #       clock skew and the filesystem time > system time
-                            #       (e.g. for networks)
+                            # use paths relative to working directory
                             #
-                            epoch_seconds = time.time()
-                            # Aargh. go back to insert one second between jobs
-                            if epoch_seconds < mtime:
-                                if one_second_per_job == None and not runtime_data["ONE_SECOND_PER_JOB"]:
-                                    log_at_level (logger, 6, verbose, "   Switch to one second per job")
-                                    runtime_data["ONE_SECOND_PER_JOB"] = True
-                            elif  epoch_seconds - mtime < 1.1:
-                                mtime = epoch_seconds
-                            chksum = JobHistoryChecksum(o_f_n, mtime, job_result.params[2:], t)
-                            job_history[o_f_n] = chksum
-                        except:
-                            pass
+                            o_f_n = os.path.relpath(o_f_n)
+                            try:
+                                log_at_level (logger, 10, verbose, "   Job History for : " + o_f_n)
+                                mtime = os.path.getmtime(o_f_n)
+                                #
+                                #   use probably higher resolution time.time() over mtime
+                                #       which might have 1 or 2s resolutions, unless there is
+                                #       clock skew and the filesystem time > system time
+                                #       (e.g. for networks)
+                                #
+                                epoch_seconds = time.time()
+                                # Aargh. go back to insert one second between jobs
+                                if epoch_seconds < mtime:
+                                    if one_second_per_job == None and not runtime_data["ONE_SECOND_PER_JOB"]:
+                                        log_at_level (logger, 10, verbose, "   Switch to one second per job")
+                                        runtime_data["ONE_SECOND_PER_JOB"] = True
+                                elif  epoch_seconds - mtime < 1.1:
+                                    mtime = epoch_seconds
+                                chksum = JobHistoryChecksum(o_f_n, mtime, job_result.params[2:], t)
+                                job_history[o_f_n] = chksum
+                            except:
+                                pass
 
                 ##for output_file_name in t.output_filenames:
                 ##    # could use current time instead...

@@ -90,7 +90,7 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [transform1], verbose=5, checksum_level=chksm)
+            pipeline_printout(s, [transform1], verbose=6, checksum_level=chksm)
             self.assertIn('Job needs update: Missing file [tmp_test_job_completion/input.output]',
                           s.getvalue())
 
@@ -106,7 +106,7 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [transform1], verbose=5, checksum_level=chksm)
+            pipeline_printout(s, [transform1], verbose=6, checksum_level=chksm)
             self.assertIn('Job needs update:', s.getvalue())
             if chksm == CHECKSUM_FILE_TIMESTAMPS:
                 self.assertIn('Input files:', s.getvalue())
@@ -126,7 +126,7 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [transform1], verbose=5, checksum_level=chksm)
+            pipeline_printout(s, [transform1], verbose=6, checksum_level=chksm)
             if chksm == CHECKSUM_FILE_TIMESTAMPS:
                 self.assertIn('Job up-to-date', s.getvalue())
             else:
@@ -144,7 +144,7 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [transform1], verbose=5, checksum_level=chksm)
+            pipeline_printout(s, [transform1], verbose=6, checksum_level=chksm)
             self.assertIn('Job up-to-date', s.getvalue())
 
     def test_ouput_up_to_date_func_changed(self):
@@ -158,7 +158,7 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [transform1], verbose=5, checksum_level=chksm)
+            pipeline_printout(s, [transform1], verbose=6, checksum_level=chksm)
             if chksm >= CHECKSUM_FUNCTIONS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('Pipeline function has changed',
@@ -178,7 +178,7 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [transform1], verbose=5, checksum_level=chksm)
+            pipeline_printout(s, [transform1], verbose=6, checksum_level=chksm)
             if chksm >= CHECKSUM_FUNCTIONS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('Pipeline function has changed',
@@ -199,7 +199,7 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [transform1], verbose=5, checksum_level=chksm)
+            pipeline_printout(s, [transform1], verbose=6, checksum_level=chksm)
             if chksm >= CHECKSUM_FUNCTIONS_AND_PARAMS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('Pipeline parameters have changed',
@@ -220,7 +220,7 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [transform_raise_error], verbose=5, checksum_level=chksm)
+            pipeline_printout(s, [transform_raise_error], verbose=6, checksum_level=chksm)
             if chksm >= CHECKSUM_HISTORY_TIMESTAMPS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('Previous incomplete run leftover',
@@ -241,7 +241,7 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [split1], verbose=5, checksum_level=chksm)
+            pipeline_printout(s, [split1], verbose=6, checksum_level=chksm)
             self.assertIn('Job needs update:', s.getvalue())
 
         # all outputs incorrectly generated
@@ -254,7 +254,7 @@ class TestJobCompletion(unittest.TestCase):
                 outfile.write('testme')
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [split1], verbose=5, checksum_level=chksm)
+            pipeline_printout(s, [split1], verbose=6, checksum_level=chksm)
             if chksm >= CHECKSUM_HISTORY_TIMESTAMPS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('Previous incomplete run leftover',
@@ -272,7 +272,7 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [split1], verbose=5, checksum_level=chksm)
+            pipeline_printout(s, [split1], verbose=6, checksum_level=chksm)
             if chksm >= CHECKSUM_HISTORY_TIMESTAMPS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('Previous incomplete run leftover',
@@ -292,7 +292,7 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [merge2], verbose=5, checksum_level=chksm)
+            pipeline_printout(s, [merge2], verbose=6, checksum_level=chksm)
             if chksm >= CHECKSUM_HISTORY_TIMESTAMPS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('Previous incomplete run leftover', s.getvalue())
@@ -306,7 +306,7 @@ class TestJobCompletion(unittest.TestCase):
         pipeline_run([merge2], verbose=0, checksum_level=CHECKSUM_HISTORY_TIMESTAMPS)
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [merge2], verbose=5, checksum_level=chksm)
+            pipeline_printout(s, [merge2], verbose=6, checksum_level=chksm)
             self.assertIn('Job up-to-date', s.getvalue())
             self.assertNotIn('Job needs update:', s.getvalue())
             self.assertNotIn('Previous incomplete run leftover', s.getvalue())
@@ -324,6 +324,6 @@ class TestJobCompletion(unittest.TestCase):
 #        #open(input_file, 'w').close()
 #        s = StringIO()
 #        pipeline_run([transform1], checksum_level=CHECKSUM_HISTORY_TIMESTAMPS)
-#        pipeline_printout(s, [transform1], verbose=5, checksum_level=0)
+#        pipeline_printout(s, [transform1], verbose=6, checksum_level=0)
 #        print s.getvalue()
 #        #open(transform1_out)  # raise an exception if test fails

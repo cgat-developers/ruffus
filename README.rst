@@ -92,7 +92,7 @@ Use the **@transform(...)** python decorator before the function definitions:
     pipeline_run([sort_bam], multithread = 5)
 
 
-the ``@transform`` decorator indicate that the data flows from the ``run_bwa`` function to ``run_bwa`` down
+the ``@transform`` decorator indicate that the data flows from the ``run_bwa`` function to ``sort_bwa`` down
 the pipeline.
 
 ********

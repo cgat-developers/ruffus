@@ -8,6 +8,14 @@
     * :ref:`Decorators <decorators>` for more decorators
     * More on @follows in the ``Ruffus`` :ref:`Manual <new_manual.follows>`
 
+    .. note::
+
+        Only missing directories are created.
+
+        In other words, the same directory can be specified multiple times safely without, for example, being recreated repeatedly.
+        Sometimes, for pipelines with multiple entry points, this is the only way to make sure that certain working or output
+        directories are always created or available *before* the pipeline runs.
+
 
 ############
 @follows
@@ -27,7 +35,10 @@
 ***************************************************************************************************************************************************
     **Purpose:**
 
-        Indicates task dependencies
+        Indicates either
+
+            * task dependencies
+            * that the task requires a directory to be created first *if necessary*. (Existing directories will not be overwritten)
 
 
     **Example**::
@@ -59,7 +70,7 @@
 .. _decorators.follows.directory_name:
 
     * *directory_name*:
-        Directories which need to be created (if they don't exist) before
+        Directories which need to be created (*only if they don't exist*) before
         the task is run can be specified via a ``mkdir`` indicator object:
 
             ::

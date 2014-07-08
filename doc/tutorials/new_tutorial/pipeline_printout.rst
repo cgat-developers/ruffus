@@ -118,3 +118,16 @@ Determining which jobs are out-of-date or not
 
     N.B. At a verbosity of 5, even jobs which are up-to-date will be displayed.
 
+
+
+=============================================
+Getting a list of all tasks in a pipeline
+=============================================
+
+    If you just wanted a list of all tasks (Ruffus decorated function names), then you can
+    just run Run :ref:`pipeline_get_task_names(...) <pipeline_functions.pipeline_get_task_names>`.
+
+    This doesn't touch any pipeline code or even check to see if the pipeline is connected up properly.
+
+    However, it is sometimes useful to allow users at the command line to choose from a list of
+    possible tasks as a target.

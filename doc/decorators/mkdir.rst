@@ -6,6 +6,8 @@
 .. seealso::
 
     * :ref:`Decorators <decorators>` for more decorators
+    * More on @mkdir in the ``Ruffus`` :ref:`Manual <new_manual.mkdir>`
+    * :ref:`@follows(mkdir("dir")) <decorators.follows>` specifies the creation of a *single* directory as a task pre-requisite.
 
 ########################
 @mkdir
@@ -35,7 +37,14 @@
         * Makes specified directories using `os.makedirs  <http://docs.python.org/2/library/os.html#os.makedirs>`__
         * Multiple directories can be created in a list
 
-        Only missing directories are created.
+        .. note::
+
+            Only missing directories are created.
+
+            In other words, the same directory can be specified multiple times safely without, for example, being recreated repeatedly.
+
+            Sometimes, for pipelines with multiple entry points, this is the only way to make sure that certain working or output
+            directories are always created or available *before* the pipeline runs.
 
     **Simple Example**
 
