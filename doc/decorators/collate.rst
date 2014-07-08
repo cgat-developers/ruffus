@@ -8,7 +8,7 @@
     * :ref:`Decorators <decorators>` for more decorators
 
 ########################
-@product
+@collate
 ########################
 
 .. |tasks_or_file_names| replace:: `tasks_or_file_names`

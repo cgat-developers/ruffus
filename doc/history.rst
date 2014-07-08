@@ -18,7 +18,37 @@ version 2.4.2
         * level 5 : All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)
         * level 6 : All jobs in All Tasks whether out of date or not
         * level 10: logs messages useful only for debugging ruffus pipeline code
-    (Need to update docs)
+
+
+
+    * Need to update docs
+    * test/test_verbosity.py
+
+    path_verbosity =
+    (default = 2)
+
+    0) the full path
+    1-N) N levels of subpath,
+        for "what/is/this.txt"
+        N = 1 "this.txt"
+        N = 2 "is/this.txt"
+        N >=3 "what/is/this.txt"
+    -N) As above but with the input/output parameter chopped off after 40 letters,
+        and ending in "..."
+
+
+    Getting the Nth levels of a path use code from ruffus.ruffus_utility
+
+
+    from ruffus.ruffus_utility import *
+    for aa in range(10):
+       print get_nth_nested_level_of_path ("/test/this/now/or/not.txt", aa)
+
+    May 29, 2014 Delete comment Project Member #2 bunbun68
+    1) pipeline_printout forwards printing to _task.printout
+    2) pipeline_run needs to borrow code from pipeline_printout to print up to date tasks including their jobs
+    3) See file_name_parameters.py::get_readable_path_str()
+
 
 
 
