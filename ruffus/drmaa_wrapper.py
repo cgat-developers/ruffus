@@ -291,19 +291,21 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
                 raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n%s"
                                          % (job_info.exitStatus, job_info_str))
             elif verbose:
-
-                resource_usage_str = []
-                if 'maxvmem' in job_info.resourceUsage:
-                    if 'mem' in job_info.resourceUsage:
-                        resource_usage_str.append("Mem=%d(%s)" % (int(job_info.resourceUsage['maxvmem']), job_info.resourceUsage['mem']))
+                try:
+                    resource_usage_str = []
+                    if 'maxvmem' in job_info.resourceUsage:
+                        if 'mem' in job_info.resourceUsage:
+                            resource_usage_str.append("Mem=%d(%s)" % (int(float(job_info.resourceUsage['maxvmem'])), job_info.resourceUsage['mem']))
+                        else:
+                            resource_usage_str.append("Mem=%d" % int(float(job_info.resourceUsage['maxvmem'])))
+                    if 'ru_wallclock' in job_info.resourceUsage:
+                        resource_usage_str.append("CPU wallclock= %.2g" % float(job_info.resourceUsage['ru_wallclock']))
+                    if len(resource_usage_str):
+                        logger.info("Drmaa command used %s in running %s" % (", ".join(resource_usage_str), cmd_str))
                     else:
-                        resource_usage_str.append("Mem=%d" % int(job_info.resourceUsage['maxvmem']))
-                if 'ru_wallclock' in job_info.resourceUsage:
-                    resource_usage_str.append("CPU wallclock= %.2g" % job_info.resourceUsage['ru_wallclock'])
-                if len(resource_usage_str):
-                    logger.info("Drmaa command used %s in running %s" % (", ".join(resource_usage_str), cmd_str))
-                else:
-                    logger.info("Drmaa command successfully ran %s" % cmd_str)
+                        logger.info("Drmaa command successfully ran %s" % cmd_str)
+                except:
+                    logger.info("Drmaa command used %s in running %s" % (job_info.resourceUsage, cmd_str))
         elif job_info.wasAborted:
             raise error_drmaa_job( "The drmaa command was never ran but used %s:\n%s"
                                      % (job_info.resourceUsage, job_info_str))
