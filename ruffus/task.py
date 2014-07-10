@@ -581,14 +581,20 @@ def job_wrapper_mkdir(param, user_defined_work_func, register_cleanup, touch_fil
 
     for d in dirs:
         try:
-            os.makedirs(d)
+            os.makedirs(d)  # Please email the authors if an uncaught exception is raised here
             register_cleanup(d, "makedirs")
         except:
             #
-            #   ignore exception if exception == OSError / "File exists"
+            #   ignore exception if
+            #       exception == OSError        + "File exists" or              // Linux
+            #       exception == WindowsError   + "file already exists"        // Windows
+            #   Are other exceptions raised by other OS?
+            #
             #
             exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
             if exceptionType == OSError and "File exists" in str(exceptionValue):
+                continue
+            elif exceptionType == WindowsError and "file already exists" in str(exceptionValue):
                 continue
             raise
 
