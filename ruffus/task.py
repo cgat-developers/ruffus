@@ -1014,13 +1014,17 @@ class _task (node):
 
     #   printout
 
+    #       This code will look so much better once we have job level dependencies
+    #           pipeline_run has dependencies percolating up/down. Don't want to
+    #           recreate all the logic here
+
     #_________________________________________________________________________________________
-    def printout (self, runtime_data, force_rerun, job_history, verbose=1, indent = 4):
+    def printout (self, runtime_data, force_rerun, job_history, task_is_out_of_date, verbose=1, indent = 4):
         """
         Print out all jobs for this task
 
             verbose =
-                    level 1 : logs Out-of-date Tasks (names and warnings)
+                    level 1 : logs Out-of-date Task names
                     level 2 : logs All Tasks (including any task function docstrings)
                     level 3 : logs Out-of-date Jobs in Out-of-date Tasks, no explanation
                     level 4 : logs Out-of-date Jobs in Out-of-date Tasks, saying why they are out of date (include only list of up-to-date tasks)
@@ -1110,13 +1114,22 @@ class _task (node):
 
             if needs_update:
                 messages.append(indent_str + "Task needs update: %s" % msg)
-            else:
-                messages.append(indent_str + "Task up-to-date")
+            #
+            #   Get rid of up-to-date messages:
+            #       Superfluous for parts of the pipeline which are up-to-date and
+            #       Misleading for parts of the pipeline which require updating:
+            #           tasks might have to run based on dependencies anyway
+            #
+            #else:
+            #    if task_is_out_of_date:
+            #        messages.append(indent_str + "Task appears up-to-date but will rerun after its dependencies")
+            #    else:
+            #        messages.append(indent_str + "Task up-to-date")
 
         else:
             runtime_data["MATCH_FAILURE"] = []
             #
-            #   return messages description per job
+            #   return messages description per job if verbose > 5 else whether up to date or not
             #
             cnt_jobs = 0
             for param, descriptive_param in self.param_generator_func(runtime_data):
@@ -1126,8 +1139,9 @@ class _task (node):
                 #   needs update func = None: always needs update
                 #
                 if not self.needs_update_func:
-                    messages.extend(get_job_names (descriptive_param, indent_str))
-                    messages.append(indent_str + "  Jobs needs update: No function to check if up-to-date or not")
+                    if verbose >= 5:
+                        messages.extend(get_job_names (descriptive_param, indent_str))
+                        messages.append(indent_str + "  Jobs needs update: No function to check if up-to-date or not")
                     continue
 
                 if self.needs_update_func == needs_update_check_modify_time:
@@ -1137,23 +1151,37 @@ class _task (node):
 
                 if needs_update:
                     messages.extend(get_job_names (descriptive_param, indent_str))
-                    per_job_messages = [(indent_str + s) for s in ("  Job needs update: %s" % msg).split("\n")]
-                    messages.extend(per_job_messages)
+                    if verbose >= 4:
+                        per_job_messages = [(indent_str + s) for s in ("  Job needs update: %s" % msg).split("\n")]
+                        messages.extend(per_job_messages)
+                    else:
+                        messages.append(indent_str + "  Job needs update")
+
+
+                # up to date: log anyway if verbose
                 else:
                     # LOGGER
-                    if verbose > 4:
+                    if (task_is_out_of_date and verbose >= 5) or verbose >= 6:
                         messages.extend(get_job_names (descriptive_param, indent_str))
-                        messages.append(indent_str + "  Job up-to-date")
+                        #
+                        #   Get rid of up-to-date messages:
+                        #       Superfluous for parts of the pipeline which are up-to-date and
+                        #       Misleading for parts of the pipeline which require updating:
+                        #           tasks might have to run based on dependencies anyway
+                        #
+                        #if not task_is_out_of_date:
+                        #    messages.append(indent_str + "  Job up-to-date")
+
 
             if cnt_jobs == 0:
                 messages.append(indent_str + "!!! No jobs for this task. "
                                              "Are you sure there is not a error in your "
                                              "code / regular expression?")
             # LOGGER
-            if verbose >= 3 or (verbose and cnt_jobs == 0):
+            if verbose >= 4 or (verbose and cnt_jobs == 0):
                 if runtime_data and "MATCH_FAILURE" in runtime_data:
                     for s in runtime_data["MATCH_FAILURE"]:
-                        messages.append(indent_str + "Warning: File match failure: " + s)
+                        messages.append(indent_str + "Job Warning: File match failure: " + s)
             runtime_data["MATCH_FAILURE"] = []
         messages.append("")
         return messages
@@ -2874,7 +2902,7 @@ def get_completed_task_strings (incomplete_tasks, all_tasks, forcedtorun_tasks, 
             if t in set_of_incomplete_tasks:
                 continue
             # LOGGER
-            completed_task_strings.extend(t.printout(runtime_data, t in forcedtorun_tasks, job_history, verbose, indent))
+            completed_task_strings.extend(t.printout(runtime_data, t in forcedtorun_tasks, job_history, False, verbose, indent))
 
         completed_task_strings.append("_" * 40)
         completed_task_strings.append("\n")
@@ -2907,23 +2935,23 @@ def pipeline_printout(  output_stream                   = None,
     variable number of inputs into following tasks will not produce the full range of jobs.
 
     ::
-
-        verbose = 0 : nothing
-        verbose = 1 : print task name
-        verbose = 2 : print task description if exists
-        verbose = 3 : print job names for jobs to be run
-        verbose = 4 : print list of up-to-date tasks and job names for jobs to be run
-        verbose = 5 : print job names for all jobs whether up-to-date or not
+        verbose = 0 : Nothing
+        verbose = 1 : Out-of-date Task names
+        verbose = 2 : All Tasks (including any task function docstrings)
+        verbose = 3 : Out-of-date Jobs in Out-of-date Tasks, no explanation
+        verbose = 4 : Out-of-date Jobs in Out-of-date Tasks, with explanations and warnings
+        verbose = 5 : All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)
+        verbose = 6 : All jobs in All Tasks whether out of date or not
 
     :param output_stream: where to print to
     :type output_stream: file-like object with ``write()`` function
     :param target_tasks: targets task functions which will be run if they are out-of-date
     :param forcedtorun_tasks: task functions which will be run whether or not they are out-of-date
     :param verbose: level 0 : nothing
-                    level 1 : Out-of-date Tasks (names and warnings)
+                    level 1 : Out-of-date Task names
                     level 2 : All Tasks (including any task function docstrings)
                     level 3 : Out-of-date Jobs in Out-of-date Tasks, no explanation
-                    level 4 : Out-of-date Jobs in Out-of-date Tasks, with explanation
+                    level 4 : Out-of-date Jobs in Out-of-date Tasks, with explanations and warnings
                     level 5 : All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)
                     level 6 : All jobs in All Tasks whether out of date or not
                     level 10: logs messages useful only for debugging ruffus pipeline code
@@ -3014,7 +3042,7 @@ def pipeline_printout(  output_stream                   = None,
     #   Get updated nodes as all_nodes - nodes_to_run
     #
     #   LOGGER level 6 : All jobs in All Tasks whether out of date or not
-    if verbose >= 6:
+    if verbose == 2 or verbose >= 5:
         (all_tasks, ignore_param1, ignore_param2,
          ignore_param3) = topologically_sorted_nodes(target_tasks, True,
                                                      gnu_make_maximal_rebuild_mode,
@@ -3025,7 +3053,7 @@ def pipeline_printout(  output_stream                   = None,
     output_stream.write("\n" + "_" * 40 + "\nTasks which will be run:\n\n")
     for t in incomplete_tasks:
         # LOGGER
-        messages = t.printout(runtime_data, t in forcedtorun_tasks, job_history, verbose, indent)
+        messages = t.printout(runtime_data, t in forcedtorun_tasks, job_history, True, verbose, indent)
         for m in messages:
             output_stream.write(textwrap.fill(m, subsequent_indent = wrap_indent, width = wrap_width) + "\n")
 
@@ -3454,10 +3482,10 @@ def pipeline_run(target_tasks                     = [],
     :param logger: Where progress will be logged. Defaults to stderr output.
     :type logger: `logging <http://docs.python.org/library/logging.html>`_ objects
     :param verbose: level 0 : nothing
-                    level 1 : Out-of-date Tasks (names and warnings)
+                    level 1 : Out-of-date Task names
                     level 2 : All Tasks (including any task function docstrings)
                     level 3 : Out-of-date Jobs in Out-of-date Tasks, no explanation
-                    level 4 : Out-of-date Jobs in Out-of-date Tasks, with explanation
+                    level 4 : Out-of-date Jobs in Out-of-date Tasks, with explanations and warnings
                     level 5 : All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)
                     level 6 : All jobs in All Tasks whether out of date or not
                     level 10: logs messages useful only for debugging ruffus pipeline code
@@ -3620,13 +3648,14 @@ def pipeline_run(target_tasks                     = [],
     #
     #   Print Complete tasks
     #
-    #   LOGGER level 6 : All jobs in All Tasks whether out of date or not
-    if verbose >= 6:
+    #   LOGGER level 5 : All jobs in All Tasks whether out of date or not
+    if verbose == 2 or verbose >= 5:
         (all_tasks, ignore_param1, ignore_param2,
          ignore_param3) = topologically_sorted_nodes(target_tasks, True,
                                                      gnu_make_maximal_rebuild_mode,
                                                      extra_data_for_signal = [t_verbose_logger(0, None, runtime_data), job_history])
-        for m in get_completed_task_strings (incomplete_tasks, all_tasks, forcedtorun_tasks, verbose, indent, runtime_data, job_history):
+        # indent hardcoded to 4
+        for m in get_completed_task_strings (incomplete_tasks, all_tasks, forcedtorun_tasks, verbose, 4, runtime_data, job_history):
             logger.info(m)
 
 
