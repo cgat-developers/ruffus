@@ -270,7 +270,7 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
     stdout, stderr = read_stdout_stderr_from_files( stdout_path, stderr_path, logger, cmd_str)
 
 
-    job_info_str = ("The original command was:\n%s\n"
+    job_info_str = ("The original command was: >> %s <<\n"
                     "The jobid was: %s\n"
                     "The job script name was: %s\n" %
                             (cmd_str,
@@ -285,13 +285,15 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
     #   Throw if failed
     #
     if job_info:
-        job_info_str += "Resources used = %s " % (job_info.resourceUsage)
+        job_info_str += "Resources used: %s " % (job_info.resourceUsage)
         if job_info.hasExited:
             if job_info.exitStatus:
                 raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n%s"
                                          % (job_info.exitStatus, job_info_str))
+            #
+            #   Decorate normal exit with some resource usage information
+            #
             elif verbose:
-
                 def nice_mem_str(num):
                     """
                     Format memory sizes
