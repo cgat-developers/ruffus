@@ -132,7 +132,10 @@ class DbDict(MutableMapping):
         pickle.load if specified
         """
         if self.picklevalues:
-            return pickle.dumps(value, protocol = -1)
+            # use protocol 0
+            # does this work better in text mode
+            #return pickle.dumps(value, protocol = -1)
+            return pickle.dumps(value)
         else:
             return value
     #_____________________________________________________________________________________
@@ -242,7 +245,7 @@ class DbDict(MutableMapping):
         the parameter 'items' a dict or list/tuple of items.
         '''
         if isinstance(items, dict):
-            self._update(items.items())
+            self._update(list(items.items()))
         elif isinstance(items, list) or isinstance(items, tuple):
             self._update(items)
         elif items:
@@ -253,7 +256,7 @@ class DbDict(MutableMapping):
                 raise ValueError('Could not interpret value of parameter `items` as a dict, list/tuple or iterator.')
 
         if kwds:
-            self._update(kwds.items())
+            self._update(list(kwds.items()))
 
     def popitem(self):
         '''Pop a key-value pair from the database. Returns the next key-value
@@ -371,43 +374,43 @@ if __name__ == '__main__':
     range10 = list(range(10))
     items = [(i, i) for i in range10]
     d.update(items)
-    assert d.items() == items, 'Failed to update using list'
+    assert list(d.items()) == items, 'Failed to update using list'
     d.clear()
 
     # test with tuple of items as (key, value) pairs
     d.update(tuple(items))
-    assert d.items() == items, 'Failed to update using tuple'
+    assert list(d.items()) == items, 'Failed to update using tuple'
     d.clear()
 
     # test with dict
     d.update(dict(items))
-    assert d.items() == items
+    assert list(d.items()) == items
     d.clear()
 
     # test with generator
     d.update((i, i) for i in range10)
-    assert d.items() == items, 'Failed to update using generator'
+    assert list(d.items()) == items, 'Failed to update using generator'
 
     # check the std. dict methods
-    assert d.keys() == range10
+    assert list(d.keys()) == range10
     assert list(d.values()) == range10
-    assert d.items() == items
-    assert list(d.iterkeys()) == range10
-    assert list(d.itervalues()) == range10
-    assert list(d.iteritems()) == items
+    assert list(d.items()) == items
+    #assert list(d.iterkeys()) == range10
+    #assert list(d.itervalues()) == range10
+    #assert list(d.iteritems()) == items
 
     # test get
-    assert d.get(range(8,12)) == items[-2:]
+    assert d.get(list(range(8,12))) == items[-2:]
 
     # test remove
-    d.remove(range(8,10))
-    assert len(d.get(range(8,10))) == 0, 'Items not removed successfully'
+    d.remove(list(range(8,10)))
+    assert len(d.get(list(range(8,10)))) == 0, 'Items not removed successfully'
 
     d.clear()
 
     # test with key,value pairs as parameters
     d.update(foo=1, bar=2)
-    assert d.items() == [('foo', 1), ('bar', 2)], \
+    assert list(d.items()) == [('foo', 1), ('bar', 2)], \
         'keyword assignment not successful'
 
     # test popitem
