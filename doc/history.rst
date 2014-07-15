@@ -1,56 +1,46 @@
 .. include:: global.inc
+
+
 ########################################
 Major Features added to Ruffus
 ########################################
 
+.. note::
+
+    See :ref:`To do list <todo>` for future enhancements to Ruffus
+
+
 ********************************************************************
-version 2.4.2
+version 2.4.2 (beta)
 ********************************************************************
 
-    * BUG FIX: Output producing wild cards was not saved in the checksum files!!!
-    * Added :ref:`pipeline_get_task_names(...) <pipeline_functions.pipeline_get_task_names>` which returns all task name as a list of strings
-    * Reorganised verbosity for pipeline_printout and pipeline_run
+
+============================================================================================================================================================
+Refactor verbosity levels
+============================================================================================================================================================
+
+    Clarify what verbosity levels do and resolve inconsistencies for pipeline_printout and pipeline_run.
+    Pipeline_run now can printout lists of up-to-date tasks before running the pipeline
+
         * level 0 : nothing
-        * level 1 : Out-of-date Tasks (names and warnings)
+        * level 1 : Out-of-date Task names
         * level 2 : All Tasks (including any task function docstrings)
         * level 3 : Out-of-date Jobs in Out-of-date Tasks, no explanation
-        * level 4 : Out-of-date Jobs in Out-of-date Tasks, with explanation
+        * level 4 : Out-of-date Jobs in Out-of-date Tasks, with explanations and warnings
         * level 5 : All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)
         * level 6 : All jobs in All Tasks whether out of date or not
         * level 10: logs messages useful only for debugging ruffus pipeline code
 
+    Defaults to level 4 for pipeline_printout: Out of date jobs, with explanations and warnings
+    Defaults to level 1 for pipeline_run: Out-of-date Task names
 
 
-    * Need to update docs
-    * test/test_verbosity.py
-
-    path_verbosity =
-    (default = 2)
-
-    0) the full path
-    1-N) N levels of subpath,
-        for "what/is/this.txt"
-        N = 1 "this.txt"
-        N = 2 "is/this.txt"
-        N >=3 "what/is/this.txt"
-    -N) As above but with the input/output parameter chopped off after 40 letters,
-        and ending in "..."
-
-
-    Getting the Nth levels of a path use code from ruffus.ruffus_utility
-
-
-    from ruffus.ruffus_utility import *
-    for aa in range(10):
-       print get_nth_nested_level_of_path ("/test/this/now/or/not.txt", aa)
-
-    May 29, 2014 Delete comment Project Member #2 bunbun68
-    1) pipeline_printout forwards printing to _task.printout
-    2) pipeline_run needs to borrow code from pipeline_printout to print up to date tasks including their jobs
-    3) See file_name_parameters.py::get_readable_path_str()
-
-
-
+============================================================================================================================================================
+Other changes
+============================================================================================================================================================
+    * BUG FIX: Output producing wild cards was not saved in the checksum files!!!
+    * BUG FIX: @mkdir bug under Windows. Thanks to Sean Turley. (Aargh! Different exceptions are thrown in Windows vs. Linux for the same condition!)
+    * Added :ref:`pipeline_get_task_names(...) <pipeline_functions.pipeline_get_task_names>` which returns all task name as a list of strings. Thanks to Clare Sloggett
 
 
 ********************************************************************

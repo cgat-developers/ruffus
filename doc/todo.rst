@@ -1,165 +1,527 @@
 .. include:: global.inc
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Future plans for *Ruffus*:
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. _todo.update_documentation:
 
-###################################
-Update documentation
-###################################
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Left to do:
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. _todo:
 
-    I would appreciated feedback and help on all these issues and where
-    next to take *ruffus*.
+##########################################
+Future Changes to Ruffus
+##########################################
 
-    Please write to me ( ruffus_lib at llew.org.uk)
-    or join the project.
+    I would appreciated feedback and help on all these issues and where next to take *ruffus*.
 
 
-    Some of these proposals are well-fleshed-out:
+    **Future Changes** are features where we more or less know where we are going and how to get there.
 
-    * :ref:`Clean up <todo.cleanup>`
-    * :ref:`(Plug-in) File Dependency Checking via MD5 or Databases <file.dependency_checking>`
+    **Planned Improvements** describes features we would like in Ruffus but where the implementation
+    or syntax has not yet been (fully) worked out.
 
-    Others require some more user feedback about semantics:
+    If you have suggestions or contributions, please either write to me ( ruffus_lib at llew.org.uk) or
+    send a pull request via the `git site  <https://github.com/bunbun/ruffus>`__.
 
-    * :ref:`Harvesting return values from jobs <todo.return_values>`
+.. _todo.verbosity:
 
-    Some issues are do-able but difficult and I don't have the experience:
+********************************************************************************************************
+1. Refactor verbosity levels:
+********************************************************************************************************
 
-    * :ref:`Run jobs on remote (clustered) processes via SGE/Hadoop <todo.hadoop_sge>`
+    * Need to update docs
+    * test/test_verbosity.py
 
+    * Clarify what verbosity levels do and resolve inconsistencies for ``pipeline_printout`` and ``pipeline_run``.
+    * ``pipeline_run`` now can printout lists of up-to-date tasks before running the pipeline
+    * New list of verbose levels
 
+        * level **0** : *nothing*
+        * level **1** : *Out-of-date Task names*
+        * level **2** : *All Tasks (including any task function docstrings)*
+        * level **3** : *Out-of-date Jobs in Out-of-date Tasks, no explanation*
+        * level **4** : *Out-of-date Jobs in Out-of-date Tasks, with explanations and warnings*
+        * level **5** : *All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)*
+        * level **6** : *All jobs in All Tasks whether out of date or not*
+        * level **10**: *logs messages useful only for debugging ruffus pipeline code*
 
-.. _todo.multiple_exception:
-
-###################################
-Exceptions
-###################################
-
-.. _manual.exceptions.multiple_errors:
-
-    The current behaviour is to continue executing all the jobs currently in progress
-    when an exception is thrown (See the :ref:`manual <manual.exceptions.multiple_errors>`).
-
-    A.H. has suggested that
-
-        * Exceptions should be displayed early
-        * Ctrl-C should not leave dangling jobs
-        * As an option, Ruffus should try to keep running as far as possible (i.e. ignoring downstream tasks)
-
-
-.. _todo.cleanup:
-
-###################################
-Clean up
-###################################
-
-    The plan is to store the files and directories created via
-    a standard interface.
-
-    The placeholders for this are a function call ``register_cleanup``.
-
-    Jobs can specify the files they created and which need to be
-    deleted by returning a list of file names from the job function.
-
-    So::
-
-        raise Exception = Error
-
-        return False = halt pipeline now
-
-        return string / list of strings = cleanup files/directories later
-
-        return anything else = ignored
-
-
-    The cleanup file/directory store interface can be connected to
-    a text file or a database.
-
-    The cleanup function would look like this::
-
-        pipeline_cleanup(cleanup_log("../cleanup.log"), [instance ="october19th" ])
-        pipeline_cleanup(cleanup_msql_db("user", "password", "hash_record_table"))
-
-    The parameters for where and how to store the list of created files could be
-    similarly passed to pipeline_run as an extra parameter::
-
-        pipeline_run(cleanup_log("../cleanup.log"), [instance ="october19th" ])
-        pipeline_run(cleanup_msql_db("user", "password", "hash_record_table"))
-
-    where `cleanup_log` and `cleanup_msql_db` are classes which have functions for
-
-        #) storing file
-        #) retrieving file
-        #) clearing entries
-
-
-    * Files would be deleted in reverse order, and directories after files.
-    * By default, only empty directories would be removed.
-
-      But this could be changed with a ``--forced_remove_dir`` option
-
-    * An ``--remove_empty_parent_directories`` option would be
-      supported by `os.removedirs(path) <http://docs.python.org/library/os.html#os.removedirs>`_.
+    #. ``pipeline_printout`` defaults to level 4: *Out of date jobs, with explanations and warnings*
+    #. ``pipeline_run`` defaults to level 1: *Out-of-date Task names*
 
 
 
 
+********************************************************************************************************
+2. Allow truncated (shorter) path lengths output by ``pipeline_run`` or ``pipeline_printout``
+********************************************************************************************************
 
-.. _file.dependency_checking:
+    Optionally restrict the length of input / output file paths to either
 
-######################################################################
-(Plug-in) File Dependency Checking via MD5 or Databases
-######################################################################
-    So that MD5 / a database can be used instead of coarse-grained file modification times.
+        * N levels of nesting
+        * A total of MMM characters
 
-    As always, the design is a compromise between flexibility and easy of use.
 
-    The user can already write their own file dependency checking function and
-    supply this::
+    Add ``verbose_path_length`` parameter to ``pipeline_printout`` and ``pipeline_run``
 
-        @check_if_uptodate(check_md5_func)
-        @files(io_files)
-        def task_func (input_file, output_file):
+        (default = 2)
+
+        * 0: the full path
+        * 1-N: N levels of nested subpaths
+
+          for ``what/is/this.txt``
+
+            * N = 1 ``this.txt``
+            * N = 2 ``is/this.txt``
+            * N >=3 ``what/is/this.txt``
+
+          To obtain the Nth levels of a path use code from ``ruffus.ruffus_utility``
+
+          ::
+
+              from ruffus.ruffus_utility import *
+              for aa in range(10):
+                 print get_nth_nested_level_of_path ("/test/this/now/or/not.txt", aa)
+
+          See ``file_name_parameters.py::get_readable_path_str()``
+
+
+       * -N: As above but with each of the input/output parameter chopped off after N letters, and ending in ``"..."``
+
+
+    Extend the command line verbose option to take ``--verbose 3`` or ``--verbose 3:-40`` or ``--verbose 3:5``,
+    where the number after the colon is the verbose path length
+
+
+********************************************************************************************************
+3. Support for Python3
+********************************************************************************************************
+
+    * See http://code.google.com/p/ruffus/issues/detail?id=54&sort=status
+
+    * Run ``2to3``
+
+    * See Konrad Foerstner  http://kokoko.fluxionary.net/using-the-pipeline-module-ruffus-with-python-3-2/
+
+
+
+
+.. _todo.misfeatures:
+
+********************************************************************************************************
+4. (mis) Features
+********************************************************************************************************
+
+    * ``Ctrl-C`` should not leave dangling jobs
+    * Does killing parallel processes explicitly via kill or qdel cause the job to "fail"
+    * Debug with ``--verbose 10``
+
+
+.. _todo.dynamic_strings:
+
+********************************************************************************************************
+5. Mark input strings as non-file names, and add support for dynamically returned parameters
+********************************************************************************************************
+
+    1. Use indicator object like "ouput_from"
+    2. What is a good name?
+    3. They will still participate in suffix, formatter and regex replacement
+
+    Bernie Pope suggests that we should generalise this:
+
+
+    If any object in the input parameters is a (non-list/tuple) class instance, check (getattr) whether it has a "ruffus_params()" function.
+    If it does, call it to obtain a list which is substituted in place.
+    If there are string nested within, these will take part in Ruffus string substitution.
+
+    "output_from" would be a simple wrapper which returns the internal string via ruffus_params()
+
+    .. code-block:: python
+
+        class output_from (object):
+            def __init__(self, str):
+                self.str = str
+            def ruffus_params(self):
+                return [self.str]
+
+    Returning a list should be like wildcards and should not introduce an unnecessary level of indirection for output parameters, i.e. suffix(".txt") or formatter() / "{basename[0]}" should work.
+
+    Check!
+
+
+.. _todo.extending_graph_viz:
+
+********************************************************************************************************
+6. Extending graph viz with decorators
+********************************************************************************************************
+
+    Contributed by Sean Davis, with suggestions from Jake Biesinger
+
+
+    In ``task.py``:
+
+    .. code-block:: python
+
+        class graphviz(task_decorator):
             pass
 
-    The question is can we
 
-        #) supply a check_md5() function
-        #) allow the whole pipeline to use this.
+        #_________________________________________________________________________________________
 
-    Most probably we need an extra parameter somewhere::
+        #   task_graphviz
 
-        pipeline_run(md5_hash_database = "current/location/files.md5")
-
-    There is prior art on this in ``scons``.
+        #_________________________________________________________________________________________
+        def task_graphviz(self, **args):
+            self.graphviz_attributes=args
 
 
-    If we use a custom object/function, can we use orthogonal syntax for
+    in print_dependencies.py:
 
-    #) disk modifications times,
-    #) md5 hashes saved to a file,
-    #) md5 hashes saved to a database?
+    .. code-block:: python
+
+        for n in all_jobs:
+            attributes = dict()
+            attributes["shape"]="box3d"
+            if(hasattr(n,'graphviz_attributes')):
+                for k,v in n.graphviz_attributes.items():
+                    attributes[k]=v
+
+
+
+    Example:
+
+        .. code-block:: python
+
+
+            @graphviz(URL='"http://cnn.com"', group='map_reads', foo=bar)
+            def myTask(input,output):
+                pass
+
+            graphviz_params = {URL='"http://cnn.com"', group='map_reads', foo=bar}
+            @graphviz(**graphviz_params)
+            def myTask(input,output):
+                pass
+
+
+
+
+.. _todo.extra_parameters:
+
+********************************************************************************************************
+7. Allow "extra" parameters to be used in output substitution
+********************************************************************************************************
+
+    Formatter substitution can refer to the original elements in the input and extra parameters (without converting them to strings either). This refers to the original (nested) data structure.
+
+    This will allow normal python datatypes to be handed down and slipstreamed into a pipeline more easily.
+
+    The syntax would use Ruffus (> version 2.4) formatter:
+
+    .. code-block:: python
+        :emphasize-lines: 2,3
+
+        @transform( ..., formatter(), [
+                                        "{EXTRAS[0][1][3]}",    # EXTRAS
+                                        "[INPUTS[1][2]]"],...)  # INPUTS
+        def taskfunc():
+            pass
+
+    ``EXTRA`` and ``INPUTS`` indicate that we are referring to the input and extra parameters.
+
+    These are the full (nested) parameters in all their original form. In the case of the input parameters, this obvious depends on the decorator, so
+
+    .. code-block:: python
+
+        @transform(["a.text", [1, "b.text"]], formatter(), "{INPUTS[0][0]}")
+        def taskfunc():
+            pass
+
+    would give
 
     ::
 
-        pipeline_run(file_up_to_date_lookup = md5_hash_file("current/location/files.md5"))
-        pipeline_run(file_up_to_date_lookup = mysql_hash_store("user", "password", "hash_record_table"))
+        job #1
+           input  == "a.text"
+           output == "a"
 
-    where ``md5_hash_file`` and ``mysql_hash_store`` are objects which have
-    get/set functions for looking up modification times from file names.
+        job #2
+           input  == [1, "b.text"]
+           output == 1
 
-    Of course that allows you to fake the whole process and not even use real files...
+
+    The entire string must consist of ``INPUTS`` or ``EXTRAS`` followed by optionally N levels of square brackets. i.e. They must match ``"(INPUTS|EXTRAS)(\[\d+\])+"``
+
+    No string conversion takes place.
 
 
-.. _todo.intermediate:
 
-######################################################################
-Remove intermediate files
-######################################################################
+
+
+.. _todo.pre_post_job:
+
+********************************************************************************************************
+Todo: Extra signalling before and after each task and job
+********************************************************************************************************
+
+    .. code-block:: python
+
+        @prejob(custom_func)
+        @postjob(custom_func)
+        def task():
+            pass
+
+    ``@prejob`` / ``@postjob`` would be run in the child processes.
+
+
+.. _todo.new_decorators:
+
+******************************************************************************
+Todo: ``@split`` / ``@subdivide`` returns the actual output created
+******************************************************************************
+
+    * **overrides** (not replaces) wild cards.
+    * Returns a list, each with output and extra paramters.
+    * Won't include extraneous files which were not created in the pipeline but which just happened to match the wild card
+    * We should have ``ruffus_output_params``, ``ruffus_extra_params`` wrappers for clarity:
+
+      .. code-block:: python
+
+        @split("a.file", "*.txt")
+        def split_into_txt_files(input_file, output_files):
+            output_files = ["a.txt", "b.txt", "c.txt"]
+            for output_file_name in output_files:
+                with open(output_file_name, "w") as oo:
+                    pass
+            return [
+                    ruffus_output("a.file"),
+                    [ruffus_output(["b.file", "c.file"]), ruffus_extras(13, 14)],
+                    ]
+
+
+    * Consider yielding?
+
+==========================================================================================
+Checkpointing
+==========================================================================================
+
+    * If checkpoint file is used, the actual files are saved and checked the next time
+    * If no files are generated, no files are checked the next time...
+    * The output files do not have to match the wildcard though we can output a warning message if that happens...
+      This is obviously dangerous because the behavior will change if the pipeline is rerun without using the checkpoint file
+    * What happens if the task function changes?
+
+***************************************
+Todo: New decorators
+***************************************
+
+==============================================================================
+Todo: ``@originate``
+==============================================================================
+
+    Each (serial) invocation returns lists of output parameters until returns
+    None. (Empty list = ``continue``, None = ``break``).
+
+
+
+==============================================================================
+Todo: ``@recombine``
+==============================================================================
+
+    Like ``@collate`` but automatically regroups jobs which were a result of a previous ``@subdivide`` / ``@split`` (even after intervening ``@transform`` )
+
+    This is the only way job trickling can work without stalling the pipeline: We would know
+    how many jobs were pending for each ``@recombine`` job and which jobs go together.
+
+********************************************************************************************************
+Todo: pipeline_printout_graph should print inactive tasks
+********************************************************************************************************
+
+****************************************************************************************
+Todo: Named parameters in decorators for clarity
+****************************************************************************************
+
+.. _todo.bioinformatics_example:
+
+********************************************************************************************************
+Todo: Bioinformatics example to end all examples
+********************************************************************************************************
+
+    Uses
+        * ``@product``
+        * ``@subdivide``
+        * ``@transform``
+        * ``@collate``
+        * ``@merge``
+
+****************************************************************************************
+Todo: Allow the next task to start before all jobs in the previous task have finished
+****************************************************************************************
+
+    Jake (Biesinger) calls this **Job Trickling**!
+
+    * A single long running job no longer will hold up the entire pipeline
+    * Calculates dependencies dynamically at the job level.
+    * Goal is to have a long running (months) pipeline to which we can keep adding input...
+    * We can choose between prioritising completion of the entire pipeline for some jobs
+      (depth first) or trying to complete as many tasks as possible (breadth first)
+
+==============================================================================
+Converting to per-job rather than per task dependencies
+==============================================================================
+    Some decorators prevent per job (rather than per task) dependency calculations, and
+    will call a pipeline stall until the dependent tasks are completed (the current situation):
+
+        * Some types of jobs unavoidably depend on an entire previous task completing:
+             * ``add_inputs()``, ``inputs()``
+             * ``@merge``
+             * ``@split`` (implicit ``@merge``)
+        * ``@split``, ``@originate`` produce variable amount of output at runtime and must be completed before the next task can be run.
+             * Should ``yield`` instead of return?
+        * ``@collate`` needs to pattern match all the inputs of a previous task
+             * Replace ``@collate`` with ``@recombine`` which "remembers" and reverses the results of a previous
+               ``@subdivide`` or ``@split``
+             * Jobs need unique job_id tag
+             * Jobs are assigned (nested) grouping id which accompany them down the
+               pipeline after ``@subdivide`` / ``@split`` and are removed after ``@recombine``
+             * Should have a count of jobs so we always know *when* an "input slot" is full
+        * Funny "single file" mode for ``@transform,`` ``@files`` needs to be
+          regularised so it is a syntactic (front end) convenience (oddity!)
+          and not plague the inards of ruffus
+
+
+    Breaking change: to force the entirety of the previous task to complete before the next one, use ``@follows``
+
+==============================================================================
+Implementation
+==============================================================================
+
+    * "Push" model. Completing jobs "check in" their outputs to "input slots" for all the sucessor jobs.
+    * When "input slots" are full for any job, it is put on the dispatch queue to be run.
+    * The priority (depth first or breadth first) can be set here.
+    * ``pipeline_run`` / ``Pipeline_printout`` create a task dependency tree structure (from decorator dependencies) (a runtime pipeline object)
+    * Each task in the pipeline object knows which other tasks wait on it.
+    * When output is created by a job, it sends messages to (i.e. function calls) all dependent tasks in the pipeline object with the new output
+    * Sets of output such as from ``@split`` and ``@subdivide`` and ``@originate`` have a
+      terminating condition and/or a associated count (# of output)
+    * Tasks in the pipeline object forward incoming inputs to task input slots (for slots common to all jobs in a
+      task: ``@inputs``, ``@add_inputs``) or to slots in new jobs in the pipeline object
+    * When all slots are full in each job, this triggers putting the job parameters onto the job submission queue
+    * The pipeline object should allow Ruffus to be reentrant?
+
+
+
+##########################################
+Planned Improvements to Ruffus
+##########################################
+
+.. _todo.run_on_cluster:
+
+
+
+    * ``@split`` needs to be able to specify at run time the number of
+      resulting jobs without using wild cards
+    * legacy support for wild cards and file names.
+
+
+********************************************************************************************************
+Planned: Running python code (task functions) transparently on remote cluster nodes
+********************************************************************************************************
+
+    Wait until next release.
+
+    Will bump Ruffus to v.3.0 if can run python jobs transparently on a cluster!
+
+    abstract out ``task.run_pooled_job_without_exceptions()`` as a function which can be supplied to ``pipeline_run``
+
+    Common "job" interface:
+
+         *  marshalled arguments
+         *  marshalled function
+         *  submission timestamp
+
+    Returns
+         *  completion timestamp
+         *  returned values
+         *  exception
+
+    #) Full version use libpythongrid?
+       * Christian Widmer <ckwidmer@gmail.com>
+       * Cheng Soon Ong <chengsoon.ong@unimelb.edu.au>
+       * https://code.google.com/p/pythongrid/source/browse/#git%2Fpythongrid
+       * Probably not good to base Ruffus entirely on libpythongrid to minimise dependencies, the use of sophisticated configuration policies etc.
+    #) Start with light-weight file-based protocol
+       * specify where the scripts should live
+       * use drmaa to start jobs
+       * have executable ruffus module which knows how to load deserialise (unmarshall) function / parameters from disk. This would be what drmaa starts up, given the marshalled data as an argument
+       * time stamp
+       * "heart beat" to check that the job is still running
+    #) Next step: socket-based protocol
+       * use specified master port in ruffus script
+       * start remote processes using drmaa
+       * child receives marshalled data and the address::port in the ruffus script (head node) to initiate hand shake or die
+       * process recycling: run successive jobs on the same remote process for reduced overhead, until exceeds max number of jobs on the same process, min/max time on the same process
+       * resubmit if die (Don't do sophisticated stuff like libpythongrid).
+
+.. _todo.job_trickling:
+
+
+
+.. _todo.custom_parameters:
+
+************************************
+Planned: Custom parameter generator
+************************************
+
+    Request on mailing list
+
+         I've often wished that I could use an arbitrary function to process the input filepath instead of just a regex.
+
+        .. code-block:: python
+
+           def f(inputs, outputs, extra_param1, extra_param2):
+                # do something to generate parameters
+                return new_output_param, new_extra_param1, new_extra_param2
+
+        now f() can be used inside a Ruffus decorator to generate the outputs from inputs, instead of being forced to use a regex for the job.
+
+        Cheers,
+        Bernie.
+
+    Leverages built-in Ruffus functionality.
+    Don't have to write entire parameter generation from scratch.
+
+    * Gets passed an iterator where you can do a for loop to get input parameters / a flattened list of files
+    * Other parameters are forwarded as is
+    * The duty of the function is to ``yield`` input, output, extra parameters
+
+
+    Simple to do but how do we prevent this from being a job-trickling barrier?
+
+    Postpone until we have an initial design for job-trickling: Ruffus v.4 ;-(
+
+
+.. _todo.gui:
+
+****************************************************************************
+Planned: Ruffus GUI interface.
+****************************************************************************
+
+    Desktop (PyQT or web-based solution?)  I'd love to see an svg pipeline picture that I could actually interact with
+
+.. _todo.graphviz:
+
+****************************************************************************
+Planned: Extending graphviz output
+****************************************************************************
+
+    Customisable flowchart appearance
+
+    Find contributions!
+
+
+********************************************************************************************************
+Planned: Non-decorator / Function interface to Ruffus
+********************************************************************************************************
+
+
+.. _todo.intermediate_files:
+
+********************************************************************************************************
+Planned: Remove intermediate files
+********************************************************************************************************
 
     Often large intermediate files are produced in the middle of a pipeline which could be
     removed. However, their absence would cause the pipeline to appear out of date. What is
@@ -229,101 +591,63 @@ Remove intermediate files
     and **@intermediate**)
 
 
+.. _todo.retry:
 
-.. _todo.pre_post_job:
+********************************************************************************************************
+Planned: @retry_on_error(NUM_OF_RETRIES)
+********************************************************************************************************
 
-######################################################################
-Extra signalling before and after each task and job
-######################################################################
-    @pretask(custom_func)
-    @prejob(custom_func)
-    @postjob(custom_func)
+.. _todo.cleanup:
 
-    @pretask would be run in the master process while @prejob / @postjob would be run
-    in the child processes (if any).
+********************************************************************************************************
+Planned: Clean up
+********************************************************************************************************
 
+    The plan is to store the files and directories created via
+    a standard interface.
 
-######################################################################
-SQL hooks
-######################################################################
-    See above.
+    The placeholders for this are a function call ``register_cleanup``.
 
-    I have no experience with systems which link to SQL. What would people want from such a
-    feature?
+    Jobs can specify the files they created and which need to be
+    deleted by returning a list of file names from the job function.
 
-    Ian Holmes?
+    So::
 
+        raise Exception = Error
 
-.. _todo.return_values:
+        return False = halt pipeline now
 
-######################################################################
-Return values
-######################################################################
-    Is it a good idea to allow jobs to pass back calculated values?
+        return string / list of strings = cleanup files/directories later
 
-    This requires trivial modifications to run_pooled_job_without_exceptions
-
-    The most useful thing would be to associate job parameters with results.
-
-    What should be the syntax for getting the results back?
-
-.. _todo.hadoop_sge:
-
-######################################################################
-Run jobs on remote (clustered) processes via SGE/Hadoop
-######################################################################
-    Can we run jobs on remote processes using SGE / Hadoop?
-
-    Can we abstract all job management using drmaa?
-
-    Python examples at http://gridengine.sunsource.net/howto/drmaa_python.html
-
-***************
-SGE
-***************
-    Look at Qmake execution model:
+        return anything else = ignored
 
 
-===================================================
-1)  SGE nodes are taken over completely
-===================================================
+    The cleanup file/directory store interface can be connected to
+    a text file or a database.
 
-    See last example in `multiprocessing <http://docs.python.org/library/multiprocessing.html#examples>`_
-    for creating a distributed queue.
+    The cleanup function would look like this::
 
-    We would use qrsh instead of ssh. The size of the pool would be the (maximum) number of jobs
+        pipeline_cleanup(cleanup_log("../cleanup.log"), [instance ="october19th" ])
+        pipeline_cleanup(cleanup_msql_db("user", "password", "hash_record_table"))
 
-    Advantages:
+    The parameters for where and how to store the list of created files could be
+    similarly passed to pipeline_run as an extra parameter::
 
-    * Simple to implement
-    * Efficient
+        pipeline_run(cleanup_log("../cleanup.log"), [instance ="october19th" ])
+        pipeline_run(cleanup_msql_db("user", "password", "hash_record_table"))
 
-    Disadvantages:
+    where `cleanup_log` and `cleanup_msql_db` are classes which have functions for
 
-    * Other users might not appreciate having python jobs taking over the nodes for a
-      protracted length of time
-    * We would not be able to use SGE to view / manage jobs
+        #) storing file
+        #) retrieving file
+        #) clearing entries
 
 
+    * Files would be deleted in reverse order, and directories after files.
+    * By default, only empty directories would be removed.
 
-===================================================
-2)  Start a qrsh per job
-===================================================
+      But this could be changed with a ``--forced_remove_dir`` option
 
-    Advantages:
-
-    * jobs look like any other SGE task
-
-    Disadvantages:
-
-    * Slower. Overheads might be high.
-    * We might have to create a new pool per task
-    * If we maintain an empty pool, and then dynamically attach processes,
-      the code might be difficult to write (may not fit into the multiprocessing
-      way of doing things / race-conditions etc.)
-
-***************
-Hadoop
-***************
-Can anyone help me with this / have any experience?
+    * An ``--remove_empty_parent_directories`` option would be
+      supported by `os.removedirs(path) <http://docs.python.org/library/os.html#os.removedirs>`_.
 
