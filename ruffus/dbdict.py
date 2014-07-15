@@ -29,7 +29,7 @@ You can access your dictionary later on:
 
     d = dbdict.open('tempdict')
     del d['foo']
-    
+
     if 'John' in d:
         print 'John is in there !'
     print d.items()
@@ -82,6 +82,8 @@ Some things to note:
 
     Original code by Jacob Sondergaard
         hg clone ssh://hg@bitbucket.org/nephics/dbdict
+
+    Modified to pickle automatically
 '''
 
 __version__ = '1.3.1'
@@ -102,7 +104,7 @@ import itertools
 
 class DbDict(MutableMapping):
     ''' DbDict, a dictionary-like object with SQLite back-end '''
-    
+
     def __init__(self, filename, picklevalues=False):
         self.picklevalues = picklevalues
         if filename == ':memory:' or not path.isfile(filename):
@@ -110,11 +112,35 @@ class DbDict(MutableMapping):
             self._create_table()
         else:
             self.con = sqlite3.connect(filename)
-        
+
+
+    #_____________________________________________________________________________________
+
+
+    #   Add automatic pickling and unpickling
+
+    def pickle_loads (self, value):
+        """
+        pickle.load if specified
+        """
+        if self.picklevalues:
+            return pickle.loads(bytes(value))
+        else:
+            return value
+    def pickle_dumps (self, value):
+        """
+        pickle.load if specified
+        """
+        if self.picklevalues:
+            return pickle.dumps(value, protocol = -1)
+        else:
+            return value
+    #_____________________________________________________________________________________
+
     def _create_table(self):
         '''Creates an SQLite table 'data' with the columns 'key' and 'value'
         where column 'key' is the table's primary key.
-        
+
         Note: SQLite automatically creates an unique index for the 'key' column.
         The index may get fragmented with lots of insertions/updates/deletions
         therefore it is recommended to use reindex() when searches becomes
@@ -122,23 +148,22 @@ class DbDict(MutableMapping):
         '''
         self.con.execute('create table data (key PRIMARY KEY,value)')
         self.con.commit()
-    
+
     def __getitem__(self, key):
         '''Return value for specified key'''
         row = self.con.execute('select value from data where key=?',
                                (key, )).fetchone()
         if not row:
             raise KeyError(key)
-        return pickle.loads(str(row[0])) if self.picklevalues else row[0]
-    
+        return self.pickle_loads(row[0])
+
     def __setitem__(self, key, value):
         '''Set value at specified key'''
-        if self.picklevalues:
-            value = buffer(pickle.dumps(value, protocol=-1))
+        value = self.pickle_dumps(value)
         self.con.execute('insert or replace into data (key, value) '
                          'values (?,?)', (key, value))
         self.con.commit()
-               
+
     def __delitem__(self, key):
         '''Delete item (key-value pair) at specified key'''
         if key in self:
@@ -146,7 +171,7 @@ class DbDict(MutableMapping):
             self.con.commit()
         else:
             raise KeyError
-    
+
     def __iter__(self):
         '''Return iterator over keys'''
         return self._iterquery(self.con.execute('select key from data'),
@@ -169,7 +194,7 @@ class DbDict(MutableMapping):
                     yield row[0]
                 else:
                     yield row
-        
+
     def iterkeys(self):
         '''Return iterator of all keys in the database'''
         return self.__iter__()
@@ -178,16 +203,13 @@ class DbDict(MutableMapping):
         '''Return iterator of all values in the database'''
         it = self._iterquery(self.con.execute('select value from data'),
                                single_value=True)
-        return itertools.imap(lambda x: pickle.loads(str(x)), it) if self.picklevalues else it
+        return iter(self.pickle_loads(x) for x in it)
 
     def iteritems(self):
         '''Return iterator of all key-value pairs in the database'''
         it = self._iterquery(self.con.execute('select key, value from data'))
-        if not self.picklevalues:
-            return it
-        else:
-            return itertools.imap(lambda x: (x[0], pickle.loads(str(x[1]))), it)
-    
+        return iter( (x[0], self.pickle_loads(x[1])) for x in it)
+
     def keys(self):
         '''Return all keys in the database'''
         return [row[0]
@@ -195,11 +217,8 @@ class DbDict(MutableMapping):
 
     def items(self):
         '''Return all key-value pairs in the database'''
-        if not self.picklevalues:
-            return self.con.execute('select key, value from data').fetchall()
-        else:
-            return [(x[0], pickle.loads(str(x[1]))) for x in 
-                self.con.execute('select key, value from data').fetchall()]
+        values = self.con.execute('select key, value from data').fetchall()
+        return [(x[0], self.pickle_loads(x[1])) for x in values]
 
     def clear(self):
         '''Clear the database for all key-value pairs, and free up unsused
@@ -208,18 +227,17 @@ class DbDict(MutableMapping):
         self.con.execute('drop table data')
         self.vacuum()
         self._create_table()
-    
+
     def _update(self, items):
         '''Perform the SQL query of updating items (list of key-value pairs)'''
-        if self.picklevalues:
-            items = [(k, pickle.dumps(v)) for k,v in items]
+        items = [(k, self.pickle_dumps(v)) for k,v in items]
         self.con.executemany('insert or replace into data (key, value)'
                              ' values (?, ?)', items)
         self.con.commit()
-    
+
     def update(self, items=None, **kwds):
         '''Updates key-value pairs in the database.
-        
+
         Items (key-value pairs) may be given by keyword assignments or using
         the parameter 'items' a dict or list/tuple of items.
         '''
@@ -246,19 +264,18 @@ class DbDict(MutableMapping):
         else:
             raise StopIteration
         del self[key]
-        if self.picklevalues:
-            value = pickle.loads(str(value))
+        value = self.pickle_loads(value)
         return key, value
 
     def close(self):
         '''Close database connection'''
         self.con.close()
-        
+
     def vacuum(self):
         '''Free unused disk space from the database file.
-        
+
         The operation has no effect if database is in memory.
-        
+
         Note: The operation can take some time to run (around a half second per
         megabyte on the Linux box where SQLite is developed) and it can use up
         to twice as much temporary disk space as the original file while it is
@@ -266,10 +283,10 @@ class DbDict(MutableMapping):
         '''
         self.con.execute('vacuum')
         self.con.commit()
-        
+
     def get(self, keys):
         '''Get item(s) for the specified key or list of keys.
-        
+
         Items will be returned only for those keys that are defined. The
         function will pass silently (i.e. not raise an error) if one or more of
         the keys is not defined.'''
@@ -280,14 +297,11 @@ class DbDict(MutableMapping):
             keys = (keys,)
         values = self.con.execute('select key, value from data where key in '
                                                 '%s' % (keys,)).fetchall()
-        if not self.picklevalues:
-            return values
-        else:
-            return [(k, pickle.loads(str(v))) for k,v in values]
+        return [(k, self.pickle_loads(v)) for k,v in values]
 
     def remove(self, keys):
         '''Removes item(s) for the specified key or list of keys.
-        
+
         The function will pass silently (i.e. not raise an error) if one or more
         of the keys is not defined.'''
         try:
@@ -297,10 +311,10 @@ class DbDict(MutableMapping):
             keys = (keys,)
         self.con.execute('delete from data where key in %s' % (keys,))
         self.con.commit()
-        
+
     def reindex(self):
         '''Delete and recreate key index.
-        
+
         Use this function if key lookup time becomes slower. This may happen as
         the index will become fragmented with lots of
         insertions/updates/deletions.'''
@@ -309,7 +323,7 @@ class DbDict(MutableMapping):
 
 def dbdict(filename, picklevalues=False):
     '''Open a persistent dictionary for reading and writing.
-    
+
     The filename parameter is the base filename for the underlying
     database.  If filename is ':memory:' the database is created in
     memory.
@@ -328,16 +342,16 @@ def open(filename, picklevalues=False):
     See the module's __doc__ string for an overview of the interface.
     '''
     return DbDict(filename, picklevalues)
-   
+
 if __name__ == '__main__':
-    
+
     # Perform some tests
-    
+
     d = open(':memory:')
 
     d[1] = 'test'
     assert d[1] == 'test'
-    
+
     d[1] += '1'
     assert d[1] == 'test1'
 
@@ -348,18 +362,18 @@ if __name__ == '__main__':
 
     # test len
     assert len(d) == 1, 'Failed to count number of items'
-    
+
     # test clear
     d.clear()
     assert len(d) == 0, 'Database not cleared as expected'
-    
+
     # test with list of items as (key, value) pairs
     range10 = list(range(10))
     items = [(i, i) for i in range10]
     d.update(items)
     assert d.items() == items, 'Failed to update using list'
     d.clear()
-    
+
     # test with tuple of items as (key, value) pairs
     d.update(tuple(items))
     assert d.items() == items, 'Failed to update using tuple'
@@ -373,7 +387,7 @@ if __name__ == '__main__':
     # test with generator
     d.update((i, i) for i in range10)
     assert d.items() == items, 'Failed to update using generator'
-    
+
     # check the std. dict methods
     assert d.keys() == range10
     assert list(d.values()) == range10
@@ -384,13 +398,13 @@ if __name__ == '__main__':
 
     # test get
     assert d.get(range(8,12)) == items[-2:]
-    
+
     # test remove
     d.remove(range(8,10))
     assert len(d.get(range(8,10))) == 0, 'Items not removed successfully'
-    
+
     d.clear()
-    
+
     # test with key,value pairs as parameters
     d.update(foo=1, bar=2)
     assert d.items() == [('foo', 1), ('bar', 2)], \
@@ -408,16 +422,16 @@ if __name__ == '__main__':
     # test setdefault
     d.setdefault(10, 10)
     assert d[10] == 10, 'Failed to set default value'
-    
+
     # test vacuum call (no assert)
     d.reindex()
-    
+
     # test vacuum call (no assert, and call has no effect on an in memory db)
     d.vacuum()
 
     # test close call (assert is given reading from closed database)
     d.close()
-    
+
     # try reading from a closed database
     try:
         d[1] = 1
