@@ -324,7 +324,7 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
         elif job_info.wasAborted:
             raise error_drmaa_job( "The drmaa command was never ran but used %s:\n%s"
                                      % (job_info.resourceUsage, job_info_str))
-        elif job_info.hasSignaled:
+        elif job_info.hasSignal:
             raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n%s"
                                      % (job_info.terminatingSignal, job_info_str))
 
