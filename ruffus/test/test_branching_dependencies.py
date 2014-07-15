@@ -430,7 +430,6 @@ if __name__ == '__main__':
                                 logger = stderr_logger if options.verbose else black_hole_logger,
                                 gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                                 verbose = options.verbose)
-            sys.exit(1)
             check_final_output_correct(options.touch_files_only)
             check_job_order_correct(tempdir + "jobs.start")
             check_job_order_correct(tempdir + "jobs.finish")
