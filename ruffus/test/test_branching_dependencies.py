@@ -351,13 +351,17 @@ def check_final_output_correct(after_touch_files = False):
         expected_output.pop(-3)
     final_6_contents = sorted([l.rstrip() for l in open(tempdir + "final.6", "r").readlines()])
     if final_6_contents != expected_output:
+        print >>sys.stderr, "Actual:"
         for ll in final_6_contents:
             print >>sys.stderr, ll
+        print >>sys.stderr, "_" * 80
+        print >>sys.stderr, "Expected:"
         for ll in orig_expected_output:
             print >>sys.stderr, ll
+        print >>sys.stderr, "_" * 80
         for i, (l1, l2) in enumerate(zip(final_6_contents, expected_output)):
             if l1 != l2:
-                sys.stderr.write("%d\n  >%s<\n  >%s<\n" % (i, l1, l2))
+                sys.stderr.write("%d\nActual:\n  >%s<\nExpected:\n  >%s<\n" % (i, l1, l2))
         raise Exception ("Final.6 output is not as expected\n")
 
 
@@ -426,6 +430,7 @@ if __name__ == '__main__':
                                 logger = stderr_logger if options.verbose else black_hole_logger,
                                 gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                                 verbose = options.verbose)
+            sys.exit(1)
             check_final_output_correct(options.touch_files_only)
             check_job_order_correct(tempdir + "jobs.start")
             check_job_order_correct(tempdir + "jobs.finish")
