@@ -412,7 +412,7 @@ if __name__ == '__main__':
             #   remove b.1 and touch
             #
             if options.verbose:
-                print "\n\nNow just touch files for task2...\n"
+                print "\n\nNow just delete b.1 for task2...\n"
             os.unlink(os.path.join(tempdir, "b.1"))
             pipeline_run([task2], options.forced_tasks, multiprocess = options.jobs,
                                 logger = stderr_logger if options.verbose else black_hole_logger,

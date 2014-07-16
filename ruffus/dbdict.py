@@ -101,6 +101,7 @@ try:
 except ImportError:
     import pickle
 import itertools
+import sys
 
 class DbDict(MutableMapping):
     ''' DbDict, a dictionary-like object with SQLite back-end '''
@@ -124,20 +125,35 @@ class DbDict(MutableMapping):
         pickle.load if specified
         """
         if self.picklevalues:
-            return pickle.loads(bytes(value))
-        else:
-            return value
+            value = pickle.loads(bytes(value))
+        return value
     def pickle_dumps (self, value):
         """
         pickle.load if specified
         """
         if self.picklevalues:
-            # use protocol 0
-            # does this work better in text mode
-            #return pickle.dumps(value, protocol = -1)
-            return pickle.dumps(value)
-        else:
-            return value
+            #
+            #   Protocol =  0 generates ASCII 7 bit strings and is less efficient
+            #   Protocol = -1 generates ASCII 8 bit strings which need to be handled as
+            #     blobs by sqlite3.
+            #
+            #   Unfortunately, sqlite3 only understands memoryview objects in python3 and
+            #   buffer objects in python2
+            #
+            #   http://bugs.python.org/issue7723 suggests there is no portable
+            #       python2/3 way to write blobs to Sqlite
+            #
+            #   However, sqlite3.Binary seems to do the trick
+            #
+            #   Otherwise, to use protocol -1, we need to use the following code:
+            #
+            #if sys.hexversion >= 0x03000000:
+            #    value = memoryview(pickle.dumps(value, protocol = -1))
+            #else:
+            #    value = buffer(pickle.dumps(value, protocol = -1))
+            #
+            value = sqlite3.Binary(pickle.dumps(value, protocol = -1))
+        return value
     #_____________________________________________________________________________________
 
     def _create_table(self):
