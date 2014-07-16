@@ -175,10 +175,27 @@ def open_job_history (history_file):
 
 class JobHistoryChecksum:
     """Class to remember exactly how an output file was created and when."""
+
+    def __str__(self):
+        from time import strftime, gmtime
+        if hasattr(self, "params"):
+            return   str([self.outfile,
+                      strftime("%d %b %Y %H:%M:%S", gmtime(self.mtime)),
+                      self.params,
+                      self.task_name
+                     ])
+        else:
+            return strftime("%d %b %Y %H:%M:%S", gmtime(self.mtime))
+
     def __init__(self, outfile, mtime, params, task):
         # filename and modification time
         self.outfile = outfile
         self.mtime = mtime
+
+        # Uncomment next two lines to debug:
+        #self.params = params
+        #self.task_name = task._name
+
         # checksum exact params used to generate this output file
         self.chksum_params = hashlib.md5(pickle.dumps(params)).hexdigest()
         # checksum the function bytecode as well as the function context
