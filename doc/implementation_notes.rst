@@ -2,6 +2,37 @@
 Implementation Tips
 ##########################################
 
+******************************************************************************
+dbdict.py
+******************************************************************************
+
+    This is an sqlite backed dictionary originally written by Jacob Sondergaard and
+    contributed by Jake Biesinger who added automatic pickling of python objects.
+
+    The pickling code was refactored out by Leo Goodstadt into separate functions as
+    part of the preparation to make Ruffus python3 ready.
+
+    Python original saved (pickled) objects as 7 bit ASCII strings. Later formats
+    (protocol = -1 is the latest format) uses 8 bit strings and are rather more efficient.
+
+    These then need to be saved as BLOBs to sqlite3 rather than normal strings. We
+    can signal this by wrapping the pickled string in a object providing a "buffer interface".
+    This is ``buffer`` in python2.6/2.7 and ``memoryview`` in python3.
+
+    http://bugs.python.org/issue7723 suggests there is no portable python2/3 way to write
+    blobs to Sqlite without these two incompatible wrappers.
+    This would require conditional compilation:
+
+    .. code-block:: python
+
+        if sys.hexversion >= 0x03000000:
+            value = memoryview(pickle.dumps(value, protocol = -1))
+        else:
+            value = buffer(pickle.dumps(value, protocol = -1))
+
+
+    Despite the discussion on the bug report, sqlite3.Binary seems to work.
+    We shall see if this is portable to python3.
 
 ******************************************************************************
 how to write new decorators
