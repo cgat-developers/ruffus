@@ -488,7 +488,6 @@ class Test_split_param_factory(unittest.TestCase):
                              'DIR/f2.test',
                              ],
                             ['DIR/adjacent_pairs_iterate.py',
-                             'DIR/re_glob.py',
                              'DIR/ruffus_exceptions.py',
                              'DIR/ruffus_utility.py',
                              'DIR/ruffus_version.py'
@@ -525,7 +524,6 @@ class Test_split_param_factory(unittest.TestCase):
                          'DIR/f2.output',
                          'DIR/f2.test'],
                         ['DIR/adjacent_pairs_iterate.py',
-                         'DIR/re_glob.py',
                          'DIR/ruffus_exceptions.py',
                          'DIR/ruffus_utility.py',
                          'DIR/ruffus_version.py',
