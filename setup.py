@@ -3,8 +3,8 @@ from distutils.core import setup
 #from setuptools import find_packages
 
 import sys, os
-if not sys.version_info[0:2] >= (2,4):
-    sys.stderr.write("Requires Python later than 2.4\n")
+if not sys.version_info[0:2] >= (2,6):
+    sys.stderr.write("Requires Python later than 2.6\n")
     sys.exit(1)
 
 # quickly import the latest version of ruffus
@@ -13,10 +13,8 @@ import ruffus.ruffus_version
 sys.path.pop(0)
 
 
-if sys.version_info[0:2] >= (2,6):
-    module_dependencies = []
-else:
-    module_dependencies = ['multiprocessing>=2.6', 'simplejson']
+module_dependencies = []
+#module_dependencies = ['multiprocessing>=2.6', 'simplejson']
 
 
 setup(
@@ -117,7 +115,7 @@ A Simple example
 
         the ``@follows`` decorator indicate that the ``first_task`` function precedes ``second_task`` in
         the pipeline.
-        
+
         The canonical Ruffus decorator is ``@transform`` which **transforms** data flowing down a
         computational pipeline from one stage to teh next.
 
