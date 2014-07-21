@@ -1,4 +1,9 @@
-"""Filename globbing utility."""
+"""
+Filename globbing utility.
+
+Breaks a path into segments using os.path.split and instead
+
+"""
 
 import sys
 import os
@@ -43,7 +48,7 @@ def ire_glob(pathname):
 def re_glob1(dirname, pattern):
     if not dirname:
         dirname = os.curdir
-    if isinstance(pattern, unicode) and not isinstance(dirname, unicode):
+    if isinstance(pattern, (bytes, unicode)) and not isinstance(dirname, (bytes, unicode)):
         dirname = unicode(dirname, sys.getfilesystemencoding() or
                                    sys.getdefaultencoding())
     try:
@@ -51,9 +56,9 @@ def re_glob1(dirname, pattern):
     except os.error:
         return []
     if pattern[0] != '.':
-        names = filter(lambda x: x[0] != '.', names)
-    
-    # only where entire name is specified by regular expression    
+        names = [x for x in names if x[0] != '.']
+
+    # only where entire name is specified by regular expression
     matching = []
     for n in names:
         m = re.match(pattern, n)
@@ -73,7 +78,7 @@ def re_glob0(dirname, basename):
     return []
 
 
-magic_check = re.compile('[.*\\\^$?(){}[\]]')
+magic_check = re.compile('[+.*\\\^$?(){}[\]]')
 
 def has_magic(s):
     return magic_check.search(s) is not None
