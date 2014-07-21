@@ -219,25 +219,25 @@ def setup_std_shared_logger(logger_name, args):
     #   Log file name with logger level
     #
     new_logger = logging.getLogger(logger_name)
-    if args.has_key("level"):
+    if "level" in args:
         new_logger.setLevel(args["level"])
 
-    if args.has_key("config_file"):
+    if "config_file" in args:
         logging.config.fileConfig(args["config_file"])
 
     else:
-        if not args.has_key("file_name"):
+        if "file_name" not in args:
             raise Exception("Missing file name for log. Remember to set 'file_name'")
         log_file_name = args["file_name"]
 
-        if args.has_key("rotating"):
+        if "rotating" in args:
             rotating_args = {}
             # override default
             rotating_args["maxBytes"]=args.get("maxBytes", 100000)
             rotating_args["backupCount"]=args.get("backupCount", 5)
             handler = logging.handlers.RotatingFileHandler( log_file_name, **rotating_args)
         else:
-            defer_loggin = args.has_key("delay")
+            defer_loggin = "delay" in args
             handler = logging.handlers.RotatingFileHandler( log_file_name, delay=defer_loggin)
 
         #       %(name)s
@@ -259,7 +259,7 @@ def setup_std_shared_logger(logger_name, args):
         #
         # E.g.: "%(asctime)s - %(name)s - %(levelname)6s - %(message)s"
         #
-        if args.has_key("formatter"):
+        if "formatter" in args:
             my_formatter = logging.Formatter(args["formatter"])
             handler.setFormatter(my_formatter)
 
@@ -350,7 +350,7 @@ def make_shared_logger_and_proxy (logger_factory, logger_name, args):
 
 
 import unittest, os,sys
-from proxy_logger import *
+from .proxy_logger import *
 import traceback
 
 
