@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 """
 
     play_with_colours.py
@@ -55,7 +56,10 @@ else:
 
 
 from optparse import OptionParser
-import StringIO
+try:
+    import StringIO as io
+except:
+    import io as io
 
 parser = OptionParser(version="%play_with_colours 1.0",
                       usage = "\n\n    play_with_colours "

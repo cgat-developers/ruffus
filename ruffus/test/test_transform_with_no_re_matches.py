@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 """
 
     test_transform_with_no_re_matches.py
@@ -18,7 +19,11 @@
 from optparse import OptionParser
 import sys, os
 import os.path
-import StringIO
+try:
+    import StringIO as io
+except:
+    import io as io
+
 import re,time
 
 # add self to search path for testing
@@ -33,7 +38,7 @@ else:
 
 
 import ruffus
-print "\tRuffus Version = ", ruffus.__version__
+print("\tRuffus Version = ", ruffus.__version__)
 parser = OptionParser(version="%%prog v1.0, ruffus v%s" % ruffus.ruffus_version.__version)
 parser.add_option("-t", "--target_tasks", dest="target_tasks",
                   action="append",
@@ -99,7 +104,6 @@ parameters = [
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import StringIO
 import re
 import operator
 import sys,os
@@ -128,7 +132,7 @@ except ImportError:
 
 
 # get help string
-f =StringIO.StringIO()
+f =io.StringIO()
 parser.print_help(f)
 helpstr = f.getvalue()
 (options, remaining_args) = parser.parse_args()
@@ -143,12 +147,14 @@ helpstr = f.getvalue()
 @files(None, "a")
 def task_1 (i, o):
     for f in o:
-        open(f, 'w')
+        with open(f, 'w') as oo:
+            pass
 
 @transform(task_1, regex("b"), "task_2.output")
 def task_2 (i, o):
     for f in o:
-        open(f, 'w')
+        with open(f, 'w') as oo:
+            pass
 
 import unittest
 
@@ -189,8 +195,8 @@ class Test_task_mkdir(unittest.TestCase):
                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                             verbose = 1)
 
-        self.assert_("no files names matched" in save_to_str_logger.warning_str)
-        print >>sys.stderr, "\n    Warning printed out correctly"
+        self.assertTrue("no files names matched" in save_to_str_logger.warning_str)
+        print("\n    Warning printed out correctly", file=sys.stderr)
         
 
 if __name__ == '__main__':
@@ -200,13 +206,14 @@ if __name__ == '__main__':
                             gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode)
 
     elif options.dependency_file:
-        pipeline_printout_graph (     open(options.dependency_file, "w"),
-                             options.dependency_graph_format,
-                             options.target_tasks,
-                             options.forced_tasks,
-                             draw_vertically = not options.draw_horizontally,
-                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                             no_key_legend  = options.no_key_legend_in_graph)
+        with open(options.dependency_file, "w") as graph_file:
+            pipeline_printout_graph (     graph_file,
+                                 options.dependency_graph_format,
+                                 options.target_tasks,
+                                 options.forced_tasks,
+                                 draw_vertically = not options.draw_horizontally,
+                                 gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
+                                 no_key_legend  = options.no_key_legend_in_graph)
     else:
         sys.argv= sys.argv[0:1]
         unittest.main()        

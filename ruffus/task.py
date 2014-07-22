@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+from __future__ import print_function
+import sys
+if sys.hexversion < 0x03000000:
+    from future_builtins import zip, map
 ################################################################################
 #
 #
@@ -75,7 +79,7 @@ Running the pipeline
 """
 
 
-from __future__ import with_statement
+
 import os,sys,copy, multiprocessing
 #from collections import namedtuple
 import collections
@@ -93,24 +97,38 @@ from multiprocessing import Pool
 from multiprocessing.pool import ThreadPool
 import traceback
 import types
-from itertools import imap
+if sys.hexversion >= 0x03000000:
+    # everything is unicode in python3
+    from functools import reduce
+
+
 import textwrap
 import time
 from multiprocessing.managers import SyncManager
+from collections import namedtuple
 from contextlib import contextmanager
-import cPickle as pickle
-import dbdict
+try:
+    import cPickle as pickle
+except:
+    import pickle as pickle
+from . import dbdict
 
 
 if __name__ == '__main__':
     import sys
     sys.path.insert(0,".")
 
-from graph import *
-from print_dependencies import *
-from ruffus_exceptions import  *
-from ruffus_utility import *
-from file_name_parameters import  *
+from .graph import *
+from .print_dependencies import *
+from .ruffus_exceptions import  *
+from .ruffus_utility import *
+from .file_name_parameters import  *
+
+if sys.hexversion >= 0x03000000:
+    # everything is unicode in python3
+    path_str_type = str
+else:
+    path_str_type = basestring
 
 
 #
@@ -123,7 +141,10 @@ except ImportError:
     json = simplejson
 dumps = json.dumps
 
-import Queue
+if sys.hexversion >= 0x03000000:
+    import queue as queue
+else:
+    import Queue as queue
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -507,7 +528,11 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
             ret_val = user_defined_work_func(*(param[1:]))
         # all other decorators
         else:
-            ret_val = user_defined_work_func(*param)
+            try:
+                ret_val = user_defined_work_func(*param)
+            except:
+                #sys.stderr.write("?? %s ??" % (tuple(param),))
+                raise
     elif touch_files_only == 1:
         #job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
 
@@ -518,7 +543,7 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
             #
             #   race condition still possible...
             #
-            with file(f, 'a'):
+            with open(f, 'a') as ff:
                 os.utime(f, None)
             #if not os.path.exists(f):
             #    open(f, 'w')
@@ -592,9 +617,11 @@ def job_wrapper_mkdir(param, user_defined_work_func, register_cleanup, touch_fil
             #
             #
             exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-            if exceptionType == OSError and "File exists" in str(exceptionValue):
+            # exceptionType == OSError and 
+            if "File exists" in str(exceptionValue):
                 continue
-            elif exceptionType == WindowsError and "file already exists" in str(exceptionValue):
+            # exceptionType == WindowsError and
+            elif "file already exists" in str(exceptionValue):
                 continue
             raise
 
@@ -618,47 +645,48 @@ JOB_COMPLETED       = 3
 #           for compatibility with python 2.5
 
 #_________________________________________________________________________________________
-class t_job_result(tuple):
-        't_job_result(task_name, state, job_name, return_value, exception, params)'
-
-        __slots__ = ()
-
-        fields = ('task_name', 'state', 'job_name', 'return_value', 'exception', 'params')
-
-        def __new__(cls, task_name, state, job_name, return_value, exception, params):
-            return tuple.__new__(cls, (task_name, state, job_name, return_value, exception, params))
-
-        @classmethod
-        def make(cls, iterable, new=tuple.__new__, len=len):
-            'Make a new t_job_result object from a sequence or iterable'
-            result = new(cls, iterable)
-            if len(result) != 6:
-                raise TypeError('Expected 6 arguments, got %d' % len(result))
-            return result
-
-        def __repr__(self):
-            return 't_job_result(task_name=%r, state=%r, job_name=%r, return_value=%r, exception=%r, params=%r)' % self
-
-        def asdict(t):
-            'Return a new dict which maps field names to their values'
-            return {'task_name': t[0], 'state': t[1], 'job_name': t[2], 'return_value': t[3], 'exception': t[4], 'params':t[5]}
-
-        def replace(self, **kwds):
-            'Return a new t_job_result object replacing specified fields with new values'
-            result = self.make(map(kwds.pop, ('task_name', 'state', 'job_name', 'return_value', 'exception', 'params'), self))
-            if kwds:
-                raise ValueError('Got unexpected field names: %r' % kwds.keys())
-            return result
-
-        def __getnewargs__(self):
-            return tuple(self)
-
-        task_name   = property(itemgetter(0))
-        state       = property(itemgetter(1))
-        job_name    = property(itemgetter(2))
-        return_value= property(itemgetter(3))
-        exception   = property(itemgetter(4))
-        params      = property(itemgetter(5))
+t_job_result = namedtuple('t_job_result', 'task_name state job_name return_value exception params', verbose =0)
+#class t_job_result(tuple):
+#        't_job_result(task_name, state, job_name, return_value, exception, params)'
+#
+#        __slots__ = ()
+#
+#      fields = ('task_name', 'state', 'job_name', 'return_value', 'exception', 'params')
+#
+#        def __new__(cls, task_name, state, job_name, return_value, exception, params):
+#            return tuple.__new__(cls, (task_name, state, job_name, return_value, exception, params))
+#
+#        @classmethod
+#        def make(cls, iterable, new=tuple.__new__, len=len):
+#            'Make a new t_job_result object from a sequence or iterable'
+#            result = new(cls, iterable)
+#            if len(result) != 6:
+#                raise TypeError('Expected 6 arguments, got %d' % len(result))
+#            return result
+#
+#        def __repr__(self):
+#            return 't_job_result(task_name=%r, state=%r, job_name=%r, return_value=%r, exception=%r, params=%r)' % self
+#
+#        def asdict(t):
+#            'Return a new dict which maps field names to their values'
+#            return {'task_name': t[0], 'state': t[1], 'job_name': t[2], 'return_value': t[3], 'exception': t[4], 'params':t[5]}
+#
+#        def replace(self, **kwds):
+#            'Return a new t_job_result object replacing specified fields with new values'
+#            result = self.make(list(map(kwds.pop, ('task_name', 'state', 'job_name', 'return_value', 'exception', 'params'), self)))
+#            if kwds:
+#                raise ValueError('Got unexpected field names: %r' % list(kwds.keys()))
+#            return result
+#
+#        def __getnewargs__(self):
+#            return tuple(self)
+#
+#        task_name   = property(itemgetter(0))
+#        state       = property(itemgetter(1))
+#        job_name    = property(itemgetter(2))
+#        return_value= property(itemgetter(3))
+#        exception   = property(itemgetter(4))
+#        params      = property(itemgetter(5))
 
 
 
@@ -704,7 +732,7 @@ def run_pooled_job_without_exceptions (process_parameters):
         #
         #       See multiprocessor.Server.handle_request/serve_client for an analogous function
         exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-        exception_stack  = traceback.format_exc(exceptionTraceback)
+        exception_stack  = traceback.format_exc()
         exception_name   = exceptionType.__module__ + '.' + exceptionType.__name__
         exception_value  = str(exceptionValue)
         if len(exception_value):
@@ -1300,7 +1328,7 @@ class _task (node):
                 inst.specify_task(self, "Exceptions in dependency checking")
                 raise
 
-            exception_stack  = traceback.format_exc(exceptionTraceback)
+            exception_stack  = traceback.format_exc()
             exception_name   = exceptionType.__module__ + '.' + exceptionType.__name__
             exception_value  = str(exceptionValue)
             if len(exception_value):
@@ -1429,7 +1457,7 @@ class _task (node):
             # accepts unicode
             if (do_not_expand_single_job_tasks and
                 len(self.output_filenames) and
-                isinstance(self.output_filenames[0], basestring)):
+                isinstance(self.output_filenames[0], path_str_type)):
                 return self.output_filenames
             # if it is flattened, might as well sort it
             return sorted(get_strings_in_nested_sequence(self.output_filenames))
@@ -1444,7 +1472,7 @@ class _task (node):
             #
             # sort by jobs so it is just a weeny little bit less deterministic
             #
-            return sorted(self.output_filenames)
+            return sorted(self.output_filenames, key = lambda x: str(x))
 
 
 
@@ -2459,7 +2487,7 @@ class _task (node):
             #
             #   specified by string: unicode or otherwise
             #
-            if isinstance(arg, basestring):
+            if isinstance(arg, path_str_type):
                 # string looks up to defined task, use that
                 if node.is_node(arg):
                     arg = node.lookup_node_from_name(arg)
@@ -2616,7 +2644,7 @@ class _task (node):
         if self.active_if_checks == None:
             self.active_if_checks = []
         self.active_if_checks.extend(active_if_checks)
-        print self.active_if_checks
+        #print(self.active_if_checks)
 
 
 class task_encoder(json.JSONEncoder):
@@ -2719,7 +2747,7 @@ def task_names_to_tasks (task_description, task_names):
     #   In case we are given a single item instead of a list
     #       accepts unicode
     #
-    if isinstance(task_names, basestring) or isinstance(task_names, collections.Callable):
+    if isinstance(task_names, path_str_type) or isinstance(task_names, collections.Callable):
     #if isinstance(task_names, basestring) or type(task_names) == types.FunctionType:
         task_names = [task_names]
 
@@ -2858,7 +2886,7 @@ def pipeline_printout_graph (stream,
 
 
     # open file if (unicode?) string
-    if isinstance(stream, basestring):
+    if isinstance(stream, path_str_type):
         stream = open(stream, "w")
 
     # derive format automatically from name
@@ -3140,7 +3168,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                         # LOGGER: Out-of-date Tasks
                         log_at_level (logger, 1, verbose, "Completed Task = " + job_completed_task.get_task_name())
 
-                except Queue.Empty:
+                except queue.Empty:
                     break
 
             for t in list(incomplete_tasks):
@@ -3319,7 +3347,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     raise
                 except:
                     exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-                    exception_stack  = traceback.format_exc(exceptionTraceback)
+                    exception_stack  = traceback.format_exc()
                     exception_name   = exceptionType.__module__ + '.' + exceptionType.__name__
                     exception_value  = str(exceptionValue)
                     if len(exception_value):
@@ -3689,8 +3717,8 @@ def pipeline_run(target_tasks                     = [],
     #
     # prime queue with initial set of job parameters
     #
-    parameter_q = Queue.Queue()
-    task_with_completed_job_q = Queue.Queue()
+    parameter_q = queue.Queue()
+    task_with_completed_job_q = queue.Queue()
     parameter_generator = make_job_parameter_generator (incomplete_tasks, task_parents,
                                                         logger, forcedtorun_tasks,
                                                         task_with_completed_job_q,
@@ -3741,7 +3769,7 @@ def pipeline_run(target_tasks                     = [],
     if pool:
         pool_func = pool.imap_unordered
     else:
-        pool_func = imap
+        pool_func = map
 
 
 

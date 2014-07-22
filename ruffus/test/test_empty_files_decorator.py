@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 """
 
     test_pausing.py
@@ -18,7 +19,10 @@
 from optparse import OptionParser
 import sys, os
 import os.path
-import StringIO
+try:
+    import StringIO as io
+except:
+    import io as io
 import re
 
 # add self to search path for testing
@@ -101,7 +105,6 @@ parameters = [
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import StringIO
 import re
 import operator
 import sys,os
@@ -132,7 +135,7 @@ except ImportError:
 
 
 # get help string
-f =StringIO.StringIO()
+f =io.StringIO()
 parser.print_help(f)
 helpstr = f.getvalue()
 (options, remaining_args) = parser.parse_args()
@@ -157,7 +160,7 @@ def task1():
     """
     First task
     """
-    print >> sys.stderr, "Task1"
+    print("Task1", file=sys.stderr)
 
     
 import unittest
@@ -185,8 +188,8 @@ class Test_task(unittest.TestCase):
         pipeline_run([task1], options.forced_tasks, multiprocess = options.jobs, 
                             logger = save_to_str_logger,
                             verbose = 1)
-        self.assert_("@files() was empty" in save_to_str_logger.warning_str)
-        print >>sys.stderr, "\n    Warning printed out correctly"
+        self.assertTrue("@files() was empty" in save_to_str_logger.warning_str)
+        print("\n    Warning printed out correctly", file=sys.stderr)
         
 # 
 #   Necessary to protect the "entry point" of the program under windows.

@@ -23,7 +23,10 @@
 from optparse import OptionParser
 import sys, os
 import os.path
-import StringIO
+try:
+    import StringIO as io
+except:
+    import io as io
 import re,time
 
 # add self to search path for testing
@@ -38,7 +41,7 @@ else:
 
 
 import ruffus
-print ruffus.__version__
+print(ruffus.__version__)
 parser = OptionParser(version="%%prog v1.0, ruffus v%s" % ruffus.ruffus_version.__version)
 parser.add_option("-t", "--target_tasks", dest="target_tasks",
                   action="append",
@@ -104,7 +107,6 @@ parameters = [
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import StringIO
 import re
 import operator
 import sys,os
@@ -133,11 +135,14 @@ except ImportError:
 
 
 # get help string
-f =StringIO.StringIO()
+f =io.StringIO()
 parser.print_help(f)
 helpstr = f.getvalue()
 (options, remaining_args) = parser.parse_args()
 
+def touch (filename):
+    with open(filename, "w"):
+        pass
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -154,7 +159,7 @@ def task_which_makes_directories ():
 @files(None, [u"g", u"h"])
 def task_which_makes_files (i, o):
     for f in o:
-        open(f, 'w')
+        touch(f)
 
 import unittest
 
@@ -185,7 +190,7 @@ class Test_task_mkdir(unittest.TestCase):
         
         for d in 'abcdefgh':
             fullpath = os.path.join(exe_path, d)
-            self.assert_(os.path.exists(fullpath))
+            self.assertTrue(os.path.exists(fullpath))
 
 
 if __name__ == '__main__':

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 """
     test_task_misc.py
 """
@@ -48,8 +49,8 @@ class Test_needs_update_check_directory_missing(unittest.TestCase):
         #   lists of files
         # 
         
-        self.assert_(not task.needs_update_check_directory_missing ([self.directory])[0])
-        self.assert_(    task.needs_update_check_directory_missing (["missing directory"])[0])
+        self.assertTrue(not task.needs_update_check_directory_missing ([self.directory])[0])
+        self.assertTrue(    task.needs_update_check_directory_missing (["missing directory"])[0])
         self.assertRaises(task.error_not_a_directory,
                             task.needs_update_check_directory_missing, [self.tempfile])
 

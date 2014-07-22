@@ -63,7 +63,7 @@
         print input_2__3rd_file_match
 """
 
-from task import task_decorator
+from .task import task_decorator
 
 
 #

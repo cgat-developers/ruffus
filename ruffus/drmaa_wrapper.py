@@ -51,6 +51,11 @@ import datetime
 import subprocess
 import time
 
+if sys.hexversion >= 0x03000000:
+    # everything is unicode in python3
+    path_str_type = str
+else:
+    path_str_type = basestring
 
 
 #_________________________________________________________________________________________
@@ -418,7 +423,7 @@ def touch_output_files (cmd_str, output_files, logger = None):
 
     for f  in output_files:
         # ignore non strings
-        if not isinstance (f, basestring):
+        if not isinstance (f, path_str_type):
             continue
 
         # create file

@@ -143,7 +143,7 @@ def append_to_argparse (parser, **args_dict):
     #   ignored_args contains a list of options which will *not* be added
     #
     if "ignored_args" in args_dict:
-        if isinstance(args_dict["ignored_args"], basestring):
+        if isinstance(args_dict["ignored_args"], str):
             ignored_args = set([args_dict["ignored_args"]])
         else:
             try:
@@ -294,7 +294,7 @@ def append_to_optparse (parser, **args_dict):
     #   ignored_args contains a list of options which will *not* be added
     #
     if "ignored_args" in args_dict:
-        if isinstance(args_dict["ignored_args"], basestring):
+        if isinstance(args_dict["ignored_args"], str):
             ignored_args = set([args_dict["ignored_args"]])
         else:
             try:
@@ -397,9 +397,9 @@ import logging
 import logging.handlers
 MESSAGE = 15
 logging.addLevelName(MESSAGE, "MESSAGE")
-import task
-import proxy_logger
-from ruffus_utility import CHECKSUM_REGENERATE
+from . import task
+from . import proxy_logger
+from .ruffus_utility import CHECKSUM_REGENERATE
 import sys
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888

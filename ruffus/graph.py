@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 ################################################################################
 #
 #   graph.py
@@ -42,7 +43,7 @@ except ImportError:
 
 from collections import defaultdict
 from itertools import chain
-from print_dependencies import *
+from .print_dependencies import *
 import tempfile
 import subprocess
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -99,7 +100,7 @@ class node (object):
         dumps entire tree
         """
         return ("%d nodes " % node.count_nodes()) + "\n" + \
-            "\n".join(map(lambda x: x.fullstr(), node._all_nodes))
+            "\n".join([x.fullstr() for x in node._all_nodes])
 
 
     @staticmethod
@@ -192,10 +193,10 @@ class node (object):
         Everything is indented except name
         """
         self_desc = list()
-        for k,v in sorted(self.__dict__.iteritems(), key = lambda (x,v): (0,x,v) if x == "_name" else (1,x,v)):
+        for k,v in sorted(iter(self.__dict__.items()), key = lambda x_v: (0,x_v[0],x_v[1]) if x_v[0] == "_name" else (1,x_v[0],x_v[1])):
             indent = "    " if k != "_name" else ""
             if k in ("_inward", "_outward"):
-                v = ",".join(map(lambda x: x._name, v))
+                v = ",".join([x._name for x in v])
                 self_desc.append(indent + str(k) + "=" + str(v))
             else:
                 self_desc.append(indent + str(k) + "=" + str(v))
@@ -213,7 +214,7 @@ class node (object):
         Everything is indented except name
         """
         self_desc = list()
-        for k,v in sorted(self.__dict__.iteritems(), reverse=True):
+        for k,v in sorted(self.__dict__.items(), reverse=True):
             indent = "    " if k != "_name" else ""
             if k[0] == '_':
                 continue
@@ -250,7 +251,7 @@ class node_to_json(json.JSONEncoder):
     output node using json
     """
     def default(self, obj):
-        print str(obj)
+        print(str(obj))
         if isinstance(obj, node):
             return obj._name, {
                     "index": obj._node_index,
@@ -595,19 +596,19 @@ class debug_print_visitor (object):
     def terminate_at (self, node):
         return False
     def start_vertex(self, node):
-        print "s  start vertex %s" % (node._name)
+        print("s  start vertex %s" % (node._name))
     def finish_vertex(self, node):
-        print "  v  finish vertex %s" % (node._name)
+        print("  v  finish vertex %s" % (node._name))
     def discover_vertex(self, node):
-        print "  |  discover vertex %s" % (node._name)
+        print("  |  discover vertex %s" % (node._name))
     def examine_edge(self, node_from, node_to):
-        print "  -- examine edge %s -> %s" % (node_from._name, node_to._name)
+        print("  -- examine edge %s -> %s" % (node_from._name, node_to._name))
     def back_edge(self, node_from, node_to):
-        print "    back edge %s -> %s" % (node_from._name, node_to._name)
+        print("    back edge %s -> %s" % (node_from._name, node_to._name))
     def tree_edge(self, node_from, node_to):
-        print "   - tree edge %s -> %s" % (node_from._name, node_to._name)
+        print("   - tree edge %s -> %s" % (node_from._name, node_to._name))
     def forward_or_cross_edge(self, node_from, node_to):
-        print "   - forward/cross edge %s -> %s" % (node_from._name, node_to._name)
+        print("   - forward/cross edge %s -> %s" % (node_from._name, node_to._name))
 
 
 
@@ -1047,7 +1048,7 @@ def graph_printout (stream,
 
     if isinstance(size, tuple):
         print_size = "(%d,%d)" % size
-    elif isinstance(size, basestring):
+    elif isinstance(size, (str)):
         print_size = size
     else:
         raise Exception("Flowchart print size [%s] should be specified as a tuple of X,Y in inches" % str(size))
@@ -1137,14 +1138,14 @@ def get_edges_str (name, edges):
     helper function to dump edges as a list of names
     """
     edges_str = "  %d %s edges\n" % (len(edges), name)
-    edges_str += "    " + ", ".join(map(lambda (x, y): x._name + "->" + y._name, edges)) + "\n"
+    edges_str += "    " + ", ".join([x_y[0]._name + "->" + x_y[1]._name for x_y in edges]) + "\n"
     return edges_str
 def get_nodes_str (name, nodes):
     """
     helper function to dump nodes as a list of names
     """
     nodes_str = "  %s nodes = %d\n" % (name, len(nodes))
-    nodes_str += "    " + ", ".join(map(lambda x: x._name, nodes)) + "\n"
+    nodes_str += "    " + ", ".join([x._name for x in nodes]) + "\n"
     return nodes_str
 
 

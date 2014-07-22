@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 ################################################################################
 #
 #   file_name_parameters
@@ -50,7 +51,7 @@
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 import os,copy
-import re
+import re,sys
 import glob
 from operator import itemgetter
 from itertools import groupby
@@ -65,19 +66,24 @@ from time import strftime, gmtime
 if __name__ == '__main__':
     import sys
     sys.path.insert(0,".")
+if sys.hexversion >= 0x03000000:
+    # everything is unicode in python3
+    path_str_type = str
+else:
+    path_str_type = basestring
 
-from ruffus_exceptions import *
+from .ruffus_exceptions import *
 #from file_name_parameters import *
-from ruffus_utility import *
+from .ruffus_utility import *
 
-import dbdict
+from . import dbdict
 
 class t_extra_inputs:
-    (ADD_TO_INPUTS, REPLACE_INPUTS, KEEP_INPUTS) = range(3)
+    (ADD_TO_INPUTS, REPLACE_INPUTS, KEEP_INPUTS) = list(range(3))
 
 class t_combinatorics_type:
     (   COMBINATORICS_PRODUCT, COMBINATORICS_PERMUTATIONS,
-        COMBINATORICS_COMBINATIONS, COMBINATORICS_COMBINATIONS_WITH_REPLACEMENT) = range(4)
+        COMBINATORICS_COMBINATIONS, COMBINATORICS_COMBINATIONS_WITH_REPLACEMENT) = list(range(4))
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -266,7 +272,7 @@ class t_params_tasks_globs_run_time_data(object):
         if parameter is a simple string, wrap that in a list unless it is glob
         Useful for simple @transform cases
         """
-        if isinstance(self.params, basestring) and not is_glob(self.params):
+        if isinstance(self.params, path_str_type) and not is_glob(self.params):
             self.params = [self.params]
             return True
         return False
@@ -465,7 +471,7 @@ def needs_update_check_modify_time (*params, **kwargs):
         # allow job_history not to be specified and reopen dbdict file redundantly...
         #   Either this or fix all the test cases
         #job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
-        print >>sys.stderr, "Oops: Should only appear in test code"
+        print("Oops: Should only appear in test code", file=sys.stderr)
         job_history = open_job_history (None)
 
 
@@ -760,7 +766,7 @@ def touch_file_factory (orig_args, register_cleanup):
     """
     file_names = orig_args
     # accepts unicode
-    if isinstance (orig_args, basestring):
+    if isinstance (orig_args, path_str_type):
         file_names = [orig_args]
     else:
         # make copy so when original is modifies, we don't get confused!
@@ -769,7 +775,8 @@ def touch_file_factory (orig_args, register_cleanup):
     def do_touch_file ():
         for f  in file_names:
             if not os.path.exists(f):
-                open(f, 'w')
+                with open(f, 'w') as ff:
+                    pass
             else:
                 os.utime(f, None)
             register_cleanup(f, "touch")
@@ -1106,7 +1113,7 @@ def subdivide_param_factory (input_files_task_globs,
         if not len(input_params):
             return []
 
-        return yield_io_params_per_job (input_param_to_file_name_list(sorted(input_params)),
+        return yield_io_params_per_job (input_param_to_file_name_list(sorted(input_params, key = lambda x: str(x))),
                                         file_names_transform,
                                         extra_input_files_task_globs,
                                         replace_inputs,
@@ -1254,7 +1261,7 @@ def transform_param_factory (input_files_task_globs,
             return
 
 
-        for y in yield_io_params_per_job (input_param_to_file_name_list(sorted(input_params)),
+        for y in yield_io_params_per_job (input_param_to_file_name_list(sorted(input_params, key = lambda x: str(x))),
                                           file_names_transform,
                                           extra_input_files_task_globs,
                                           replace_inputs,
@@ -1299,8 +1306,7 @@ def collate_param_factory (input_files_task_globs,
         if not len(input_params):
             return
 
-        get_output_extras = lambda x: x[1:]
-        io_params_iter = yield_io_params_per_job(   input_param_to_file_name_list(sorted(input_params)),
+        io_params_iter = yield_io_params_per_job(   input_param_to_file_name_list(sorted(input_params, key = lambda x: str(x))),
                                                     file_names_transform,
                                                     extra_input_files_task_globs,
                                                     replace_inputs,
@@ -1312,7 +1318,11 @@ def collate_param_factory (input_files_task_globs,
         #
         #   group job params if their output/extra params are identical
         #
-        for output_extra_params, grouped_params in groupby(sorted(io_params_iter, key = get_output_extras), key = get_output_extras):
+        # sort by first converted to string, and then grouped itself
+        # identical things must be adjacent and sorting by strings guarantees that
+        get_output_extras = lambda x: x[1:]
+        get_output_extras_str = lambda x: str(x[1:])
+        for output_extra_params, grouped_params in groupby(sorted(io_params_iter, key = get_output_extras_str), key = get_output_extras):
             #
             #   yield the different input params grouped into a tuple, followed by all the common params
             #   i.e. (input1, input2, input3), common_output, common_extra1, common_extra2...

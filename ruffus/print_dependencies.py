@@ -38,7 +38,7 @@ CNT_COLOUR_SCHEMES = 8
 
 
 import types
-from adjacent_pairs_iterate import adjacent_pairs_iterate
+from .adjacent_pairs_iterate import adjacent_pairs_iterate
 from collections import defaultdict
 def _get_name (node):
     """
@@ -70,7 +70,7 @@ def attributes_to_str (attributes, name):
     #else:
     #    attributes["label"] = '"' + name + '"'
 
-    return "[" + ", ".join ("%s=%s" % (k,v) for k,v in attributes.iteritems()) + "];\n"
+    return "[" + ", ".join ("%s=%s" % (k,v) for k,v in attributes.items()) + "];\n"
 
 
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 """
 
     test_job_history_with_exceptions.py
@@ -12,7 +13,10 @@ import unittest
 import os
 import sys
 import shutil
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except:
+    from io import StringIO
 import time
 import re
 
@@ -153,10 +157,10 @@ class Test_job_history_with_exceptions(unittest.TestCase):
             pipeline_printout_str = s.getvalue()
             correct_order = not re.search('Tasks which will be run:.*\n(.*\n)*Task = test_task2', pipeline_printout_str)
             if not correct_order:
-                print pipeline_printout_str
+                print(pipeline_printout_str)
             self.assertTrue(correct_order)
             sys.stderr.write(".")
-        print
+        print()
 
 
 
@@ -203,7 +207,7 @@ class Test_job_history_with_exceptions(unittest.TestCase):
         pipeline_printout(s, [test_task4], verbose = 5)
         succeed = not re.search('Tasks which will be run:.*\n(.*\n)*Task = ', s.getvalue())
         if not succeed:
-            print >>sys.stderr, s.getvalue()
+            print(s.getvalue(), file=sys.stderr)
         self.assertTrue(succeed)
 
         throw_exception = False

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 """
 
     test_files_decorator.py
@@ -19,7 +20,11 @@
 from optparse import OptionParser
 import sys, os
 import os.path
-import StringIO
+try:
+    import StringIO as io
+except:
+    import io as io
+
 import re,time
 
 # add self to search path for testing
@@ -34,7 +39,7 @@ else:
 
 
 import ruffus
-print "\tRuffus Version = ", ruffus.__version__
+print("\tRuffus Version = ", ruffus.__version__)
 parser = OptionParser(version="%%prog v1.0, ruffus v%s" % ruffus.ruffus_version.__version)
 parser.add_option("-t", "--target_tasks", dest="target_tasks",
                   action="append",
@@ -96,7 +101,6 @@ parameters = [
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import StringIO
 import re
 import operator
 import sys,os
@@ -125,7 +129,7 @@ except ImportError:
 
 
 # get help string
-f =StringIO.StringIO()
+f =io.StringIO()
 parser.print_help(f)
 helpstr = f.getvalue()
 (options, remaining_args) = parser.parse_args()
@@ -160,11 +164,13 @@ def test_job_io(infiles, outfiles, extra_params):
 
     output_text = list()
     for f in infile_names:
-        output_text.append(open(f).read())
+        with open(f) as ii:
+            output_text.append(ii.read())
     output_text = "".join(sorted(output_text))
     output_text += json.dumps(infiles) + " -> " + json.dumps(outfiles) + "\n"
     for f in outfile_names:
-        open(f, "w").write(output_text)
+        with open(f, "w") as oo:
+            oo.write(output_text)
 
         
         
@@ -258,12 +264,13 @@ if __name__ == '__main__':
                             verbose = options.verbose)
 
     elif options.dependency_file:
-        pipeline_printout_graph (     open(options.dependency_file, "w"),
-                             options.dependency_graph_format,
-                             options.target_tasks,
-                             options.forced_tasks,
-                             draw_vertically = not options.draw_horizontally,
-                             no_key_legend  = options.no_key_legend_in_graph)
+        with open(options.dependency_file, "w") as graph_file:
+            pipeline_printout_graph (graph_file,
+                                 options.dependency_graph_format,
+                                 options.target_tasks,
+                                 options.forced_tasks,
+                                 draw_vertically = not options.draw_horizontally,
+                                 no_key_legend  = options.no_key_legend_in_graph)
     else:
         sys.argv= sys.argv[0:1]
         unittest.main()        

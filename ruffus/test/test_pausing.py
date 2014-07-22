@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 """
 
     test_pausing.py
@@ -18,7 +19,11 @@
 from optparse import OptionParser
 import sys, os
 import os.path
-import StringIO
+try:
+    import StringIO as io
+except:
+    import io as io
+
 import re
 
 # add self to search path for testing
@@ -101,7 +106,6 @@ parameters = [
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import StringIO
 import re
 import operator
 import sys,os
@@ -146,7 +150,8 @@ def test_job_io(infiles, outfiles, extra_params):
     output_text = "".join(sorted(output_text))
     output_text += json.dumps(infiles) + " -> " + json.dumps(outfiles) + "\n"
     for f in outfiles:
-        open(f, "w").write(output_text)
+        with open(f, "w") as ff:
+            ff.write(output_text)
 
 
 
@@ -162,7 +167,7 @@ def test_job_io(infiles, outfiles, extra_params):
 
 
 # get help string
-f =StringIO.StringIO()
+f =io.StringIO()
 parser.print_help(f)
 helpstr = f.getvalue()
 (options, remaining_args) = parser.parse_args()
@@ -187,7 +192,7 @@ tempdir = "test_pausing_dir/"
 #
 #    task1
 #
-@files(None, [tempdir + d for d in 'a.1', 'b.1', 'c.1'])
+@files(None, [tempdir + d for d in ('a.1', 'b.1', 'c.1')])
 @follows(mkdir(tempdir))
 @posttask(lambda: open(tempdir + "task.done", "a").write("Task 1 Done\n"))
 def task1(infiles, outfiles, *extra_params):
@@ -304,10 +309,7 @@ def check_job_order_correct(filename):
 
     for before, after in precedence_rules:
         if job_indices[before][-1] >= job_indices[after][0]:
-            raise ("Precedence violated for job %d [line %d] and job %d [line %d] of [%s]"
-                                % ( before, job_indices[before][-1],
-                                    after,  job_indices[after][0],
-                                    filename))
+            raise "Precedence violated for job %d [line %d] and job %d [line %d] of [%s]"
 
 
 
@@ -376,7 +378,7 @@ if __name__ == '__main__':
         check_job_order_correct(tempdir + "jobs.start")
         check_job_order_correct(tempdir + "jobs.finish")
         os.system("rm -rf %s" % tempdir)
-        print "OK"
+        print("OK")
     else:
         pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
                             logger = stderr_logger if options.verbose else black_hole_logger,

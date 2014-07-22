@@ -26,13 +26,13 @@
 #################################################################################
 #from graph import *
 #from print_dependencies import *
-from task import pipeline_printout, pipeline_printout_graph, pipeline_run, pipeline_get_task_names, register_cleanup, check_if_uptodate, active_if, split, transform, merge, collate, files, files_re, follows, parallel, stderr_logger, black_hole_logger, suffix, regex, inputs, add_inputs, touch_file, combine, mkdir, output_from, posttask, JobSignalledBreak, runtime_parameter, jobs_limit, formatter, subdivide, originate
-from graph  import graph_colour_demo_printout
-from file_name_parameters import needs_update_check_modify_time
-import cmdline
-import combinatorics
+from .task import pipeline_printout, pipeline_printout_graph, pipeline_run, pipeline_get_task_names, register_cleanup, check_if_uptodate, active_if, split, transform, merge, collate, files, files_re, follows, parallel, stderr_logger, black_hole_logger, suffix, regex, inputs, add_inputs, touch_file, combine, mkdir, output_from, posttask, JobSignalledBreak, runtime_parameter, jobs_limit, formatter, subdivide, originate
+from .graph  import graph_colour_demo_printout
+from .file_name_parameters import needs_update_check_modify_time
+from . import cmdline
+from . import combinatorics
 #output_dependency_tree_in_dot_format, output_dependency_tree_key_in_dot_format
-import ruffus_version
+from . import ruffus_version
 __version__=ruffus_version.__version
 
 

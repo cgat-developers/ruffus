@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 """
 
     test_inputs_with_multiple_args_raising_exception.py
@@ -18,7 +19,10 @@
 from optparse import OptionParser
 import sys, os
 import os.path
-import StringIO
+try:
+    import StringIO as io
+except:
+    import io as io
 import re,time
 
 # add self to search path for testing
@@ -33,7 +37,7 @@ else:
 
 
 import ruffus
-print "\tRuffus Version = ", ruffus.__version__
+print("\tRuffus Version = ", ruffus.__version__)
 parser = OptionParser(version="%%prog v1.0, ruffus v%s" % ruffus.ruffus_version.__version)
 parser.add_option("-t", "--target_tasks", dest="target_tasks",
                   action="append",
@@ -99,7 +103,6 @@ parameters = [
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import StringIO
 import re
 import operator
 import sys,os
@@ -128,7 +131,7 @@ except ImportError:
 
 
 # get help string
-f =StringIO.StringIO()
+f =io.StringIO()
 parser.print_help(f)
 helpstr = f.getvalue()
 (options, remaining_args) = parser.parse_args()
@@ -146,7 +149,7 @@ try:
         for f in o:
             open(f, 'w')
 except ruffus.ruffus_exceptions.error_task_transform_inputs_multiple_args:
-    print "\tExpected exception thrown"
+    print("\tExpected exception thrown")
     sys.exit(0)
 
 raise Exception("Inputs(...) with multiple arguments should have thrown an exception")

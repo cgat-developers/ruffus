@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 """
 
     test_active_if.py
@@ -16,10 +17,13 @@
 from optparse import OptionParser
 import sys, os
 import os.path
-import StringIO
+try:
+    import StringIO as io
+except:
+    import io as io
 
-# add self to search path for testing
 exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
+# add self to search path for testing
 sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
 if __name__ == '__main__':
     module_name = os.path.split(sys.argv[0])[1]
@@ -51,7 +55,6 @@ logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, option
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import StringIO
 import re
 import operator
 import sys,os

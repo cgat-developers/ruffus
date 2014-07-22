@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 """
 
     test_softlink_uptodate.py
@@ -144,7 +145,7 @@ for f in ["a.1", "b.1", "a.linked.1", "b.linked.1", "a.3", "b.3", "a.linked.3", 
 #
 #   Make sure right number of jobs / tasks ran
 #
-for task_name, jobs_count in ({'start_task': 1, 'final_task': 4, 'linked_file_name_task': 2}).iteritems():
+for task_name, jobs_count in ({'start_task': 1, 'final_task': 4, 'linked_file_name_task': 2}).items():
     if task_name not in executed_tasks_proxy:
         raise Exception("Error: %s did not run!!" % task_name)
     if executed_tasks_proxy[task_name] != jobs_count:
@@ -152,4 +153,4 @@ for task_name, jobs_count in ({'start_task': 1, 'final_task': 4, 'linked_file_na
 if "same_file_name_task" in executed_tasks_proxy:
     raise Exception("Error: %s should not have run!!" % "same_file_name_task")
 
-print "Succeeded"
+print("Succeeded")

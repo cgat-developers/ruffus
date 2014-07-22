@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 from __future__ import print_function
-from future_builtins import zip
+import sys
+if sys.hexversion < 0x03000000:
+    from future_builtins import zip
 ################################################################################
 #
 #   adjacent_pairs_iterate.py
@@ -26,6 +28,7 @@ from future_builtins import zip
 #   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #   THE SOFTWARE.
 #################################################################################
+
 
 
 def adjacent_pairs_iterate (array, reverse = False):

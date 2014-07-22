@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 """
 
     test_regex_error_messages.py
@@ -12,7 +13,10 @@ import unittest
 import os
 import sys
 import shutil
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except:
+    from io import StringIO
 import time
 
 exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
@@ -183,6 +187,8 @@ class Test_regex_error_messages(unittest.TestCase):
             os.mkdir(workdir)
         except OSError:
             pass
+        if sys.hexversion < 0x03000000:
+            self.assertRaisesRegex = self.assertRaisesRegexp
 
 
     #___________________________________________________________________________
@@ -245,12 +251,12 @@ class Test_regex_error_messages(unittest.TestCase):
     def test_suffix_unmatched(self):
         cleanup_tmpdir()
         s = StringIO()
-        self.assertRaisesRegexp(fatal_error_input_file_does_not_match,
+        self.assertRaisesRegex(fatal_error_input_file_does_not_match,
                                 "File '.*?' does not match regex\('.*?'\) and pattern '.*?':\n.*invalid group reference",
                                 pipeline_printout,
                                 s, [test_suffix_unmatched_task],
                                 verbose = 3)
-        self.assertRaisesRegexp(RethrownJobError,
+        self.assertRaisesRegex(RethrownJobError,
                                 "File '.*?' does not match regex\('.*?'\) and pattern '.*?':\n.*invalid group reference",
                                 pipeline_run,
                                 [test_suffix_unmatched_task], verbose = 0)
@@ -281,12 +287,12 @@ class Test_regex_error_messages(unittest.TestCase):
     def test_regex_misspelt_capture_error(self):
         cleanup_tmpdir()
         s = StringIO()
-        self.assertRaisesRegexp(fatal_error_input_file_does_not_match,
+        self.assertRaisesRegex(fatal_error_input_file_does_not_match,
                                 "File '.*?' does not match regex\('.*?'\) and pattern '.*?':\n.*unknown group name",
                                 pipeline_printout,
                                 s, [test_regex_misspelt_capture_error_task],
                                 verbose = 3)
-        self.assertRaisesRegexp(RethrownJobError,
+        self.assertRaisesRegex(RethrownJobError,
                                 "File '.*?' does not match regex\('.*?'\) and pattern '.*?':\n.*unknown group name",
                                 pipeline_run,
                                 [test_regex_misspelt_capture_error_task], verbose = 0)
@@ -298,12 +304,12 @@ class Test_regex_error_messages(unittest.TestCase):
     def test_regex_misspelt_capture2_error(self):
         cleanup_tmpdir()
         s = StringIO()
-        self.assertRaisesRegexp(fatal_error_input_file_does_not_match,
+        self.assertRaisesRegex(fatal_error_input_file_does_not_match,
                                 "File '.*?' does not match regex\('.*?'\) and pattern '.*?':\n.*unknown group name",
                                 pipeline_printout,
                                 s, [test_regex_misspelt_capture2_error_task],
                                 verbose = 3)
-        self.assertRaisesRegexp(RethrownJobError,
+        self.assertRaisesRegex(RethrownJobError,
                                 "File '.*?' does not match regex\('.*?'\) and pattern '.*?':\n.*unknown group name",
                                 pipeline_run,
                                 [test_regex_misspelt_capture2_error_task], verbose = 0)
@@ -316,12 +322,12 @@ class Test_regex_error_messages(unittest.TestCase):
     def test_regex_out_of_range_regex_reference_error_printout(self):
         cleanup_tmpdir()
         s = StringIO()
-        self.assertRaisesRegexp(fatal_error_input_file_does_not_match,
+        self.assertRaisesRegex(fatal_error_input_file_does_not_match,
                                 "File '.*?' does not match regex\('.*?'\) and pattern '.*?':\n.*invalid group reference",
                                 pipeline_printout,
                                 s, [test_regex_out_of_range_regex_reference_error_task],
                                 verbose = 3)
-        self.assertRaisesRegexp(RethrownJobError,
+        self.assertRaisesRegex(RethrownJobError,
                                 "File '.*?' does not match regex\('.*?'\) and pattern '.*?':\n.*invalid group reference",
                                 pipeline_run,
                                 [test_regex_out_of_range_regex_reference_error_task], verbose = 0)

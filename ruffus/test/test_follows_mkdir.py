@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 """
 
     test_follows_mkdir.py
@@ -6,7 +7,7 @@
         test make directory dependencies
         
         use :
-            -j N / --jobs N       to speify multitasking
+            -j N / --jobs N       to specify multitasking
             -v                    to see the jobs in action
             -n / --just_print     to see what jobs would run               
 
@@ -23,7 +24,10 @@
 from optparse import OptionParser
 import sys, os
 import os.path
-import StringIO
+try:
+    import StringIO as io
+except:
+    import io as io
 import re,time
 
 # add self to search path for testing
@@ -103,7 +107,7 @@ parameters = [
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import StringIO
+
 import re
 import operator
 import sys,os
@@ -132,7 +136,7 @@ except ImportError:
 
 
 # get help string
-f =StringIO.StringIO()
+f =io.StringIO()
 parser.print_help(f)
 helpstr = f.getvalue()
 (options, remaining_args) = parser.parse_args()
@@ -176,7 +180,7 @@ class Test_task_mkdir(unittest.TestCase):
         
         for d in 'abcde':
             fullpath = os.path.join(exe_path, d)
-            self.assert_(os.path.exists(fullpath))
+            self.assertTrue(os.path.exists(fullpath))
 
 
 if __name__ == '__main__':

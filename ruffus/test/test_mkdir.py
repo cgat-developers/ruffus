@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 """
 
     test_mkdir.py
@@ -12,7 +13,10 @@ import unittest
 import os
 import sys
 import shutil
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except:
+    from io import StringIO
 import time
 
 exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
@@ -55,7 +59,7 @@ def test_transform( infiles, outfile):
 @mkdir(generate_initial_files1, formatter(),
             "{path[0]}/{basename[0]}.dir2")
 def test_transform2():
-    print >>sys.stderr, "Loose cannon!"
+    print("Loose cannon!", file=sys.stderr)
 
 
 

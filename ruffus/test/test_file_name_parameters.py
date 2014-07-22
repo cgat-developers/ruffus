@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 ################################################################################
 #
 #   test_file_name_parameters
@@ -75,7 +76,9 @@ test_path = os.path.normpath(os.path.join(exe_path, "test", "file_name_parameter
 
 
 
-
+def touch (filename):
+    with open(filename, "w"):
+        pass
 
 
 
@@ -100,7 +103,7 @@ from random import randint
 class Test_args_param_factory(unittest.TestCase):
 
     #       self.assertEqual(self.seq, range(10))
-    #       self.assert_(element in self.seq)
+    #       self.assertTrue(element in self.seq)
     #       self.assertRaises(ValueError, random.sample, self.seq, 20)
 
     def forwarded_function (self, params):
@@ -201,12 +204,12 @@ class Test_files_re_param_factory(unittest.TestCase):
     def setUp(self):
         if not os.path.exists(test_path):
             os.makedirs(test_path)
-        open("%s/f%d.output" % (test_path, 0), "w")
+        touch("%s/f%d.output" % (test_path, 0))
         for i in range(3):
-            open("%s/f%d.test" % (test_path, i), "w")
+            touch("%s/f%d.test" % (test_path, i))
         time.sleep(0.1)
-        open("%s/f%d.output" % (test_path, 1), "w")
-        open("%s/f%d.output" % (test_path, 2), "w")
+        touch("%s/f%d.output" % (test_path, 1))
+        touch("%s/f%d.output" % (test_path, 2))
 
         self.tasks = [t1, t2, t3, t4, t5]
 
@@ -232,7 +235,7 @@ class Test_files_re_param_factory(unittest.TestCase):
 
 
     #       self.assertEqual(self.seq, range(10))
-    #       self.assert_(element in self.seq)
+    #       self.assertTrue(element in self.seq)
     #       self.assertRaises(ValueError, random.sample, self.seq, 20)
 
     #def get_param_iterator (self, *old_args):
@@ -305,7 +308,7 @@ class Test_files_re_param_factory(unittest.TestCase):
                         [('DIR/f0.input', 'DIR/f0.output'),
                          ('DIR/f1.input', 'DIR/f1.output'),
                          ('DIR/f2.input', 'DIR/f2.output')])
-        self.assert_(self.check_input_files_exist(test_path + "/*", "(.*).test$",
+        self.assertTrue(self.check_input_files_exist(test_path + "/*", "(.*).test$",
                                                         r"\1.test", r"\1.output"))
 
 
@@ -388,11 +391,12 @@ class Test_files_re_param_factory(unittest.TestCase):
                                                "module.func5"), r"(.test)", r"\1.yes")
         self.assertEqual(paths,
                         [
+                         ((2, 'output5.test'), 'output5.test.yes'),
                          (['output4.test', 'output.ignored'], 'output4.test.yes'),
                          ('output1.test', 'output1.test.yes'),
                          ('output2.test', 'output2.test.yes'),
                          ('output3.test', 'output3.test.yes'),
-                         ((2, 'output5.test'), 'output5.test.yes')])
+                         ])
 
 
         paths = self.files_re(task.output_from("module.func2"), r"(.ignored)", r"\1.yes")
@@ -424,12 +428,12 @@ class Test_split_param_factory(unittest.TestCase):
     def setUp(self):
         if not os.path.exists(test_path):
             os.makedirs(test_path)
-        open("%s/f%d.output" % (test_path, 0), "w")
+        touch("%s/f%d.output" % (test_path, 0))
         for i in range(3):
-            open("%s/f%d.test" % (test_path, i), "w")
+            touch("%s/f%d.test" % (test_path, i))
         time.sleep(0.1)
-        open("%s/f%d.output" % (test_path, 1), "w")
-        open("%s/f%d.output" % (test_path, 2), "w")
+        touch("%s/f%d.output" % (test_path, 1))
+        touch("%s/f%d.output" % (test_path, 2))
 
         self.tasks = [t1, t2, t3, t4, t5]
 
@@ -559,12 +563,12 @@ class Test_merge_param_factory(unittest.TestCase):
     def setUp(self):
         if not os.path.exists(test_path):
             os.makedirs(test_path)
-        open("%s/f%d.output" % (test_path, 0), "w")
+        touch("%s/f%d.output" % (test_path, 0))
         for i in range(3):
-            open("%s/f%d.test" % (test_path, i), "w")
+            touch("%s/f%d.test" % (test_path, i))
         time.sleep(0.1)
-        open("%s/f%d.output" % (test_path, 1), "w")
-        open("%s/f%d.output" % (test_path, 2), "w")
+        touch("%s/f%d.output" % (test_path, 1))
+        touch("%s/f%d.output" % (test_path, 2))
 
         self.tasks = [t1, t2, t3, t4, t5]
 
@@ -694,12 +698,12 @@ class Test_transform_param_factory(unittest.TestCase):
     def setUp(self):
         if not os.path.exists(test_path):
             os.makedirs(test_path)
-        open("%s/f%d.output" % (test_path, 0), "w")
+        touch("%s/f%d.output" % (test_path, 0))
         for i in range(3):
-            open("%s/f%d.test" % (test_path, i), "w")
+            touch("%s/f%d.test" % (test_path, i))
         time.sleep(0.1)
-        open("%s/f%d.output" % (test_path, 1), "w")
-        open("%s/f%d.output" % (test_path, 2), "w")
+        touch("%s/f%d.output" % (test_path, 1))
+        touch("%s/f%d.output" % (test_path, 2))
 
         self.tasks = [t1, t2, t3, t4, t5]
         self.maxDiff = None
@@ -878,15 +882,16 @@ class Test_transform_param_factory(unittest.TestCase):
         paths = recursive_replace(paths, test_path, "DIR")
         self.assertEqual(paths,
                                 [
-                                        (['output4.test', 'output.ignored'], ['output4.output1', 'output4.output2'], 'output4.output3'),
+                                        ((2, 'output5.test'), ['output5.output1', 'output5.output2'], 'output5.output3'),
                                         ('DIR/f0.test', ['DIR/f0.output1', 'DIR/f0.output2'], 'DIR/f0.output3'),
                                         ('DIR/f1.test', ['DIR/f1.output1', 'DIR/f1.output2'], 'DIR/f1.output3'),
                                         ('DIR/f2.test', ['DIR/f2.output1', 'DIR/f2.output2'], 'DIR/f2.output3'),
+                                        (['output4.test', 'output.ignored'], ['output4.output1', 'output4.output2'], 'output4.output3'),
                                         ('output1.test', ['output1.output1', 'output1.output2'], 'output1.output3'),
                                         ('output2.test', ['output2.output1', 'output2.output2'], 'output2.output3'),
                                         ('output3.test', ['output3.output1', 'output3.output2'], 'output3.output3'),
-                                        ((2, 'output5.test'), ['output5.output1', 'output5.output2'], 'output5.output3')
                                 ])
+
 
         # single job output consisting of a single file
         paths = self.do_task_transform(task.output_from("module.func2"), task.regex(r"(.*)\..*"),  r"\1.output")
@@ -922,17 +927,17 @@ class Test_collate_param_factory(unittest.TestCase):
     def setUp(self):
         if not os.path.exists(test_path):
             os.makedirs(test_path)
-        open("%s/f%d.output" % (test_path, 0), "w")
-        open("%s/e%d.output" % (test_path, 0), "w")
+        touch("%s/f%d.output" % (test_path, 0))
+        touch("%s/e%d.output" % (test_path, 0))
         for i in range(3):
-            open("%s/f%d.test" % (test_path, i), "w")
+            touch("%s/f%d.test" % (test_path, i))
         for i in range(3):
-            open("%s/e%d.test" % (test_path, i), "w")
+            touch("%s/e%d.test" % (test_path, i))
         time.sleep(0.1)
-        open("%s/f%d.output" % (test_path, 1), "w")
-        open("%s/f%d.output" % (test_path, 2), "w")
-        open("%s/e%d.output" % (test_path, 1), "w")
-        open("%s/e%d.output" % (test_path, 2), "w")
+        touch("%s/f%d.output" % (test_path, 1))
+        touch("%s/f%d.output" % (test_path, 2))
+        touch("%s/e%d.output" % (test_path, 1))
+        touch("%s/e%d.output" % (test_path, 2))
 
         self.tasks = [t1, t2, t3, t4, t5]
 
@@ -1112,10 +1117,11 @@ class Test_collate_param_factory(unittest.TestCase):
                                         [r"\1.output1", r"\1.output2"], r"\1.extra")
         paths = recursive_replace(paths, test_path, "DIR")
         self.assertEqual(paths,
-                        [(('DIR/e0.test', 'DIR/e1.test', 'DIR/e2.test'), ['DIR/e.output1', 'DIR/e.output2'], 'DIR/e.extra'),
-                         (('DIR/f0.test', 'DIR/f1.test', 'DIR/f2.test'), ['DIR/f.output1', 'DIR/f.output2'], 'DIR/f.extra'),
-                         ((['output4.test', 'output.ignored'], 'output1.test', 'output2.test', 'output3.test',
-                             (2, 'output5.test')), ['o.output1', 'o.output2'], 'o.extra')])
+                        [
+                            (('DIR/e0.test', 'DIR/e1.test', 'DIR/e2.test'), ['DIR/e.output1', 'DIR/e.output2'], 'DIR/e.extra'),
+                            (('DIR/f0.test', 'DIR/f1.test', 'DIR/f2.test'), ['DIR/f.output1', 'DIR/f.output2'], 'DIR/f.extra'),
+                            (((2, 'output5.test'), ['output4.test', 'output.ignored'], 'output1.test', 'output2.test', 'output3.test'), ['o.output1', 'o.output2'], 'o.extra')
+                         ])
 
         paths = self.do_task_collate([task.output_from( "module.func1",       # input params
                                                           "module.func2",
@@ -1182,12 +1188,12 @@ class Test_files_param_factory(unittest.TestCase):
     def setUp(self):
         if not os.path.exists(test_path):
             os.makedirs(test_path)
-        open("%s/f%d.output" % (test_path, 0), "w")
+        touch("%s/f%d.output" % (test_path, 0))
         for i in range(3):
-            open("%s/f%d.test" % (test_path, i), "w")
+            touch("%s/f%d.test" % (test_path, i))
         time.sleep(0.1)
-        open("%s/f%d.output" % (test_path, 1), "w")
-        open("%s/f%d.output" % (test_path, 2), "w")
+        touch("%s/f%d.output" % (test_path, 1))
+        touch("%s/f%d.output" % (test_path, 2))
 
         self.tasks = [t1, t2, t3, t4, t5]
 
@@ -1381,19 +1387,19 @@ class Test_product_param_factory(unittest.TestCase):
     def setUp(self):
         if not os.path.exists(test_path):
             os.makedirs(test_path)
-        open("%s/a.test1" % (test_path), "w")
-        open("%s/b.test1" % (test_path), "w")
-        open("%s/c.test2" % (test_path), "w")
-        open("%s/d.test2" % (test_path), "w")
-        open("%s/a.testwhat1" % (test_path), "w")
-        open("%s/b.testwhat1" % (test_path), "w")
-        open("%s/c.testwhat2" % (test_path), "w")
-        open("%s/d.testwhat2" % (test_path), "w")
+        touch("%s/a.test1" % (test_path))
+        touch("%s/b.test1" % (test_path))
+        touch("%s/c.test2" % (test_path))
+        touch("%s/d.test2" % (test_path))
+        touch("%s/a.testwhat1" % (test_path))
+        touch("%s/b.testwhat1" % (test_path))
+        touch("%s/c.testwhat2" % (test_path))
+        touch("%s/d.testwhat2" % (test_path))
         time.sleep(0.1)
-        open("%s/a.b.output" % (test_path), "w")
-        open("%s/a.c.output" % (test_path), "w")
-        open("%s/b.c.output" % (test_path), "w")
-        open("%s/b.d.output" % (test_path), "w")
+        touch("%s/a.b.output" % (test_path))
+        touch("%s/a.c.output" % (test_path))
+        touch("%s/b.c.output" % (test_path))
+        touch("%s/b.d.output" % (test_path))
 
         self.tasks = [t1, t2, t3, t4, t5]
         self.maxDiff = None

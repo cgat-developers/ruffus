@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 """
 
     test_combinatorics.py
@@ -12,7 +13,10 @@ import unittest
 import os
 import sys
 import shutil
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except:
+    from io import StringIO
 import time
 import re
 
@@ -29,6 +33,13 @@ from ruffus.ruffus_utility import (RUFFUS_HISTORY_FILE,
 workdir = 'tmp_test_combinatorics'
 #sub-1s resolution in system?
 one_second_per_job = None
+
+
+def touch (filename):
+    with open(filename, "w"):
+        pass
+
+
 #___________________________________________________________________________
 #
 #   generate_initial_files1
@@ -88,7 +99,8 @@ def test_product_task( infiles, outfile,
 def test_product_merged_task( infiles, outfile):
     with open(outfile, "w") as p:
         for infile in sorted(infiles):
-            p.write(open(infile).read())
+            with open(infile) as ii:
+                p.write(ii.read())
 
 #___________________________________________________________________________
 #
@@ -162,7 +174,8 @@ def test_combinations2_task( infiles, outfile,
 def test_combinations2_merged_task( infiles, outfile):
     with open(outfile, "w") as p:
         for infile in sorted(infiles):
-            p.write(open(infile).read())
+            with open(infile) as ii:
+                p.write(ii.read())
 
 #___________________________________________________________________________
 #
@@ -190,7 +203,8 @@ def test_combinations3_task( infiles, outfile,
 def test_combinations3_merged_task( infiles, outfile):
     with open(outfile, "w") as p:
         for infile in sorted(infiles):
-            p.write(open(infile).read())
+            with open(infile) as ii:
+                p.write(ii.read())
 
 
 #___________________________________________________________________________
@@ -219,7 +233,8 @@ def test_permutations2_task( infiles, outfile,
 def test_permutations2_merged_task( infiles, outfile):
     with open(outfile, "w") as p:
         for infile in sorted(infiles):
-            p.write(open(infile).read())
+            with open(infile) as ii:
+                p.write(ii.read())
 
 
 #___________________________________________________________________________
@@ -248,7 +263,8 @@ def test_permutations3_task( infiles, outfile,
 def test_permutations3_merged_task( infiles, outfile):
     with open(outfile, "w") as p:
         for infile in sorted(infiles):
-            p.write(open(infile).read())
+            with open(infile) as ii:
+                p.write(ii.read())
 
 
 
@@ -278,7 +294,8 @@ def test_combinations_with_replacement2_task( infiles, outfile,
 def test_combinations_with_replacement2_merged_task( infiles, outfile):
     with open(outfile, "w") as p:
         for infile in sorted(infiles):
-            p.write(open(infile).read())
+            with open(infile) as ii:
+                p.write(ii.read())
 
 
 #___________________________________________________________________________
@@ -307,7 +324,8 @@ def test_combinations_with_replacement3_task( infiles, outfile,
 def test_combinations_with_replacement3_merged_task( infiles, outfile):
     with open(outfile, "w") as p:
         for infile in sorted(infiles):
-            p.write(open(infile).read())
+            with open(infile) as ii:
+                p.write(ii.read())
 
 
 
@@ -342,7 +360,8 @@ class TestCombinatorics(unittest.TestCase):
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         pipeline_run([test_product_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
-        self.assertEqual(open(workdir +  "/merged.results").read(),
+        with open(workdir +  "/merged.results") as oo:
+            self.assertEqual(oo.read(),
                          "aeg,aeh,afg,afh,beg,beh,bfg,bfh,ceg,ceh,cfg,cfh,deg,deh,dfg,dfh,")
 
     #___________________________________________________________________________
@@ -371,7 +390,7 @@ class TestCombinatorics(unittest.TestCase):
 
         s = StringIO()
         pipeline_printout(s, [test_product_out_of_range_formatter_ref_error_task], verbose=3, wrap_width = 10000)
-        self.assertIn("Warning: File match failure: Unmatched field 2L", s.getvalue())
+        self.assertIn("Warning: File match failure: Unmatched field 2", s.getvalue())
 
     def test_product_formatter_ref_index_error(self):
         """
@@ -407,8 +426,9 @@ class TestCombinatorics(unittest.TestCase):
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         pipeline_run([test_combinations2_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
-        self.assertEqual(open(workdir +  "/merged.results").read(),
-                          'ab,ac,ad,bc,bd,cd,')
+        with open(workdir +  "/merged.results") as oo:
+            self.assertEqual(oo.read(),
+                              'ab,ac,ad,bc,bd,cd,')
 
     #___________________________________________________________________________
     #
@@ -431,7 +451,8 @@ class TestCombinatorics(unittest.TestCase):
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         pipeline_run([test_combinations3_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
-        self.assertEqual(open(workdir +  "/merged.results").read(),
+        with open(workdir +  "/merged.results") as oo:
+            self.assertEqual(oo.read(),
                          "abc,abd,acd,bcd,")
 
 
@@ -454,7 +475,8 @@ class TestCombinatorics(unittest.TestCase):
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         pipeline_run([test_permutations2_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
-        self.assertEqual(open(workdir +  "/merged.results").read(),
+        with open(workdir +  "/merged.results") as oo:
+            self.assertEqual(oo.read(),
                          "ab,ac,ad,ba,bc,bd,ca,cb,cd,da,db,dc,")
 
     #___________________________________________________________________________
@@ -477,7 +499,8 @@ class TestCombinatorics(unittest.TestCase):
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         pipeline_run([test_permutations3_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
-        self.assertEqual(open(workdir +  "/merged.results").read(),
+        with open(workdir +  "/merged.results") as oo:
+            self.assertEqual(oo.read(),
                          'abc,abd,acb,acd,adb,adc,bac,bad,bca,bcd,bda,bdc,cab,cad,cba,cbd,cda,cdb,dab,dac,dba,dbc,dca,dcb,')
 
 
@@ -500,7 +523,8 @@ class TestCombinatorics(unittest.TestCase):
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         pipeline_run([test_combinations_with_replacement2_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
-        self.assertEqual(open(workdir +  "/merged.results").read(),
+        with open(workdir +  "/merged.results") as oo:
+            self.assertEqual(oo.read(),
                          "aa,ab,ac,ad,bb,bc,bd,cc,cd,dd,")
 
     #___________________________________________________________________________
@@ -523,7 +547,8 @@ class TestCombinatorics(unittest.TestCase):
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         pipeline_run([test_combinations_with_replacement3_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
-        self.assertEqual(open(workdir +  "/merged.results").read(),
+        with open(workdir +  "/merged.results") as oo:
+            self.assertEqual(oo.read(),
                          'aaa,aab,aac,aad,abb,abc,abd,acc,acd,add,bbb,bbc,bbd,bcc,bcd,bdd,ccc,ccd,cdd,ddd,')
 
 

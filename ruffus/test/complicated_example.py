@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 """
 
     complicated_example.py
@@ -82,7 +83,10 @@ parser.add_option("-n", "--just_print", dest="just_print",
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import StringIO
+try:
+    import StringIO as io
+except:
+    import io as io
 import re
 import operator
 import sys
@@ -170,7 +174,7 @@ def get_species_names ():
 
 
 # get help string
-f =StringIO.StringIO()
+f =io.StringIO()
 parser.print_help(f)
 helpstr = f.getvalue()
 (options, remaining_args) = parser.parse_args()
@@ -522,6 +526,6 @@ if __name__ == '__main__':
                                  options.forced_tasks)
         else:
             pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs)
-    except Exception, e:
-        print e.args
+    except Exception as e:
+        print(e.args)
             

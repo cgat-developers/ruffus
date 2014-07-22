@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 ################################################################################
 #
 #   test_ruffus_utility.py
@@ -61,7 +62,7 @@ class Test_get_nested_tasks_or_globs(unittest.TestCase):
         os.chdir(exe_path)
 
     #       self.assertEqual(self.seq, range(10))
-    #       self.assert_(element in self.seq)
+    #       self.assertTrue(element in self.seq)
     #       self.assertRaises(ValueError, random.sample, self.seq, 20)
 
     def check_equal (self, a,b):
@@ -113,7 +114,7 @@ class Test_replace_func_names_with_tasks(unittest.TestCase):
         os.chdir(exe_path)
 
     #       self.assertEqual(self.seq, range(10))
-    #       self.assert_(element in self.seq)
+    #       self.assertTrue(element in self.seq)
     #       self.assertRaises(ValueError, random.sample, self.seq, 20)
 
     def check_equal (self, a,b, d):
@@ -192,10 +193,10 @@ class Test_non_str_sequence(unittest.TestCase):
                 list.__init__(self, *param)
         test_str3 = list(test_str1)
         test_str4 = inherited_list(test_str2)
-        self.assert_(not non_str_sequence(test_str1))
-        self.assert_(not non_str_sequence(test_str2))
-        self.assert_(non_str_sequence(test_str3))
-        self.assert_(non_str_sequence(test_str4))
+        self.assertTrue(not non_str_sequence(test_str1))
+        self.assertTrue(not non_str_sequence(test_str2))
+        self.assertTrue(non_str_sequence(test_str3))
+        self.assertTrue(non_str_sequence(test_str4))
 
 #_________________________________________________________________________________________
 
@@ -280,35 +281,35 @@ class Test_compile_regex (unittest.TestCase):
         self.assertRaises(Exception, compile_regex, "Dummy Task", regex(".*)"), Exception, "test1")
         try:
             compile_regex("Dummy Task", regex(".*)"), Exception, "test1")
-        except Exception, e:
+        except Exception as e:
             self.assertEqual(e.args, ('Dummy Task', "test1: regular expression regex('.*)') is malformed\n[sre_constants.error: (unbalanced parenthesis)]"))
 
         # bad number of items regex
         self.assertRaises(Exception, compile_regex, "Dummy Task", regex(".*", "o"), Exception, "test1")
         try:
             compile_regex("Dummy Task", regex(".*", "o"), Exception, "test1")
-        except Exception, e:
+        except Exception as e:
             self.assertEqual(e.args, ('Dummy Task', "test1: regex('.*', 'o') is malformed\nregex(...) should only be used to wrap a single regular expression string"))
 
         # 0 number of items regex
         self.assertRaises(Exception, compile_regex, "Dummy Task", regex(), Exception, "test1")
         try:
             compile_regex("Dummy Task", regex(), Exception, "test1")
-        except Exception, e:
+        except Exception as e:
             self.assertEqual(e.args, ('Dummy Task', 'test1: regex() is malformed\nregex(...) should only be used to wrap a single regular expression string'))
 
         # bad number of items suffix
         self.assertRaises(Exception, compile_suffix, "Dummy Task", suffix(".*", "o"), Exception, "test1")
         try:
             compile_suffix("Dummy Task", suffix(".*", "o"), Exception, "test1")
-        except Exception, e:
+        except Exception as e:
             self.assertEqual(e.args, ('Dummy Task', "test1: suffix('('.*', 'o')') is malformed.\nsuffix(...) should only be used to wrap a single string matching the suffices of file names"))
 
         # 0 number of items suffix
         self.assertRaises(Exception, compile_suffix, "Dummy Task", suffix(), Exception, "test1")
         try:
             compile_suffix("Dummy Task", suffix(), Exception, "test1")
-        except Exception, e:
+        except Exception as e:
             self.assertEqual(e.args, ('Dummy Task', 'test1: suffix() is malformed.\nsuffix(...) should be used to wrap a string matching the suffices of file names'))
 
 #_________________________________________________________________________________________
@@ -407,13 +408,13 @@ class Test_expand_nested_tasks_or_globs(unittest.TestCase):
         self.tasks = [t1, t2, t3]
 
     #       self.assertEqual(self.seq, range(10))
-    #       self.assert_(element in self.seq)
+    #       self.assertTrue(element in self.seq)
     #       self.assertRaises(ValueError, random.sample, self.seq, 20)
 
     def check_equal (self, a,b):
 
         tasks, globs, runtime_data_names = get_nested_tasks_or_globs(a)
-        func_or_name_to_task = dict(zip((non_str_sequence, get_strings_in_nested_sequence, "what"), self.tasks))
+        func_or_name_to_task = dict(list(zip((non_str_sequence, get_strings_in_nested_sequence, "what"), self.tasks)))
 
         task_or_glob_to_files = dict()
         #for f in func_or_name_to_task:

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 """
 
     test_collate.py
@@ -18,7 +19,10 @@
 from optparse import OptionParser
 import sys, os
 import os.path
-import StringIO
+try:
+    import StringIO as io
+except:
+    import io as io
 import re
 
 # add self to search path for testing
@@ -101,7 +105,6 @@ parameters = [
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import StringIO
 import re
 import operator
 import sys,os
@@ -130,7 +133,7 @@ except ImportError:
 
 
 # get help string
-f =StringIO.StringIO()
+f =io.StringIO()
 parser.print_help(f)
 helpstr = f.getvalue()
 (options, remaining_args) = parser.parse_args()
@@ -165,7 +168,7 @@ def prepare_files (no_inputs, outputs):
     for f in outputs:
         os.unlink(f)
 
-    for grouping in species_list.keys():
+    for grouping in species_list:
         for species_name in species_list[grouping]:
             filename = tempdir + "%s.%s.animal" % (species_name, grouping)
             open(filename, "w").write(species_name + "\n")
@@ -244,7 +247,7 @@ if __name__ == '__main__':
 
         check_species_correct()
         os.system("rm -rf %s" % tempdir)
-        print "OK"
+        print("OK")
     else:
         pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
                             logger = stderr_logger if options.verbose else black_hole_logger,

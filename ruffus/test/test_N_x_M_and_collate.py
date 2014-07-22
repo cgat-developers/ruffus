@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+from __future__ import print_function
+import sys
+if sys.hexversion < 0x03000000:
+    from future_builtins import zip, map
 """
 
     test_N_x_M_and_collate.py
@@ -50,7 +54,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(exe_path,"..", "..")))
 
 from ruffus import *
 import random
-from itertools import izip
+
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -134,7 +138,11 @@ parser.add_option("-n", "--just_print", dest="just_print",
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import StringIO
+try:
+    import StringIO as io
+except:
+    import io as io
+
 import re
 import operator
 import sys
@@ -166,8 +174,8 @@ def get_gene_gwas_file_pairs(  ):
     gene_files = glob.glob(os.path.join(options.gene_data_dir, "*.gene"))
     gwas_files = glob.glob(os.path.join(options.gene_data_dir, "*.gwas"))
 
-    common_roots = set(map(lambda x: os.path.splitext(os.path.split(x)[1])[0], gene_files))
-    common_roots &=set(map(lambda x: os.path.splitext(os.path.split(x)[1])[0], gwas_files))
+    common_roots = set([os.path.splitext(os.path.split(x)[1])[0] for x in gene_files])
+    common_roots &=set([os.path.splitext(os.path.split(x)[1])[0] for x in gwas_files])
     common_roots = list(common_roots)
 
     p = os.path; g_dir = options.gene_data_dir
@@ -190,7 +198,7 @@ def get_simulation_files(  ):
             corresponding roots (no extension) of each file
     """
     simulation_files = glob.glob(os.path.join(options.simulation_data_dir, "*.simulation"))
-    simulation_roots =map(lambda x: os.path.splitext(os.path.split(x)[1])[0], simulation_files)
+    simulation_roots =[os.path.splitext(os.path.split(x)[1])[0] for x in simulation_files]
     return simulation_files, simulation_roots
 
 
@@ -207,7 +215,7 @@ def get_simulation_files(  ):
 
 
 # get help string
-f =StringIO.StringIO()
+f =io.StringIO()
 parser.print_help(f)
 helpstr = f.getvalue()
 (options, remaining_args) = parser.parse_args()
@@ -316,8 +324,8 @@ def generate_simulation_params ():
     simulation_files, simulation_file_roots    = get_simulation_files()
     gene_gwas_file_pairs, gene_gwas_file_roots =  get_gene_gwas_file_pairs()
 
-    for sim_file, sim_file_root in izip(simulation_files, simulation_file_roots):
-        for (gene, gwas), gene_file_root in izip(gene_gwas_file_pairs, gene_gwas_file_roots):
+    for sim_file, sim_file_root in zip(simulation_files, simulation_file_roots):
+        for (gene, gwas), gene_file_root in zip(gene_gwas_file_pairs, gene_gwas_file_roots):
 
             result_file = "%s.%s.simulation_res" % (gene_file_root, sim_file_root)
             result_file_path = os.path.join(working_dir, "simulation_results", result_file)
@@ -392,7 +400,7 @@ if __name__ == '__main__':
         else:
             if (not len(get_gene_gwas_file_pairs(  )[0]) or
                 not len (get_simulation_files(  )[0])):
-                print "Warning!!\n\n\tNo *.gene / *.gwas or *.simulation: Run --debug to create simulation files first\n\n"
+                print("Warning!!\n\n\tNo *.gene / *.gwas or *.simulation: Run --debug to create simulation files first\n\n")
                 sys.exit(1)
 
 
@@ -411,7 +419,7 @@ if __name__ == '__main__':
         if options.debug and not options.keep:
             cleanup_simulation_data ()
 
-    except Exception, e:
-        print e.args
+    except Exception as e:
+        print(e.args)
         raise
 

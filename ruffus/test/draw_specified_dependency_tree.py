@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 """
 
     draw_specified_dependency_tree.py
@@ -16,7 +17,10 @@
 from optparse import OptionParser
 import sys, os
 import os.path
-import StringIO
+try:
+    import StringIO as io
+except:
+    import io as io
 
 # add self to search path for testing
 exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
@@ -83,7 +87,6 @@ mandatory_parameters = ["dot_file"]
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import StringIO
 import re
 import operator
 import sys
@@ -126,7 +129,7 @@ def make_tree_from_dotfile (stream):
         line = attributes.sub("", line)
         if "=" in line:
             continue;
-        nodes = map(lambda x: x.strip(),  line.split('->'))
+        nodes = [x.strip() for x in line.split('->')]
         for name1, name2 in adjacent_pairs_iterate(nodes):
             if not node.is_node(name1):
                 node(name1)
@@ -171,7 +174,7 @@ def print_error (Msg):
 if __name__ == '__main__':
 
     # get help string
-    f =StringIO.StringIO()
+    f =io.StringIO()
     parser.print_help(f)
     helpstr = f.getvalue()
     (options, remaining_args) = parser.parse_args()

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 """
 
     branching.py
@@ -16,7 +17,10 @@
 from optparse import OptionParser
 import sys, os
 import os.path
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except:
+    from io import StringIO
 import re,time
 import operator
 from collections import defaultdict
@@ -109,9 +113,11 @@ def split_fasta_file (input_file, outputs, original_index):
     # create as many files as we are simulating in JOBS_PER_TASK
     #
     for i in range(JOBS_PER_TASK):
-        open(tempdir + "/files.split.%s.%03d.fa" % (original_index, i), "w")
+        with open(tempdir + "/files.split.%s.%03d.fa" % (original_index, i), "w") as oo:
+            pass
 
-    open(success_flag,  "w")
+    with open(success_flag,  "w") as oo:
+        pass
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -121,7 +127,8 @@ def split_fasta_file (input_file, outputs, original_index):
 @posttask(lambda: sys.stderr.write("\tSequences aligned\n"))
 @transform(split_fasta_file, suffix(".fa"), ".aln")                     # fa -> aln
 def align_sequences (input_file, output_filename):
-    open(output_filename, "w").write("%s\n" % output_filename)
+    with open(output_filename, "w") as oo:
+        oo.write("%s\n" % output_filename)
 
 
 
@@ -136,8 +143,10 @@ def align_sequences (input_file, output_filename):
              r".pcid_success"])         #   .pcid_success to indicate job completed
 def percentage_identity (input_file, output_files):
     (output_filename, success_flag_filename) = output_files
-    open(output_filename, "w").write("%s\n" % output_filename)
-    open(success_flag_filename, "w")
+    with open(output_filename, "w") as oo:
+        oo.write("%s\n" % output_filename)
+    with open(success_flag_filename, "w") as oo:
+        pass
 
 
 
@@ -154,10 +163,12 @@ def combine_results (input_files, output_files):
     Combine all
     """
     (output_filename, success_flag_filename) = output_files
-    out = open(output_filename, "w")
-    for inp, flag in input_files:
-        out.write(open(inp).read())
-    open(success_flag_filename, "w")
+    with open(output_filename, "w") as out:
+        for inp, flag in input_files:
+            with open(inp) as ii:
+                out.write(ii.read())
+    with open(success_flag_filename, "w") as oo:
+        pass
 
 
 
