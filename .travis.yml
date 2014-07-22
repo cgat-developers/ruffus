@@ -1,14 +1,6 @@
 language: python
 python:
-  - "pypy"
-  - 2.6
-  - 2.7
-  - "2.7_with_system_site_packages"
-  - 3.0
-  - 3.1
-  - "3.2_with_system_site_packages"
-  - 3.2
-  - 3.3
+  - "2.7"
 
 # Install stuff
 
@@ -23,6 +15,4 @@ before_install:
 
 install:  
     - pip install tox
-script:  
-	# tox
-  - cd ruffus/test && /bin/bash run_all_unit_tests.cmd
+script:  tox
