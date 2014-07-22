@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 """
 
     test_follows_mkdir.py
@@ -144,19 +145,22 @@ def touch (filename):
     with open(filename, "w"):
         pass
 
+if sys.hexversion >= 0x03000000:
+    unicode = str
+
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Tasks
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-directories = [os.path.abspath(u'a'), u'b']    
-@follows(mkdir(directories), mkdir(u'c'), mkdir(u'd', u'e'), mkdir(u'e'))
-@posttask(touch_file(u'f'))
+directories = [os.path.abspath(unicode("a")), unicode("b")]    
+@follows(mkdir(directories), mkdir(unicode("c")), mkdir(unicode("d"), unicode("e")), mkdir(unicode("e")))
+@posttask(touch_file(unicode("f")))
 def task_which_makes_directories ():
     pass
 
-@files(None, [u"g", u"h"])
+@files(None, ["g", "h"])
 def task_which_makes_files (i, o):
     for f in o:
         touch(f)
