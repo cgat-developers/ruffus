@@ -23,6 +23,6 @@ before_install:
 
 install:  
     - pip install tox
-script:  tox
+script:  
 	# tox
 	cd ruffus/test && /bin/bash run_all_unit_tests.cmd
