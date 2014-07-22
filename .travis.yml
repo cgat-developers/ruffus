@@ -1,4 +1,6 @@
 language: python
+
+# all python versions tested via pip in tox
 python:
   - "2.7"
 
