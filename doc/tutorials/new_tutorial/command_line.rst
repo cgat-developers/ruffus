@@ -37,7 +37,7 @@ Template for `argparse  <http://docs.python.org/2.7/library/argparse.html>`__
     .. code-block:: python
         :emphasize-lines: 5, 13
 
-        from ruffus import *
+        import ruffus.cmdline as cmdline
 
         parser = cmdline.get_argparse(description='WHAT DOES THIS PIPELINE DO?')
 

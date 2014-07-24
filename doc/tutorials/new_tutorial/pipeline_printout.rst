@@ -93,31 +93,56 @@ Determining which jobs are out-of-date or not
             :emphasize-lines: 9
 
             >>> pipeline_printout(sys.stdout, [second_task], verbose = 5)
+
+            ________________________________________
+            Tasks which are up-to-date:
+
+            Task = create_initial_file_pairs
+            Task = first_task
+
+            ________________________________________
+
             ________________________________________
             Tasks which will be run:
 
             Task = second_task
                    Job  = [job1.a.output.1
                          -> job1.a.output.2]
-
             >>> # File modification times shown for out of date files
                      Job needs update:
                      Input files:
-                      * 05 Dec 2013 12:04:52.80: job1.a.output.1
+                      * 22 Jul 2014 15:29:19.33: job1.a.output.1
                      Output files:
-                      * 05 Dec 2013 12:01:29.01: job1.a.output.2
+                      * 22 Jul 2014 15:29:07.53: job1.a.output.2
 
                    Job  = [job2.a.output.1
                          -> job2.a.output.2]
-                     Job up-to-date
                    Job  = [job3.a.output.1
                          -> job3.a.output.2]
-                     Job up-to-date
 
             ________________________________________
 
-    N.B. At a verbosity of 5, even jobs which are up-to-date will be displayed.
 
+    N.B. At a verbosity of 5, even jobs which are up-to-date in ``second_task`` are displayed.
+
+
+
+=============================================
+Verbosity levels
+=============================================
+
+    The verbosity levels for :ref:`pipeline_printout(...) <pipeline_functions.pipeline_printout>` and :ref:`pipeline_run(...) <pipeline_functions.pipeline_run>`
+    can be specified from ``verbose = 0`` (print out nothing) to the extreme verbosity of ``verbose=6``.  A verbosity of above 10 is reserved for the internal
+    debugging of Ruffus
+
+        * level **0** : *nothing*
+        * level **1** : *Out-of-date Task names*
+        * level **2** : *All Tasks (including any task function docstrings)*
+        * level **3** : *Out-of-date Jobs in Out-of-date Tasks, no explanation*
+        * level **4** : *Out-of-date Jobs in Out-of-date Tasks, with explanations and warnings*
+        * level **5** : *All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)*
+        * level **6** : *All jobs in All Tasks whether out of date or not*
+        * level **10**: *logs messages useful only for debugging ruffus pipeline code*
 
 
 =============================================

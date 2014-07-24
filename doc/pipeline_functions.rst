@@ -191,15 +191,14 @@ Pipeline functions
     * *verbose*
         Optional parameter indicating the verbosity of the messages sent to ``logger``:
 
-            ::
-
-                verbose = 0 : prints nothing
-                verbose = 1 : logs warnings and tasks which are not up-to-date and which will be run
-                verbose = 2 : logs doc strings for task functions as well
-                verbose = 3 : logs job parameters for jobs which are out-of-date
-                verbose = 4 : logs list of up-to-date tasks but parameters for out-of-date jobs
-                verbose = 5 : logs parameters for all jobs whether up-to-date or not
-                verbose = 10: logs messages useful only for debugging ruffus pipeline code
+        * level **0** : *nothing*
+        * level **1** : *Out-of-date Task names*
+        * level **2** : *All Tasks (including any task function docstrings)*
+        * level **3** : *Out-of-date Jobs in Out-of-date Tasks, no explanation*
+        * level **4** : *Out-of-date Jobs in Out-of-date Tasks, with explanations and warnings*
+        * level **5** : *All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)*
+        * level **6** : *All jobs in All Tasks whether out of date or not*
+        * level **10**: *logs messages useful only for debugging ruffus pipeline code*
 
 
         ``verbose >= 10`` are intended for debugging **Ruffus** by the developers and the details
@@ -283,19 +282,20 @@ Pipeline functions
 .. _pipeline_functions.pipeline_printout.verbose:
 
     * *verbose*
-        Optional parameter indicating the verbosity of the printout.
-        Please do not expect messages to stay constant between release
+        Optional parameter indicating the verbosity of the messages sent to ``logger``:
 
-            ::
+        * level **0** : *nothing*
+        * level **1** : *Out-of-date Task names*
+        * level **2** : *All Tasks (including any task function docstrings)*
+        * level **3** : *Out-of-date Jobs in Out-of-date Tasks, no explanation*
+        * level **4** : *Out-of-date Jobs in Out-of-date Tasks, with explanations and warnings*
+        * level **5** : *All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)*
+        * level **6** : *All jobs in All Tasks whether out of date or not*
+        * level **10**: *logs messages useful only for debugging ruffus pipeline code*
 
-                verbose = 0 : prints nothing
-                verbose = 1 : logs warnings and tasks which are not up-to-date and which will be run
-                verbose = 2 : logs doc strings for task functions as well
-                verbose = 3 : logs job parameters for jobs which are out-of-date
-                verbose = 4 : logs list of up-to-date tasks but parameters for out-of-date jobs
-                verbose = 5 : logs parameters for all jobs whether up-to-date or not
-                verbose = 10: logs messages useful only for debugging ruffus pipeline code
 
+        ``verbose >= 10`` are intended for debugging **Ruffus** by the developers and the details
+        are liable to change from release to release
 
 .. _pipeline_functions.pipeline_printout.indent:
 
@@ -331,6 +331,8 @@ Pipeline functions
 .. index::
     single: pipeline functions; pipeline_printout_graph
     pair: pipeline_printout_graph; print flowchart representation of pipeline functions
+
+
 
 
 

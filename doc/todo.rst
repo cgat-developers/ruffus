@@ -17,135 +17,11 @@ Future Changes to Ruffus
     If you have suggestions or contributions, please either write to me ( ruffus_lib at llew.org.uk) or
     send a pull request via the `git site  <https://github.com/bunbun/ruffus>`__.
 
-.. _todo.verbosity:
-
-********************************************************************************************************
-1. Refactor verbosity levels:
-********************************************************************************************************
-
-    * Need to update docs
-    * test/test_verbosity.py
-
-    * Clarify what verbosity levels do and resolve inconsistencies for ``pipeline_printout`` and ``pipeline_run``.
-    * ``pipeline_run`` now can printout lists of up-to-date tasks before running the pipeline
-    * New list of verbose levels
-
-        * level **0** : *nothing*
-        * level **1** : *Out-of-date Task names*
-        * level **2** : *All Tasks (including any task function docstrings)*
-        * level **3** : *Out-of-date Jobs in Out-of-date Tasks, no explanation*
-        * level **4** : *Out-of-date Jobs in Out-of-date Tasks, with explanations and warnings*
-        * level **5** : *All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)*
-        * level **6** : *All jobs in All Tasks whether out of date or not*
-        * level **10**: *logs messages useful only for debugging ruffus pipeline code*
-
-    #. ``pipeline_printout`` defaults to level 4: *Out of date jobs, with explanations and warnings*
-    #. ``pipeline_run`` defaults to level 1: *Out-of-date Task names*
-
-
-
-
-********************************************************************************************************
-2. Allow truncated (shorter) path lengths output by ``pipeline_run`` or ``pipeline_printout``
-********************************************************************************************************
-
-    Optionally restrict the length of input / output file paths to either
-
-        * N levels of nesting
-        * A total of MMM characters
-
-
-    Add ``verbose_path_length`` parameter to ``pipeline_printout`` and ``pipeline_run``
-
-        (default = 2)
-
-        * 0: the full path
-        * 1-N: N levels of nested subpaths
-
-          for ``what/is/this.txt``
-
-            * N = 1 ``this.txt``
-            * N = 2 ``is/this.txt``
-            * N >=3 ``what/is/this.txt``
-
-          To obtain the Nth levels of a path use code from ``ruffus.ruffus_utility``
-
-          ::
-
-              from ruffus.ruffus_utility import *
-              for aa in range(10):
-                 print get_nth_nested_level_of_path ("/test/this/now/or/not.txt", aa)
-
-          See ``file_name_parameters.py::get_readable_path_str()``
-
-
-       * -N: As above but with each of the input/output parameter chopped off after N letters, and ending in ``"..."``
-
-
-    Extend the command line verbose option to take ``--verbose 3`` or ``--verbose 3:-40`` or ``--verbose 3:5``,
-    where the number after the colon is the verbose path length
-
-
-********************************************************************************************************
-3. Support for Python3
-********************************************************************************************************
-
-    * See http://code.google.com/p/ruffus/issues/detail?id=54&sort=status
-
-    * Run ``2to3``
-
-    * See Konrad Foerstner  http://kokoko.fluxionary.net/using-the-pipeline-module-ruffus-with-python-3-2/
-
-
-
-
-.. _todo.misfeatures:
-
-********************************************************************************************************
-4. (mis) Features
-********************************************************************************************************
-
-    * ``Ctrl-C`` should not leave dangling jobs
-    * Does killing parallel processes explicitly via kill or qdel cause the job to "fail"
-    * Debug with ``--verbose 10``
-
-
-.. _todo.dynamic_strings:
-
-********************************************************************************************************
-5. Mark input strings as non-file names, and add support for dynamically returned parameters
-********************************************************************************************************
-
-    1. Use indicator object like "ouput_from"
-    2. What is a good name?
-    3. They will still participate in suffix, formatter and regex replacement
-
-    Bernie Pope suggests that we should generalise this:
-
-
-    If any object in the input parameters is a (non-list/tuple) class instance, check (getattr) whether it has a "ruffus_params()" function.
-    If it does, call it to obtain a list which is substituted in place.
-    If there are string nested within, these will take part in Ruffus string substitution.
-
-    "output_from" would be a simple wrapper which returns the internal string via ruffus_params()
-
-    .. code-block:: python
-
-        class output_from (object):
-            def __init__(self, str):
-                self.str = str
-            def ruffus_params(self):
-                return [self.str]
-
-    Returning a list should be like wildcards and should not introduce an unnecessary level of indirection for output parameters, i.e. suffix(".txt") or formatter() / "{basename[0]}" should work.
-
-    Check!
-
 
 .. _todo.extending_graph_viz:
 
 ********************************************************************************************************
-6. Extending graph viz with decorators
+1. Extending graph viz with decorators
 ********************************************************************************************************
 
     Contributed by Sean Davis, with suggestions from Jake Biesinger
@@ -195,13 +71,65 @@ Future Changes to Ruffus
             def myTask(input,output):
                 pass
 
+.. _todo.misfeatures:
+
+********************************************************************************************************
+2. (mis) Features
+********************************************************************************************************
+
+    * ``Ctrl-C`` should not leave dangling jobs
+    * Does killing parallel processes explicitly via kill or qdel cause the job to "fail"
+    * What happens with exceptions thrown in the middle of a multiprocessing / multithreading job?
+    * Are entries in the queue(s) preventing a clean shutdown?
+    * Debug with ``--verbose 10``
+
+
+.. _todo.inactive_tasks_in_pipeline_printout_graph:
+
+********************************************************************************************************
+Todo: pipeline_printout_graph should print inactive tasks
+********************************************************************************************************
+
+
+.. _todo.dynamic_strings:
+
+********************************************************************************************************
+Todo: Mark input strings as non-file names, and add support for dynamically returned parameters
+********************************************************************************************************
+
+    1. Use indicator object like "ouput_from"
+    2. What is a good name?
+    3. They will still participate in suffix, formatter and regex replacement
+
+    Bernie Pope suggests that we should generalise this:
+
+
+    If any object in the input parameters is a (non-list/tuple) class instance, check (getattr) whether it has a "ruffus_params()" function.
+    If it does, call it to obtain a list which is substituted in place.
+    If there are string nested within, these will take part in Ruffus string substitution.
+
+    "output_from" would be a simple wrapper which returns the internal string via ruffus_params()
+
+    .. code-block:: python
+
+        class output_from (object):
+            def __init__(self, str):
+                self.str = str
+            def ruffus_params(self):
+                return [self.str]
+
+    Returning a list should be like wildcards and should not introduce an unnecessary level of indirection for output parameters, i.e. suffix(".txt") or formatter() / "{basename[0]}" should work.
+
+    Check!
+
+
 
 
 
 .. _todo.extra_parameters:
 
 ********************************************************************************************************
-7. Allow "extra" parameters to be used in output substitution
+Todo: Allow "extra" parameters to be used in output substitution
 ********************************************************************************************************
 
     Formatter substitution can refer to the original elements in the input and extra parameters (without converting them to strings either). This refers to the original (nested) data structure.
@@ -324,10 +252,6 @@ Todo: ``@recombine``
 
     This is the only way job trickling can work without stalling the pipeline: We would know
     how many jobs were pending for each ``@recombine`` job and which jobs go together.
-
-********************************************************************************************************
-Todo: pipeline_printout_graph should print inactive tasks
-********************************************************************************************************
 
 ****************************************************************************************
 Todo: Named parameters in decorators for clarity
@@ -500,16 +424,6 @@ Planned: Ruffus GUI interface.
 ****************************************************************************
 
     Desktop (PyQT or web-based solution?)  I'd love to see an svg pipeline picture that I could actually interact with
-
-.. _todo.graphviz:
-
-****************************************************************************
-Planned: Extending graphviz output
-****************************************************************************
-
-    Customisable flowchart appearance
-
-    Find contributions!
 
 
 ********************************************************************************************************

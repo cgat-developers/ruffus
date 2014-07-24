@@ -77,6 +77,82 @@ how to write new decorators
 Implementation notes
 ##########################################
 
+N.B. Remember to cite Jake Biesinger and see if he is interested to be a co-author if we ever resubmit the drastically changed version...
+Contributed checkpointing, travis and tox etc.
+
+******************************************************************************
+Python3 compatability
+******************************************************************************
+
+    Required extensive changes especially in unit test code.
+
+    Changes:
+
+    1. ``sort`` in python3 does not order mixed types, i.e. ``int()``, ``list()`` and ``str()`` are incommensurate
+
+       * In ``task.get_output_files (...)``, sort after conversion to string
+
+         .. code-block:: python
+
+           sorted(self.output_filenames, key = lambda x: str(x))
+
+       * In ``file_name_parameters.py``: ``collate_param_factory (...)``, ``sort`` after conversion to string, then ``groupby`` without string conversion. This is
+         because we can't guarantee that two different objects do not have the same string representation. But ``groupby`` requires that similar things are adjacent...
+
+         In other words, ``groupby`` is a refinement of ``sorted``
+
+         .. code-block:: python
+
+           for output_extra_params, grouped_params in groupby(sorted(io_params_iter, key = get_output_extras_str), key = get_output_extras):
+               pass
+
+    2. ``print()`` is a function
+
+       .. code-block:: python
+
+            from __future__ import print_function
+
+    3. ``items()`` only returns a list in python2. Rewrite ``dict.iteritems()`` whenever this might cause a performance bottleneck
+    4. ``zip`` and ``map`` return iterators. Conditionally import in python2
+
+       .. code-block:: python
+
+            import sys
+            if sys.hexversion < 0x03000000:
+                from future_builtins import zip, map
+
+    5. ``cPickle->pickle`` ``CStringIO->io`` need to be conditionally imported
+
+       .. code-block:: python
+
+            try:
+                import StringIO as io
+            except:
+                import io as io
+
+
+    6. ``map`` code can be changed to list comprehensions. Use ``2to3`` to do heavy lifting
+
+    7. All normal strings are unicode in python3. Have to use ``bytes`` to support 8-bit char arrays.
+       Normally, this means that ``str`` "just works". However, to provide special handling of
+       both 8-bit and unicode strings in python2, we often need to check for ``isinstance(xxx, basestring)``.
+
+       We need to conditionally define:
+
+       .. code-block:: python
+
+            if sys.hexversion >= 0x03000000:
+                # everything is unicode in python3
+                path_str_type = str
+            else:
+                path_str_type = basestring
+
+            # further down...
+            if isinstance(compiled_regex, path_str_type):
+                pass
+
+
+
 ******************************************************************************
 Refactoring: parameter handling
 ******************************************************************************

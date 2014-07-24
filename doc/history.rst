@@ -11,13 +11,15 @@ Major Features added to Ruffus
 
 
 ********************************************************************
-version 2.4.2 (beta)
+version 2.5 (beta)
 ********************************************************************
 ============================================================================================================================================================
-python3
+Python3 compatability (but at least python 2.6 is required)
 ============================================================================================================================================================
 
     Ruffus is now python3 compatible. This has required surprisingly many changes to the codebase. Please report any bugs to me.
+
+    As a result, Ruffus requires at least python 2.6. It proved to be too difficult to support python 2.5 and python 3.x at the same time...
 
 
 ============================================================================================================================================================
@@ -38,6 +40,55 @@ Refactor verbosity levels
 
     Defaults to level 4 for pipeline_printout: Out of date jobs, with explanations and warnings
     Defaults to level 1 for pipeline_run: Out-of-date Task names
+
+============================================================================================================================================================
+Allow abbreviated path lengths output by ``pipeline_run`` or ``pipeline_printout``
+============================================================================================================================================================
+
+
+    .. note ::
+
+            Please contact me with suggestions if you think the abbreviations are useful but ugly
+
+    Add ``verbose_abbreviated_path`` parameter to ``pipeline_printout`` and ``pipeline_run``
+
+    Optionally restrict the length of input / output file paths to either
+
+        * N levels of nesting
+        * A total of MMM characters, MMM is specified by setting ``verbose_abbreviated_path`` to -MMM (i.e. negative values)
+
+
+    ``verbose_abbreviated_path`` defaults to ``2``
+
+        * 0: the full abspath
+        * 1-N: max N levels of nested subpaths. Will use relative paths if possible
+
+          for ``["aa/bb/cc/dddd.txt", "aaa/bbbb/cccc/eeed/eeee/ffff/gggg.txt"]``
+
+            * N = 0 ``'[/test/ruffus/src/aa/bb/cc/dddd.txt, //test/ruffus/src/aaa/bbbb/cccc/eeed/eeee/ffff/gggg.txt]'``
+            * N = 1 ``'[.../dddd.txt, .../gggg.txt]'``
+            * N = 2 ``'[.../cc/dddd.txt, .../ffff/gggg.txt]'``
+            * N = 3 ``'[.../bb/cc/dddd.txt, .../eeee/ffff/gggg.txt]'``
+
+       * -N: As above but with each of the input/output parameter chopped off after N letters, and staring in ``"<???> "``
+
+            * N = -60 ``'<???> /bb/cc/dddd.txt, aaa/bbbb/cccc/eeed/eeee/ffff/gggg.txt]'``
+
+
+    If you are using ``ruffus.cmdline``, the abbreviated path lengths can be specified on
+    the command line as an extension to the verbosity:
+
+        # verbosity of 4
+        yourscript.py --verbose 4
+
+        # display three levels of nested directories
+        yourscript.py --verbose 4:3
+
+        # restrict input and output parameters to 60 letters
+        yourscript.py --verbose 4:-60
+
+
+    The number after the colon is the abbreviated path length
 
 
 ============================================================================================================================================================

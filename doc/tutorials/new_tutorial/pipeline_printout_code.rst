@@ -45,7 +45,7 @@ Display the initial state of the pipeline
         def second_task(input_files, output_file):
             with open(output_file, "w"): pass
 
-        pipeline_printout(sys.stdout, [second_task])
+        pipeline_printout(sys.stdout, [second_task], verbose = 1)
         pipeline_printout(sys.stdout, [second_task], verbose = 3)
 
 ************************************
@@ -53,7 +53,7 @@ Normal Output
 ************************************
     ::
 
-        >>> pipeline_printout(sys.stdout, [second_task])
+        >>> pipeline_printout(sys.stdout, [second_task], verbose = 1)
 
         ________________________________________
         Tasks which will be run:
@@ -69,7 +69,7 @@ High Verbosity Output
 
     ::
 
-        >>> pipeline_printout(sys.stdout, [second_task], verbose = 3)
+        >>> pipeline_printout(sys.stdout, [second_task], verbose = 4)
 
         ________________________________________
         Tasks which will be run:
@@ -118,15 +118,27 @@ Display the partially up-to-date pipeline
     Run the pipeline, modify ``job1.stage`` so that the second task is no longer up-to-date
     and printout the pipeline stage again::
 
-        >>> pipeline_run([second_task])
+        >>> pipeline_run([second_task], verbose=3)
+        Task enters queue = create_initial_file_pairs
+            Job  = [None -> [job1.a.start, job1.b.start]]
+            Job  = [None -> [job2.a.start, job2.b.start]]
+            Job  = [None -> [job3.a.start, job3.b.start]]
             Job  = [None -> [job1.a.start, job1.b.start]] completed
             Job  = [None -> [job2.a.start, job2.b.start]] completed
             Job  = [None -> [job3.a.start, job3.b.start]] completed
         Completed Task = create_initial_file_pairs
+        Task enters queue = first_task
+            Job  = [[job1.a.start, job1.b.start] -> job1.a.output.1]
+            Job  = [[job2.a.start, job2.b.start] -> job2.a.output.1]
+            Job  = [[job3.a.start, job3.b.start] -> job3.a.output.1]
             Job  = [[job1.a.start, job1.b.start] -> job1.a.output.1] completed
             Job  = [[job2.a.start, job2.b.start] -> job2.a.output.1] completed
             Job  = [[job3.a.start, job3.b.start] -> job3.a.output.1] completed
         Completed Task = first_task
+        Task enters queue = second_task
+            Job  = [job1.a.output.1 -> job1.a.output.2]
+            Job  = [job2.a.output.1 -> job2.a.output.2]
+            Job  = [job3.a.output.1 -> job3.a.output.2]
             Job  = [job1.a.output.1 -> job1.a.output.2] completed
             Job  = [job2.a.output.1 -> job2.a.output.2] completed
             Job  = [job3.a.output.1 -> job3.a.output.2] completed
@@ -136,9 +148,10 @@ Display the partially up-to-date pipeline
         # modify job1.stage1
         >>> open("job1.a.output.1", "w").close()
 
-    At a verbosity of 5, even jobs which are up-to-date will be displayed::
+    At a verbosity of 6, even jobs which are up-to-date will be displayed::
 
-        >>> pipeline_printout(sys.stdout, [second_task], verbose = 5)
+        >>> pipeline_printout(sys.stdout, [second_task], verbose = 6)
+
         ________________________________________
         Tasks which are up-to-date:
 
@@ -146,26 +159,23 @@ Display the partially up-to-date pipeline
                Job  = [None
                      -> job1.a.start
                      -> job1.b.start]
-                 Job up-to-date
                Job  = [None
                      -> job2.a.start
                      -> job2.b.start]
-                 Job up-to-date
                Job  = [None
                      -> job3.a.start
                      -> job3.b.start]
-                 Job up-to-date
 
         Task = first_task
                Job  = [[job1.a.start, job1.b.start]
                      -> job1.a.output.1]
-                 Job up-to-date
                Job  = [[job2.a.start, job2.b.start]
                      -> job2.a.output.1]
-                 Job up-to-date
                Job  = [[job3.a.start, job3.b.start]
                      -> job3.a.output.1]
-                 Job up-to-date
+
+        ________________________________________
+
 
 
         ________________________________________
@@ -176,18 +186,17 @@ Display the partially up-to-date pipeline
                      -> job1.a.output.2]
                  Job needs update:
                  Input files:
-                  * 05 Dec 2013 12:04:52.80: job1.a.output.1
+                  * 22 Jul 2014 15:29:19.33: job1.a.output.1
                  Output files:
-                  * 05 Dec 2013 12:01:29.01: job1.a.output.2
+                  * 22 Jul 2014 15:29:07.53: job1.a.output.2
 
                Job  = [job2.a.output.1
                      -> job2.a.output.2]
-                 Job up-to-date
                Job  = [job3.a.output.1
                      -> job3.a.output.2]
-                 Job up-to-date
 
         ________________________________________
+
 
 
     We can now see that the there is only one job in "second_task" which needs to be re-run
