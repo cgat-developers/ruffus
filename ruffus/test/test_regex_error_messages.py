@@ -6,6 +6,26 @@ from __future__ import print_function
 
         test product, combine, permute, combine_with_replacement
 
+        Includes code from python.unittest with the following copyright notice:
+
+
+        Copyright (c) 1999-2003 Steve Purcell
+        Copyright (c) 2003-2010 Python Software Foundation
+        This module is free software, and you may redistribute it and/or modify
+        it under the same terms as Python itself, so long as this copyright message
+        and disclaimer are retained in their original form.
+
+        IN NO EVENT SHALL THE AUTHOR BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT,
+        SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OF
+        THIS CODE, EVEN IF THE AUTHOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+        DAMAGE.
+
+        THE AUTHOR SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT
+        LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+        PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS,
+        AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
+        SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
 """
 
 
@@ -180,6 +200,42 @@ def test_regex_out_of_range_regex_reference_error_task(infiles, outfile,
 def cleanup_tmpdir():
     os.system('rm -f %s %s' % (os.path.join(workdir, '*'), RUFFUS_HISTORY_FILE))
 
+class _AssertRaisesContext_27(object):
+    """A context manager used to implement TestCase.assertRaises* methods.
+    Taken from python unittest2.7
+    """
+
+    def __init__(self, expected, test_case, expected_regexp=None):
+        self.expected = expected
+        self.failureException = test_case.failureException
+        self.expected_regexp = expected_regexp
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, tb):
+        if exc_type is None:
+            try:
+                exc_name = self.expected.__name__
+            except AttributeError:
+                exc_name = str(self.expected)
+            raise self.failureException(
+                "{0} not raised".format(exc_name))
+        if not issubclass(exc_type, self.expected):
+            # let unexpected exceptions pass through
+            return False
+        self.exception = exc_value # store for later retrieval
+        if self.expected_regexp is None:
+            return True
+
+        expected_regexp = self.expected_regexp
+        if isinstance(expected_regexp, basestring):
+            expected_regexp = re.compile(expected_regexp)
+        if not expected_regexp.search(str(exc_value)):
+            raise self.failureException('"%s" does not match "%s"' %
+                     (expected_regexp.pattern, str(exc_value)))
+        return True
+
 
 class Test_regex_error_messages(unittest.TestCase):
     def setUp(self):
@@ -188,7 +244,28 @@ class Test_regex_error_messages(unittest.TestCase):
         except OSError:
             pass
         if sys.hexversion < 0x03000000:
-            self.assertRaisesRegex = self.assertRaisesRegexp
+            self.assertRaisesRegex = self.assertRaisesRegexp27
+
+
+    #
+    def assertRaisesRegexp27(self, expected_exception, expected_regexp,
+                           callable_obj=None, *args, **kwargs):
+        """Asserts that the message in a raised exception matches a regexp.
+
+        Args:
+            expected_exception: Exception class expected to be raised.
+            expected_regexp: Regexp (re pattern object or string) expected
+                    to be found in error message.
+            callable_obj: Function to be called.
+            args: Extra args.
+            kwargs: Extra kwargs.
+        """
+        context = _AssertRaisesContext_27(expected_exception, self, expected_regexp)
+        if callable_obj is None:
+            return context
+        with context:
+            callable_obj(*args, **kwargs)
+
 
 
     #___________________________________________________________________________
