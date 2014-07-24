@@ -210,6 +210,7 @@ class _AssertRaisesContext_27(object):
         self.failureException = test_case.failureException
         self.expected_regexp = expected_regexp
 
+
     def __enter__(self):
         return self
 
@@ -245,6 +246,12 @@ class Test_regex_error_messages(unittest.TestCase):
             pass
         if sys.hexversion < 0x03000000:
             self.assertRaisesRegex = self.assertRaisesRegexp27
+
+        if sys.hexversion < 0x02700000:
+            self.assertIn = self.my_assertIn
+
+    def my_assertIn (self, test_string, full_string):
+        self.assertTrue(test_string in full_string)
 
 
     #
@@ -295,7 +302,7 @@ class Test_regex_error_messages(unittest.TestCase):
         cleanup_tmpdir()
         s = StringIO()
         pipeline_printout(s, [test_regex_unmatched_task], verbose=5, wrap_width = 10000)
-        self.assertIn("Warning: File match failure: File 'tmp_test_regex_error_messages/a_name.tmp1' does not match regex", s.getvalue())
+        self.assert("Warning: File match failure: File 'tmp_test_regex_error_messages/a_name.tmp1' does not match regex"  s.getvalue())
 
     def test_regex_unmatched_run(self):
         """Run transform(...,regex()...)"""
