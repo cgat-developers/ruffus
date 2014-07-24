@@ -302,7 +302,7 @@ class Test_regex_error_messages(unittest.TestCase):
         cleanup_tmpdir()
         s = StringIO()
         pipeline_printout(s, [test_regex_unmatched_task], verbose=5, wrap_width = 10000)
-        self.assert("Warning: File match failure: File 'tmp_test_regex_error_messages/a_name.tmp1' does not match regex"  s.getvalue())
+        self.assertIn("Warning: File match failure: File 'tmp_test_regex_error_messages/a_name.tmp1' does not match regex"  s.getvalue())
 
     def test_regex_unmatched_run(self):
         """Run transform(...,regex()...)"""
