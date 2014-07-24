@@ -33,7 +33,7 @@ class t_options(object):
         return str(self.__dict__)
 
 
-class Test_handle_verbose(unittest.TestCase):
+class Test_cmdline(unittest.TestCase):
     def setUp(self):
         if sys.hexversion < 0x03000000:
             self.assertRaisesRegex = self.assertRaisesRegexp

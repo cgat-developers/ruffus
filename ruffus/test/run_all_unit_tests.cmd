@@ -65,6 +65,6 @@ python test_files_post_merge.py --debug                                         
 echo test_verbosity.py                                                              && \
 python test_verbosity.py                                                            && \
 echo test_cmdline.py                                                                && \
-python test_cmdline.py                                                              && \
+python -m unittest test_cmdline                                                     && \
 echo DONE!!!
 
