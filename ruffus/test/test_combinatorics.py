@@ -349,7 +349,7 @@ class TestCombinatorics(unittest.TestCase):
         cleanup_tmpdir()
         s = StringIO()
         pipeline_printout(s, [test_product_merged_task], verbose=5, wrap_width = 10000)
-        self.assertTrue(re.search('Job needs update: Missing files '
+        self.assertTrue(re.search('Job needs update: Missing files\n\s+'
                       '\[.*tmp_test_combinatorics/a_name.tmp1, '
                       '.*tmp_test_combinatorics/e_name.tmp1, '
                       '.*tmp_test_combinatorics/h_name.tmp1, '
@@ -415,7 +415,7 @@ class TestCombinatorics(unittest.TestCase):
 
         s = StringIO()
         pipeline_printout(s, [test_combinations2_merged_task], verbose=5, wrap_width = 10000)
-        self.assertTrue(re.search('Job needs update: Missing files '
+        self.assertTrue(re.search('Job needs update: Missing files\n\s+'
                       '\[.*tmp_test_combinatorics/a_name.tmp1, '
                         '.*tmp_test_combinatorics/b_name.tmp1, '
                         '.*tmp_test_combinatorics/a_name.b_name.tmp2\]', s.getvalue()))

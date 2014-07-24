@@ -369,8 +369,11 @@ def get_nth_nested_level_of_path (orig_path, n_levels):
     if not n_levels or n_levels < 0:
         return orig_path
     res = path_decomposition(orig_path)
-    basename = os.path.split(orig_path)[1]
-    return os.path.join(*(list(reversed(res["subdir"][0:(n_levels - 1)]))+[basename]))
+    basename = res["basename"] + res["ext"]
+    shortened_path = os.path.join(*(list(reversed(res["subdir"][0:(n_levels - 1)]))+[basename]))
+    if len(shortened_path) < len(orig_path):
+        return ".../" + shortened_path
+
 
 
 #_________________________________________________________________________________________
@@ -917,37 +920,80 @@ def ignore_unknown_encoder(obj):
     except:
         return "<%s>" % str(obj.__class__).replace('"', "'")
 
+#_________________________________________________________________________________________
+#
+#   shorten_filenames_encoder
+#________________________________________________________________________________________
 def shorten_filenames_encoder (obj, n_levels = 2):
     """
     Convert a set of parameters into a string
         Paths with > N levels of nested-ness are truncated
     """
+
+    #
+    #   if < 0, nest by 2
+    #
+    if n_levels < 0:
+        desired_len = - n_levels
+        prev_encoded_len = 0
+        #
+        #   try more and more nestedness up to 9 if that fits inside desired length
+        #       stop when increasing nestedness makes no difference
+        #
+        for nestedness in range(1, 20):
+            res = shorten_filenames_encoder (obj, nestedness)
+            if len(res) > desired_len or "..." not in res:
+                break
+            prev_encoded_len = len(res)
+        desired_len = max(4, desired_len - 5)
+        offset = len(res) - desired_len
+        if offset < 0:
+            return res
+        return "<???> " + res[offset:]
+
+
+
+    #
+    #   Recurse into lists and tuples
+    #
     if non_str_sequence (obj):
         return "[%s]" % ", ".join(map(shorten_filenames_encoder, obj, [n_levels] * len(obj)))
-    if isinstance(obj, path_str_type):
-        # only shorten absolute (full) paths
-        if not os.path.isabs(obj):
-            return ignore_unknown_encoder(obj)
-        else:
-            # if only one nested level, return that
-            if obj[1:].count('/') < n_levels:
-                #print >>sys.stderr, "absolute path only one nested level"
-                return ignore_unknown_encoder(obj)
 
-            # use relative path if that has <= 1 nested level
-            rel_path = os.path.relpath(obj)
-            if rel_path.count('/') <= n_levels:
-                #print >>sys.stderr, "relative path only one nested level"
-                return ignore_unknown_encoder(rel_path)
-
-            # get last N nested levels
-            #print >>sys.stderr, "full path last N nested level"
-            return ignore_unknown_encoder(get_nth_nested_level_of_path (obj, n_levels))
-    return ignore_unknown_encoder(obj)
+    #
+    #   Only shorten strings
+    #
+    if not isinstance(obj, path_str_type):
+        return ignore_unknown_encoder(obj)
 
 
+    #
+    #   level = 0 means return full absolute path
+    #
+    if not n_levels:
+        return ignore_unknown_encoder(os.path.abspath(obj))
 
-#
+    #
+    # Shorten both relative and absolute (full) paths
+    #
+
+    # if within bounds, return that
+    if obj[1:].count('/') < n_levels:
+        return ignore_unknown_encoder(obj)
+
+    # use relative path if that has <= nested level
+    rel_path = os.path.relpath(obj)
+    if rel_path.count('/') <= n_levels:
+        #print >>sys.stderr, "relative path only one nested level"
+        return ignore_unknown_encoder(rel_path)
+
+    # get last N nested levels
+    #print >>sys.stderr, "full path last N nested level"
+    return ignore_unknown_encoder(get_nth_nested_level_of_path (obj, n_levels))
+
+
+
+
+
 #_________________________________________________________________________________________
 #
 #   get_tasks_filename_globs_in_nested_sequence

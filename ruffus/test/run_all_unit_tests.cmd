@@ -61,4 +61,10 @@ python test_split_regex_and_collate.py                                          
 echo test_tutorial7.py                                                              && \
 python test_tutorial7.py                                                            && \
 echo test_files_post_merge.py                                                       && \
-python test_files_post_merge.py --debug
+python test_files_post_merge.py --debug                                             && \
+echo test_verbosity.py                                                              && \
+python test_verbosity.py                                                            && \
+echo test_cmdline.py                                                                && \
+python test_cmdline.py                                                              && \
+echo DONE!!!
+

@@ -206,10 +206,11 @@ black_hole_logger = t_black_hole_logger()
 stderr_logger     = t_stderr_logger()
 
 class t_verbose_logger:
-    def __init__ (self, verbose, logger, runtime_data):
+    def __init__ (self, verbose, verbose_abbreviated_path, logger, runtime_data):
         self.verbose = verbose
         self.logger = logger
         self.runtime_data = runtime_data
+        self.verbose_abbreviated_path = verbose_abbreviated_path
 
 #_________________________________________________________________________________________
 #
@@ -436,7 +437,7 @@ class add_inputs(object):
 #           main use in error logging
 
 #8888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-def generic_job_descriptor (param, runtime_data):
+def generic_job_descriptor (param, verbose_abbreviated_path, runtime_data):
     if param in ([], None):
         m = "Job"
     else:
@@ -444,20 +445,20 @@ def generic_job_descriptor (param, runtime_data):
 
     return m, [m]
 
-def io_files_job_descriptor (param, runtime_data):
-    extra_param = ", " + shorten_filenames_encoder(param[2:])[1:-1] if len(param) > 2 else ""
-    out_param   =        shorten_filenames_encoder(param[1])        if len(param) > 1 else "??"
-    in_param    =        shorten_filenames_encoder(param[0])        if len(param) > 0 else "??"
+def io_files_job_descriptor (param, verbose_abbreviated_path, runtime_data):
+    extra_param = ", " + shorten_filenames_encoder(param[2:], verbose_abbreviated_path)[1:-1] if len(param) > 2 else ""
+    out_param   =        shorten_filenames_encoder(param[1], verbose_abbreviated_path)        if len(param) > 1 else "??"
+    in_param    =        shorten_filenames_encoder(param[0], verbose_abbreviated_path)        if len(param) > 0 else "??"
 
     return ("Job  = [%s -> %s%s]" % (in_param, out_param, extra_param),
             ["Job  = [%s" % in_param, "-> " + out_param + extra_param + "]"])
 
 
-def io_files_one_to_many_job_descriptor (param, runtime_data):
+def io_files_one_to_many_job_descriptor (param, verbose_abbreviated_path, runtime_data):
 
-    extra_param = ", " + shorten_filenames_encoder(param[2:])[1:-1] if len(param) > 2 else ""
-    out_param   =        shorten_filenames_encoder(param[1])        if len(param) > 1 else "??"
-    in_param    =        shorten_filenames_encoder(param[0])        if len(param) > 0 else "??"
+    extra_param = ", " + shorten_filenames_encoder(param[2:], verbose_abbreviated_path)[1:-1] if len(param) > 2 else ""
+    out_param   =        shorten_filenames_encoder(param[1], verbose_abbreviated_path)        if len(param) > 1 else "??"
+    in_param    =        shorten_filenames_encoder(param[0], verbose_abbreviated_path)        if len(param) > 0 else "??"
 
     # start with input parameter
     ret_params = ["Job  = [%s" % in_param]
@@ -466,13 +467,13 @@ def io_files_one_to_many_job_descriptor (param, runtime_data):
     #   processing one by one if multiple output parameters
     if len(param) > 1:
         if isinstance(param[1], (list, tuple)):
-            ret_params.extend("-> " + shorten_filenames_encoder(p) for p in param[1])
+            ret_params.extend("-> " + shorten_filenames_encoder(p, verbose_abbreviated_path) for p in param[1])
         else:
             ret_params.append("-> " + out_param)
 
     # add extra
     if len(param) > 2 :
-        ret_params.append(" , " + shorten_filenames_encoder(param[2:])[1:-1])
+        ret_params.append(" , " + shorten_filenames_encoder(param[2:], verbose_abbreviated_path)[1:-1])
 
     # add closing bracket
     ret_params[-1] +="]"
@@ -480,12 +481,12 @@ def io_files_one_to_many_job_descriptor (param, runtime_data):
     return ("Job  = [%s -> %s%s]" % (in_param, out_param, extra_param), ret_params)
 
 
-def mkdir_job_descriptor (param, runtime_data):
+def mkdir_job_descriptor (param, verbose_abbreviated_path, runtime_data):
     # input, output and parameters
     if len(param) == 1:
-        m = "Make directories %s" % (shorten_filenames_encoder(param[0]))
+        m = "Make directories %s" % (shorten_filenames_encoder(param[0], verbose_abbreviated_path))
     elif len(param) == 2:
-        m = "Make directories %s" % (shorten_filenames_encoder(param[1]))
+        m = "Make directories %s" % (shorten_filenames_encoder(param[1], verbose_abbreviated_path))
     else:
         return [], []
     return m, [m]
@@ -617,7 +618,7 @@ def job_wrapper_mkdir(param, user_defined_work_func, register_cleanup, touch_fil
             #
             #
             exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-            # exceptionType == OSError and 
+            # exceptionType == OSError and
             if "File exists" in str(exceptionValue):
                 continue
             # exceptionType == WindowsError and
@@ -987,13 +988,13 @@ class _task (node):
     #   get_job_name
 
     #_________________________________________________________________________________________
-    def get_job_name(self, descriptive_param, runtime_data):
+    def get_job_name(self, descriptive_param, verbose_abbreviated_path, runtime_data):
         """
         Use job descriptor to return short name for job, including any parameters
 
             runtime_data is not (yet) used but may be used to add context in future
         """
-        return self.job_descriptor(descriptive_param, runtime_data)[0]
+        return self.job_descriptor(descriptive_param, verbose_abbreviated_path, runtime_data)[0]
 
 
     #_________________________________________________________________________________________
@@ -1053,7 +1054,7 @@ class _task (node):
     #           recreate all the logic here
 
     #_________________________________________________________________________________________
-    def printout (self, runtime_data, force_rerun, job_history, task_is_out_of_date, verbose=1, indent = 4):
+    def printout (self, runtime_data, force_rerun, job_history, task_is_out_of_date, verbose=1, verbose_abbreviated_path = 2, indent = 4):
         """
         Print out all jobs for this task
 
@@ -1068,7 +1069,7 @@ class _task (node):
         """
 
         def get_job_names (param, indent_str):
-            job_names = self.job_descriptor(param, runtime_data)[1]
+            job_names = self.job_descriptor(param, verbose_abbreviated_path, runtime_data)[1]
             if len(job_names) > 1:
                 job_names = ([indent_str + job_names[0]]  +
                              [indent_str + "      " + jn for jn in job_names[1:]])
@@ -1142,7 +1143,7 @@ class _task (node):
                 return messages
 
             if self.needs_update_func == needs_update_check_modify_time:
-                needs_update, msg = self.needs_update_func (task=self, job_history = job_history)
+                needs_update, msg = self.needs_update_func (task=self, job_history = job_history, verbose_abbreviated_path = verbose_abbreviated_path)
             else:
                 needs_update, msg = self.needs_update_func ()
 
@@ -1179,7 +1180,7 @@ class _task (node):
                     continue
 
                 if self.needs_update_func == needs_update_check_modify_time:
-                    needs_update, msg = self.needs_update_func (*param, task=self, job_history = job_history)
+                    needs_update, msg = self.needs_update_func (*param, task=self, job_history = job_history, verbose_abbreviated_path = verbose_abbreviated_path)
                 else:
                     needs_update, msg = self.needs_update_func (*param)
 
@@ -1238,13 +1239,15 @@ class _task (node):
         if not verbose_logger_job_history:
             raise Exception("verbose_logger_job_history is None")
 
-        verbose_logger = verbose_logger_job_history[0]
-        job_history = verbose_logger_job_history[1]
+        verbose_logger      = verbose_logger_job_history[0]
+        job_history         = verbose_logger_job_history[1]
 
         try:
-            logger       = verbose_logger.logger
-            verbose      = verbose_logger.verbose
-            runtime_data = verbose_logger.runtime_data
+            logger              = verbose_logger.logger
+            verbose             = verbose_logger.verbose
+            runtime_data        = verbose_logger.runtime_data
+            verbose_abbreviated_path = verbose_logger.verbose_abbreviated_path
+
             log_at_level (logger, 10, verbose,
                             "  Task = " + self.get_task_name())
 
@@ -1273,7 +1276,7 @@ class _task (node):
             if self.param_generator_func == None:
                 if self.needs_update_func:
                     if self.needs_update_func == needs_update_check_modify_time:
-                        needs_update, msg = self.needs_update_func (task=self, job_history = job_history)
+                        needs_update, msg = self.needs_update_func (task=self, job_history = job_history, verbose_abbreviated_path = verbose_abbreviated_path)
                     else:
                         needs_update, msg = self.needs_update_func ()
                     log_at_level (logger, 10, verbose,
@@ -1287,11 +1290,11 @@ class _task (node):
                 #
                 for param, descriptive_param in self.param_generator_func(runtime_data):
                     if self.needs_update_func == needs_update_check_modify_time:
-                        needs_update, msg = self.needs_update_func (*param, task=self, job_history = job_history)
+                        needs_update, msg = self.needs_update_func (*param, task=self, job_history = job_history, verbose_abbreviated_path = verbose_abbreviated_path)
                     else:
                         needs_update, msg = self.needs_update_func (*param)
                     if needs_update:
-                        log_at_level (logger, 10, verbose, "    Needing update:\n      %s" % self.get_job_name(descriptive_param, runtime_data))
+                        log_at_level (logger, 10, verbose, "    Needing update:\n      %s" % self.get_job_name(descriptive_param, verbose_abbreviated_path, runtime_data))
                         return False
 
                 #
@@ -2378,7 +2381,8 @@ class _task (node):
         #   jump through hoops
         self.set_action_type (_task.action_mkdir)
         self.needs_update_func    = self.needs_update_func or needs_update_check_directory_missing
-        self._description         = "Make directories %s" % (shorten_filenames_encoder(orig_args))
+                                    # don't shorten in description: full path
+        self._description         = "Make directories %s" % (shorten_filenames_encoder(orig_args, 0))
         self.job_wrapper          = job_wrapper_mkdir
         self.job_descriptor       = mkdir_job_descriptor
 
@@ -2879,7 +2883,7 @@ def pipeline_printout_graph (stream,
     (topological_sorted, ignore_param1, ignore_param2,
          ignore_param3) = topologically_sorted_nodes(target_tasks, forcedtorun_tasks,
                                                         gnu_make_maximal_rebuild_mode,
-                                                        extra_data_for_signal = [t_verbose_logger(0, None, runtime_data), job_history])
+                                                        extra_data_for_signal = [t_verbose_logger(0, 0, None, runtime_data), job_history])
     if not len(target_tasks):
         target_tasks = topological_sorted[-1:]
 
@@ -2910,7 +2914,7 @@ def pipeline_printout_graph (stream,
                       pipeline_name,
                       size,
                       dpi,
-                      extra_data_for_signal = [t_verbose_logger(0, None, runtime_data), job_history])
+                      extra_data_for_signal = [t_verbose_logger(0, 0, None, runtime_data), job_history])
 
 
 #_________________________________________________________________________________________
@@ -2918,17 +2922,17 @@ def pipeline_printout_graph (stream,
 #   get_completed_task_strings
 
 #_________________________________________________________________________________________
-def get_completed_task_strings (incomplete_tasks, all_tasks, forcedtorun_tasks, verbose, indent, runtime_data, job_history):
+def get_completed_task_strings (incomplete_tasks, all_tasks, forcedtorun_tasks, verbose, verbose_abbreviated_path, indent, runtime_data, job_history):
     """
     Printout list of completed tasks
     """
     completed_task_strings = []
     if len(all_tasks) > len(incomplete_tasks):
-        completed_task_strings.append("\n")
+        completed_task_strings.append("")
         completed_task_strings.append("_" * 40)
         completed_task_strings.append("Tasks which are up-to-date:")
-        completed_task_strings.append("\n")
-        completed_task_strings.append("\n")
+        completed_task_strings.append("")
+        completed_task_strings.append("")
         set_of_incomplete_tasks = set(incomplete_tasks)
 
         for t in all_tasks:
@@ -2936,11 +2940,11 @@ def get_completed_task_strings (incomplete_tasks, all_tasks, forcedtorun_tasks, 
             if t in set_of_incomplete_tasks:
                 continue
             # LOGGER
-            completed_task_strings.extend(t.printout(runtime_data, t in forcedtorun_tasks, job_history, False, verbose, indent))
+            completed_task_strings.extend(t.printout(runtime_data, t in forcedtorun_tasks, job_history, False, verbose, verbose_abbreviated_path, indent))
 
         completed_task_strings.append("_" * 40)
-        completed_task_strings.append("\n")
-        completed_task_strings.append("\n")
+        completed_task_strings.append("")
+        completed_task_strings.append("")
 
     return completed_task_strings
 
@@ -2952,13 +2956,15 @@ def get_completed_task_strings (incomplete_tasks, all_tasks, forcedtorun_tasks, 
 def pipeline_printout(  output_stream                   = None,
                         target_tasks                    = [],
                         forcedtorun_tasks               = [],
-                        verbose                         = 4,
+                        # verbose defaults to 4 if None
+                        verbose                         = None,
                         indent                          = 4,
                         gnu_make_maximal_rebuild_mode   = True,
                         wrap_width                      = 100,
                         runtime_data                    = None,
                         checksum_level                  = None,
-                        history_file                    = None):
+                        history_file                    = None,
+                        verbose_abbreviated_path             = 2):
                       # Remember to add further extra parameters here to "extra_pipeline_printout_options" inside cmdline.py
                       # This will forward extra parameters from the command line to pipeline_printout
     """
@@ -3000,6 +3006,13 @@ def pipeline_printout(  output_stream                   = None,
                     level 2 : above, plus a checksum of the pipeline function body
                     level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
     """
+    #
+    # default values
+    #
+    if verbose_abbreviated_path == None:
+        verbose_abbreviated_path = 2
+    if verbose == None:
+        verbose = 4
     if verbose == 0:
         return
 
@@ -3035,7 +3048,7 @@ def pipeline_printout(  output_stream                   = None,
     target_tasks = task_names_to_tasks ("Target", target_tasks)
     forcedtorun_tasks = task_names_to_tasks ("Forced to run", forcedtorun_tasks)
 
-    logging_strm = t_verbose_logger(verbose, t_stream_logger(output_stream), runtime_data)
+    logging_strm = t_verbose_logger(verbose, verbose_abbreviated_path, t_stream_logger(output_stream), runtime_data)
 
     #
     #   If we aren't using checksums, and history file hasn't been specified,
@@ -3056,7 +3069,7 @@ def pipeline_printout(  output_stream                   = None,
     dag_violating_edges,
     dag_violating_nodes) = topologically_sorted_nodes(target_tasks, forcedtorun_tasks,
                                                         gnu_make_maximal_rebuild_mode,
-                                                        extra_data_for_signal = [t_verbose_logger(0, None, runtime_data), job_history])
+                                                        extra_data_for_signal = [t_verbose_logger(0, 0, None, runtime_data), job_history])
 
 
     #
@@ -3080,14 +3093,14 @@ def pipeline_printout(  output_stream                   = None,
         (all_tasks, ignore_param1, ignore_param2,
          ignore_param3) = topologically_sorted_nodes(target_tasks, True,
                                                      gnu_make_maximal_rebuild_mode,
-                                                     extra_data_for_signal = [t_verbose_logger(0, None, runtime_data), job_history])
-        for m in get_completed_task_strings (incomplete_tasks, all_tasks, forcedtorun_tasks, verbose, indent, runtime_data, job_history):
+                                                     extra_data_for_signal = [t_verbose_logger(0, 0, None, runtime_data), job_history])
+        for m in get_completed_task_strings (incomplete_tasks, all_tasks, forcedtorun_tasks, verbose, verbose_abbreviated_path, indent, runtime_data, job_history):
             output_stream.write(textwrap.fill(m, subsequent_indent = wrap_indent, width = wrap_width) + "\n")
 
     output_stream.write("\n" + "_" * 40 + "\nTasks which will be run:\n\n")
     for t in incomplete_tasks:
         # LOGGER
-        messages = t.printout(runtime_data, t in forcedtorun_tasks, job_history, True, verbose, indent)
+        messages = t.printout(runtime_data, t in forcedtorun_tasks, job_history, True, verbose, verbose_abbreviated_path, indent)
         for m in messages:
             output_stream.write(textwrap.fill(m, subsequent_indent = wrap_indent, width = wrap_width) + "\n")
 
@@ -3126,6 +3139,7 @@ def get_semaphore (t, job_limit_semaphores, syncmanager):
 #________________________________________________________________________________________
 def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forcedtorun_tasks,
                                     task_with_completed_job_q, runtime_data, verbose,
+                                    verbose_abbreviated_path,
                                     syncmanager,
                                     touch_files_only, job_history):
 
@@ -3247,7 +3261,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                         if len(param) >= 2:
                             t.output_filenames.append(param[1])
 
-                        job_name = t.get_job_name(descriptive_param, runtime_data)
+                        job_name = t.get_job_name(descriptive_param, verbose_abbreviated_path, runtime_data)
 
                         #
                         #    don't run if up to date unless force to run
@@ -3263,7 +3277,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                                 # extra clunky hack to also pass task info--
                                 # makes sure that there haven't been code or arg changes
                                 if t.needs_update_func == needs_update_check_modify_time:
-                                    needs_update, msg = t.needs_update_func (*param, task=t, job_history = job_history)
+                                    needs_update, msg = t.needs_update_func (*param, task=t, job_history = job_history, verbose_abbreviated_path = verbose_abbreviated_path)
                                 else:
                                     needs_update, msg = t.needs_update_func (*param)
 
@@ -3495,7 +3509,8 @@ def pipeline_run(target_tasks                     = [],
                  multiprocess                     = 1,
                  logger                           = stderr_logger,
                  gnu_make_maximal_rebuild_mode    = True,
-                 verbose                          = 1,
+                 #verbose defaults to 1 if None
+                 verbose                          = None,
                  runtime_data                     = None,
                  one_second_per_job               = None,
                  touch_files_only                 = False,
@@ -3503,7 +3518,9 @@ def pipeline_run(target_tasks                     = [],
                  log_exceptions                   = False,
                  checksum_level                   = None,
                  multithread                      = 0,
-                 history_file                     = None):
+                 history_file                     = None,
+                 # defaults to 2 if None
+                 verbose_abbreviated_path         = None):
                  # Remember to add further extra parameters here to "extra_pipeline_run_options" inside cmdline.py
                  # This will forward extra parameters from the command line to pipeline_run
     """
@@ -3538,6 +3555,10 @@ def pipeline_run(target_tasks                     = [],
     :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all* out-of-date tasks. Runs minimal
                                           set to build targets if set to ``True``. Use with caution.
     """
+
+    #
+    # default values
+    #
     if touch_files_only == False:
         touch_files_only = 0
     elif touch_files_only == True:
@@ -3546,6 +3567,11 @@ def pipeline_run(target_tasks                     = [],
         touch_files_only = 2
         # we are not running anything so do it as quickly as possible
         one_second_per_job = False
+    if verbose == None:
+        verbose = 1
+    if verbose_abbreviated_path == None:
+        verbose_abbreviated_path = 2
+
 
     syncmanager = multiprocessing.Manager()
 
@@ -3597,6 +3623,7 @@ def pipeline_run(target_tasks                     = [],
         if hasattr(logger, "add_unique_prefix"):
             logger.add_unique_prefix()
 
+
     if touch_files_only and verbose >= 1:
         logger.info("Touch output files instead of remaking them.")
 
@@ -3641,7 +3668,7 @@ def pipeline_run(target_tasks                     = [],
         (forcedtorun_tasks, ignore_param1, ignore_param2,
          ignore_param3) = topologically_sorted_nodes(target_tasks + forcedtorun_tasks, True,
                                                      gnu_make_maximal_rebuild_mode,
-                                                     extra_data_for_signal = [t_verbose_logger(0, None, runtime_data), job_history])
+                                                     extra_data_for_signal = [t_verbose_logger(0, 0, None, runtime_data), job_history])
 
 
 
@@ -3655,7 +3682,7 @@ def pipeline_run(target_tasks                     = [],
     dag_violating_edges,
     dag_violating_nodes) = topologically_sorted_nodes(  target_tasks, forcedtorun_tasks,
                                                         gnu_make_maximal_rebuild_mode,
-                                                        extra_data_for_signal = [t_verbose_logger(verbose, logger, runtime_data), job_history])
+                                                        extra_data_for_signal = [t_verbose_logger(verbose, verbose_abbreviated_path, logger, runtime_data), job_history])
 
     if len(dag_violating_nodes):
         dag_violating_tasks = ", ".join(t._name for t in dag_violating_nodes)
@@ -3687,13 +3714,19 @@ def pipeline_run(target_tasks                     = [],
         (all_tasks, ignore_param1, ignore_param2,
          ignore_param3) = topologically_sorted_nodes(target_tasks, True,
                                                      gnu_make_maximal_rebuild_mode,
-                                                     extra_data_for_signal = [t_verbose_logger(0, None, runtime_data), job_history])
+                                                     extra_data_for_signal = [t_verbose_logger(0, 0, None, runtime_data), job_history])
         # indent hardcoded to 4
-        for m in get_completed_task_strings (incomplete_tasks, all_tasks, forcedtorun_tasks, verbose, 4, runtime_data, job_history):
+        for m in get_completed_task_strings (incomplete_tasks, all_tasks, forcedtorun_tasks, verbose, verbose_abbreviated_path, 4, runtime_data, job_history):
             logger.info(m)
 
 
     #print json.dumps(task_parents.items(), indent=4, cls=task_encoder)
+    logger.info("")
+    logger.info("_" * 40)
+    logger.info("Tasks which will be run:")
+    logger.info("")
+    logger.info("")
+
 
 
     # prepare tasks for pipeline run:
@@ -3723,6 +3756,7 @@ def pipeline_run(target_tasks                     = [],
                                                         logger, forcedtorun_tasks,
                                                         task_with_completed_job_q,
                                                         runtime_data, verbose,
+                                                        verbose_abbreviated_path,
                                                         syncmanager,
                                                         touch_files_only, job_history)
     job_parameters = parameter_generator()

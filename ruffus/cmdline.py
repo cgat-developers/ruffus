@@ -84,6 +84,10 @@
 """
 
 
+#_________________________________________________________________________________________
+
+#   get_argparse
+#_________________________________________________________________________________________
 def get_argparse (*args, **args_dict):
     """
     Set up argparse
@@ -125,6 +129,10 @@ def get_argparse (*args, **args_dict):
 
     return append_to_argparse(parser, **orig_args_dict)
 
+#_________________________________________________________________________________________
+
+#   append_to_argparse
+#_________________________________________________________________________________________
 def append_to_argparse (parser, **args_dict):
     """
     Common options:
@@ -157,7 +165,8 @@ def append_to_argparse (parser, **args_dict):
 
     common_options = parser.add_argument_group('Common options')
     if "verbose" not in ignored_args:
-        common_options.add_argument('--verbose', "-v", const=1, default=0, nargs='?', type= int,
+        common_options.add_argument('--verbose', "-v", const="+", default=[], nargs='?',
+                                    action="append",
                                     help="Print more verbose messages for each additional verbose level.")
     if "version" not in ignored_args:
         common_options.add_argument('--version', action='version', version=prog_version)
@@ -226,8 +235,36 @@ def append_to_argparse (parser, **args_dict):
     return parser
 
 
+#_________________________________________________________________________________________
+
+#   Hacky extension to *deprecated!!* optparse to support variable number of arguments
+#       for --verbose
+#_________________________________________________________________________________________
+def vararg_callback(option, opt_str, value, parser):
+    #
+    #   get current value
+    #
+    if hasattr(parser.values, option.dest):
+        value = getattr(parser.values, option.dest)
+    else:
+        value = []
+    if not len(parser.rargs):
+        value.append("+")
+    else:
+        arg = parser.rargs[0]
+        # stop on --foo like options
+        if arg[:1] == "-":
+            value.append("+")
+        else:
+            value.append(arg)
+            del parser.rargs[:1]
+    setattr(parser.values, option.dest, value)
 
 
+#_________________________________________________________________________________________
+
+#   optparse is deprecated!
+#_________________________________________________________________________________________
 def get_optparse (*args, **args_dict):
     """
     Set up OptionParser from optparse
@@ -265,6 +302,10 @@ def get_optparse (*args, **args_dict):
 
     return append_to_optparse(parser, **orig_args_dict)
 
+#_________________________________________________________________________________________
+
+#   optparse is deprecated!
+#_________________________________________________________________________________________
 def append_to_optparse (parser, **args_dict):
     """
     Set up OptionParser from optparse
@@ -309,7 +350,15 @@ def append_to_optparse (parser, **args_dict):
     #
     if "verbose" not in ignored_args:
         parser.add_option("-v", "--verbose", dest = "verbose",
-                          action="count", default=0,
+                          action="callback", default=[],
+                          #---------------------------------------------------------------
+                          # hack to get around unreasonable discrimination against
+                          # --long_options=with_equals in opt_parse::_process_long_opt()
+                          # when using a callback
+                          type = int,
+                          nargs=0,
+                          #---------------------------------------------------------------
+                          callback=vararg_callback,
                           help="Print more verbose messages for each additional verbose level.")
     if "log_file" not in ignored_args:
         parser.add_option("-L", "--log_file", dest="log_file",
@@ -582,6 +631,11 @@ extra_pipeline_run_options = [
                                 "multithread"]
 
 
+#_________________________________________________________________________________________
+
+#   get_extra_options_appropriate_for_command
+
+#_________________________________________________________________________________________
 def get_extra_options_appropriate_for_command (appropriate_option_names, extra_options):
     """
     Get extra options which are appropriate for
@@ -598,6 +652,79 @@ def get_extra_options_appropriate_for_command (appropriate_option_names, extra_o
 
 
 
+#_________________________________________________________________________________________
+
+#   handle_verbose
+
+#_________________________________________________________________________________________
+def handle_verbose (options):
+    """
+    raw options.verbose is a list of specifiers
+         '+'         : i.e. --verbose. This just increases the current verbosity value by 1
+         '\d+'       : e.g. --verbose 6. This (re)sets the verbosity value
+         '\d+:\d+'   : e.g. --verbose 7:-5 The second number is the verbose_abbreviated_path
+        Set
+            options.verbosity
+            options.verbose_abbreviated_path
+
+        Since the latter cannot be disabled via ignored_args (it never appears as a
+            command line option), we do the next best thing
+            by not overriding whatever the user sets
+
+    """
+    #
+    #   verbosity specified manually or deliberately disabled: use that
+    #
+    if options.verbose == None or isinstance(options.verbose, int):
+        #   verbose_abbreviated_path default to None unless set explicity by the user
+        #       in which case we shall prudently not override it!
+        #   verbose_abbreviated_path of None will be set to the default at
+        #       pipeline_run() / pipeline_printout()
+        if not hasattr(options, "verbose_abbreviated_path"):
+            setattr(options, "verbose_abbreviated_path", None)
+        return options
+    #
+    #   The user is having a laugh by passing in a string!
+    #       wrap in list
+    if isinstance(options.verbose, str):
+        options.verbose = [options.verbose]
+    #
+    #
+    curr_verbosity                  = 0
+    curr_verbose_abbreviated_path   = None
+    import re
+    match_regex = re.compile(r"(\+)|(\d+)(?::(\-?\d+))?")
+    #
+    #   Each verbosity specifier can be
+    #       '+'         : i.e. --verbose. This just increases the current verbosity value by 1
+    #       '\d+'       : e.g. --verbose 6. This (re)sets the verbosity value
+    #       '\d+:\d+'   : e.g. --verbose 7:-5 The second number is the verbose_abbreviated_path
+    #
+    for vv in options.verbose:
+        mm =  match_regex.match(vv)
+        if not mm:
+            raise Exception("error: verbosity argument is specified as --verbose INT or --verbose INT:INT. invalid value '%s'" % vv)
+        if mm.group(1):
+            curr_verbosity += 1
+        else:
+            curr_verbosity = int(mm.group(2))
+            if mm.group(3):
+                curr_verbose_abbreviated_path = int(mm.group(3))
+    #
+    # set verbose_abbreviated_path unless set explicity by the user
+    #   in which case we shall prudently not override it!
+    if not hasattr(options, "verbose_abbreviated_path"):
+        setattr(options, "verbose_abbreviated_path", curr_verbose_abbreviated_path)
+    options.verbose = curr_verbosity
+    #
+    return options
+
+
+#_________________________________________________________________________________________
+
+#   run
+
+#_________________________________________________________________________________________
 def run (options, **extra_options):
     """
     Take action depending on options
@@ -627,6 +754,12 @@ def run (options, **extra_options):
 
 
     #
+    #   handle verbosity specification
+    #
+    #       the special attribute verbose_abbreviated_path is set in this function
+    options=handle_verbose (options)
+
+    #
     #   touch files or not
     #
     if options.recreate_database:
@@ -640,6 +773,7 @@ def run (options, **extra_options):
         appropriate_options = get_extra_options_appropriate_for_command (extra_pipeline_printout_options, extra_options)
         task.pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
                                history_file = options.history_file,
+                               verbose_abbreviated_path=options.verbose_abbreviated_path,
                                 verbose=options.verbose, **appropriate_options)
         return False
 
@@ -686,6 +820,7 @@ def run (options, **extra_options):
                             verbose         = options.verbose,
                             touch_files_only= touch_files_only,
                             history_file = options.history_file,
+                            verbose_abbreviated_path=options.verbose_abbreviated_path,
                             **appropriate_options)
         return True
 

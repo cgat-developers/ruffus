@@ -945,12 +945,12 @@ class Test_shorten_filenames_encoder (unittest.TestCase):
         # test full path
         #
         self.assertEqual(shorten_filenames_encoder(absolute_path, 4),
-                        'ruffus/ruffus/test/something.py')
+                        '.../ruffus/ruffus/test/something.py')
 
         # list of paths
         self.assertEqual(shorten_filenames_encoder([[absolute_path, absolute_path]] * 2 + [6], 4),
-                        '[[ruffus/ruffus/test/something.py, ruffus/ruffus/test/something.py], '
-                         '[ruffus/ruffus/test/something.py, ruffus/ruffus/test/something.py], 6]')
+                        '[[.../ruffus/ruffus/test/something.py, .../ruffus/ruffus/test/something.py], '
+                         '[.../ruffus/ruffus/test/something.py, .../ruffus/ruffus/test/something.py], 6]')
 
 #
 #

@@ -396,6 +396,11 @@ def needs_update_check_exist (*params, **kwargs):
         #. arbitrary nested sequence of (1) and (2)
 
     """
+    if "verbose_abbreviated_path" in kwargs:
+        verbose_abbreviated_path = kwargs["verbose_abbreviated_path"]
+    else:
+        verbose_abbreviated_path = -55
+
     # missing output means build
     if len(params) < 2:
         return True, "i/o files not specified"
@@ -418,8 +423,9 @@ def needs_update_check_exist (*params, **kwargs):
             if not os.path.exists(p):
                 missing_files.append(p)
     if len(missing_files):
-        return True, "Missing file%s [%s]" % ("s" if len(missing_files) > 1 else "",
-                                            ", ".join(missing_files))
+        return True, "Missing file%s\n%s" % ("s" if len(missing_files) > 1 else "",
+                                            shorten_filenames_encoder (missing_files,
+                                                                        verbose_abbreviated_path))
 
     #
     #   missing input -> build only if output absent
@@ -465,6 +471,11 @@ def needs_update_check_modify_time (*params, **kwargs):
         task = Namespace()
         task.checksum_level = CHECKSUM_FILE_TIMESTAMPS
 
+    if "verbose_abbreviated_path" in kwargs:
+        verbose_abbreviated_path = kwargs["verbose_abbreviated_path"]
+    else:
+        verbose_abbreviated_path = -55
+
     try:
         job_history = kwargs['job_history']
     except KeyError:
@@ -477,7 +488,7 @@ def needs_update_check_modify_time (*params, **kwargs):
 
     # missing output means build
     if len(params) < 2:
-        return True
+        return True, ""
 
     i, o = params[0:2]
     i = get_strings_in_nested_sequence(i)
@@ -496,8 +507,9 @@ def needs_update_check_modify_time (*params, **kwargs):
             if not os.path.exists(p):
                 missing_files.append(p)
     if len(missing_files):
-        return True, "Missing file%s [%s]" % ("s" if len(missing_files) > 1 else "",
-                                            ", ".join(missing_files))
+        return True, "Missing file%s\n        %s" % ("s" if len(missing_files) > 1 else "",
+                                            shorten_filenames_encoder (missing_files,
+                                                                       verbose_abbreviated_path))
 
     # existing files, but from previous interrupted runs
     if task.checksum_level >= CHECKSUM_HISTORY_TIMESTAMPS:
@@ -512,8 +524,9 @@ def needs_update_check_modify_time (*params, **kwargs):
             if os.path.relpath(p) not in job_history:
                 incomplete_files.append(p)
         if len(incomplete_files):
-            return True, "Previous incomplete run leftover%s: [%s]" % ("s" if len(incomplete_files) > 1 else "",
-                                                ", ".join(incomplete_files))
+            return True, "Previous incomplete run leftover%s:\n        %s" % ("s" if len(incomplete_files) > 1 else "",
+                                                shorten_filenames_encoder (incomplete_files,
+                                                                            verbose_abbreviated_path))
         # check if function that generated our output file has changed
         for o_f_n in o:
             rel_o_f_n = os.path.relpath(o_f_n)
@@ -527,9 +540,11 @@ def needs_update_check_modify_time (*params, **kwargs):
                 func_changed_files.append(rel_o_f_n)
 
         if len(func_changed_files):
-            return True, "Pipeline function has changed: [%s]" % (", ".join(func_changed_files))
+            return True, "Pipeline function has changed:\n        %s" % (shorten_filenames_encoder (func_changed_files,
+                                                                            verbose_abbreviated_path))
         if len(param_changed_files):
-            return True, "Pipeline parameters have changed: [%s]" % (", ".join(param_changed_files))
+            return True, "Pipeline parameters have changed:\n        %s" % (shorten_filenames_encoder (param_changed_files,
+                                                                            verbose_abbreviated_path))
 
     #
     #   missing input -> build only if output absent or function is out of date
@@ -584,7 +599,8 @@ def needs_update_check_modify_time (*params, **kwargs):
                 msg += ("   " +                                         # indent
                         file_name_to_asterisk[file_name] + " " +        # asterisked out of date files
                         file_datetime_str + ": " +                      # date time of file
-                        get_readable_path_str(file_name, 55) + "\n")    # file name truncated to 55
+                        shorten_filenames_encoder (file_name,
+                                                   verbose_abbreviated_path) + "\n")    # file name truncated to 55
         return msg
 
 

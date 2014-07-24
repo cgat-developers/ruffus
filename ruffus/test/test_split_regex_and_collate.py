@@ -196,7 +196,7 @@ class Test_split_regex_and_collate(unittest.TestCase):
 
         s = StringIO()
         pipeline_printout(s, [combine_results], verbose=5, wrap_width = 10000)
-        self.assertTrue('Job needs update: Missing files ' in s.getvalue())
+        self.assertTrue('Job needs update: Missing files\n' in s.getvalue())
         #print s.getvalue()
 
         pipeline_run([combine_results], verbose=0)

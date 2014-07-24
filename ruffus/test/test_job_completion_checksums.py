@@ -19,7 +19,7 @@ except:
     from io import StringIO
 import time
 
-import sys
+import sys, re
 
 
 exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
@@ -102,8 +102,10 @@ class TestJobCompletion(unittest.TestCase):
         for chksm in possible_chksms:
             s = StringIO()
             pipeline_printout(s, [transform1], verbose=6, checksum_level=chksm)
-            self.assertIn('Job needs update: Missing file [tmp_test_job_completion/input.output]',
-                          s.getvalue())
+            self.assertTrue(re.search(r'Job needs update: Missing file\n\s+\[tmp_test_job_completion/input.output\]'
+                                      , s.getvalue()))
+
+
 
     def test_ouput_out_of_date(self):
         """Input file exists, output out of date"""
