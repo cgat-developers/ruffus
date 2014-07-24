@@ -114,7 +114,7 @@ class Test_verbosity(unittest.TestCase):
         pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 0)
         ret = s.getvalue()
         self.assertTrue('[[/data/scratch/lg/what/one/two/three/job2.a.start,' in ret)
-        self.assertTrue('/home/lg/src/oss/ruffus/ruffus/test/job2.b.start]' in ret)
+        self.assertTrue('/ruffus/test/job2.b.start]' in ret)
 
 
     #___________________________________________________________________________
