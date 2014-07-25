@@ -62,15 +62,44 @@ def attributes_to_str (attributes, name):
     helper function for dot format
     turns dictionary into a=b, c=d...
     """
+
+    # remove ugly __main__. qualifier
     name = name.replace("__main__.", "")
-    attributes["label"] = '"' + name + '"'
+
+    # if a label is specified, that overrides the node name
+    if "label" not in attributes:
+        attributes["label"] = name
+
+    # remove any quotes
+    if attributes["label"][0] == '<':
+        attributes["label"] = attributes["label"][1:-1]
+        html_label = True
+    else:
+        html_label = False
+        if attributes["label"][0] == '"':
+            attributes["label"] = attributes["label"][1:-1]
+
+    # add suffix / prefix
+    if "label_prefix" in attributes:
+        attributes["label"] = attributes["label_prefix"] + attributes["label"]
+        del attributes["label_prefix"]
+    if "label_suffix" in attributes:
+        attributes["label"] = attributes["label"] + attributes["label_suffix"]
+        del attributes["label_suffix"]
+
+    # restore quotes
+    if html_label:
+        attributes["label"] = '<' + attributes["label"] + '>'
+    else:
+        attributes["label"] = '"' + attributes["label"] + '"'
+
     # support for html labels
     #if "<" in name and ">" in name:
     #    attributes["label"] = '<' + name + '>'
     #else:
     #    attributes["label"] = '"' + name + '"'
 
-    return "[" + ", ".join ("%s=%s" % (k,v) for k,v in attributes.items()) + "];\n"
+    return "[" + ", ".join ("%s=%s" % (k,v) for k,v in sorted(attributes.items())) + "];\n"
 
 
 
@@ -480,6 +509,13 @@ def write_flowchart_in_dot_format(  jobs_to_run,
                 attributes["height"] = 1.1
                 attributes["peripheries"] = 2
 
+        #
+        #   graphviz attributes override other definitions
+        #       presume the user knows what she is doing!
+        #
+        if(hasattr(n,'graphviz_attributes')):
+            for k in n.graphviz_attributes:
+                attributes[k]=n.graphviz_attributes[k]
         #
         #   circularity violating DAG: highlight in red
         #

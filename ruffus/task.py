@@ -286,11 +286,12 @@ class task_decorator(object):
         Adds task to the "pipeline_task" attribute of this function but
         otherwise leaves function untouched
     """
-    def __init__(self, *decoratorArgs):
+    def __init__(self, *decoratorArgs, **decoratorNamedArgs):
         """
             saves decorator arguments
         """
         self.args = decoratorArgs
+        self.named_args = decoratorNamedArgs
 
     def __call__(self, func):
         """
@@ -306,7 +307,8 @@ class task_decorator(object):
         #   where "task_decorator" is the name of this class
         decorator_function_name = "task_" + self.__class__.__name__
         task_decorator_function = getattr(func.pipeline_task, decorator_function_name)
-        task_decorator_function(self.args)
+        task_decorator_function(self.args, **self.named_args)
+
 
         #
         #   don't change the function so we can call it unaltered
@@ -371,6 +373,8 @@ class check_if_uptodate(task_decorator):
 class parallel(task_decorator):
     pass
 
+class graphviz(task_decorator):
+    pass
 
 #
 #   Obsolete
@@ -797,6 +801,7 @@ class _task (node):
                     "task_combinations_with_replacement",
                     "task_subdivide",
                     "task_originate",
+                    "task_graphviz",
                     ]
     action_unspecified                          =  0
     action_task                                 =  1
@@ -816,6 +821,7 @@ class _task (node):
     action_task_combinations_with_replacement   = 15
     action_task_subdivide                       = 16
     action_task_originate                       = 17
+    action_task_graphviz                        = 18
 
 
 
@@ -2649,6 +2655,16 @@ class _task (node):
             self.active_if_checks = []
         self.active_if_checks.extend(active_if_checks)
         #print(self.active_if_checks)
+
+
+
+    #_________________________________________________________________________________________
+
+    #   task_graphviz
+
+    #_________________________________________________________________________________________
+    def task_graphviz(self, *unnamed_args, **named_args):
+        self.graphviz_attributes=named_args
 
 
 class task_encoder(json.JSONEncoder):
