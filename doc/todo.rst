@@ -26,50 +26,29 @@ Future Changes to Ruffus
 
     Contributed by Sean Davis, with suggestions from Jake Biesinger
 
-
-    In ``task.py``:
-
-    .. code-block:: python
-
-        class graphviz(task_decorator):
-            pass
-
-
-        #_________________________________________________________________________________________
-
-        #   task_graphviz
-
-        #_________________________________________________________________________________________
-        def task_graphviz(self, **args):
-            self.graphviz_attributes=args
-
-
-    in print_dependencies.py:
-
-    .. code-block:: python
-
-        for n in all_jobs:
-            attributes = dict()
-            attributes["shape"]="box3d"
-            if(hasattr(n,'graphviz_attributes')):
-                for k,v in n.graphviz_attributes.items():
-                    attributes[k]=v
-
-
-
+    The graphic for each task can have its own attributes (shape, colour) etc. 
+    See `here  <http://www.graphviz.org/doc/info/attrs.html>`__ for a full list.
+    Note that HTML labels **must** be enclosed in ``<`` and ``>``
     Example:
 
         .. code-block:: python
 
 
-            @graphviz(URL='"http://cnn.com"', group='map_reads', foo=bar)
+            @graphviz(URL='"http://cnn.com"', fillcolor = '"#FFFFCC"',
+                            color = '"#FFFFFF"', pencolor='"#C9D787"', fontcolor='"#4B6000"',
+                            task_suffix = "???", task_prefix = "What is this?<p>",
+                            label = "<What <FONT COLOR="red">is</FONT>this>",
+                            shape= "component", height = 1.5, peripheries = 5,
+                            style="dashed")
             def myTask(input,output):
                 pass
 
-            graphviz_params = {URL='"http://cnn.com"', group='map_reads', foo=bar}
+            graphviz_params = {"URL":"http://cnn.com", "fontcolor": '"#FF00FF"'}
             @graphviz(**graphviz_params)
             def myTask(input,output):
                 pass
+
+        .. **
 
 .. _todo.misfeatures:
 
