@@ -66,5 +66,7 @@ echo test_verbosity.py                                                          
 python test_verbosity.py                                                            && \
 echo test_cmdline.py                                                                && \
 python -m unittest test_cmdline                                                     && \
+echo test_graphviz.py                                                               && \
+python -m unittest test_graphviz                                                    && \
 echo DONE!!!
 
