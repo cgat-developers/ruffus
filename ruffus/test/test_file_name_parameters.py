@@ -200,6 +200,7 @@ t4 = task._task("module", "func4"); t4.param_generator_func = list_generator_fac
 t4._single_job_single_output = t4.single_job_single_output
 t5 = task._task("module", "func5"); t5.param_generator_func = None
 
+next_task_id = 1
 class Test_files_re_param_factory(unittest.TestCase):
     def setUp(self):
         if not os.path.exists(test_path):
@@ -210,8 +211,8 @@ class Test_files_re_param_factory(unittest.TestCase):
         time.sleep(0.1)
         touch("%s/f%d.output" % (test_path, 1))
         touch("%s/f%d.output" % (test_path, 2))
-
         self.tasks = [t1, t2, t3, t4, t5]
+
 
 
     def tearDown(self):
@@ -221,17 +222,6 @@ class Test_files_re_param_factory(unittest.TestCase):
             os.unlink("%s/f%d.output" % (test_path, i))
         os.removedirs(test_path)
         pass
-
-
-
-
-
-
-
-
-
-
-
 
 
     #       self.assertEqual(self.seq, range(10))
@@ -244,7 +234,11 @@ class Test_files_re_param_factory(unittest.TestCase):
         # replace function / function names with tasks
         #
         # fake virgin task
-        fake_task = task._task("module", "func_fake%d" % randint(1, 1000000))
+        # use global incrementing index to avoid name clashes
+        #fake_task = task._task("module", "func_fake%d" % randint(1, 1000000))
+        global next_task_id
+        next_task_id += 1
+        fake_task = task._task("module", "func_fake%d" % next_task_id)
         fake_task.task_files_re(orig_args)
         return fake_task.param_generator_func, fake_task
 
