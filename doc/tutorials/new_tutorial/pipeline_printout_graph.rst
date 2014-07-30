@@ -14,6 +14,7 @@
 
     * :ref:`Manual Table of Contents <new_manual.table_of_contents>`
     * :ref:`pipeline_printout_graph(...) <pipeline_functions.pipeline_printout_graph>` syntax
+    * :ref:`@graphviz(...) <decorators.graphviz>` syntax
 
 .. note::
 
@@ -108,4 +109,62 @@ Circular dependency errors in pipelines!
 
         .. image:: ../../images/simple_tutorial_complex_flowchart_error.png
            :scale: 70
+
+==========================================================================================
+``@graphviz``: Customising the appearance of each task
+==========================================================================================
+
+    The graphic for each task can be further customised as you please by adding
+    `graphviz attributes  <http://www.graphviz.org/doc/info/attrs.html>`__ such as the URL, shape, colour
+    directly to that node using the decorator ```@graphviz``.
+
+    For example, we can customise the graphic for ``myTask()`` to look like:
+
+        .. image:: ../../images/history_html_flowchart.png
+           :scale: 30
+
+    by adding the requisite attributes as follows:
+
+
+
+    .. code-block:: python
+
+
+        @graphviz(URL='"http://cnn.com"', fillcolor = '"#FFCCCC"',
+                        color = '"#FF0000"', pencolor='"#FF0000"', fontcolor='"#4B6000"',
+                        label_suffix = "???", label_prefix = "What is this?<BR/> ",
+                        label = "<What <FONT COLOR=\"red\">is</FONT>this>",
+                        shape= "component", height = 1.5, peripheries = 5,
+                        style="dashed")
+        def Up_to_date_task2(infile, outfile):
+            pass
+
+        #   Can use dictionary if you wish...
+        graphviz_params = {"URL":"http://cnn.com", "fontcolor": '"#FF00FF"'}
+        @graphviz(**graphviz_params)
+        def myTask(input,output):
+            pass
+
+    .. **
+
+
+    You can even using HTML formatting in task names, including specifying line wraps (as in the above example),
+    using the ``label`` parameter. However, HTML labels **must** be enclosed in ``<`` and ``>``.
+
+
+          .. code-block:: python
+
+            label = "<Line <BR/> wrapped task_name()>"
+
+    Otherwise, you can also opt to keep the task name and wrap it with a prefix and suffix:
+
+          .. code-block:: python
+
+            label_suffix = "??? ", label_prefix = ": What is this?"
+
+    The ``URL`` attribute allows the generation of clickable svg, and also client / server
+          side image maps usable in web pages.
+          See `Graphviz documentation  <http://www.graphviz.org/content/output-formats#dimap>`__
+
+
 

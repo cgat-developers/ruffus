@@ -22,17 +22,8 @@ Future Changes to Ruffus
 1: Documentation
 ********************************************************************************************************
 
-    * for ``@graphviz``
-        * decorators/graphviz.rst
-        * decorators/decorators.rst
-        * _templates/layout.html
-        * tutorials/new_tutorial/pipeline_printout_graph.rst
-
     *  ``verbose_abbreviated_path`` for ``pipeline_run`` or ``pipeline_printout``
-        * pipeline_functions.rst
-        * tutorials/new_tutorial/pipeline_printout.rst
-        * command_line.rst
-        * task.py
+        * tutorials/new_tutorial/command_line.rst
 
 .. _todo.inactive_tasks_in_pipeline_printout_graph:
 

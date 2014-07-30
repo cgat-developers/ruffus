@@ -144,6 +144,63 @@ Verbosity levels
         * level **6** : *All jobs in All Tasks whether out of date or not*
         * level **10**: *logs messages useful only for debugging ruffus pipeline code*
 
+.. _new_manual.pipeline_printout.verbose_abbreviated_path:
+
+==========================================================================================
+Abbreviating long file paths with ``verbose_abbreviated_path``
+==========================================================================================
+
+    Pipelines often produce interminable lists of deeply nested filenames. It would be nice to be able to abbreviate this
+    to just enough information to follow the progress.
+
+    The ``verbose_abbreviated_path`` parameter specifies that   :ref:`pipeline_printout(...) <pipeline_functions.pipeline_printout>` and :ref:`pipeline_run(...) <pipeline_functions.pipeline_run>` only display
+
+        1) the ``NNN`` th top level sub-directories to be included, or that
+        2) the message to be truncated to a specified ```MMM`` characters (to fit onto a line, for example). ``MMM`` is specified by setting ``verbose_abbreviated_path = -MMM``, i.e. negative values.
+
+           Note that the number of characters specified is just the separate lengths of the input and output parameters,
+           not the entire indented line. You many need to specify a smaller limit that you expect (e.g. ``60`` rather than `80`)
+
+        .. code-block:: python
+
+            pipeline_printout(verbose_abbreviated_path = NNN)
+            pipeline_run(verbose_abbreviated_path = -MMM)
+
+
+
+    ``verbose_abbreviated_path`` defaults to ``2``
+
+
+    For example:
+
+        Given ``["aa/bb/cc/dddd.txt", "aaa/bbbb/cccc/eeed/eeee/ffff/gggg.txt"]``
+
+
+        .. code-block:: python
+           :emphasize-lines: 1,4,8,19
+
+            # Original relative paths
+            "[aa/bb/cc/dddd.txt, aaa/bbbb/cccc/eeed/eeee/ffff/gggg.txt]"
+
+            # Full abspath
+            verbose_abbreviated_path = 0
+            "[/test/ruffus/src/aa/bb/cc/dddd.txt, /test/ruffus/src/aaa/bbbb/cccc/eeed/eeee/ffff/gggg.txt]"
+
+            # Specifed level of nested directories
+            verbose_abbreviated_path = 1
+            "[.../dddd.txt, .../gggg.txt]"
+
+            verbose_abbreviated_path = 2
+            "[.../cc/dddd.txt, .../ffff/gggg.txt]"
+
+            verbose_abbreviated_path = 3
+            "[.../bb/cc/dddd.txt, .../eeee/ffff/gggg.txt]"
+
+
+            # Truncated to MMM characters
+            verbose_abbreviated_path = -60
+            "<???> /bb/cc/dddd.txt, aaa/bbbb/cccc/eeed/eeee/ffff/gggg.txt]"
+
 
 =============================================
 Getting a list of all tasks in a pipeline

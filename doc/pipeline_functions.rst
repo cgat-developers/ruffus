@@ -12,6 +12,7 @@ See :ref:`Decorators <decorators>` for more decorators
 .. |pipeline_get_task_names| replace:: `pipeline_get_task_names`
 .. _pipeline_get_task_names: `pipeline_functions.pipeline_get_task_names`_
 
+
 .. |pr_target_tasks| replace:: `target_tasks`
 .. _pr_target_tasks: `pipeline_functions.pipeline_run.target_tasks`_
 .. |pr_forcedtorun_tasks| replace:: `forcedtorun_tasks`
@@ -31,6 +32,18 @@ See :ref:`Decorators <decorators>` for more decorators
 .. |pr_touch_files_only| replace:: `touch_files_only`
 .. _pr_touch_files_only: `pipeline_functions.pipeline_run.touch_files_only`_
 
+.. |pr_exceptions_terminate_immediately| replace:: `exceptions_terminate_immediately`
+.. _pr_exceptions_terminate_immediately: `pipeline_functions.pipeline_run.exceptions_terminate_immediately`_
+.. |pr_log_exceptions| replace:: `log_exceptions`
+.. _pr_log_exceptions: `pipeline_functions.pipeline_run.log_exceptions`_
+.. |pr_multithread| replace:: `multithread`
+.. _pr_multithread: `pipeline_functions.pipeline_run.multithread`_
+.. |pr_checksum_level| replace:: `checksum_level`
+.. _pr_checksum_level: `pipeline_functions.pipeline_run.checksum_level`_
+.. |pr_history_file| replace:: `history_file`
+.. _pr_history_file: `pipeline_functions.pipeline_run.history_file`_
+.. |pr_verbose_abbreviated_path| replace:: `verbose_abbreviated_path`
+.. _pr_verbose_abbreviated_path: `pipeline_functions.pipeline_run.verbose_abbreviated_path`_
 
 
 .. |pp_output_stream| replace:: `output_stream`
@@ -49,7 +62,12 @@ See :ref:`Decorators <decorators>` for more decorators
 .. _pp_gnu_make: `pipeline_functions.pipeline_printout.gnu_make`_
 .. |pp_runtime_data| replace:: `runtime_data`
 .. _pp_runtime_data: `pipeline_functions.pipeline_printout.runtime_data`_
-
+.. |pp_checksum_level| replace:: `checksum_level`
+.. _pp_checksum_level: `pipeline_functions.pipeline_printout.checksum_level`_
+.. |pp_history_file| replace:: `history_file`
+.. _pp_history_file: `pipeline_functions.pipeline_printout.history_file`_
+.. |pp_verbose_abbreviated_path| replace:: `verbose_abbreviated_path`
+.. _pp_verbose_abbreviated_path: `pipeline_functions.pipeline_printout.verbose_abbreviated_path`_
 
 
 
@@ -85,6 +103,11 @@ See :ref:`Decorators <decorators>` for more decorators
 .. _ppg_dpi: `pipeline_functions.pipeline_printout_graph.dpi`_
 .. |ppg_runtime_data| replace:: `runtime_data`
 .. _ppg_runtime_data: `pipeline_functions.pipeline_printout_graph.runtime_data`_
+.. |ppg_checksum_level| replace:: `checksum_level`
+.. _ppg_checksum_level: `pipeline_functions.pipeline_printout_graph.checksum_level`_
+.. |ppg_history_file| replace:: `history_file`
+.. _ppg_history_file: `pipeline_functions.pipeline_printout_graph.history_file`_
+
 
 
 
@@ -114,7 +137,7 @@ Pipeline functions
 **************************************************************************************************************************************************************************************
 *pipeline_run*
 **************************************************************************************************************************************************************************************
-**pipeline_run** ( |pr_target_tasks|_ = [],  |pr_forcedtorun_tasks|_ = [], |pr_multiprocess|_ = 1, |pr_logger|_ = stderr_logger, |pr_gnu_make|_ = True, |pr_verbose|_ =1, |pr_runtime_data|_ = None, |pr_one_second_per_job|_ = True, |pr_touch_files_only|_ = False)
+**pipeline_run** ( |pr_target_tasks|_ = [],  |pr_forcedtorun_tasks|_ = [], |pr_multiprocess|_ = 1, |pr_logger|_ = stderr_logger, |pr_gnu_make|_ = True, |pr_verbose|_ =1, |pr_runtime_data|_ = None, |pr_one_second_per_job|_ = True, |pr_touch_files_only|_ = False, |pr_exceptions_terminate_immediately|_ = None, |pr_log_exceptions|_ = None, |pr_history_file|_ = None, |pr_checksum_level|_ = None, |pr_multithread|_ = 0, |pr_verbose_abbreviated_path|_ = None)
 
     **Purpose:**
 
@@ -154,6 +177,13 @@ Pipeline functions
         tasks and jobs within each task. If ``multiprocess`` is set to 1, the pipeline will
         execute in the main process.
 
+.. _pipeline_functions.pipeline_run.multithread:
+
+    * *multithread*
+        Optional. The number of threads which should be dedicated to running in parallel independent
+        tasks and jobs within each task. Should be used only with drmaa. Otherwise the CPython `global interpreter lock (GIL) <https://wiki.python.org/moin/GlobalInterpreterLock>`__
+        will slow down your pipeline
+
 .. _pipeline_functions.pipeline_run.logger:
 
     * *logger*
@@ -190,6 +220,7 @@ Pipeline functions
 
     * *verbose*
         Optional parameter indicating the verbosity of the messages sent to ``logger``:
+        (Defaults to level 1 if unspecified)
 
         * level **0** : *nothing*
         * level **1** : *Out-of-date Task names*
@@ -212,10 +243,10 @@ Pipeline functions
 .. _pipeline_functions.pipeline_run.one_second_per_job:
 
     * *one_second_per_job*
-        By default, **Ruffus** ensures jobs take a minimum of 1 second to complete, to get around
-        coarse grained timestamps in some file systems. This is rarely an issue when many jobs run
-        *in parallel*. If your file system has sub-second time stamps, you can turn off this delay
-        by setting *one_second_per_job* to ``False``
+        To work around poor file timepstamp resolution for some file systems.
+        Defaults to True if checksum_level is 0 forcing Tasks to take a minimum of 1 second to complete.
+        If your file system has coarse grained time stamps, you can turn on this delay
+        by setting *one_second_per_job* to ``True``
 
 .. _pipeline_functions.pipeline_run.touch_files_only:
 
@@ -228,6 +259,51 @@ Pipeline functions
         and depend on run time. In other words, not recommended if ``@split`` or custom parameter generators are being used.
 
 
+
+.. _pipeline_functions.pipeline_run.exceptions_terminate_immediately:
+
+    * *exceptions_terminate_immediately*
+        Exceptions cause immediate termination of the pipeline.
+
+
+.. _pipeline_functions.pipeline_run.log_exceptions:
+
+    * *log_exceptions*
+        Print exceptions to the logger as soon as they occur.
+
+
+.. _pipeline_functions.pipeline_run.history_file:
+
+    * *history_file*
+        The database file which stores checksums and file timestamps for input/output files.
+        Defaults to ``.ruffus_history.sqlite`` if unspecified
+
+.. _pipeline_functions.pipeline_run.checksum_level:
+
+    * *checksum_level*
+        Several options for checking up-to-dateness are available: Default is level 1.
+
+           * level 0 : Use only file timestamps
+           * level 1 : above, plus timestamp of successful job completion
+           * level 2 : above, plus a checksum of the pipeline function body
+           * level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
+
+.. _pipeline_functions.pipeline_run.verbose_abbreviated_path:
+
+    * *verbose_abbreviated_path*
+        Whether input and output paths are abbreviated. Defaults to 2 if unspecified
+
+          * level 0: The full (expanded, abspath) input or output path
+          * level > 1: The number of subdirectories to include. Abbreviated paths are prefixed with ``[,,,]/``
+          * level < 0: Input / Output parameters are truncated to ``MMM`` letters where ``verbose_abbreviated_path ==-MMM``. Subdirectories are first removed to see if this allows the paths to fit in the specified limit. Otherwise abbreviated paths are prefixed by ``<???>``
+
+
+
+
+
+
+
+
 .. _pipeline_functions.pipeline_printout:
 
 .. index::
@@ -237,7 +313,7 @@ Pipeline functions
 **********************************************************************************************************************************************************************************************************
 *pipeline_printout*
 **********************************************************************************************************************************************************************************************************
-**pipeline_printout** (|pp_output_stream|_ = sys.stdout, |pp_target_tasks|_ = [], |pp_forcedtorun_tasks|_ = [], |pp_verbose|_ = 1, |pp_indent|_ = 4, |pp_gnu_make|_ = True, |pp_wrap_width|_ = 100, |pp_runtime_data|_ = None)
+**pipeline_printout** (|pp_output_stream|_ = sys.stdout, |pp_target_tasks|_ = [], |pp_forcedtorun_tasks|_ = [], |pp_verbose|_ = 1, |pp_indent|_ = 4, |pp_gnu_make|_ = True, |pp_wrap_width|_ = 100, |pp_runtime_data|_ = None, |pp_checksum_level|_ = None, |pp_history_file|_ = None, |pr_verbose_abbreviated_path|_ = None)
 
     **Purpose:**
 
@@ -283,6 +359,7 @@ Pipeline functions
 
     * *verbose*
         Optional parameter indicating the verbosity of the messages sent to ``logger``:
+        (Defaults to level 4 if unspecified)
 
         * level **0** : *nothing*
         * level **1** : *Out-of-date Task names*
@@ -325,6 +402,32 @@ Pipeline functions
         Experimental feature for passing data to tasks at run time
 
 
+.. _pipeline_functions.pipeline_printout.history_file:
+
+    * *history_file*
+        The database file which stores checksums and file timestamps for input/output files.
+        Defaults to ``.ruffus_history.sqlite`` if unspecified
+
+.. _pipeline_functions.pipeline_printout.checksum_level:
+
+    * *checksum_level*
+        Several options for checking up-to-dateness are available: Default is level 1.
+
+           * level 0 : Use only file timestamps
+           * level 1 : above, plus timestamp of successful job completion
+           * level 2 : above, plus a checksum of the pipeline function body
+           * level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
+
+
+.. _pipeline_functions.pipeline_printout.verbose_abbreviated_path:
+
+    * *verbose_abbreviated_path*
+        Whether input and output paths are abbreviated. Defaults to 2 if unspecified
+
+          * level 0: The full (expanded, abspath) input or output path
+          * level > 1: The number of subdirectories to include. Abbreviated paths are prefixed with ``[,,,]/``
+          * level < 0: Input / Output parameters are truncated to ``MMM`` letters where ``verbose_abbreviated_path ==-MMM``. Subdirectories are first removed to see if this allows the paths to fit in the specified limit. Otherwise abbreviated paths are prefixed by ``<???>``
+
 
 .. _pipeline_functions.pipeline_printout_graph:
 
@@ -340,7 +443,7 @@ Pipeline functions
 *pipeline_printout_graph*
 ************************************************************************************************************************************************************************************************************************************************************************************
 
-**pipeline_printout_graph** (|ppg_stream|_, |ppg_output_format|_ = None, |ppg_target_tasks|_ = [], |ppg_forcedtorun_tasks|_ = [], |ppg_ignore_upstream_of_target|_ = False, |ppg_skip_uptodate_tasks|_ = False, |ppg_gnu_make|_ = True, |ppg_test_all_task_for_update|_ = True, |ppg_no_key_legend|_  = False, |ppg_minimal_key_legend|_ = True, |ppg_user_colour_scheme|_ = None, |ppg_pipeline_name|_ = "Pipeline", |ppg_size|_ = (11,8), |ppg_dpi|_ = 120, |ppg_runtime_data|_ = None)
+**pipeline_printout_graph** (|ppg_stream|_, |ppg_output_format|_ = None, |ppg_target_tasks|_ = [], |ppg_forcedtorun_tasks|_ = [], |ppg_ignore_upstream_of_target|_ = False, |ppg_skip_uptodate_tasks|_ = False, |ppg_gnu_make|_ = True, |ppg_test_all_task_for_update|_ = True, |ppg_no_key_legend|_  = False, |ppg_minimal_key_legend|_ = True, |ppg_user_colour_scheme|_ = None, |ppg_pipeline_name|_ = "Pipeline", |ppg_size|_ = (11,8), |ppg_dpi|_ = 120, |ppg_runtime_data|_ = None, |ppg_checksum_level|_ = None, |ppg_history_file|_ = None)
 
     **Purpose:**
 
@@ -523,6 +626,22 @@ Pipeline functions
 
      * *runtime_data*
         Experimental feature for passing data to tasks at run time
+
+.. _pipeline_functions.pipeline_printout_graph.history_file:
+
+    * *history_file*
+        The database file which stores checksums and file timestamps for input/output files.
+        Defaults to ``.ruffus_history.sqlite`` if unspecified
+
+.. _pipeline_functions.pipeline_printout_graph.checksum_level:
+
+    * *checksum_level*
+        Several options for checking up-to-dateness are available: Default is level 1.
+
+           * level 0 : Use only file timestamps
+           * level 1 : above, plus timestamp of successful job completion
+           * level 2 : above, plus a checksum of the pipeline function body
+           * level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
 
 
 

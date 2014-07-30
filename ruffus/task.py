@@ -3067,7 +3067,7 @@ def pipeline_printout(  output_stream                   = None,
     :param verbose_abbreviated_path: whether input and output paths are abbreviated.
                     level 0: The full (expanded, abspath) input or output path
                     level > 1: The number of subdirectories to include. Abbreviated paths are prefixed with ``[,,,]/``
-                    level < 0: Input / Output parameters are truncated to -MMM letters where level ==MMM. Subdirectories are first removed to see if this allows the paths to fit in the specified limit. Otherwise abbreviated paths are prefixed by ``<???>``
+                    level < 0: level < 0: Input / Output parameters are truncated to ``MMM`` letters where ``verbose_abbreviated_path ==-MMM``. Subdirectories are first removed to see if this allows the paths to fit in the specified limit. Otherwise abbreviated paths are prefixed by ``<???>``
     """
     # do nothing!
     if verbose == 0:
@@ -3639,7 +3639,7 @@ def pipeline_run(target_tasks                     = [],
     :param verbose_abbreviated_path: whether input and output paths are abbreviated.
                           level 0: The full (expanded, abspath) input or output path
                           level > 1: The number of subdirectories to include. Abbreviated paths are prefixed with ``[,,,]/``
-                          level < 0: Input / Output parameters are truncated to -MMM letters where level ==MMM. Subdirectories are first removed to see if this allows the paths to fit in the specified limit. Otherwise abbreviated paths are prefixed by ``<???>``
+                          level < 0: level < 0: Input / Output parameters are truncated to ``MMM`` letters where ``verbose_abbreviated_path ==-MMM``. Subdirectories are first removed to see if this allows the paths to fit in the specified limit. Otherwise abbreviated paths are prefixed by ``<???>``
     """
 
     #

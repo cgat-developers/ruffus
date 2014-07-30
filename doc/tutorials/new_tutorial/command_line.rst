@@ -270,7 +270,42 @@ Touch files
 
 
 ******************************************************************************************************
-7) Displaying the version
+7) Specifying verbosity and abbreviating long paths
+******************************************************************************************************
+
+    The verbosity can be specified on the command line
+
+        .. code-block:: bash
+
+            myscript --verbose 5
+
+            # verbosity of 5 + 1 = 6
+            myscript --verbose 5 --verbose
+
+            # verbosity reset to 2
+            myscript --verbose 5 --verbose --verbose 2
+
+    If the printed paths are too long, and need to be abbreviated, or alternatively, if you want see the full absolute paths of your input and output parameters,
+    you can specify an extension to the verbosity. See the manual discussion of :ref:`verbose_abbreviated_path <new_manual.pipeline_printout.verbose_abbreviated_path>` for
+    more details. This is specified as ``--verbose VERBOSITY:VERBOSE_ABBREVIATED_PATH``. (No spaces!)
+
+    For example:
+
+        .. code-block:: bash
+           :emphasize-lines: 4,7
+
+            # verbosity of 4
+            myscript.py --verbose 4
+
+            # display three levels of nested directories
+            myscript.py --verbose 4:3
+
+            # restrict input and output parameters to 60 letters
+            myscript.py --verbose 4:-60
+
+
+******************************************************************************************************
+8) Displaying the version
 ******************************************************************************************************
     Note that the version for your script will default to ``"%(prog)s 1.0"`` unless specified:
 
@@ -278,7 +313,6 @@ Touch files
 
             parser = cmdline.get_argparse(  description='WHAT DOES THIS PIPELINE DO?',
                                             version = "my_programme.py v. 2.23")
-
 
 
 
