@@ -167,9 +167,9 @@ class Test_task_mkdir(unittest.TestCase):
         """
         delete directories
         """
-        #for d in 'abcde':
-        #    fullpath = os.path.join(exe_path, d)
-        #    os.rmdir(fullpath)
+        for d in 'abcde':
+            fullpath = os.path.join(exe_path, d)
+            os.rmdir(fullpath)
 
 
     def test_mkdir (self):
