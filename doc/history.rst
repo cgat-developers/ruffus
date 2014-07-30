@@ -13,82 +13,186 @@ Major Features added to Ruffus
 ********************************************************************
 version 2.5 (beta)
 ********************************************************************
-============================================================================================================================================================
-Python3 compatability (but at least python 2.6 is required)
-============================================================================================================================================================
 
-    Ruffus is now python3 compatible. This has required surprisingly many changes to the codebase. Please report any bugs to me.
+    26th July 2014: Release Candidate
 
-    As a result, Ruffus requires at least python 2.6. It proved to be too difficult to support python 2.5 and python 3.x at the same time...
-
+    4th August 2014: Release
 
 ============================================================================================================================================================
-Refactor verbosity levels
+1) Python3 compatability (but at least python 2.6 is now required)
 ============================================================================================================================================================
 
-    Clarify what verbosity levels do and resolve inconsistencies for pipeline_printout and pipeline_run.
-    Pipeline_run now can printout lists of up-to-date tasks before running the pipeline
+    Ruffus v2.5 is now python3 compatible. This has required surprisingly many changes to the codebase. Please report any bugs to me.
 
-        * level 0 : nothing
-        * level 1 : Out-of-date Task names
-        * level 2 : All Tasks (including any task function docstrings)
-        * level 3 : Out-of-date Jobs in Out-of-date Tasks, no explanation
-        * level 4 : Out-of-date Jobs in Out-of-date Tasks, with explanations and warnings
-        * level 5 : All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)
-        * level 6 : All jobs in All Tasks whether out of date or not
-        * level 10: logs messages useful only for debugging ruffus pipeline code
+    .. note::
 
-    Defaults to level 4 for pipeline_printout: Out of date jobs, with explanations and warnings
-    Defaults to level 1 for pipeline_run: Out-of-date Task names
+        **Ruffus now requires at least python 2.6** 
+
+        It proved to be impossible to support python 2.5 and python 3.x at the same time.
 
 ============================================================================================================================================================
-Allow abbreviated path lengths output by ``pipeline_run`` or ``pipeline_printout``
+2) Ctrl-C interrupts
 ============================================================================================================================================================
 
+    Ruffus now terminates gracefully when interrupted by Ctrl-C .
+
+    This means that, in general, if an ``Exception`` is thrown during your pipeline but you don't want to wait for the rest of the jobs to complete, you can still press Ctrl-C at any point.
+    Note that you may still need to clean up spawned processes, for example, using ``qdel`` if you are using ``Ruffus.drmaa_wrapper``
+
+============================================================================================================================================================
+3) Customising flowcharts in pipeline_printout_graph() with ``@graphviz``
+============================================================================================================================================================
+
+    *Contributed by Sean Davis, with improved syntax via Jake Biesinger*
+
+    The graphics for each task can have its own attributes (URL, shape, colour) etc. by adding
+    `graphviz attributes  <http://www.graphviz.org/doc/info/attrs.html>`__
+    using the ``@graphviz`` decorator.
+
+    * This allows HTML formatting in the task names (using the ``label`` parameter as in the following example).
+      HTML labels **must** be enclosed in ``<`` and ``>``. E.g. 
+
+      .. code-block:: python
+
+        label = "<Line <BR/> wrapped task_name()>"
+
+    * You can also opt to keep the task name and wrap it with a prefix and suffix:
+
+      .. code-block:: python
+
+        label_suffix = "??? ", label_prefix = ": What is this?"
+
+    * The ``URL`` attribute allows the generation of clickable svg, and also client / server
+      side image maps usable in web pages.
+      See `Graphviz documentation  <http://www.graphviz.org/content/output-formats#dimap>`__
+
+
+    Example:
+
+        .. code-block:: python
+
+
+            @graphviz(URL='"http://cnn.com"', fillcolor = '"#FFCCCC"',
+                            color = '"#FF0000"', pencolor='"#FF0000"', fontcolor='"#4B6000"',
+                            label_suffix = "???", label_prefix = "What is this?<BR/> ",
+                            label = "<What <FONT COLOR=\"red\">is</FONT>this>",
+                            shape= "component", height = 1.5, peripheries = 5,
+                            style="dashed")
+            def Up_to_date_task2(infile, outfile):
+                pass
+
+            #   Can use dictionary if you wish...
+            graphviz_params = {"URL":"http://cnn.com", "fontcolor": '"#FF00FF"'}
+            @graphviz(**graphviz_params)
+            def myTask(input,output):
+                pass
+
+        .. **
+
+        .. image:: images/history_html_flowchart.png
+           :scale: 30 
+
+
+============================================================================================================================================================
+4. Consistent verbosity levels
+============================================================================================================================================================
+
+    The verbosity levels are now more fine-grained and consistent between pipeline_printout and pipeline_run.
+    Note that At verbosity > 2, ``pipeline_run``  outputs lists of up-to-date tasks before running the pipeline.
+    Many users who defaulted to using a verbosity of 3 may want to move up to ``verbose = 4``.
+
+        * **level 0** : *Nothing*
+        * **level 1** : *Out-of-date Task names*
+        * **level 2** : *All Tasks (including any task function docstrings)*
+        * **level 3** : *Out-of-date Jobs in Out-of-date Tasks, no explanation*
+        * **level 4** : *Out-of-date Jobs in Out-of-date Tasks, with explanations and warnings*
+        * **level 5** : *All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)*
+        * **level 6** : *All jobs in All Tasks whether out of date or not*
+        * **level 10**: *Logs messages useful only for debugging ruffus pipeline code*
+
+    * Defaults to **level 4** for pipeline_printout: *Out of date jobs, with explanations and warnings*
+    * Defaults to **level 1** for pipeline_run: *Out-of-date Task names*
+
+============================================================================================================================================================
+5. Allow abbreviated paths from ``pipeline_run`` or ``pipeline_printout``
+============================================================================================================================================================
 
     .. note ::
 
-            Please contact me with suggestions if you think the abbreviations are useful but ugly
+            Please contact me with suggestions if you find the abbreviations useful but "aesthetically challenged"!
 
-    Add ``verbose_abbreviated_path`` parameter to ``pipeline_printout`` and ``pipeline_run``
+    Some pipelines produce interminable lists of long filenames. It would be nice to be able to abbreviate this 
+    to just enough information to follow the progress.
 
-    Optionally restrict the length of input / output file paths to either
+    Ruffus now allows either
+        1) Only the nth top level sub-directories to be included
+        2) The message to be truncated to a specified number of characters (to fit on a line, for example)
 
-        * N levels of nesting
+           Note that the number of characters specified is the separate length of the input and output parameters,
+           not the entire message. You many need to specify a smaller limit that you expect (e.g. ``60`` rather than `80`)
+
+        .. code-block:: python
+
+            pipeline_printout(verbose_abbreviated_path = NNN)
+            pipeline_run(verbose_abbreviated_path = -MMM)
+
+
+    The ``verbose_abbreviated_path`` parameter restricts the length of input / output file paths to either
+
+        * NNN levels of nested paths
         * A total of MMM characters, MMM is specified by setting ``verbose_abbreviated_path`` to -MMM (i.e. negative values)
 
+        ``verbose_abbreviated_path`` defaults to ``2``
 
-    ``verbose_abbreviated_path`` defaults to ``2``
 
-        * 0: the full abspath
-        * 1-N: max N levels of nested subpaths. Will use relative paths if possible
+    For example:
 
-          for ``["aa/bb/cc/dddd.txt", "aaa/bbbb/cccc/eeed/eeee/ffff/gggg.txt"]``
+        Given ``["aa/bb/cc/dddd.txt", "aaa/bbbb/cccc/eeed/eeee/ffff/gggg.txt"]``
 
-            * N = 0 ``'[/test/ruffus/src/aa/bb/cc/dddd.txt, //test/ruffus/src/aaa/bbbb/cccc/eeed/eeee/ffff/gggg.txt]'``
-            * N = 1 ``'[.../dddd.txt, .../gggg.txt]'``
-            * N = 2 ``'[.../cc/dddd.txt, .../ffff/gggg.txt]'``
-            * N = 3 ``'[.../bb/cc/dddd.txt, .../eeee/ffff/gggg.txt]'``
 
-       * -N: As above but with each of the input/output parameter chopped off after N letters, and staring in ``"<???> "``
+        .. code-block:: python
+           :emphasize-lines: 1,4,8,19
 
-            * N = -60 ``'<???> /bb/cc/dddd.txt, aaa/bbbb/cccc/eeed/eeee/ffff/gggg.txt]'``
+            # Original relative paths
+            "[aa/bb/cc/dddd.txt, aaa/bbbb/cccc/eeed/eeee/ffff/gggg.txt]"
+        
+            # Full abspath
+            verbose_abbreviated_path = 0    
+            "[/test/ruffus/src/aa/bb/cc/dddd.txt, /test/ruffus/src/aaa/bbbb/cccc/eeed/eeee/ffff/gggg.txt]"
+
+            # Specifed level of nested directories
+            verbose_abbreviated_path = 1
+            "[.../dddd.txt, .../gggg.txt]"
+
+            verbose_abbreviated_path = 2
+            "[.../cc/dddd.txt, .../ffff/gggg.txt]"
+
+            verbose_abbreviated_path = 3
+            "[.../bb/cc/dddd.txt, .../eeee/ffff/gggg.txt]"
+
+
+            # Truncated to MMM characters
+            verbose_abbreviated_path = -60
+            "<???> /bb/cc/dddd.txt, aaa/bbbb/cccc/eeed/eeee/ffff/gggg.txt]"
 
 
     If you are using ``ruffus.cmdline``, the abbreviated path lengths can be specified on
     the command line as an extension to the verbosity:
 
-        # verbosity of 4
-        yourscript.py --verbose 4
+        .. code-block:: bash
+           :emphasize-lines: 4,7
 
-        # display three levels of nested directories
-        yourscript.py --verbose 4:3
+            # verbosity of 4
+            yourscript.py --verbose 4
 
-        # restrict input and output parameters to 60 letters
-        yourscript.py --verbose 4:-60
+            # display three levels of nested directories
+            yourscript.py --verbose 4:3
+
+            # restrict input and output parameters to 60 letters
+            yourscript.py --verbose 4:-60
 
 
-    The number after the colon is the abbreviated path length
+        The number after the colon is the abbreviated path length
 
 
 ============================================================================================================================================================
@@ -103,11 +207,15 @@ Other changes
 version 2.4.1
 ********************************************************************
 
+    26th April 2014
+
     * Breaking changes to drmaa API suggested by Bernie Pope to ensure portability across different drmaa implementations (SGE, SLURM etc.)
 
 ********************************************************************
 version 2.4
 ********************************************************************
+
+    4th April 2014
 
 ============================================================================================================================================================
 Additions to ``ruffus`` namespace
@@ -158,7 +266,6 @@ Installation: use pip
 3) :ref:`subdivide() <new_manual.subdivide>` (:ref:`syntax <decorators.subdivide>`)
 ============================================================================================================================================================
 
-    *
     * Take a list of input jobs (like :ref:`@transform <decorators.transform>`) but further splits each into multiple jobs, i.e. it is a **many->even more** relationship
     * synonym for the deprecated ``@split(..., regex(), ...)``
 
@@ -233,6 +340,8 @@ Installation: use pip
 ********************************************************************
 version 2.3
 ********************************************************************
+    1st September, 2013
+
     * ``@active_if`` turns off tasks at runtime
         The Design and initial implementation were contributed by Jacob Biesinger
 
@@ -294,6 +403,8 @@ version 2.3
 ********************************************************************
 version 2.2
 ********************************************************************
+    22nd July, 2010
+
     * Simplifying **@transform** syntax with **suffix(...)**
 
         Regular expressions within ruffus are very powerful, and can allow files to be moved

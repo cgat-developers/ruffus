@@ -18,50 +18,21 @@ Future Changes to Ruffus
     send a pull request via the `git site  <https://github.com/bunbun/ruffus>`__.
 
 
-.. _todo.extending_graph_viz:
-
 ********************************************************************************************************
-1. Extending graph viz with decorators
+1: Documentation
 ********************************************************************************************************
 
-    Contributed by Sean Davis, with suggestions from Jake Biesinger
+    * for ``@graphviz``
+        * decorators/graphviz.rst
+        * decorators/decorators.rst
+        * _templates/layout.html
+        * tutorials/new_tutorial/pipeline_printout_graph.rst
 
-    The graphic for each task can have its own attributes (shape, colour) etc. 
-    See `here  <http://www.graphviz.org/doc/info/attrs.html>`__ for a full list.
-    Note that HTML labels **must** be enclosed in ``<`` and ``>``
-    Example:
-
-        .. code-block:: python
-
-
-            @graphviz(URL='"http://cnn.com"', fillcolor = '"#FFFFCC"',
-                            color = '"#FFFFFF"', pencolor='"#C9D787"', fontcolor='"#4B6000"',
-                            task_suffix = "???", task_prefix = "What is this?<p>",
-                            label = "<What <FONT COLOR="red">is</FONT>this>",
-                            shape= "component", height = 1.5, peripheries = 5,
-                            style="dashed")
-            def myTask(input,output):
-                pass
-
-            graphviz_params = {"URL":"http://cnn.com", "fontcolor": '"#FF00FF"'}
-            @graphviz(**graphviz_params)
-            def myTask(input,output):
-                pass
-
-        .. **
-
-.. _todo.misfeatures:
-
-********************************************************************************************************
-2. (mis) Features
-********************************************************************************************************
-
-    * ``Ctrl-C`` should not leave dangling jobs
-    * Does killing parallel processes explicitly via kill or qdel cause the job to "fail"
-    * What happens with exceptions thrown in the middle of a multiprocessing / multithreading job?
-    * Are entries in the queue(s) preventing a clean shutdown?
-    * Debug with ``--verbose 10``
-
+    *  ``verbose_abbreviated_path`` for ``pipeline_run`` or ``pipeline_printout``
+        * pipeline_functions.rst
+        * tutorials/new_tutorial/pipeline_printout.rst
+        * command_line.rst
+        * task.py
 
 .. _todo.inactive_tasks_in_pipeline_printout_graph:
 
@@ -76,18 +47,19 @@ Todo: pipeline_printout_graph should print inactive tasks
 Todo: Mark input strings as non-file names, and add support for dynamically returned parameters
 ********************************************************************************************************
 
-    1. Use indicator object like "ouput_from"
-    2. What is a good name?
+    1. Use indicator object.
+    2. What is a good name? ``"output_from()"``, ``"NOT_FILE_NAME"`` :-)
     3. They will still participate in suffix, formatter and regex replacement
 
     Bernie Pope suggests that we should generalise this:
 
 
-    If any object in the input parameters is a (non-list/tuple) class instance, check (getattr) whether it has a "ruffus_params()" function.
+    If any object in the input parameters is a (non-list/tuple) class instance, check (getattr) whether it has a ``ruffus_params()`` function.
     If it does, call it to obtain a list which is substituted in place.
-    If there are string nested within, these will take part in Ruffus string substitution.
+    If there are string nested within, these will also take part in Ruffus string substitution.
+    Objects with ``ruffus_params()`` always "decay" to the results of the function call
 
-    "output_from" would be a simple wrapper which returns the internal string via ruffus_params()
+    ``output_from`` would be a simple wrapper which returns the internal string via ``ruffus_params()``
 
     .. code-block:: python
 
@@ -100,9 +72,6 @@ Todo: Mark input strings as non-file names, and add support for dynamically retu
     Returning a list should be like wildcards and should not introduce an unnecessary level of indirection for output parameters, i.e. suffix(".txt") or formatter() / "{basename[0]}" should work.
 
     Check!
-
-
-
 
 
 .. _todo.extra_parameters:
@@ -153,7 +122,8 @@ Todo: Allow "extra" parameters to be used in output substitution
 
     No string conversion takes place.
 
-
+    For ``INPUTS`` or ``EXTRAS`` which have objects with a ``ruffus_params()`` function (see Todo item above),
+    the original object rather than the result of ``ruffus_params()`` is forwarded.
 
 
 
