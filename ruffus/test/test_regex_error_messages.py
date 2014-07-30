@@ -50,12 +50,12 @@ from ruffus.ruffus_utility import (RUFFUS_HISTORY_FILE)
 workdir = 'tmp_test_regex_error_messages'
 #sub-1s resolution in system?
 one_second_per_job = None
-parallelism = 1
+parallelism = 2
 #___________________________________________________________________________
 #
 #   generate_initial_files1
 #___________________________________________________________________________
-@originate([workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"])
+@originate([workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcdefghi"])
 def generate_initial_files1(out_name):
     with open(out_name, 'w') as outfile:
         pass
@@ -344,7 +344,7 @@ class Test_regex_error_messages(unittest.TestCase):
         self.assertRaisesRegex(RethrownJobError,
                                 "File '.*?' does not match regex\('.*?'\) and pattern '.*?':\n.*invalid group reference",
                                 pipeline_run,
-                                [test_suffix_unmatched_task], verbose = 0)
+                                [test_suffix_unmatched_task], verbose = 0, multiprocess = parallelism)
 
 
     #___________________________________________________________________________
@@ -397,7 +397,7 @@ class Test_regex_error_messages(unittest.TestCase):
         self.assertRaisesRegex(RethrownJobError,
                                 "File '.*?' does not match regex\('.*?'\) and pattern '.*?':\n.*unknown group name",
                                 pipeline_run,
-                                [test_regex_misspelt_capture2_error_task], verbose = 0)
+                                [test_regex_misspelt_capture2_error_task], verbose = 0, multiprocess = parallelism)
 
 
     #___________________________________________________________________________
@@ -415,7 +415,7 @@ class Test_regex_error_messages(unittest.TestCase):
         self.assertRaisesRegex(RethrownJobError,
                                 "File '.*?' does not match regex\('.*?'\) and pattern '.*?':\n.*invalid group reference",
                                 pipeline_run,
-                                [test_regex_out_of_range_regex_reference_error_task], verbose = 0)
+                                [test_regex_out_of_range_regex_reference_error_task], verbose = 0, multiprocess = parallelism)
 
 
     #___________________________________________________________________________
@@ -434,4 +434,11 @@ class Test_regex_error_messages(unittest.TestCase):
 #
 if __name__ == '__main__':
     #pipeline_printout(sys.stdout, [test_product_task], verbose = 3)
-    unittest.main()
+    parallelism = 1
+    suite = unittest.TestLoader().loadTestsFromTestCase(Test_regex_error_messages)
+    unittest.TextTestRunner(verbosity=2).run(suite)
+    parallelism = 2
+    suite = unittest.TestLoader().loadTestsFromTestCase(Test_regex_error_messages)
+    unittest.TextTestRunner(verbosity=2).run(suite)
+    #unittest.main()
+

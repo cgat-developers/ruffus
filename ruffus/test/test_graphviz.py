@@ -211,7 +211,8 @@ class Test_graphviz(unittest.TestCase):
                                         #   e.g. svg, jpg etc.
                                         "dot",
                                         [Final_target, Up_to_date_final_target])
-        self.assertTrue('[URL="http://cnn.com", color="#006000", fillcolor="#B8CC6E", fontcolor="#006000", height=1.5, label=<What is this?<BR/> What <FONT COLOR="red">is</FONT>this???>, pencolor="#C9D787", peripheries=5, shape=component, style=filled]' in s.getvalue())
+        self.assertTrue('[URL="http://cnn.com", color="#FF0000", fillcolor="#FFCCCC", fontcolor="#4B6000", height=1.5, label=<What is this?<BR/> What <FONT COLOR="red">is</FONT>this???>, pencolor="#FF0000", peripheries=5, shape=component, style=dashed]' in s.getvalue())
+
 
 
 

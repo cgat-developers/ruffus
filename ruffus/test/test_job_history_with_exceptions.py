@@ -122,6 +122,9 @@ def cleanup_tmpdir():
     os.system('rm -f %s %s' % (os.path.join(workdir, '*'), RUFFUS_HISTORY_FILE))
 
 
+VERBOSITY = 5
+VERBOSITY = 11
+
 class Test_job_history_with_exceptions(unittest.TestCase):
     def setUp(self):
         try:
@@ -136,7 +139,7 @@ class Test_job_history_with_exceptions(unittest.TestCase):
     def test_job_history_with_exceptions(self):
         cleanup_tmpdir()
         s = StringIO()
-        pipeline_printout(s, [test_task4], verbose=5, wrap_width = 10000)
+        pipeline_printout(s, [test_task4], verbose=VERBOSITY, wrap_width = 10000)
         #print s.getvalue()
 
     def test_job_history_with_exceptions_run(self):
@@ -150,7 +153,7 @@ class Test_job_history_with_exceptions(unittest.TestCase):
             except:
                 pass
             s = StringIO()
-            pipeline_printout(s, [test_task4], verbose=5, wrap_width = 10000)
+            pipeline_printout(s, [test_task4], verbose=VERBOSITY, wrap_width = 10000)
             #
             # task 2 should be up to date because exception was throw in task 3
             #
@@ -204,7 +207,7 @@ class Test_job_history_with_exceptions(unittest.TestCase):
         # print "printout expecting sqlite file"
         #
         s = StringIO()
-        pipeline_printout(s, [test_task4], verbose = 5)
+        pipeline_printout(s, [test_task4], verbose = VERBOSITY)
         succeed = not re.search('Tasks which will be run:.*\n(.*\n)*Task = ', s.getvalue())
         if not succeed:
             print(s.getvalue(), file=sys.stderr)
@@ -228,5 +231,5 @@ class Test_job_history_with_exceptions(unittest.TestCase):
 #       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 #
 if __name__ == '__main__':
-    #pipeline_printout(sys.stdout, [test_product_task], verbose = 5)
+    #pipeline_printout(sys.stdout, [test_product_task], verbose = VERBOSITY)
     unittest.main()
