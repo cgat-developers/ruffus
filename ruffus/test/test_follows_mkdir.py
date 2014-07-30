@@ -3,20 +3,20 @@ from __future__ import print_function
 """
 
     test_follows_mkdir.py
-    
+
         test make directory dependencies
-        
+
         use :
             -j N / --jobs N       to specify multitasking
             -v                    to see the jobs in action
-            -n / --just_print     to see what jobs would run               
+            -n / --just_print     to see what jobs would run
 
 """
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   options        
+#   options
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -46,18 +46,18 @@ parser = OptionParser(version="%%prog v1.0, ruffus v%s" % ruffus.ruffus_version.
 parser.add_option("-t", "--target_tasks", dest="target_tasks",
                   action="append",
                   default = list(),
-                  metavar="JOBNAME", 
+                  metavar="JOBNAME",
                   type="string",
                   help="Target task(s) of pipeline.")
 parser.add_option("-f", "--forced_tasks", dest="forced_tasks",
                   action="append",
                   default = list(),
-                  metavar="JOBNAME", 
+                  metavar="JOBNAME",
                   type="string",
                   help="Pipeline task(s) which will be included even if they are up to date.")
 parser.add_option("-j", "--jobs", dest="jobs",
                   default=1,
-                  metavar="jobs", 
+                  metavar="jobs",
                   type="int",
                   help="Specifies  the number of jobs (commands) to run simultaneously.")
 parser.add_option("-v", "--verbose", dest = "verbose",
@@ -65,12 +65,12 @@ parser.add_option("-v", "--verbose", dest = "verbose",
                   help="Print more verbose messages for each additional verbose level.")
 parser.add_option("-d", "--dependency", dest="dependency_file",
                   #default="simple.svg",
-                  metavar="FILE", 
+                  metavar="FILE",
                   type="string",
                   help="Print a dependency graph of the pipeline that would be executed "
                         "to FILE, but do not execute it.")
 parser.add_option("-F", "--dependency_graph_format", dest="dependency_graph_format",
-                  metavar="FORMAT", 
+                  metavar="FORMAT",
                   type="string",
                   default = 'svg',
                   help="format of dependency graph file. Can be 'ps' (PostScript), "+
@@ -91,7 +91,7 @@ parser.add_option("-H", "--draw_graph_horizontally", dest="draw_horizontally",
                     action="store_true", default=False,
                     help="Draw horizontal dependency graph.")
 
-parameters = [  
+parameters = [
                 ]
 
 
@@ -102,7 +102,7 @@ parameters = [
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   imports        
+#   imports
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -148,7 +148,7 @@ helpstr = f.getvalue()
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-directories = [os.path.abspath('a'), 'b']    
+directories = [os.path.abspath('a'), 'b']
 @follows(mkdir(directories), mkdir('c'), mkdir('d', 'e'), mkdir('e'))
 def task_which_makes_directories ():
     pass
@@ -162,14 +162,14 @@ class Test_task_mkdir(unittest.TestCase):
         """
         """
         pass
-        
+
     def tearDown (self):
         """
         delete directories
         """
-        for d in 'abcde':
-            fullpath = os.path.join(exe_path, d)
-            os.rmdir(fullpath)
+        #for d in 'abcde':
+        #    fullpath = os.path.join(exe_path, d)
+        #    os.rmdir(fullpath)
 
 
     def test_mkdir (self):
@@ -177,7 +177,7 @@ class Test_task_mkdir(unittest.TestCase):
                             logger = stderr_logger if options.verbose else black_hole_logger,
                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                             verbose = options.verbose)
-        
+
         for d in 'abcde':
             fullpath = os.path.join(exe_path, d)
             self.assertTrue(os.path.exists(fullpath))
@@ -199,5 +199,5 @@ if __name__ == '__main__':
                              no_key_legend  = options.no_key_legend_in_graph)
     else:
         sys.argv= sys.argv[0:1]
-        unittest.main()        
+        unittest.main()
 

@@ -3921,7 +3921,10 @@ def pipeline_run(target_tasks                     = [],
         while 1:
             # use a timeout of 3 years per job..., so that the condition we are waiting for in the thread
             # can be interrupted by signals... In other words, so that Ctrl-C works
-            job_result = ii.next(99999999)
+            if pool:
+                job_result = ii.next(99999999)
+            else:
+                job_result = ii.next()
             # run next task
             log_at_level (logger, 11, verbose, "r" * 80 + "\n")
             t = node.lookup_node_from_name(job_result.task_name)
