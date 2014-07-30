@@ -3,6 +3,14 @@ Implementation Tips
 ##########################################
 
 ******************************************************************************
+Release
+******************************************************************************
+
+    tag git with, for example::
+
+        git tag -a v2.5RC -m "Version 2.5 Release Candidate"
+
+******************************************************************************
 dbdict.py
 ******************************************************************************
 
@@ -90,22 +98,26 @@ He contributed checkpointing, travis and tox etc.
     See http://stackoverflow.com/questions/1408356/keyboard-interrupts-with-pythons-multiprocessing-pool/1408476#1408476
 
     http://bryceboe.com/2012/02/14/python-multiprocessing-pool-and-keyboardinterrupt-revisited/ provides a reimplementation of Pool which
-    however only works when you have a fixed number of jobs which should then run in parallel to completion. Ruffus is considerably more 
+    however only works when you have a fixed number of jobs which should then run in parallel to completion. Ruffus is considerably more
     complicated because we have a variable number of jobs completing and being submitted into the job queue at any one time. Think
     of tasks stalling waiting for the dependent tasks to complete and then all the jobs of the task being released onto the queue
 
-    The solution is 
+    The solution is
 
-        #. Use a timeout parameter when using ``next()`` to iterate through ``pool.imap_unordered``. Only timed ``condition``s can be interruptible by signals...
-        #. This involved rewriting the ``for`` loop manually as a ``while`` loop
+        #. Use a ``timeout`` parameter when using ``IMapIterator.next(timeout=None)`` to iterate through ``pool.imap_unordered`` because only timed ``condition``s can be interruptible by signals...!!
+        #. This involves rewriting the ``for`` loop manually as a ``while`` loop
         #. We use a timeout of ``99999999``, i.e. 3 years, which should be enough for any job to complete...
-        #. After jobs are interrupted by a signal, we rethrow with our own exception because we want something that inherits from ``Exception`` unlike ``KeyboardInterrupt`` 
+        #. Googling after the fact, it looks like the galaxy guys (cool dudes or what) have written similar `code  <https://galaxy-dist.readthedocs.org/en/latest/_modules/galaxy/objectstore/s3_multipart_upload.html>`__
+        #. ``next()`` for normal iterators do not take ``timeout`` as an extra parameter so we have to wrap next in a conditional :-(. The galaxy guys do a `shim  <http://en.wikipedia.org/wiki/Shim_(computing)>`__ around ``next()`` but that is as much obsfucation as a simple if...
+        #. After jobs are interrupted by a signal, we rethrow with our own exception because we want something that inherits from ``Exception`` unlike ``KeyboardInterrupt``
         #. When a signal happens, we need to immediately stop ``feed_job_params_to_process_pool()`` from sending more parameters into the job queue (``parameter_q``)
            We use a proxy to a ``multiprocessing.Event`` (via ``syncmanager.Event()``). When ``death_event`` is set, all further processing stops...
         #. We also signal that all jobs should finish by putting ``all_tasks_complete()`` into ``parameter_q`` but only ``death_event`` prevents jobs already in the queue from going through
-        #. Ater signalling, some of the child processes appear to be dead by the time we start cleaning up. ``pool.terminate()`` sometimes tries and fails to 
+        #. Ater signalling, some of the child processes appear to be dead by the time we start cleaning up. ``pool.terminate()`` sometimes tries and fails to
            re-connect to the the ``death_event`` proxy via sockets and throws an exception. We should really figure out a better solution but in the meantime
            wrapping it in a ``try / except`` allows a clean exit.
+        #. If a vanilla exception is raised without multiprocessing running, we still need to first save the exception in ``job_errors`` (even if it is just one) before
+           cleaning up, because the cleaning up process may lead to further (ignored) exceptions which would overwrite the current exception when we need to rethrow it
 
 
     Exceptions thrown in the middle of a multiprocessing / multithreading job appear to be handled gracefully.
