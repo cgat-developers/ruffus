@@ -367,7 +367,7 @@ def run_job_locally (cmd_str, logger = None):
                                  cwd = os.getcwd(),
                                  shell = True,
                                  stdin = subprocess.PIPE,
-                                 stdout = subprocess.PIPE
+                                 stdout = subprocess.PIPE,
                                  stderr = subprocess.PIPE )
 
     # process.stdin.close()
