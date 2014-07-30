@@ -14,9 +14,9 @@ Major Features added to Ruffus
 version 2.5 (beta)
 ********************************************************************
 
-    26th July 2014: Release Candidate
+    31st July 2014: Release Candidate
 
-    4th August 2014: Release
+    5th August 2014: Release
 
 ============================================================================================================================================================
 1) Python3 compatability (but at least python 2.6 is now required)
@@ -26,7 +26,7 @@ version 2.5 (beta)
 
     .. note::
 
-        **Ruffus now requires at least python 2.6** 
+        **Ruffus now requires at least python 2.6**
 
         It proved to be impossible to support python 2.5 and python 3.x at the same time.
 
@@ -50,7 +50,7 @@ version 2.5 (beta)
     using the ``@graphviz`` decorator.
 
     * This allows HTML formatting in the task names (using the ``label`` parameter as in the following example).
-      HTML labels **must** be enclosed in ``<`` and ``>``. E.g. 
+      HTML labels **must** be enclosed in ``<`` and ``>``. E.g.
 
       .. code-block:: python
 
@@ -90,7 +90,7 @@ version 2.5 (beta)
         .. **
 
         .. image:: images/history_html_flowchart.png
-           :scale: 30 
+           :scale: 30
 
 
 ============================================================================================================================================================
@@ -121,7 +121,7 @@ version 2.5 (beta)
 
             Please contact me with suggestions if you find the abbreviations useful but "aesthetically challenged"!
 
-    Some pipelines produce interminable lists of long filenames. It would be nice to be able to abbreviate this 
+    Some pipelines produce interminable lists of long filenames. It would be nice to be able to abbreviate this
     to just enough information to follow the progress.
 
     Ruffus now allows either
@@ -155,9 +155,9 @@ version 2.5 (beta)
 
             # Original relative paths
             "[aa/bb/cc/dddd.txt, aaa/bbbb/cccc/eeed/eeee/ffff/gggg.txt]"
-        
+
             # Full abspath
-            verbose_abbreviated_path = 0    
+            verbose_abbreviated_path = 0
             "[/test/ruffus/src/aa/bb/cc/dddd.txt, /test/ruffus/src/aaa/bbbb/cccc/eeed/eeee/ffff/gggg.txt]"
 
             # Specifed level of nested directories

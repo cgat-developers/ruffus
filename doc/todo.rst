@@ -18,13 +18,6 @@ Future Changes to Ruffus
     send a pull request via the `git site  <https://github.com/bunbun/ruffus>`__.
 
 
-********************************************************************************************************
-1: Documentation
-********************************************************************************************************
-
-    *  ``verbose_abbreviated_path`` for ``pipeline_run`` or ``pipeline_printout``
-        * tutorials/new_tutorial/command_line.rst
-
 .. _todo.inactive_tasks_in_pipeline_printout_graph:
 
 ********************************************************************************************************
