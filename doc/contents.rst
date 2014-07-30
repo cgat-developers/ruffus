@@ -97,8 +97,6 @@ Examples
    examples/bioinformatics/part2.rst
    examples/bioinformatics/part1_code.rst
    examples/bioinformatics/part2_code.rst
-   tutorials/manual/manual_code.rst
-   tutorials/simple_tutorial/simple_tutorial_code.rst
 
 
 
@@ -188,75 +186,6 @@ Modules:
    graph.rst
    print_dependencies.rst
    adjacent_pairs_iterate.rst
-
-
-==========================================
-Old Manual: / tutorial
-==========================================
-
-.. toctree::
-   :maxdepth: 1
-
-   tutorials/manual/manual_contents.rst
-   tutorials/manual/manual_introduction.rst
-   tutorials/manual/follows.rst
-   tutorials/manual/tasks_as_recipes.rst
-   tutorials/manual/files.rst
-   tutorials/manual/tasks_and_globs_in_inputs.rst
-   tutorials/manual/tracing_pipeline_parameters.rst
-   tutorials/manual/parallel_processing.rst
-   tutorials/manual/split.rst
-   tutorials/manual/transform.rst
-   tutorials/manual/merge.rst
-   tutorials/manual/posttask.rst
-   tutorials/manual/jobs_limit.rst
-   tutorials/manual/dependencies.rst
-   tutorials/manual/onthefly.rst
-   tutorials/manual/collate.rst
-   tutorials/manual/advanced_transform.rst
-   tutorials/manual/parallel.rst
-   tutorials/manual/check_if_uptodate.rst
-   tutorials/manual/exceptions.rst
-   tutorials/manual/logging.rst
-   tutorials/manual/files_re.rst
-   recipes.rst
-
-.. toctree::
-   :maxdepth: 1
-
-   tutorials/simple_tutorial/simple_tutorial.rst
-   1. Chain tasks (functions) together into a pipeline <tutorials/simple_tutorial/step1_follows>
-   2. Provide parameters to run jobs in parallel <tutorials/simple_tutorial/step2>
-   3. Tracing through your new pipeline <tutorials/simple_tutorial/step3_run_pipeline>
-   4. Using flowcharts  <tutorials/simple_tutorial/step4_run_pipeline_graphically>
-   5. Split up a large problem into smaller chunks <tutorials/simple_tutorial/step5_split>
-   6. Calculate partial solutions in parallel <tutorials/simple_tutorial/step6_transform>
-   7. Re-combine the partial solutions into the final result <tutorials/simple_tutorial/step7_merge>
-   8. Automatically signal the completion of each step of our pipeline <tutorials/simple_tutorial/step8_posttask>
-
-
-Old Manual Code:
-
-.. toctree::
-    :maxdepth: 1
-
-    tutorials/manual/dependencies_code.rst
-    tutorials/manual/logging_code.rst
-    tutorials/manual/onthefly_code.rst
-    tutorials/manual/transform_code.rst
-
-Old Tutorial Code:
-
-.. toctree::
-    :maxdepth: 1
-
-    tutorials/simple_tutorial/step2_code.rst
-    tutorials/simple_tutorial/step3_run_pipeline_code.rst
-    tutorials/simple_tutorial/step4_run_pipeline_graphically_code.rst
-    tutorials/simple_tutorial/step5_split_code.rst
-    tutorials/simple_tutorial/step6_transform_code.rst
-    tutorials/simple_tutorial/step7_merge_code.rst
-    tutorials/simple_tutorial/step8_posttask_code.rst
 
 
 =====================
