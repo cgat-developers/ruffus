@@ -510,13 +510,6 @@ def write_flowchart_in_dot_format(  jobs_to_run,
                 attributes["peripheries"] = 2
 
         #
-        #   graphviz attributes override other definitions
-        #       presume the user knows what she is doing!
-        #
-        if(hasattr(n,'graphviz_attributes')):
-            for k in n.graphviz_attributes:
-                attributes[k]=n.graphviz_attributes[k]
-        #
         #   circularity violating DAG: highlight in red
         #
         if n in dag_violating_nodes:
@@ -547,6 +540,14 @@ def write_flowchart_in_dot_format(  jobs_to_run,
 
             else:
                 get_dot_format_for_task_type ("Task to run", attributes, colour_scheme, used_task_types)
+
+            #
+            #   graphviz attributes override other definitions
+            #       presume the user knows what she is doing!
+            #
+            if(hasattr(n,'graphviz_attributes')):
+                for k in n.graphviz_attributes:
+                    attributes[k]=n.graphviz_attributes[k]
             stream.write('t%d' % n._node_index + attributes_to_str(attributes, _get_name(n)))
 
         else:
@@ -571,6 +572,13 @@ def write_flowchart_in_dot_format(  jobs_to_run,
                         delayed_task_strings.append('t%d -> t%d[color=%s, arrowtype=normal];\n' % (o._node_index, n._node_index, colour_scheme["Up-to-date"]["linecolor"]))
                     continue
 
+            #
+            #   graphviz attributes override other definitions
+            #       presume the user knows what she is doing!
+            #
+            if(hasattr(n,'graphviz_attributes')):
+                for k in n.graphviz_attributes:
+                    attributes[k]=n.graphviz_attributes[k]
             stream.write('t%d' % n._node_index + attributes_to_str(attributes, _get_name(n)))
 
         #

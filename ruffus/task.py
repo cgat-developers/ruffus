@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import sys
+#import signal
 if sys.hexversion < 0x03000000:
     from future_builtins import zip, map
 ################################################################################
@@ -146,6 +147,8 @@ if sys.hexversion >= 0x03000000:
 else:
     import Queue as queue
 
+class Ruffus_Keyboard_Interrupt_Exception (Exception):
+    pass
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -267,7 +270,8 @@ def do_nothing_semaphore():
 
 
 
-
+# EXTRA pipeline_run DEBUGGING
+EXTRA_PIPELINERUN_DEBUGGING = False
 
 
 
@@ -535,6 +539,15 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
         else:
             try:
                 ret_val = user_defined_work_func(*param)
+                # EXTRA pipeline_run DEBUGGING
+                if EXTRA_PIPELINERUN_DEBUGGING:
+                    sys.stderr.write("1" * 80 + "\n")
+            except KeyboardInterrupt as e:
+                # Reraise KeyboardInterrupt as a normal Exception
+                # EXTRA pipeline_run DEBUGGING
+                if EXTRA_PIPELINERUN_DEBUGGING:
+                    sys.stderr.write("2" * 80 + "\n")
+                raise Ruffus_Keyboard_Interrupt_Exception("KeyboardInterrupt")
             except:
                 #sys.stderr.write("?? %s ??" % (tuple(param),))
                 raise
@@ -708,9 +721,9 @@ def run_pooled_job_without_exceptions (process_parameters):
         return any exceptions which will be rethrown at the other end:
         See RethrownJobError /  run_all_jobs_in_task
     """
-
+    #signal.signal(signal.SIGINT, signal.SIG_IGN)
     (param, task_name, job_name, job_wrapper, user_defined_work_func,
-            job_limit_semaphore, touch_files_only) = process_parameters
+            job_limit_semaphore, death_event, touch_files_only) = process_parameters
 
     ##job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
     ##outfile = param[1] if len(param) > 1 else None   # mkdir has no output
@@ -724,6 +737,9 @@ def run_pooled_job_without_exceptions (process_parameters):
 
     try:
         with job_limit_semaphore:
+            # EXTRA pipeline_run DEBUGGING
+            if EXTRA_PIPELINERUN_DEBUGGING:
+                sys.stderr.write(">" * 80 + "\n")
             return_value =  job_wrapper(param, user_defined_work_func, register_cleanup, touch_files_only)
 
             #
@@ -731,8 +747,21 @@ def run_pooled_job_without_exceptions (process_parameters):
             #
             #if one_second_per_job:
             #    time.sleep(1.01)
+            # EXTRA pipeline_run DEBUGGING
+            if EXTRA_PIPELINERUN_DEBUGGING:
+                sys.stderr.write("<" * 80 + "\n")
             return t_job_result(task_name, JOB_COMPLETED, job_name, return_value, None, param)
+    except KeyboardInterrupt as e:
+        # Reraise KeyboardInterrupt as a normal Exception. Should never be necessary here
+        # EXTRA pipeline_run DEBUGGING
+        if EXTRA_PIPELINERUN_DEBUGGING:
+            sys.stderr.write("3" * 80 + "\n")
+        death_event.set()
+        raise Ruffus_Keyboard_Interrupt_Exception("KeyboardInterrupt")
     except:
+        # EXTRA pipeline_run DEBUGGING
+        if EXTRA_PIPELINERUN_DEBUGGING:
+            sys.stderr.write("4" * 80 + "\n")
         #   Wrap up one or more exceptions rethrown across process boundaries
         #
         #       See multiprocessor.Server.handle_request/serve_client for an analogous function
@@ -743,7 +772,10 @@ def run_pooled_job_without_exceptions (process_parameters):
         if len(exception_value):
             exception_value = "(%s)" % exception_value
 
-        if exceptionType == JobSignalledBreak:
+        if exceptionType == Ruffus_Keyboard_Interrupt_Exception:
+            death_event.set()
+            job_state = JOB_SIGNALLED_BREAK
+        elif exceptionType == JobSignalledBreak:
             job_state = JOB_SIGNALLED_BREAK
         else:
             job_state = JOB_ERROR
@@ -2842,6 +2874,13 @@ def pipeline_printout_graph (stream,
                                           set to build targets if set to ``True``. Use with caution.
     :param test_all_task_for_update: Ask all task functions if they are up-to-date.
     :param no_key_legend: Don't draw key/legend for graph.
+    :param minimal_key_legend: Only add entries to the legend for task types which appear
+    :param user_colour_scheme: Dictionary specifying colour scheme for flowchart
+    :param pipeline_name: Pipeline Title
+    :param size: tuple of x and y dimensions
+    :param dpi: print resolution
+    :param runtime_data: Experimental feature for passing data to tasks at run time
+    :param history_file: The database file which stores checksums and file timestamps for input/output files.
     :param checksum_level: Several options for checking up-to-dateness are available: Default is level 1.
                     level 0 : Use only file timestamps
                     level 1 : above, plus timestamp of successful job completion
@@ -2849,6 +2888,8 @@ def pipeline_printout_graph (stream,
                     level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
     """
 
+    # EXTRA pipeline_run DEBUGGING
+    EXTRA_PIPELINERUN_DEBUGGING = False
 
     if checksum_level is None:
         checksum_level = get_default_checksum_level()
@@ -2980,7 +3021,7 @@ def pipeline_printout(  output_stream                   = None,
                         runtime_data                    = None,
                         checksum_level                  = None,
                         history_file                    = None,
-                        verbose_abbreviated_path             = 2):
+                        verbose_abbreviated_path        = None):
                       # Remember to add further extra parameters here to "extra_pipeline_printout_options" inside cmdline.py
                       # This will forward extra parameters from the command line to pipeline_printout
     """
@@ -3018,10 +3059,19 @@ def pipeline_printout(  output_stream                   = None,
     :param runtime_data: Experimental feature for passing data to tasks at run time
     :param checksum_level: Several options for checking up-to-dateness are available: Default is level 1.
                     level 0 : Use only file timestamps
-                    level 1 : above, plus timestamp of successful job completion
-                    level 2 : above, plus a checksum of the pipeline function body
-                    level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
+                    level 1 : As above, plus timestamp of successful job completion
+                    level 2 : As above, plus a checksum of the pipeline function body
+                    level 3 : As above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
+    :param history_file: The database file which stores checksums and file timestamps for input/output files.
+    :param verbose_abbreviated_path: whether input and output paths are abbreviated.
+                    level 0: The full (expanded, abspath) input or output path
+                    level > 1: The number of subdirectories to include. Abbreviated paths are prefixed with ``[,,,]/``
+                    level < 0: Input / Output parameters are truncated to -MMM letters where level ==MMM. Subdirectories are first removed to see if this allows the paths to fit in the specified limit. Otherwise abbreviated paths are prefixed by ``<???>``
     """
+    # do nothing!
+    if verbose == 0:
+        return
+
     #
     # default values
     #
@@ -3029,8 +3079,9 @@ def pipeline_printout(  output_stream                   = None,
         verbose_abbreviated_path = 2
     if verbose == None:
         verbose = 4
-    if verbose == 0:
-        return
+
+    # EXTRA pipeline_run DEBUGGING
+    EXTRA_PIPELINERUN_DEBUGGING = False
 
     if output_stream == None:
         import sys
@@ -3124,6 +3175,7 @@ def pipeline_printout(  output_stream                   = None,
         # LOGGER
         output_stream.write("_" * 40 + "\n")
 
+
 #_________________________________________________________________________________________
 
 #   get_semaphore
@@ -3157,6 +3209,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                                     task_with_completed_job_q, runtime_data, verbose,
                                     verbose_abbreviated_path,
                                     syncmanager,
+                                    death_event,
                                     touch_files_only, job_history):
 
     inprogress_tasks = set()
@@ -3334,6 +3387,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                                 t.job_wrapper,
                                 t.user_defined_work_func,
                                 get_semaphore (t, job_limit_semaphores, syncmanager),
+                                death_event,
                                 touch_files_only)
 
                     # if no job came from this task, this task is complete
@@ -3412,7 +3466,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
 #
 #
 #________________________________________________________________________________________
-def feed_job_params_to_process_pool_factory (parameter_q, logger, verbose):
+def feed_job_params_to_process_pool_factory (parameter_q, death_event, logger, verbose):
     """
     Process pool gets its parameters from this generator
     Use factory function to save parameter_queue
@@ -3429,6 +3483,10 @@ def feed_job_params_to_process_pool_factory (parameter_q, logger, verbose):
 
             # all tasks done
             if isinstance(param, all_tasks_complete):
+                break
+
+            if death_event.is_set():
+                death_event.clear()
                 break
 
             log_at_level (logger, 10, verbose, "   Send param to Pooled Process=>" + str(param[0]))
@@ -3483,6 +3541,9 @@ def pipeline_get_task_names ():
     Not that does not check if pipeline is wired up properly
     """
 
+    # EXTRA pipeline_run DEBUGGING
+    EXTRA_PIPELINERUN_DEBUGGING = False
+
     #
     #   Make sure all tasks in dependency list are linked to real functions
     #
@@ -3491,6 +3552,8 @@ def pipeline_get_task_names ():
     #
     #   Return task names for all nodes willy nilly
     #
+
+
     return [n.get_task_name() for n in node._all_nodes]
 
 
@@ -3565,11 +3628,15 @@ def pipeline_run(target_tasks                     = [],
                            level 1 : above, plus timestamp of successful job completion
                            level 2 : above, plus a checksum of the pipeline function body
                            level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
-    :param history_file: The database file which stores checksums and file timestamps for input/output files.
     :param one_second_per_job: To work around poor file timepstamp resolution for some file systems. Defaults to True if checksum_level is 0 forcing Tasks to take a minimum of 1 second to complete.
     :param runtime_data: Experimental feature for passing data to tasks at run time
     :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all* out-of-date tasks. Runs minimal
                                           set to build targets if set to ``True``. Use with caution.
+    :param history_file: The database file which stores checksums and file timestamps for input/output files.
+    :param verbose_abbreviated_path: whether input and output paths are abbreviated.
+                          level 0: The full (expanded, abspath) input or output path
+                          level > 1: The number of subdirectories to include. Abbreviated paths are prefixed with ``[,,,]/``
+                          level < 0: Input / Output parameters are truncated to -MMM letters where level ==MMM. Subdirectories are first removed to see if this allows the paths to fit in the specified limit. Otherwise abbreviated paths are prefixed by ``<???>``
     """
 
     #
@@ -3587,6 +3654,12 @@ def pipeline_run(target_tasks                     = [],
         verbose = 1
     if verbose_abbreviated_path == None:
         verbose_abbreviated_path = 2
+
+    # EXTRA pipeline_run DEBUGGING
+    if verbose >= 11:
+        EXTRA_PIPELINERUN_DEBUGGING = True
+    else:
+        EXTRA_PIPELINERUN_DEBUGGING = False
 
 
     syncmanager = multiprocessing.Manager()
@@ -3766,6 +3839,8 @@ def pipeline_run(target_tasks                     = [],
     #
     # prime queue with initial set of job parameters
     #
+    death_event = syncmanager.Event()
+    #death_event = None
     parameter_q = queue.Queue()
     task_with_completed_job_q = queue.Queue()
     parameter_generator = make_job_parameter_generator (incomplete_tasks, task_parents,
@@ -3774,6 +3849,7 @@ def pipeline_run(target_tasks                     = [],
                                                         runtime_data, verbose,
                                                         verbose_abbreviated_path,
                                                         syncmanager,
+                                                        death_event,
                                                         touch_files_only, job_history)
     job_parameters = parameter_generator()
     fill_queue_with_job_parameters(job_parameters, parameter_q, parallelism, logger, verbose)
@@ -3823,7 +3899,7 @@ def pipeline_run(target_tasks                     = [],
 
 
 
-    feed_job_params_to_process_pool = feed_job_params_to_process_pool_factory (parameter_q, logger, verbose)
+    feed_job_params_to_process_pool = feed_job_params_to_process_pool_factory (parameter_q, death_event, logger, verbose)
 
     #
     #   for each result from job
@@ -3837,73 +3913,21 @@ def pipeline_run(target_tasks                     = [],
     #       Reserved for returning result from job...
     #       How?
     #
-    for job_result in pool_func(run_pooled_job_without_exceptions, feed_job_params_to_process_pool()):
-        t = node.lookup_node_from_name(job_result.task_name)
+    #   Rewrite for loop so we can call iter.next() with a timeout
+    try:
 
-        # remove failed jobs from history-- their output is bogus now!
-        if job_result.state in (JOB_ERROR, JOB_SIGNALLED_BREAK):
+        #for job_result in pool_func(run_pooled_job_without_exceptions, feed_job_params_to_process_pool()):
+        ii  = iter(pool_func(run_pooled_job_without_exceptions, feed_job_params_to_process_pool()))
+        while 1:
+            # use a timeout of 3 years per job..., so that the condition we are waiting for in the thread
+            # can be interrupted by signals... In other words, so that Ctrl-C works
+            job_result = ii.next(99999999)
+            # run next task
+            log_at_level (logger, 11, verbose, "r" * 80 + "\n")
+            t = node.lookup_node_from_name(job_result.task_name)
 
-            if len(job_result.params) > 1:  # some jobs have no outputs
-                output_file_name = job_result.params[1]
-                if not isinstance(output_file_name, list): # some have multiple outputs from one job
-                    output_file_name = [output_file_name]
-                #
-                # N.B. output parameters are not necessary all strings
-                #
-                for o_f_n in get_strings_in_nested_sequence(output_file_name):
-                    #
-                    # use paths relative to working directory
-                    #
-                    o_f_n = os.path.relpath(o_f_n)
-                    job_history.pop(o_f_n, None)  # remove outfile from history if it exists
-
-        # only save poolsize number of errors
-        if job_result.state == JOB_ERROR:
-            log_at_level (logger, 10, verbose, "   Exception caught for %s" % job_result.job_name)
-            job_errors.append(job_result.exception)
-            tasks_with_errors.add(t)
-
-            #
-            # print to logger immediately
-            #
-            if log_exceptions:
-                log_at_level (logger, 10, verbose, "   Log Exception")
-                logger.error(job_errors.get_nth_exception_str())
-
-            #
-            # break if too many errors
-            #
-            if len(job_errors) >= parallelism or exceptions_terminate_immediately:
-                log_at_level (logger, 10, verbose, "   Break loop %s %s %s " % (exceptions_terminate_immediately, len(job_errors), parallelism) )
-                parameter_q.put(all_tasks_complete())
-                break
-
-
-        # break immediately if the user says stop
-        elif job_result.state == JOB_SIGNALLED_BREAK:
-            job_errors.append(job_result.exception)
-            job_errors.specify_task(t, "Exceptions running jobs")
-            log_at_level (logger, 10, verbose, "   Break loop JOB_SIGNALLED_BREAK %s %s " % (len(job_errors), parallelism) )
-            parameter_q.put(all_tasks_complete())
-            break
-
-        else:
-            if job_result.state == JOB_UP_TO_DATE:
-                # LOGGER: All Jobs in Out-of-date Tasks
-                log_at_level (logger, 5, verbose, "    %s unnecessary: already up to date" % job_result.job_name)
-            else:
-                # LOGGER: Out-of-date Jobs in Out-of-date Tasks
-                log_at_level (logger, 3, verbose, "    %s completed" % job_result.job_name)
-                # save this task name and the job (input and output files)
-                # alternatively, we could just save the output file and its
-                # completion time, or on the other end of the spectrum,
-                # we could save a checksum of the function that generated
-                # this file, something akin to:
-                # chksum = md5.md5(marshal.dumps(t.user_defined_work_func.func_code.co_code))
-                # we could even checksum the arguments to the function that
-                # generated this file:
-                # chksum2 = md5.md5(marshal.dumps(t.user_defined_work_func.func_defaults) +
-                #                   marshal.dumps(t.args))
+            # remove failed jobs from history-- their output is bogus now!
+            if job_result.state in (JOB_ERROR, JOB_SIGNALLED_BREAK):
 
                 if len(job_result.params) > 1:  # some jobs have no outputs
                     output_file_name = job_result.params[1]
@@ -3911,71 +3935,173 @@ def pipeline_run(target_tasks                     = [],
                         output_file_name = [output_file_name]
                     #
                     # N.B. output parameters are not necessary all strings
-                    #       and not all files have been successfully created,
-                    #       even though the task apparently completed properly!
-                    # Remember to expand globs
                     #
-                    for possible_glob_str in get_strings_in_nested_sequence(output_file_name):
-                        for o_f_n in glob.glob(possible_glob_str):
-                            #
-                            # use paths relative to working directory
-                            #
-                            o_f_n = os.path.relpath(o_f_n)
-                            try:
-                                log_at_level (logger, 10, verbose, "   Job History for : " + o_f_n)
-                                mtime = os.path.getmtime(o_f_n)
+                    for o_f_n in get_strings_in_nested_sequence(output_file_name):
+                        #
+                        # use paths relative to working directory
+                        #
+                        o_f_n = os.path.relpath(o_f_n)
+                        job_history.pop(o_f_n, None)  # remove outfile from history if it exists
+
+            # only save poolsize number of errors
+            if job_result.state == JOB_ERROR:
+                log_at_level (logger, 10, verbose, "   Exception caught for %s" % job_result.job_name)
+                job_errors.append(job_result.exception)
+                tasks_with_errors.add(t)
+
+                #
+                # print to logger immediately
+                #
+                if log_exceptions:
+                    log_at_level (logger, 10, verbose, "   Log Exception")
+                    logger.error(job_errors.get_nth_exception_str())
+
+                #
+                # break if too many errors
+                #
+                if len(job_errors) >= parallelism or exceptions_terminate_immediately:
+                    log_at_level (logger, 10, verbose, "   Break loop %s %s %s " % (exceptions_terminate_immediately, len(job_errors), parallelism) )
+                    parameter_q.put(all_tasks_complete())
+                    break
+
+
+            # break immediately if the user says stop
+            elif job_result.state == JOB_SIGNALLED_BREAK:
+                job_errors.append(job_result.exception)
+                job_errors.specify_task(t, "Exceptions running jobs")
+                log_at_level (logger, 10, verbose, "   Break loop JOB_SIGNALLED_BREAK %s %s " % (len(job_errors), parallelism) )
+                parameter_q.put(all_tasks_complete())
+                break
+
+            else:
+                if job_result.state == JOB_UP_TO_DATE:
+                    # LOGGER: All Jobs in Out-of-date Tasks
+                    log_at_level (logger, 5, verbose, "    %s unnecessary: already up to date" % job_result.job_name)
+                else:
+                    # LOGGER: Out-of-date Jobs in Out-of-date Tasks
+                    log_at_level (logger, 3, verbose, "    %s completed" % job_result.job_name)
+                    # save this task name and the job (input and output files)
+                    # alternatively, we could just save the output file and its
+                    # completion time, or on the other end of the spectrum,
+                    # we could save a checksum of the function that generated
+                    # this file, something akin to:
+                    # chksum = md5.md5(marshal.dumps(t.user_defined_work_func.func_code.co_code))
+                    # we could even checksum the arguments to the function that
+                    # generated this file:
+                    # chksum2 = md5.md5(marshal.dumps(t.user_defined_work_func.func_defaults) +
+                    #                   marshal.dumps(t.args))
+
+                    if len(job_result.params) > 1:  # some jobs have no outputs
+                        output_file_name = job_result.params[1]
+                        if not isinstance(output_file_name, list): # some have multiple outputs from one job
+                            output_file_name = [output_file_name]
+                        #
+                        # N.B. output parameters are not necessary all strings
+                        #       and not all files have been successfully created,
+                        #       even though the task apparently completed properly!
+                        # Remember to expand globs
+                        #
+                        for possible_glob_str in get_strings_in_nested_sequence(output_file_name):
+                            for o_f_n in glob.glob(possible_glob_str):
                                 #
-                                #   use probably higher resolution time.time() over mtime
-                                #       which might have 1 or 2s resolutions, unless there is
-                                #       clock skew and the filesystem time > system time
-                                #       (e.g. for networks)
+                                # use paths relative to working directory
                                 #
-                                epoch_seconds = time.time()
-                                # Aargh. go back to insert one second between jobs
-                                if epoch_seconds < mtime:
-                                    if one_second_per_job == None and not runtime_data["ONE_SECOND_PER_JOB"]:
-                                        log_at_level (logger, 10, verbose, "   Switch to one second per job")
-                                        runtime_data["ONE_SECOND_PER_JOB"] = True
-                                elif  epoch_seconds - mtime < 1.1:
-                                    mtime = epoch_seconds
-                                chksum = JobHistoryChecksum(o_f_n, mtime, job_result.params[2:], t)
-                                job_history[o_f_n] = chksum
-                            except:
-                                pass
+                                o_f_n = os.path.relpath(o_f_n)
+                                try:
+                                    log_at_level (logger, 10, verbose, "   Job History for : " + o_f_n)
+                                    mtime = os.path.getmtime(o_f_n)
+                                    #
+                                    #   use probably higher resolution time.time() over mtime
+                                    #       which might have 1 or 2s resolutions, unless there is
+                                    #       clock skew and the filesystem time > system time
+                                    #       (e.g. for networks)
+                                    #
+                                    epoch_seconds = time.time()
+                                    # Aargh. go back to insert one second between jobs
+                                    if epoch_seconds < mtime:
+                                        if one_second_per_job == None and not runtime_data["ONE_SECOND_PER_JOB"]:
+                                            log_at_level (logger, 10, verbose, "   Switch to one second per job")
+                                            runtime_data["ONE_SECOND_PER_JOB"] = True
+                                    elif  epoch_seconds - mtime < 1.1:
+                                        mtime = epoch_seconds
+                                    chksum = JobHistoryChecksum(o_f_n, mtime, job_result.params[2:], t)
+                                    job_history[o_f_n] = chksum
+                                except:
+                                    pass
 
-                ##for output_file_name in t.output_filenames:
-                ##    # could use current time instead...
-                ##    if not isinstance(output_file_name, list):
-                ##        output_file_name = [output_file_name]
-                ##    for o_f_n in output_file_name:
-                ##        mtime = os.path.getmtime(o_f_n)
-                ##        chksum = JobHistoryChecksum(o_f_n, mtime, job_result.params[2:], t)
-                ##        job_history[o_f_n] = chksum
-
-
-        #
-        #   signal completed task after checksumming
-        #
-        task_with_completed_job_q.put((t, job_result.task_name, job_result.job_name))
-
-
-        # make sure queue is still full after each job is retired
-        # do this after undating which jobs are incomplete
-        if len(job_errors):
-            #parameter_q.clear()
-            #if len(job_errors) == 1 and not parameter_q._closed:
-            parameter_q.put(all_tasks_complete())
-        else:
-            fill_queue_with_job_parameters(job_parameters, parameter_q, parallelism, logger, verbose)
+                    ##for output_file_name in t.output_filenames:
+                    ##    # could use current time instead...
+                    ##    if not isinstance(output_file_name, list):
+                    ##        output_file_name = [output_file_name]
+                    ##    for o_f_n in output_file_name:
+                    ##        mtime = os.path.getmtime(o_f_n)
+                    ##        chksum = JobHistoryChecksum(o_f_n, mtime, job_result.params[2:], t)
+                    ##        job_history[o_f_n] = chksum
 
 
-    syncmanager.shutdown()
+            log_at_level (logger, 10, verbose, "   signal completed task after checksumming...")
+            #
+            #   signal completed task after checksumming
+            #
+            task_with_completed_job_q.put((t, job_result.task_name, job_result.job_name))
+
+
+            # make sure queue is still full after each job is retired
+            # do this after undating which jobs are incomplete
+            log_at_level (logger, 10, verbose, "   job errors?")
+            if len(job_errors):
+                #parameter_q.clear()
+                #if len(job_errors) == 1 and not parameter_q._closed:
+                log_at_level (logger, 10, verbose, "   all tasks completed...")
+                parameter_q.put(all_tasks_complete())
+            else:
+                log_at_level (logger, 10, verbose, "   Fill queue with more parameter...")
+                fill_queue_with_job_parameters(job_parameters, parameter_q, parallelism, logger, verbose)
+    # The equivalent of the normal end of a fall loop
+    except StopIteration as e:
+        #print ("END iteration normally",  file=sys.stderr)
+        pass
+    except:
+        exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+        log_at_level (logger, 10, verbose, "       Exception caught %s" % (exceptionValue))
+        log_at_level (logger, 10, verbose, "       Exception caught %s" % (exceptionType))
+        log_at_level (logger, 10, verbose, "       Exception caught %s" % (exceptionTraceback))
+        log_at_level (logger, 10, verbose, "   Get next parameter size = %d" %
+                                                    parameter_q.qsize())
+        log_at_level (logger, 10, verbose, "   Task with completed jobs size = %d" %
+                                                    task_with_completed_job_q.qsize())
+        try:
+            while 1:
+                parameter_q.get_nowait()
+        except:
+            pass
+        parameter_q.put(all_tasks_complete())
+        try:
+            death_event.clear()
+        except:
+            pass
+
+
+
+    #log_at_level (logger, 10, verbose, "       syncmanager.shutdown")
+    #syncmanager.shutdown()
 
 
     if pool:
+        log_at_level (logger, 10, verbose, "       pool.close")
+        #pool.join()
         pool.close()
-        pool.terminate()
+        log_at_level (logger, 10, verbose, "       pool.terminate")
+        # an exception may be thrown after a signal is caught (Ctrl-C)
+        #   when the EventProxy(s) for death_event might be left hanging
+        try:
+            pool.terminate()
+        except:
+            pass
+        log_at_level (logger, 10, verbose, "       pool.terminated")
 
+    # Switch back off EXTRA pipeline_run DEBUGGING
+    EXTRA_PIPELINERUN_DEBUGGING = False
 
     if len(job_errors):
         raise job_errors
