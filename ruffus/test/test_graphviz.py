@@ -75,6 +75,7 @@ from ruffus import *
 from ruffus.ruffus_exceptions import JobSignalledBreak
 
 
+
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Pipeline
@@ -90,8 +91,8 @@ from ruffus.ruffus_exceptions import JobSignalledBreak
 def Up_to_date_task1(infile, outfile):
     pass
 
-@task.graphviz(URL='"http://cnn.com"', fillcolor = '"#FFFFCC"',
-                color = '"#FFFFFF"', pencolor='"#C9D787"', fontcolor='"#4B6000"',
+@graphviz(URL='"http://cnn.com"', fillcolor = '"#FFCCCC"',
+                color = '"#FF0000"', pencolor='"#FF0000"', fontcolor='"#4B6000"',
                 label_suffix = "???", label_prefix = "What is this?<BR/> ",
                 label = "<What <FONT COLOR=\"red\">is</FONT>this>",
                 shape= "component", height = 1.5, peripheries = 5,
@@ -220,4 +221,8 @@ class Test_graphviz(unittest.TestCase):
 #
 if __name__ == '__main__':
     #pipeline_printout(sys.stdout, [test_product_task], verbose = 5)
+    #pipeline_printout_graph( "test.png", "png", [Final_target, Up_to_date_final_target])
+    #pipeline_printout_graph( "test.dot", "dot", [Final_target, Up_to_date_final_target])
     unittest.main()
+
+
