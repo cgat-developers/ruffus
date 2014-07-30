@@ -289,7 +289,7 @@ Your first *Ruffus* pipeline
             #
             #   STAGE 3 bam->statistics
             #
-            @transform(map_dna_sequence,                   # Input = previous stage
+            @transform(compress_sam_file,                  # Input = previous stage
                         suffix(".bam"),                    #         suffix = .bam
                         ".statistics",                     # Output  suffix = .statistics
                         "use_linear_model")                # Extra statistics parameter
