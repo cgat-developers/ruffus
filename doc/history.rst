@@ -34,7 +34,9 @@ version 2.5RC
 2) Ctrl-C interrupts
 ============================================================================================================================================================
 
-    Ruffus now terminates gracefully when interrupted by Ctrl-C .
+    Ruffus now mostly(!) terminates gracefully when interrupted by Ctrl-C .
+
+    Please send me bug reports for when this doesn't work with a minimally reproducible case.
 
     This means that, in general, if an ``Exception`` is thrown during your pipeline but you don't want to wait for the rest of the jobs to complete, you can still press Ctrl-C at any point.
     Note that you may still need to clean up spawned processes, for example, using ``qdel`` if you are using ``Ruffus.drmaa_wrapper``
