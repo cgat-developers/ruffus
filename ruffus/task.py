@@ -3923,12 +3923,14 @@ def pipeline_run(target_tasks                     = [],
         #for job_result in pool_func(run_pooled_job_without_exceptions, feed_job_params_to_process_pool()):
         ii  = iter(pool_func(run_pooled_job_without_exceptions, feed_job_params_to_process_pool()))
         while 1:
-            # use a timeout of 3 years per job..., so that the condition we are waiting for in the thread
-            # can be interrupted by signals... In other words, so that Ctrl-C works
+            #   Use a timeout of 3 years per job..., so that the condition we are waiting for in the thread
+            #       can be interrupted by signals... In other words, so that Ctrl-C works
+            #   Yucky part is that timeout is an extra parameter to IMapIterator.next(timeout=None)
+            #       but next() for normal iterators do not take any extra parameters.
             if pool:
-                job_result = ii.next(99999999)
+                job_result = ii.next(timeout=99999999)
             else:
-                job_result = ii.next()
+                job_result = next(ii)
             # run next task
             log_at_level (logger, 11, verbose, "r" * 80 + "\n")
             t = node.lookup_node_from_name(job_result.task_name)

@@ -222,6 +222,15 @@ Ruffus Decorators
            \
 
    ", ""
+   "**@graphviz** (:ref:`Summary <decorators.graphviz>` / :ref:`Manual <new_manual.pipeline_printout_graph>`)
+
+   - Customise the graphic for each task in printed flowcharts
+
+   ", "
+   * :ref:`@graphviz <decorators.graphviz>` ( ``graphviz_parameter = XXX``, ``[graphviz_parameter2 = YYY ...]``)
+           \
+
+   ", ""
 
 
 

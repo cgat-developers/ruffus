@@ -136,6 +136,7 @@ Decorators
         decorators/transform_ex.rst
         decorators/collate.rst
         decorators/collate_ex.rst
+        decorators/graphviz.rst
         decorators/mkdir.rst
         decorators/jobs_limit.rst
         decorators/posttask.rst
