@@ -541,12 +541,12 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
                 ret_val = user_defined_work_func(*param)
                 # EXTRA pipeline_run DEBUGGING
                 if EXTRA_PIPELINERUN_DEBUGGING:
-                    sys.stderr.write("1" * 80 + "\n")
+                    sys.stderr.write("w" * 36 + "[[ task() done ]]" + "w" * 27 + "\n")
             except KeyboardInterrupt as e:
                 # Reraise KeyboardInterrupt as a normal Exception
                 # EXTRA pipeline_run DEBUGGING
                 if EXTRA_PIPELINERUN_DEBUGGING:
-                    sys.stderr.write("2" * 80 + "\n")
+                    sys.stderr.write("E" * 36 + "[[ KeyboardInterrupt from task() ]]" + "E" * 9 + "\n")
                 raise Ruffus_Keyboard_Interrupt_Exception("KeyboardInterrupt")
             except:
                 #sys.stderr.write("?? %s ??" % (tuple(param),))
@@ -739,7 +739,7 @@ def run_pooled_job_without_exceptions (process_parameters):
         with job_limit_semaphore:
             # EXTRA pipeline_run DEBUGGING
             if EXTRA_PIPELINERUN_DEBUGGING:
-                sys.stderr.write(">" * 80 + "\n")
+                sys.stderr.write(">" * 36 + "[[ job_wrapper ]]" + ">" * 27 + "\n")
             return_value =  job_wrapper(param, user_defined_work_func, register_cleanup, touch_files_only)
 
             #
@@ -749,19 +749,19 @@ def run_pooled_job_without_exceptions (process_parameters):
             #    time.sleep(1.01)
             # EXTRA pipeline_run DEBUGGING
             if EXTRA_PIPELINERUN_DEBUGGING:
-                sys.stderr.write("<" * 80 + "\n")
+                sys.stderr.write("<" * 36 + "[[ job_wrapper done ]]" + "<" * 22 + "\n")
             return t_job_result(task_name, JOB_COMPLETED, job_name, return_value, None, param)
     except KeyboardInterrupt as e:
         # Reraise KeyboardInterrupt as a normal Exception. Should never be necessary here
         # EXTRA pipeline_run DEBUGGING
         if EXTRA_PIPELINERUN_DEBUGGING:
-            sys.stderr.write("3" * 80 + "\n")
+            sys.stderr.write("E" * 36 + "[[ KeyboardInterrupt ]]" + "E" * 21 + "\n")
         death_event.set()
         raise Ruffus_Keyboard_Interrupt_Exception("KeyboardInterrupt")
     except:
         # EXTRA pipeline_run DEBUGGING
         if EXTRA_PIPELINERUN_DEBUGGING:
-            sys.stderr.write("4" * 80 + "\n")
+            sys.stderr.write("E" * 36 + "[[ Other Interrupt ]]" + "E" * 23 + "\n")
         #   Wrap up one or more exceptions rethrown across process boundaries
         #
         #       See multiprocessor.Server.handle_request/serve_client for an analogous function
@@ -2889,6 +2889,7 @@ def pipeline_printout_graph (stream,
     """
 
     # EXTRA pipeline_run DEBUGGING
+    global EXTRA_PIPELINERUN_DEBUGGING
     EXTRA_PIPELINERUN_DEBUGGING = False
 
     if checksum_level is None:
@@ -3081,6 +3082,7 @@ def pipeline_printout(  output_stream                   = None,
         verbose = 4
 
     # EXTRA pipeline_run DEBUGGING
+    global EXTRA_PIPELINERUN_DEBUGGING
     EXTRA_PIPELINERUN_DEBUGGING = False
 
     if output_stream == None:
@@ -3542,6 +3544,7 @@ def pipeline_get_task_names ():
     """
 
     # EXTRA pipeline_run DEBUGGING
+    global EXTRA_PIPELINERUN_DEBUGGING
     EXTRA_PIPELINERUN_DEBUGGING = False
 
     #
@@ -3656,7 +3659,8 @@ def pipeline_run(target_tasks                     = [],
         verbose_abbreviated_path = 2
 
     # EXTRA pipeline_run DEBUGGING
-    if verbose >= 11:
+    global EXTRA_PIPELINERUN_DEBUGGING
+    if verbose >= 10:
         EXTRA_PIPELINERUN_DEBUGGING = True
     else:
         EXTRA_PIPELINERUN_DEBUGGING = False
@@ -4065,25 +4069,33 @@ def pipeline_run(target_tasks                     = [],
         #print ("END iteration normally",  file=sys.stderr)
         pass
     except:
-        exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-        log_at_level (logger, 10, verbose, "       Exception caught %s" % (exceptionValue))
-        log_at_level (logger, 10, verbose, "       Exception caught %s" % (exceptionType))
-        log_at_level (logger, 10, verbose, "       Exception caught %s" % (exceptionTraceback))
+        exception_name, exception_value, exception_Traceback = sys.exc_info()
+        exception_stack  = traceback.format_exc()
+        # save exception to rethrow later
+        job_errors.append((None, None, exception_name, exception_value, exception_stack))
+        log_at_level (logger, 10, verbose, "       Exception caught %s" % (exception_value))
+        log_at_level (logger, 10, verbose, "       Exception caught %s" % (exception_name))
+        log_at_level (logger, 10, verbose, "       Exception caught %s" % (exception_stack))
         log_at_level (logger, 10, verbose, "   Get next parameter size = %d" %
                                                     parameter_q.qsize())
         log_at_level (logger, 10, verbose, "   Task with completed jobs size = %d" %
                                                     task_with_completed_job_q.qsize())
-        try:
-            while 1:
-                parameter_q.get_nowait()
-        except:
-            pass
         parameter_q.put(all_tasks_complete())
         try:
             death_event.clear()
         except:
             pass
 
+        if pool:
+            log_at_level (logger, 10, verbose, "       pool.close")
+            pool.close()
+            log_at_level (logger, 10, verbose, "       pool.terminate")
+            try:
+                pool.terminate()
+            except:
+                pass
+            log_at_level (logger, 10, verbose, "       pool.terminated")
+        raise job_errors
 
 
     #log_at_level (logger, 10, verbose, "       syncmanager.shutdown")
