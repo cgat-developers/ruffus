@@ -698,10 +698,10 @@ version 2.0
 
     * Major redesign. New decorators include
 
-        * :ref:`@split <manual.split>`
-        * :ref:`@transform <manual.transform>`
-        * :ref:`@merge <manual.merge>`
-        * :ref:`@collate <manual.collate>`
+        * :ref:`@split <new_manual.split>`
+        * :ref:`@transform <new_manual.transform>`
+        * :ref:`@merge <new_manual.merge>`
+        * :ref:`@collate <new_manual.collate>`
 
     * Major redesign. Decorator *inputs* can mix
 
@@ -713,7 +713,7 @@ version 2.0
 ********************************************************************
 version 1.1.4
 ********************************************************************
-    Tasks can get their input by automatically chaining to the output from one or more parent tasks using :ref:`@files_re <manual.files_re>`
+    Tasks can get their input by automatically chaining to the output from one or more parent tasks using :ref:`@files_re <decorators.files_re>`
 
 ********************************************************************
 version 1.0.7

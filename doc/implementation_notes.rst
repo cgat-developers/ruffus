@@ -104,7 +104,7 @@ He contributed checkpointing, travis and tox etc.
 
     The solution is
 
-        #. Use a ``timeout`` parameter when using ``IMapIterator.next(timeout=None)`` to iterate through ``pool.imap_unordered`` because only timed ``condition``s can be interruptible by signals...!!
+        #. Use a ``timeout`` parameter when using ``IMapIterator.next(timeout=None)`` to iterate through ``pool.imap_unordered`` because only timed ``condition`` s can be interruptible by signals...!!
         #. This involves rewriting the ``for`` loop manually as a ``while`` loop
         #. We use a timeout of ``99999999``, i.e. 3 years, which should be enough for any job to complete...
         #. Googling after the fact, it looks like the galaxy guys (cool dudes or what) have written similar `code  <https://galaxy-dist.readthedocs.org/en/latest/_modules/galaxy/objectstore/s3_multipart_upload.html>`__
