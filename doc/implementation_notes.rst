@@ -6,9 +6,26 @@ Implementation Tips
 Release
 ******************************************************************************
 
-    tag git with, for example::
+    * Change ``ruffus_version.py``
+
+    * Rebuild pdf and copy it to ``doc/static_data``
+
+        cd doc
+        make latexpdf
+        cp _build/latex/ruffus.pdf static_data
+
+    * Rebuild documentation::
+
+        make htmlsync
+
+    * tag git with, for example::
 
         git tag -a v2.5RC -m "Version 2.5 Release Candidate"
+
+
+    * Upload to pypi::
+
+        python setup.py sdist --format=gztar upload
 
 ******************************************************************************
 dbdict.py
