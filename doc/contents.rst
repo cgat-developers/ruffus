@@ -80,7 +80,6 @@ Overview:
    design.rst
    Bugs and Updates <history>
    Future plans <todo>
-   Pending changes <refactoring_ruffus_notes>
    Implementation_notes <implementation_notes.rst>
    faq.rst
    glossary.rst

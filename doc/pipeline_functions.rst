@@ -319,7 +319,7 @@ Pipeline functions
 
         Prints out all the pipelined functions which will be invoked given specified ``target_tasks``
         without actually running the pipeline. Because this is a simulation, some of the job
-        parameters may be incorrect. For example, the results of a :ref:`@split<manual.split>`
+        parameters may be incorrect. For example, the results of a :ref:`@split<new_manual.split>`
         operation is not predetermined and will only be known after the pipelined function
         splits up the original data. Parameters of all downstream pipelined functions will
         be changed depending on this initial operation.

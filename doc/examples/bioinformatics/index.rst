@@ -40,8 +40,7 @@ Overview
 
         This bioinformatics example is intended to showcase *some* of the features of Ruffus.
 
-            #. For a more gentle introduction, please consult the :ref:`simple tutorial <Simple_Tutorial>`.
-            #. The :ref:`manual <manual.introduction>` covers all the features in Ruffus.
+            #. See the :ref:`manual <new_manual.introduction>` to learn about the various features in Ruffus.
 
 
 ========================
@@ -121,7 +120,7 @@ Step 1. Splitting up the query sequences
 
 
     To use this in a pipeline, we only need to wrap this in a function, "decorated" with the Ruffus
-    keyword :ref:`@split <manual.split>`:
+    keyword :ref:`@split <new_manual.split>`:
 
 
 
@@ -132,7 +131,7 @@ Step 1. Splitting up the query sequences
       ``*.segment`` files as it takes.
     | The pipelined function itself takes two arguments, for the input and output.
 
-    We shall see later this simple :ref:`@split <manual.split>` decorator already gives all the benefits of:
+    We shall see later this simple :ref:`@split <new_manual.split>` decorator already gives all the benefits of:
 
         * Dependency checking
         * Flowchart printing
@@ -149,12 +148,12 @@ Step 2. Run BLAST jobs in parallel
             os.system("blastall -p blastp -d human.protein.faa -i 1.segment > 1.blastResult")
 
     To pipeline this, we need to simply wrap in a function, decorated with the **Ruffus**
-    keyword :ref:`@transform <manual.transform>`.
+    keyword :ref:`@transform <new_manual.transform>`.
 
         .. image:: ../../images/examples_bioinformatics_transform.jpg
 
     This indicates that we are taking all the output files from the previous ``splitFasta``
-    operation (``*.segment``) and :ref:`@transform <manual.transform>`-ing each to a new file with the ``.blastResult``
+    operation (``*.segment``) and :ref:`@transform <new_manual.transform>`-ing each to a new file with the ``.blastResult``
     suffix. Each of these transformation operations can run in parallel if specified.
 
 
@@ -171,12 +170,12 @@ Step 3. Combining BLAST results
 
 
 
-    To pipeline this, we need again to decorate with the **Ruffus** keyword :ref:`@merge <manual.merge>`.
+    To pipeline this, we need again to decorate with the **Ruffus** keyword :ref:`@merge <new_manual.merge>`.
 
         .. image:: ../../images/examples_bioinformatics_merge.jpg
 
     This indicates that we are taking all the output files from the previous ``runBlast``
-    operation (``*.blastResults``) and :ref:`@merge <manual.merge>`-ing them to the new file ``final.blast_results``.
+    operation (``*.blastResults``) and :ref:`@merge <new_manual.merge>`-ing them to the new file ``final.blast_results``.
 
 
 ================================================
