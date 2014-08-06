@@ -32,7 +32,7 @@ Step 1. Cleaning up any leftover junk from previous pipeline runs
       hanging around as an unwanted, extraneous and confusing orphan.
 
     As a general rule, it is a good idea to clean up the results of a previous run in
-    a :ref:`@split <manual.split>` operation:
+    a :ref:`@split <new_manual.split>` operation:
 
         ::
 

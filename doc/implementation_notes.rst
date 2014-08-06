@@ -27,6 +27,11 @@ Release
 
         python setup.py sdist --format=gztar upload
 
+    * Upload to repository::
+
+        git push googlecode
+        git push
+
 ******************************************************************************
 dbdict.py
 ******************************************************************************
