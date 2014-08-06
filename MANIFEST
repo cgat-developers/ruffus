@@ -21,7 +21,6 @@ doc/manual_follows1.png
 doc/pipeline_functions.rst
 doc/propset
 doc/proxy_logger.rst
-doc/refactoring_ruffus_notes.rst
 doc/regenerate_figures
 doc/task.rst
 doc/todo.rst
@@ -69,6 +68,7 @@ doc/_build/doctrees/decorators/split.doctree
 doc/_build/doctrees/decorators/subdivide.doctree
 doc/_build/doctrees/decorators/transform.doctree
 doc/_build/doctrees/decorators/transform_ex.doctree
+doc/_build/doctrees/examples/paired_end_data.py.doctree
 doc/_build/doctrees/examples/bioinformatics/index.doctree
 doc/_build/doctrees/examples/bioinformatics/part1_code.doctree
 doc/_build/doctrees/examples/bioinformatics/part2.doctree
@@ -314,6 +314,7 @@ doc/_build/html/_sources/decorators/split.txt
 doc/_build/html/_sources/decorators/subdivide.txt
 doc/_build/html/_sources/decorators/transform.txt
 doc/_build/html/_sources/decorators/transform_ex.txt
+doc/_build/html/_sources/examples/paired_end_data.py.txt
 doc/_build/html/_sources/examples/bioinformatics/index.txt
 doc/_build/html/_sources/examples/bioinformatics/part1_code.txt
 doc/_build/html/_sources/examples/bioinformatics/part2.txt
@@ -462,6 +463,7 @@ doc/_build/html/decorators/split.html
 doc/_build/html/decorators/subdivide.html
 doc/_build/html/decorators/transform.html
 doc/_build/html/decorators/transform_ex.html
+doc/_build/html/examples/paired_end_data.py.html
 doc/_build/html/examples/bioinformatics/index.html
 doc/_build/html/examples/bioinformatics/part1_code.html
 doc/_build/html/examples/bioinformatics/part2.html
@@ -580,6 +582,7 @@ doc/_build/latex/history_html_flowchart1.png
 doc/_build/latex/history_html_flowchart2.png
 doc/_build/latex/jobs_limit.png
 doc/_build/latex/logo.jpg
+doc/_build/latex/manual_dependencies_flowchart_intro.png
 doc/_build/latex/manual_dependencies_flowchart_intro1.png
 doc/_build/latex/manual_split_merge_example.jpg
 doc/_build/latex/pretty_flowchart.png
@@ -661,6 +664,7 @@ doc/decorators/subdivide.rst
 doc/decorators/todo.sphinx
 doc/decorators/transform.rst
 doc/decorators/transform_ex.rst
+doc/examples/paired_end_data.py.rst
 doc/examples/bioinformatics/index.rst
 doc/examples/bioinformatics/part1_code.rst
 doc/examples/bioinformatics/part2.rst
