@@ -20,7 +20,7 @@ Release
 
     * tag git with, for example::
 
-        git tag -a v2.5RC -m "Version 2.5 Release Candidate"
+        git tag -a v2.5 -m "Version 2.5"
 
 
     * Upload to pypi::
