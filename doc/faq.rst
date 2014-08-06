@@ -16,6 +16,109 @@ Q. How should *Ruffus* be cited in academic publications?
         `Leo Goodstadt (2010) <http://bioinformatics.oxfordjournals.org/content/early/2010/09/16/bioinformatics.btq524>`_ : **Ruffus: a lightweight Python library for computational pipelines.** *Bioinformatics* 26(21): 2778-2779
 
 
+**********************************************************
+Good practices
+**********************************************************
+
+==================================================================================================================
+Q. What is the best way of keeping my data and workings separate?
+==================================================================================================================
+
+    It is good practice to run your pipeline in a temporary, "working" directory away from your original data.
+
+    The first step of your pipeline might be to make softlinks to your original data in your working directory.
+    This is example (relatively paranoid) code to do just this:
+
+    .. code-block:: python
+        :emphasize-lines: 3,5
+
+            def re_symlink (input_file, soft_link_name, logger, logging_mutex):
+                """
+                Helper function: relinks soft symbolic link if necessary
+                """
+                # Guard agains soft linking to oneself: Disastrous consequences of deleting the original files!!
+                if input_file == soft_link_name:
+                    logger.debug("Warning: No symbolic link made. You are using the original data directory as the working directory.")
+                    return
+                # Soft link already exists: delete for relink?
+                if os.path.lexists(soft_link_name):
+                    # do not delete or overwrite real (non-soft link) file
+                    if not os.path.islink(soft_link_name):
+                        raise Exception("%s exists and is not a link" % soft_link_name)
+                    try:
+                        os.unlink(soft_link_name)
+                    except:
+                        with logging_mutex:
+                            logger.debug("Can't unlink %s" % (soft_link_name))
+                with logging_mutex:
+                    logger.debug("os.symlink(%s, %s)" % (input_file, soft_link_name))
+                #
+                #   symbolic link relative to original directory so that the entire path
+                #       can be moved around with breaking everything
+                #
+                os.symlink( os.path.relpath(os.path.abspath(input_file),
+                            os.path.abspath(os.path.dirname(soft_link_name))), soft_link_name)
+
+            #
+            #   First task should soft link data to working directory
+            #
+            @jobs_limit(1)
+            @mkdir(options.working_dir)
+            @transform( input_files,
+                        formatter(),
+                        # move to working directory
+                        os.path.join(options.working_dir, "{basename[0]}{ext[0]}"),
+                        logger, logging_mutex
+                       )
+            def soft_link_inputs_to_working_directory (input_file, soft_link_name, logger, logging_mutex):
+                """
+                Make soft link in working directory
+                """
+                with logging_mutex:
+                    logger.info("Linking files %(input_file)s -> %(soft_link_name)s\n" % locals())
+                re_symlink(input_file, soft_link_name, logger, logging_mutex)
+
+
+.. _faq.paired_files:
+
+==================================================================================================================
+Q. What is the best way of handling data in file pairs (or triplets etc.)
+==================================================================================================================
+
+
+    In Bioinformatics, DNA data often consists of only the nucleotide sequence at the two ends of larger fragments.
+    The `paired_end  <http://www.illumina.com/technology/next-generation-sequencing/paired-end-sequencing_assay.ilmn>`__ or
+    `mate pair  <http://en.wikipedia.org/wiki/Shotgun_sequencing#Whole_genome_shotgun_sequencing>`__ data frequently
+    consists of of file pairs with conveniently related names such as "*.R1.fastq" and "*.R2.fastq".
+
+    At some point in data pipeline, these file pairs or triplets must find each other and be analysed in the same job.
+
+    Provided these file pairs or triplets are named consistently, an easiest way to regroup them is to use the
+    Ruffus :ref:`@collate <new_manual.collate>` decorator. For example:
+
+
+    .. code-block:: python
+
+        @collate(original_data_files,
+
+                    # match file name up to the "R1.fastq.gz"
+                    formatter("([^/]+)R[12].fastq.gz$"),
+
+                    # Create output parameter supplied to next task
+                    "{path[0]}/{1[0]}.sam",
+                    logger, logger_mutex)
+        def handle_paired_end(input_files, output_paired_files, logger, logger_mutex):
+            # check that we really have a pair of two files not an orphaned singleton
+            if len(input_files) != 2:
+                raise Exception("One of read pairs %s missing" % (input_files,))
+
+            # do stuff here
+
+
+
+    This (incomplete, untested) :ref:`example code <faq.paired_files.code>` shows what this would look like *in vivo*.
+
+
 
 **********************************************************
 General
@@ -117,7 +220,7 @@ ________________________________________________________________________________
     * ``pipeline_task`` is used to hold per task data
 
 __________________________________________________________________________________________________________
-2. Always write Ruffus decorators first before your own decorators.
+2. Always call Ruffus decorators first before your own decorators.
 __________________________________________________________________________________________________________
 
     Otherwise, your decorator will be ignored.
@@ -251,6 +354,9 @@ ________________________________________________________________________________
                 if hasattr(func, "pipeline_task"):
                     inner.pipeline_task = func.pipeline_task
                 return inner
+
+
+
 
 
 ========================================================================================

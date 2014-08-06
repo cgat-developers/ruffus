@@ -96,6 +96,7 @@ Examples
    examples/bioinformatics/part2.rst
    examples/bioinformatics/part1_code.rst
    examples/bioinformatics/part2_code.rst
+   examples/paired_end_data.py.rst
 
 
 

@@ -24,7 +24,7 @@
     * |new_manual.merge.chapter_num|: :ref:`@merge multiple input into a single result <new_manual.merge>`
     * |new_manual.logging.chapter_num|: :ref:`Logging progress through a pipeline <new_manual.logging>`
     * |new_manual.multiprocessing.chapter_num|: :ref:`Multiprocessing, drmaa and Computation Clusters <new_manual.multiprocessing>`
-    * |new_manual.subdivide_collate.chapter_num|: :ref:`@subdivide tasks to run efficiently and regroup @collate <new_manual.subdivide_collate>`
+    * |new_manual.subdivide_collate.chapter_num|: :ref:`@subdivide tasks to run efficiently and regroup with @collate <new_manual.subdivide_collate>`
     * |new_manual.combinatorics.chapter_num|: :ref:`@combinations, @permutations and all versus all @product <new_manual.combinatorics>`
     * |new_manual.active_if.chapter_num|: :ref:`Turning parts of the pipeline on and off at runtime with @active_if <new_manual.active_if>`
     * |new_manual.inputs.chapter_num|: :ref:`Manipulating task inputs via string substitution with inputs() and add_inputs() <new_manual.inputs>`
