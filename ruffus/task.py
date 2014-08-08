@@ -555,9 +555,22 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
         #job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
 
         #
+        #   Do not touch any output files which are the same as any in the input
+        #       i.e. which are just being passed through
+        #
+        # list of input files
+        real_input_file_names = set()
+        for f in get_strings_in_nested_sequence(i):
+            real_input_file_names.add(os.path.realpath(f))
+
+        #
         #   touch files only
         #
         for f in get_strings_in_nested_sequence(o):
+
+            if os.path.realpath(f) in real_input_file_names:
+                continue
+
             #
             #   race condition still possible...
             #
