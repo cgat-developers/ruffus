@@ -551,7 +551,7 @@ def needs_update_check_modify_time (*params, **kwargs):
                 set_func_changed_files.add(o_f_n)
 
         if len(func_changed_files):
-            return True, "Files changed since the checkpoint:\n        %s" % (shorten_filenames_encoder (func_changed_files,
+            return True, "Pipeline function has changed:\n        %s" % (shorten_filenames_encoder (func_changed_files,
                                                                             verbose_abbreviated_path))
         if len(param_changed_files):
             return True, "Pipeline parameters have changed:\n        %s" % (shorten_filenames_encoder (param_changed_files,
@@ -638,8 +638,15 @@ def needs_update_check_modify_time (*params, **kwargs):
     # for output files, we need to check modification time *in addition* to
     # function and argument checksums...
     for output_file_name in o:
-        rel_output_file_name = os.path.relpath(output_file_name)
+        #
+        #   Ignore output files which are just symbolic links to input files or passed through
+        #       from input to output
+        #
         real_file_name = os.path.realpath(output_file_name)
+        if real_file_name in real_input_file_names:
+            continue
+
+        rel_output_file_name = os.path.relpath(output_file_name)
         file_timestamp = os.path.getmtime(output_file_name)
         if task.checksum_level >= CHECKSUM_HISTORY_TIMESTAMPS:
             old_chksum = job_history[rel_output_file_name]
@@ -651,8 +658,7 @@ def needs_update_check_modify_time (*params, **kwargs):
                 mtime = old_chksum.mtime
         else:
             mtime = file_timestamp
-        if real_file_name not in real_input_file_names:
-            file_times[1].append(mtime)
+        file_times[1].append(mtime)
         filename_to_times[1].append((mtime, output_file_name))
 
 
