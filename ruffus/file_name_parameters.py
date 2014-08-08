@@ -510,21 +510,28 @@ def needs_update_check_modify_time (*params, **kwargs):
         return True, "Missing file%s\n        %s" % ("s" if len(missing_files) > 1 else "",
                                             shorten_filenames_encoder (missing_files,
                                                                        verbose_abbreviated_path))
+    #
+    #   N.B. Checkpointing uses relative paths
+    #
 
     # existing files, but from previous interrupted runs
     if task.checksum_level >= CHECKSUM_HISTORY_TIMESTAMPS:
         incomplete_files = []
+        set_incomplete_files = set()
         func_changed_files = []
+        set_func_changed_files = set()
         param_changed_files = []
+        set_param_changed_files = set()
         #for io in (i, o):
         #    for p in io:
         #        if p not in job_history:
         #            incomplete_files.append(p)
         for p in o:
-            if os.path.relpath(p) not in job_history:
+            if os.path.relpath(p) not in job_history and p not in set_incomplete_files:
                 incomplete_files.append(p)
+                set_incomplete_files.add(p)
         if len(incomplete_files):
-            return True, "Previous incomplete run leftover%s:\n        %s" % ("s" if len(incomplete_files) > 1 else "",
+            return True, "Uncheckpointed file%s (left over from a failed run?):\n        %s" % ("s" if len(incomplete_files) > 1 else "",
                                                 shorten_filenames_encoder (incomplete_files,
                                                                             verbose_abbreviated_path))
         # check if function that generated our output file has changed
@@ -533,14 +540,18 @@ def needs_update_check_modify_time (*params, **kwargs):
             old_chksum = job_history[rel_o_f_n]
             new_chksum = JobHistoryChecksum(rel_o_f_n, None, params[2:], task)
             if task.checksum_level >= CHECKSUM_FUNCTIONS_AND_PARAMS and \
-                            new_chksum.chksum_params != old_chksum.chksum_params:
-                param_changed_files.append(rel_o_f_n)
+                    new_chksum.chksum_params != old_chksum.chksum_params and \
+                    o_f_n not in set_func_changed_files:
+                param_changed_files.append(o_f_n)
+                set_param_changed_files.add(o_f_n)
             elif task.checksum_level >= CHECKSUM_FUNCTIONS and \
-                            new_chksum.chksum_func != old_chksum.chksum_func:
-                func_changed_files.append(rel_o_f_n)
+                    new_chksum.chksum_func != old_chksum.chksum_func and \
+                    o_f_n not in set_func_changed_files:
+                func_changed_files.append(o_f_n)
+                set_func_changed_files.add(o_f_n)
 
         if len(func_changed_files):
-            return True, "Pipeline function has changed:\n        %s" % (shorten_filenames_encoder (func_changed_files,
+            return True, "Files changed since the checkpoint:\n        %s" % (shorten_filenames_encoder (func_changed_files,
                                                                             verbose_abbreviated_path))
         if len(param_changed_files):
             return True, "Pipeline parameters have changed:\n        %s" % (shorten_filenames_encoder (param_changed_files,

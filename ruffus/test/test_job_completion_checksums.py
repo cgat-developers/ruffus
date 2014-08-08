@@ -125,7 +125,7 @@ class TestJobCompletion(unittest.TestCase):
                 self.assertIn('Input files:', s.getvalue())
                 self.assertIn('Output files:', s.getvalue())
             else:
-                self.assertIn('Previous incomplete run leftover', s.getvalue())
+                self.assertIn('left over from a failed run?', s.getvalue())
 
     def test_ouput_timestamp_okay(self):
         """Input file exists, output timestamp up to date"""
@@ -145,7 +145,7 @@ class TestJobCompletion(unittest.TestCase):
                 pass
             else:
                 self.assertIn('Job needs update:', s.getvalue())
-                self.assertIn('Previous incomplete run leftover',
+                self.assertIn('left over from a failed run?',
                               s.getvalue())
 
     def test_ouput_up_to_date(self):
@@ -251,7 +251,7 @@ class TestJobCompletion(unittest.TestCase):
             pipeline_printout(s, [transform_raise_error], verbose=6, checksum_level=chksm)
             if chksm >= CHECKSUM_HISTORY_TIMESTAMPS:
                 self.assertIn('Job needs update:', s.getvalue())
-                self.assertIn('Previous incomplete run leftover',
+                self.assertIn('left over from a failed run?',
                               s.getvalue())
             else:
                 #self.assertIn('Job up-to-date', s.getvalue())
@@ -287,7 +287,7 @@ class TestJobCompletion(unittest.TestCase):
             pipeline_printout(s, [split1], verbose=6, checksum_level=chksm)
             if chksm >= CHECKSUM_HISTORY_TIMESTAMPS:
                 self.assertIn('Job needs update:', s.getvalue())
-                self.assertIn('Previous incomplete run leftover',
+                self.assertIn('left over from a failed run?',
                               s.getvalue())
             else:
                 #self.assertIn('Job up-to-date', s.getvalue())
@@ -306,7 +306,7 @@ class TestJobCompletion(unittest.TestCase):
             pipeline_printout(s, [split1], verbose=6, checksum_level=chksm)
             if chksm >= CHECKSUM_HISTORY_TIMESTAMPS:
                 self.assertIn('Job needs update:', s.getvalue())
-                self.assertIn('Previous incomplete run leftover',
+                self.assertIn('left over from a failed run?',
                               s.getvalue())
             else:
                 #self.assertIn('Job up-to-date', s.getvalue())
@@ -327,7 +327,7 @@ class TestJobCompletion(unittest.TestCase):
             pipeline_printout(s, [merge2], verbose=6, checksum_level=chksm)
             if chksm >= CHECKSUM_HISTORY_TIMESTAMPS:
                 self.assertIn('Job needs update:', s.getvalue())
-                self.assertIn('Previous incomplete run leftover', s.getvalue())
+                self.assertIn('left over from a failed run?', s.getvalue())
             else:
                 #self.assertIn('Job up-to-date', s.getvalue())
                 pass
@@ -342,7 +342,7 @@ class TestJobCompletion(unittest.TestCase):
             pipeline_printout(s, [merge2], verbose=6, checksum_level=chksm)
             #self.assertIn('Job up-to-date', s.getvalue())
             self.assertNotIn('Job needs update:', s.getvalue())
-            self.assertNotIn('Previous incomplete run leftover', s.getvalue())
+            self.assertNotIn('left over from a failed run?', s.getvalue())
 
 
     def tearDown(self):
