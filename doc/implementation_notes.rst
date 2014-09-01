@@ -440,3 +440,161 @@ Task completion monitoring
     * fixed description and printout indent
 
 
+
+******************************************************************************
+Parameter handling
+******************************************************************************
+
+======================================================================================================
+ Current design
+======================================================================================================
+
+    Parameters in Ruffus v 2.x are obtained using a "pull" model.
+
+    Each task has its self.param_generator_func()
+    This is an iterator function which yields ``param`` and ``descriptive_param`` per iteration:
+
+    .. code-block:: python
+
+        for param, descriptive_param in self.param_generator_func(runtime_data):
+            pass
+
+
+     ``param`` and ``descriptive_param`` are basically the same except that globs are not expanded in ``descriptive_param`` because
+     they are used for display.
+
+
+    The iterator functions have all the state they need to generate their input, output and extra parameters
+    (only ``runtime_data``) is added at run time.
+    These closures are generated as nested functions inside "factory" functions defined in ``file_name_parameters.py``
+
+    Each task type has its own factory function. For example:
+
+        .. code-block:: python
+
+            args_param_factory (orig_args)
+            files_param_factory (input_files_task_globs, flatten_input, do_not_expand_single_job_tasks, output_extras)
+            split_param_factory (input_files_task_globs, output_files_task_globs, *extra_params)
+            merge_param_factory (input_files_task_globs, output_param, *extra_params)
+            originate_param_factory (list_output_files_task_globs, extras)
+
+
+    The following factory files delegate most of their work to ``yield_io_params_per_job``:
+
+        to support:
+
+            * ``inputs()``, ``add_inputs()`` input parameter supplementing
+            * extra inputs, outputs, extra parameter replacement with ``suffix()``, ``regex()`` and ``formatter``
+
+        .. code-block:: python
+
+            collate_param_factory       (input_files_task_globs,      flatten_input,                              file_names_transform, extra_input_files_task_globs, replace_inputs, output_pattern,          *extra_specs)
+            transform_param_factory     (input_files_task_globs,      flatten_input,                              file_names_transform, extra_input_files_task_globs, replace_inputs, output_pattern,          *extra_specs)
+            combinatorics_param_factory (input_files_task_globs,      flatten_input, combinatorics_type, k_tuple, file_names_transform, extra_input_files_task_globs, replace_inputs, output_pattern,          *extra_specs)
+            subdivide_param_factory     (input_files_task_globs,      flatten_input,                              file_names_transform, extra_input_files_task_globs, replace_inputs, output_files_task_globs, *extra_specs)
+            product_param_factory       (list_input_files_task_globs, flatten_input,                              file_names_transform, extra_input_files_task_globs, replace_inputs, output_pattern,          *extra_specs)
+
+
+            yield_io_params_per_job (input_params, file_names_transform, extra_input_files_task_globs, replace_inputs, output_pattern, extra_specs, runtime_data, iterator, expand_globs_in_output = False):
+
+
+        #. The first thing they do is to get a list of input parameters, either directly, or by expanding globs or by query upstream tasks:
+
+            .. code-block:: python
+
+                file_names_from_tasks_globs(files_task_globs, runtime_data, do_not_expand_single_job_tasks = True_if_split_or_merge)
+
+            .. note ::
+
+                ``True_if_split_or_merge`` is a wierd parameter which directly queries the upstream dependency for its output files if it is a single task...
+
+                This is legacy code. Probably should be refactored out of existence...
+
+
+        #. They then convert the input parameters to a flattened list of file names (passing through unchanged the original input parameters structure)
+
+            .. code-block:: python
+
+                input_param_to_file_name_list()
+                # combinatorics and product call:
+                list_input_param_to_file_name_list()
+
+            This is done at the iterator level because the combinatorics decorators do not have just a
+            list of input parameters (But combinatios, permutations, products of input parameters etc)
+            but a list of lists of input parameters.
+
+            transform, collate, subdivide => list of strings.
+            combinatorics / product       => list of lists of strings
+
+        #. ``yield_io_params_per_job`` yields pairs of param sets by
+
+            * Replacing or supplementing input parameters for the indicator objects ``inputs()`` and ``add_inputs()``
+            * Expanding extra parameters
+            * Expanding output parameters (with or without expanding globs)
+
+            In each case:
+                * If these contains objects which look like strings, we do regular expression / file component substitution
+                * If they contain tasks, these are queries for output files
+
+
+            .. note ::
+
+                This should be changed:
+
+                If the flattened list of input file names is empty, ie. if the input paramters contain just other stuff,
+                then the entire parameter is ignored.
+
+======================================================================================================
+ Refactor to handle input parameter objects with ruffus_params() functions
+======================================================================================================
+
+    Expand in file_names_from_tasks_globs()
+
+======================================================================================================
+ Refactor to handle formatter() replacement with "{EXTRAS[0][1][3]}" and "[INPUTS[1][2]]"
+======================================================================================================
+
+    Non-recursive Substitution in all:
+
+        construct new list where each item is replaced referring to the original and then assign
+
+        extra_inputs()      "[INPUTS[1][2]]" refers to the original input
+        output / extras     "[INPUTS[1][2]]" refers to substituted input
+
+
+    In ``file_name_parameters.py.``: ``yield_io_params_per_job``
+
+        .. code-block:: python
+
+            extra_inputs = extra_input_files_task_globs.file_names_transformed (orig_input_param, extra_specs, filenames, file_names_transform)
+            extra_params = tuple( file_names_transform.substitute(input_param, extra_specs, filenames, p) for p in extra_specs)
+            output_pattern_transformed = output_pattern.file_names_transformed (input_param, extra_specs, filenames, file_names_transform)
+            output_param = file_names_transform.substitute_output_files(input_param, extra_specs, filenames, output_pattern)
+
+    In other words, we need two extra parameters for inputs and extras
+
+        .. code-block:: python
+
+            class t_file_names_transform(object):
+                def substitute (self, input_param, extra_param, starting_file_names, pattern):
+                    pass
+                def substitute_output_files (self, input_param, extra_param, starting_file_names, pattern):
+                    pass
+
+
+            class t_params_tasks_globs_run_time_data(object):
+                def file_names_transformed (self, input_param, extra_param, filenames, file_names_transform):
+                    pass
+
+
+======================================================================================================
+ Refactor to handle alternative outputs with either_or(...,...)
+======================================================================================================
+
+    * what happens to get_outputs or checkpointing when the job completes but the output files are not made?
+    * either_or matches the first alternative to have all files existing
+    * No nested either_or but can contain arbitrarily nested objects and be at any nesting level
+    * ``task.get_output_files()`` and task.param_generator_func() stays the same. Changed logic in the caller
+    * In ``file_name_parameters.py.`` : ``file_names_from_tasks_globs`` , ``either_or()`` behaves like a ``glob``
+    * In Extra() as well as Output()
+

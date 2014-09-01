@@ -17,6 +17,19 @@ Future Changes to Ruffus
     If you have suggestions or contributions, please either write to me ( ruffus_lib at llew.org.uk) or
     send a pull request via the `git site  <https://github.com/bunbun/ruffus>`__.
 
+****************************************************************************************
+Todo: either_or: Prevent failed jobs from propagating further
+****************************************************************************************
+
+****************************************************************************************
+Todo: Named parameters in decorators for clarity
+****************************************************************************************
+
+****************************************************************************************
+Todo: Non-decorator / Function interface
+****************************************************************************************
+
+
 
 .. _todo.inactive_tasks_in_pipeline_printout_graph:
 
@@ -186,10 +199,6 @@ Todo: ``@recombine``
     This is the only way job trickling can work without stalling the pipeline: We would know
     how many jobs were pending for each ``@recombine`` job and which jobs go together.
 
-****************************************************************************************
-Todo: Named parameters in decorators for clarity
-****************************************************************************************
-
 .. _todo.bioinformatics_example:
 
 ********************************************************************************************************
@@ -257,6 +266,50 @@ Implementation
       task: ``@inputs``, ``@add_inputs``) or to slots in new jobs in the pipeline object
     * When all slots are full in each job, this triggers putting the job parameters onto the job submission queue
     * The pipeline object should allow Ruffus to be reentrant?
+
+.. _todo.intermediate_files:
+
+********************************************************************************************************
+Todo: Allow checkpoint files to be moved
+********************************************************************************************************
+
+    Allow checkpoint files to be "rebased" so that moving the working directory of the pipeline does not
+    invalidate all the files.
+
+    We need some sort of path search and replace mechanism which handles conflicts, and probably versioning?
+
+
+
+.. _todo.intermediate_files:
+
+********************************************************************************************************
+Todo: Remove intermediate files
+********************************************************************************************************
+
+    Often large intermediate files are produced in the middle of a pipeline which could be
+    removed. However, their absence would cause the pipeline to appear out of date. What is
+    the best way to solve this?
+
+    In gmake, all intermediate files which are not marked ``.PRECIOUS`` are deleted.
+
+    We can similar mark out all tasks producing intermediate files so that all their output file can be deleted using an ``@intermediate/provisional/transient/temporary/interim/ephemeral`` decorator.
+
+    The tricky part of the design is how to delete files without disrupting our ability to build the original file dependency DAG, and hence
+    check which tasks have up-to-date output when the pipeline is run again.
+
+    1. We can just work back from upstream/downstream files and ignore the intermediate files as gmake does. However,
+       the increased power of Ruffus makes this very fragile: In gmake, the DAG is entirely specified by the specified destination files.
+       In Ruffus, the number of task files is indeterminate, and can be changed at run time (see @split and @subdivide)
+    2. We can save the filenames into the checksum file before deleting them
+    3. We can leave the files in place files but zero out their contents. It is probably best
+       to write a small magic text value to the file, e.g. "RUFFUS_ZEROED_FILE", so that we are
+       not confused by real files of zero size.
+
+    In practice (2) and (3) should be combined for safety.
+
+    1. pipeline_cleaunup() will print out a list of files to be zeroed, or a list of commands to zero files or just do it for you
+    2. When rerunning, we can force files to be recreated using ``pipeline_run(..., forcedtorun_tasks,...)``, and Ruffus will track back
+       through lists of dependencies and recreate all "zeroed" files.
 
 
 
@@ -363,79 +416,6 @@ Planned: Ruffus GUI interface.
 Planned: Non-decorator / Function interface to Ruffus
 ********************************************************************************************************
 
-
-.. _todo.intermediate_files:
-
-********************************************************************************************************
-Planned: Remove intermediate files
-********************************************************************************************************
-
-    Often large intermediate files are produced in the middle of a pipeline which could be
-    removed. However, their absence would cause the pipeline to appear out of date. What is
-    the best way to solve this?
-
-    In gmake, all intermediate files which are not marked ``.PRECIOUS`` are deleted.
-
-    We do not want to manually mark intermediate files for several reasons:
-        * The syntax would be horrible and clunky
-        * The gmake distinction between ``implicit`` and ``explicit`` rules is not one we
-          would like to impose on Ruffus
-        * Gmake uses statically determined (DAG) dependency trees so it is quite natural and
-          easy to prune intermediate paths
-
-    Our preferred solution should impose little to no semantic load on Ruffus, i.e. it should
-    not make it more complex / difficult to use. There are several alternatives we are
-    considering:
-
-        #) Have an **update** mode in which pipeline_run would ignore missing files and only run tasks with existing, out-of-date files.
-        #) Optionally ignore all out-of-date dependencies beyond a specified point in the pipeline
-        #) Add a decorator to flag sections of the pipeline where intermediate files can be removed
-
-
-    Option (1) is rather unnerving because it makes inadvertent errors difficult to detect.
-
-    Option (2) involves relying on the user of a script to remember the corect chain of dependencies in
-    often complicated pipelines. It would be advised to keep a flowchart to hand. Again,
-    the chances of error are much greater.
-
-    Option (3) springs from the observation by Andreas Heger that parts of a pipeline with
-    disposable intermediate files can usually be encapsulated as an autonomous section.
-    Within this subpipeline, all is well provided that the outputs of the last task are complete
-    and up-to-date with reference to the inputs of the first task. Intermediate files
-    could be removed with impunity.
-
-    The suggestion is that these autonomous subpipelines could be marked out using the Ruffus
-    decorator syntax::
-
-        #
-        #   First task in autonomous subpipeline
-        #
-        @files("who.isit", "its.me")
-        def first_task(*args):
-            pass
-
-        #
-        #   Several intermediate tasks
-        #
-        @transform(subpipeline_task1, suffix(".me"), ".her")
-        def task2_etc(*args):
-           pass
-
-        #
-        #   Final task
-        #
-        @sub_pipeline(subpipeline_task1)
-        @transform(subpipeline_task1, suffix(".her"), ".you")
-        def final_task(*args):
-           pass
-
-    **@sub_pipeline** marks out all tasks between ``first_task`` and ``final_task`` and
-    intermediate files such as ``"its.me"``, ``"its.her`` can be deleted. The pipeline will
-    only run if ``"its.you"`` is missing or out-of-date compared with ``"who.isit"``.
-
-    Over the next few Ruffus releases we will see if this is a good design, and whether
-    better keyword can be found than **@sub_pipeline** (candidates include **@shortcut**
-    and **@intermediate**)
 
 
 .. _todo.retry:
