@@ -677,48 +677,6 @@ JOB_COMPLETED       = 3
 
 #_________________________________________________________________________________________
 t_job_result = namedtuple('t_job_result', 'task_name state job_name return_value exception params', verbose =0)
-#class t_job_result(tuple):
-#        't_job_result(task_name, state, job_name, return_value, exception, params)'
-#
-#        __slots__ = ()
-#
-#      fields = ('task_name', 'state', 'job_name', 'return_value', 'exception', 'params')
-#
-#        def __new__(cls, task_name, state, job_name, return_value, exception, params):
-#            return tuple.__new__(cls, (task_name, state, job_name, return_value, exception, params))
-#
-#        @classmethod
-#        def make(cls, iterable, new=tuple.__new__, len=len):
-#            'Make a new t_job_result object from a sequence or iterable'
-#            result = new(cls, iterable)
-#            if len(result) != 6:
-#                raise TypeError('Expected 6 arguments, got %d' % len(result))
-#            return result
-#
-#        def __repr__(self):
-#            return 't_job_result(task_name=%r, state=%r, job_name=%r, return_value=%r, exception=%r, params=%r)' % self
-#
-#        def asdict(t):
-#            'Return a new dict which maps field names to their values'
-#            return {'task_name': t[0], 'state': t[1], 'job_name': t[2], 'return_value': t[3], 'exception': t[4], 'params':t[5]}
-#
-#        def replace(self, **kwds):
-#            'Return a new t_job_result object replacing specified fields with new values'
-#            result = self.make(list(map(kwds.pop, ('task_name', 'state', 'job_name', 'return_value', 'exception', 'params'), self)))
-#            if kwds:
-#                raise ValueError('Got unexpected field names: %r' % list(kwds.keys()))
-#            return result
-#
-#        def __getnewargs__(self):
-#            return tuple(self)
-#
-#        task_name   = property(itemgetter(0))
-#        state       = property(itemgetter(1))
-#        job_name    = property(itemgetter(2))
-#        return_value= property(itemgetter(3))
-#        exception   = property(itemgetter(4))
-#        params      = property(itemgetter(5))
-
 
 
 #_________________________________________________________________________________________
@@ -2590,19 +2548,20 @@ class _task (node):
             #       Turn this function into a task
             #           (add task as attribute of this function)
             #       Add self as dependent
-            else:
-                #if type(arg) != types.FunctionType:
-                if not isinstance(arg, collections.Callable):
+            elif isinstance(arg, collections.Callable):
 
-                    raise error_decorator_args("Dependencies must be functions or function names in " +
-                                                "@task_follows %s:\n[%s]" %
-                                                (self._name, str(arg)))
 
                 # add task as attribute of this function
                 if not hasattr(arg, "pipeline_task"):
                     arg.pipeline_task = _task.create_task(arg)
                 self.add_child(arg.pipeline_task)
                 new_tasks.append(arg.pipeline_task)
+
+            else:
+                raise error_decorator_args("Dependencies must be functions or function names in " +
+                                            "@task_follows %s:\n[%s]" %
+                                            (self._name, str(arg)))
+
 
         return new_tasks
 

@@ -934,6 +934,56 @@ def split_param_factory (input_files_task_globs, output_files_task_globs, *extra
 
 #_________________________________________________________________________________________
 
+#   merge_param_factory
+
+#_________________________________________________________________________________________
+def merge_param_factory (input_files_task_globs,
+                                output_param,
+                                *extra_params):
+    """
+    Factory for task_merge
+    """
+    #
+    def iterator(runtime_data):
+        # flattened  = False
+        # do_not_expand_single_job_tasks = True
+        input_param = file_names_from_tasks_globs(input_files_task_globs, runtime_data, True)
+        yield_param = (input_param, output_param) + extra_params
+        yield yield_param, yield_param
+
+    return iterator
+
+
+#_________________________________________________________________________________________
+
+#   originate_param_factory
+
+#_________________________________________________________________________________________
+def originate_param_factory (list_output_files_task_globs, extras):
+    """
+    Factory for task_originate
+    """
+    #
+    def iterator(runtime_data):
+        for output_files_task_globs in list_output_files_task_globs:
+            output_param         = file_names_from_tasks_globs(output_files_task_globs,                    runtime_data)
+            output_param_logging = file_names_from_tasks_globs(output_files_task_globs.unexpanded_globs(), runtime_data)
+            yield (None, output_param) + tuple(extras), (None, output_param_logging) + tuple(extras)
+
+    return iterator
+
+
+#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+
+#   param_factories
+
+#       ... which take inputs(), add_inputs(), suffix(), regex(), formatter()
+
+#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+
+
+#_________________________________________________________________________________________
+
 #   input_param_to_file_name_list
 
 #_________________________________________________________________________________________
@@ -988,7 +1038,9 @@ def yield_io_params_per_job (input_params,
     Helper function for
         transform_param_factory and
         collate_param_factory and
-        subdivide_param_factory
+        subdivide_param_factory and 
+        combinatorics_param_factory and
+        product_param_factory
 
 
     *********************************************************
@@ -1370,47 +1422,6 @@ def collate_param_factory (input_files_task_globs,
 
             # the same params twice, once for use, once for display, identical in this case
             yield params, params
-
-    return iterator
-
-
-#_________________________________________________________________________________________
-
-#   merge_param_factory
-
-#_________________________________________________________________________________________
-def merge_param_factory (input_files_task_globs,
-                                output_param,
-                                *extra_params):
-    """
-    Factory for task_merge
-    """
-    #
-    def iterator(runtime_data):
-        # flattened  = False
-        # do_not_expand_single_job_tasks = True
-        input_param = file_names_from_tasks_globs(input_files_task_globs, runtime_data, True)
-        yield_param = (input_param, output_param) + extra_params
-        yield yield_param, yield_param
-
-    return iterator
-
-
-#_________________________________________________________________________________________
-
-#   originate_param_factory
-
-#_________________________________________________________________________________________
-def originate_param_factory (list_output_files_task_globs, extras):
-    """
-    Factory for task_originate
-    """
-    #
-    def iterator(runtime_data):
-        for output_files_task_globs in list_output_files_task_globs:
-            output_param         = file_names_from_tasks_globs(output_files_task_globs,                    runtime_data)
-            output_param_logging = file_names_from_tasks_globs(output_files_task_globs.unexpanded_globs(), runtime_data)
-            yield (None, output_param) + tuple(extras), (None, output_param_logging) + tuple(extras)
 
     return iterator
 
