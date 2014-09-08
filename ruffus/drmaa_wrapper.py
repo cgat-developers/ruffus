@@ -281,10 +281,17 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
                             (cmd_str,
                              jobid,
                              job_script_path))
-    if stderr:
-        job_info_str += "The stderr was: \n%s\n\n" % ("".join( stderr))
-    if stdout:
-        job_info_str += "The stdout was: \n%s\n\n" % ("".join( stdout))
+
+    def stderr_stdout_to_str (stderr, stdout):
+        """
+        Concatenate stdout and stderr to string
+        """
+        result = ""
+        if stderr:
+            result += "The stderr was: \n%s\n\n" % ("".join( stderr))
+        if stdout:
+            result += "The stdout was: \n%s\n\n" % ("".join( stdout))
+        return result
 
     #
     #   Throw if failed
@@ -294,7 +301,13 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
         if job_info.hasExited:
             if job_info.exitStatus:
                 raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n%s"
-                                         % (job_info.exitStatus, job_info_str))
+                                         % (job_info.exitStatus, job_info_str + stderr_stdout_to_str (stderr, stdout)))
+            elif job_info.wasAborted:
+                raise error_drmaa_job( "The drmaa command was never ran but used %s:\n%s"
+                                         % (job_info.exitStatus, job_info_str + stderr_stdout_to_str (stderr, stdout)))
+            elif job_info.hasSignal:
+                raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n%s"
+                                         % (job_info.exitStatus, job_info_str + stderr_stdout_to_str (stderr, stdout)))
             #
             #   Decorate normal exit with some resource usage information
             #
@@ -326,12 +339,6 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
                         logger.info("Drmaa command successfully ran %s" % cmd_str)
                 except:
                     logger.info("Drmaa command used %s in running %s" % (job_info.resourceUsage, cmd_str))
-        elif job_info.wasAborted:
-            raise error_drmaa_job( "The drmaa command was never ran but used %s:\n%s"
-                                     % (job_info.resourceUsage, job_info_str))
-        elif job_info.hasSignal:
-            raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n%s"
-                                     % (job_info.terminatingSignal, job_info_str))
 
     #
     #   clean up job template
