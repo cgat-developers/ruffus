@@ -957,6 +957,8 @@ class _task (node):
 
         Because state is stored, ruffus is *not* reentrant.
 
+        TODO: Need to create runtime DAG to mirror task DAG which holds output_filenames to be reentrant
+
         **********
           BEWARE
         **********
