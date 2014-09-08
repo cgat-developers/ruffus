@@ -72,11 +72,6 @@ class node (object):
     _name_to_node      = dict()
     _global_node_index = 0
 
-    one_to_one              = 0
-    many_to_many            = 1
-    one_to_many             = 2
-    many_to_one             = 3
-
     @staticmethod
     def get_leaves ():
         for n in node._all_nodes:
@@ -162,6 +157,21 @@ class node (object):
         child._inward.append(self)
         return child
 
+    #_____________________________________________________________________________________
+
+    #   add_child
+
+    #_____________________________________________________________________________________
+    def remove_child(self, child):
+        """
+        disconnect edges
+        """
+
+        if child in self._outward:
+            self._outward.remove(child)
+        if self in child._inward:
+            child._inward.remove(self)
+        return child
     #_____________________________________________________________________________________
 
     #   inward/outward
