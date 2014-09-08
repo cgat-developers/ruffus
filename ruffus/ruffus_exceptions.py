@@ -196,6 +196,10 @@ class error_task_decorator_takes_no_args(error_task):
     pass
 class error_function_is_not_a_task(error_task):
     pass
+class error_function_is_ambiguous_task(error_task):
+    pass
+class error_not_a_pipeline(error_task):
+    pass
 class error_circular_dependencies(error_task):
     pass
 class error_not_a_directory(error_task):
