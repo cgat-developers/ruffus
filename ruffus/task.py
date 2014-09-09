@@ -677,7 +677,7 @@ JOB_COMPLETED       = 3
 #           for compatibility with python 2.5
 
 #_________________________________________________________________________________________
-t_job_result = namedtuple('t_job_result', 'task_name state job_name return_value exception params', verbose =0)
+t_job_result        = namedtuple('t_job_result', 'task_name node_index state job_name return_value exception params', verbose =0)
 
 
 #_________________________________________________________________________________________
@@ -694,7 +694,7 @@ def run_pooled_job_without_exceptions (process_parameters):
         See RethrownJobError /  run_all_jobs_in_task
     """
     #signal.signal(signal.SIGINT, signal.SIG_IGN)
-    (param, task_name, job_name, job_wrapper, user_defined_work_func,
+    (param, task_name, node_index, job_name, job_wrapper, user_defined_work_func,
             job_limit_semaphore, death_event, touch_files_only) = process_parameters
 
     ##job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
@@ -722,7 +722,7 @@ def run_pooled_job_without_exceptions (process_parameters):
             # EXTRA pipeline_run DEBUGGING
             if EXTRA_PIPELINERUN_DEBUGGING:
                 sys.stderr.write("<" * 36 + "[[ job_wrapper done ]]" + "<" * 22 + "\n")
-            return t_job_result(task_name, JOB_COMPLETED, job_name, return_value, None, param)
+            return t_job_result(task_name, node_index, JOB_COMPLETED, job_name, return_value, None, param)
     except KeyboardInterrupt as e:
         # Reraise KeyboardInterrupt as a normal Exception. Should never be necessary here
         # EXTRA pipeline_run DEBUGGING
@@ -751,7 +751,7 @@ def run_pooled_job_without_exceptions (process_parameters):
             job_state = JOB_SIGNALLED_BREAK
         else:
             job_state = JOB_ERROR
-        return t_job_result(task_name, job_state, job_name, None,
+        return t_job_result(task_name, node_index, job_state, job_name, None,
                             [task_name,
                              job_name,
                              exception_name,
@@ -3206,7 +3206,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
             while True:
                 try:
                     item = task_with_completed_job_q.get_nowait()
-                    job_completed_task, job_completed_task_name, job_completed_name = item
+                    job_completed_task, job_completed_task_name, job_completed_node_index, job_completed_name = item
 
 
                     if not job_completed_task in incomplete_tasks:
@@ -3360,6 +3360,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                         cnt_jobs_created_for_all_tasks += 1
                         yield (param,
                                 t._name,
+                                t.node_index,
                                 job_name,
                                 t.job_wrapper,
                                 t.user_defined_work_func,
@@ -3908,7 +3909,7 @@ def pipeline_run(target_tasks                     = [],
                 job_result = next(ii)
             # run next task
             log_at_level (logger, 11, verbose, "r" * 80 + "\n")
-            t = node.lookup_node_from_name(job_result.task_name)
+            t = node.lookup_node_from_index(job_result.node_index)
 
             # remove failed jobs from history-- their output is bogus now!
             if job_result.state in (JOB_ERROR, JOB_SIGNALLED_BREAK):
@@ -4027,7 +4028,7 @@ def pipeline_run(target_tasks                     = [],
             #
             #   signal completed task after checksumming
             #
-            task_with_completed_job_q.put((t, job_result.task_name, job_result.job_name))
+            task_with_completed_job_q.put((t, job_result.task_name, job_result.node_index, job_result.job_name))
 
 
             # make sure queue is still full after each job is retired

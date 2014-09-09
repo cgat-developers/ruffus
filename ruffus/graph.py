@@ -141,7 +141,7 @@ class node (object):
         self.args = args
         self._name = name
         self._signal = False
-        self._node_index = node._global_node_index
+        self.node_index = node._global_node_index
         node._global_node_index += 1
 
         #
@@ -149,7 +149,7 @@ class node (object):
         #
         node._all_nodes.append(self)
         node._name_to_node[self._name] = self
-        node._index_to_node[self._node_index] = self
+        node._index_to_node[self.node_index] = self
 
     #_____________________________________________________________________________________
 
@@ -275,7 +275,7 @@ class node_to_json(json.JSONEncoder):
         print(str(obj))
         if isinstance(obj, node):
             return obj._name, {
-                    "index": obj._node_index,
+                    "index": obj.node_index,
                     "signal": obj._signal,
                     "inward": [n._name for n in obj._inward],
                     "outward": [n._name for n in obj._outward],
