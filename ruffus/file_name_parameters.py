@@ -720,7 +720,7 @@ def file_names_from_tasks_globs(files_task_globs,
 
     # special handling for chaining tasks which conceptual have a single job
     #       i.e. @merge and @files/@parallel with single job parameters
-    if files_task_globs.params.__class__.__name__ == '_task' and do_not_expand_single_job_tasks:
+    if files_task_globs.params.__class__.__name__ == 'Task' and do_not_expand_single_job_tasks:
         return files_task_globs.params.get_output_files(True, runtime_data)
 
 
@@ -1038,7 +1038,7 @@ def yield_io_params_per_job (input_params,
     Helper function for
         transform_param_factory and
         collate_param_factory and
-        subdivide_param_factory and 
+        subdivide_param_factory and
         combinatorics_param_factory and
         product_param_factory
 

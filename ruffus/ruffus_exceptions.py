@@ -231,7 +231,7 @@ if __name__ == '__main__':
     #   minimal task object to test exceptions
     #
     class task:
-        class _task (object):
+        class Task (object):
             """
             dummy task
             """
@@ -253,10 +253,10 @@ if __name__ == '__main__':
             """
                 test
             """
-            fake_task1       = task._task("task1")
-            fake_task2       = task._task("task2")
-            fake_mkdir_task3 = task._task("task3", task._task.action_mkdir)
-            fake_mkdir_task4 = task._task("task4", task._task.action_mkdir)
+            fake_task1       = task.Task("task1")
+            fake_task2       = task.Task("task2")
+            fake_mkdir_task3 = task.Task("task3", task.Task.action_mkdir)
+            fake_mkdir_task4 = task.Task("task4", task.Task.action_mkdir)
             e = error_task()
             e.specify_task (fake_task1      , "Some message 0")
             e.specify_task (fake_task2      , "Some message 1")
@@ -296,10 +296,10 @@ if __name__ == '__main__':
 
             ]
             e = RethrownJobError(exception_data)
-            fake_task1       = task._task("task1")
-            fake_task2       = task._task("task2")
-            fake_mkdir_task3 = task._task("task3", task._task.action_mkdir)
-            fake_mkdir_task4 = task._task("task4", task._task.action_mkdir)
+            fake_task1       = task.Task("task1")
+            fake_task2       = task.Task("task2")
+            fake_mkdir_task3 = task.Task("task3", task.Task.action_mkdir)
+            fake_mkdir_task4 = task.Task("task4", task.Task.action_mkdir)
             e.specify_task (fake_task1      , "Exceptions running jobs")
             e.specify_task (fake_task2      , "Exceptions running jobs")
             e.specify_task (fake_mkdir_task3, "Exceptions running jobs")

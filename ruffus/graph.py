@@ -70,7 +70,13 @@ class node (object):
 
     _all_nodes         = list()
     _name_to_node      = dict()
+    _index_to_node     = dict()
     _global_node_index = 0
+
+    one_to_one              = 0
+    many_to_many            = 1
+    one_to_many             = 2
+    many_to_one             = 3
 
     @staticmethod
     def get_leaves ():
@@ -103,6 +109,10 @@ class node (object):
         return node._name_to_node[name]
 
     @staticmethod
+    def lookup_node_from_index (index):
+        return node._index_to_node[index]
+
+    @staticmethod
     def is_node (name):
         return name in node._name_to_node
 
@@ -122,8 +132,8 @@ class node (object):
         #
         #   make sure node name is unique
         #
-        if name in node._name_to_node:
-            raise error_duplicate_node_name("[%s] has already been added" % name)
+        #if name in node._name_to_node:
+        #    raise error_duplicate_node_name("[%s] has already been added" % name)
 
         self.__dict__.update(args)
         self._inward = list()
@@ -138,7 +148,8 @@ class node (object):
         #   for looking up node for name
         #
         node._all_nodes.append(self)
-        node._name_to_node[name] = self
+        node._name_to_node[self._name] = self
+        node._index_to_node[self._node_index] = self
 
     #_____________________________________________________________________________________
 

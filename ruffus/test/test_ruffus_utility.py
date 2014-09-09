@@ -402,9 +402,9 @@ class Test_expand_nested_tasks_or_globs(unittest.TestCase):
     def setUp(self):
         exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
         os.chdir(exe_path)
-        t1 = task._task("module", "func1");
-        t2 = task._task("module", "func2");
-        t3 = task._task("module", "func3");
+        t1 = task.Task("module", "func1");
+        t2 = task.Task("module", "func2");
+        t3 = task.Task("module", "func3");
         self.tasks = [t1, t2, t3]
 
     #       self.assertEqual(self.seq, range(10))

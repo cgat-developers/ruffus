@@ -297,27 +297,28 @@ class task_decorator(object):
         self.args = decoratorArgs
         self.named_args = decoratorNamedArgs
 
-    def __call__(self, func):
+    def __call__(self, task_func):
         """
             calls func in task with the same name as the class
         """
         # add task as attribute of this function
-        if not hasattr(func, "pipeline_task"):
-            func.pipeline_task = _task.create_task(func)
+        if not hasattr(task_func, "pipeline_task"):
+            task_func.pipeline_task = Task.create_task(task_func)
+
+        task = task_func.pipeline_task
 
 
         # call the method called
-        #   "task.task_decorator"
-        #   where "task_decorator" is the name of this class
-        decorator_function_name = "task_" + self.__class__.__name__
-        task_decorator_function = getattr(func.pipeline_task, decorator_function_name)
+        #   task.decorator_xxxx
+        #   where xxxx = transform subdivide etc
+        task_decorator_function = getattr(task, "decorator_" + self.__class__.__name__)
         task_decorator_function(self.args, **self.named_args)
 
 
         #
         #   don't change the function so we can call it unaltered
         #
-        return func
+        return task_func
 
 
 #
@@ -778,10 +779,10 @@ def register_cleanup (file_name, operation):
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   _task
+#   Task
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-class _task (node):
+class Task (node):
     """
     pipeline task
     """
@@ -859,9 +860,9 @@ class _task (node):
                 raise error_duplicate_task_name("Same task name %s specified multiple times in the same module" % task_name)
         #   otherwise create new
         else:
-            t = _task(module_name, func_name)
+            t = Task(module_name, func_name)
 
-        t.set_action_type (_task.action_task)
+        t.set_action_type (Task.action_task)
         t.user_defined_work_func = func
         assert(t._name == task_name)
         # convert description into one line
@@ -878,7 +879,7 @@ class _task (node):
 
     #_________________________________________________________________________________________
     def get_action_name (self):
-        return _task.action_names[self._action_type]
+        return Task.action_names[self._action_type]
 
     #_________________________________________________________________________________________
 
@@ -897,7 +898,7 @@ class _task (node):
         self._func_name   = func_name
 
         node.__init__ (self, module_name + "." + func_name)
-        self._action_type  = _task.action_unspecified
+        self._action_type  = Task.action_unspecified
 
         #   Each task has its own checksum level
         #   At the moment this is really so multiple pipelines in the same script can have
@@ -982,15 +983,15 @@ class _task (node):
         Checks that the task has not been defined with conflicting actions
 
         """
-        if self._action_type not in (_task.action_unspecified, _task.action_task):
-            old_action = _task.action_names[self._action_type]
-            new_action = _task.action_names[new_action_type]
+        if self._action_type not in (Task.action_unspecified, Task.action_task):
+            old_action = Task.action_names[self._action_type]
+            new_action = Task.action_names[new_action_type]
             actions = " and ".join(list(set((old_action, new_action))))
             task_name = "def %s(...)" % self._name.replace("__main__.", "")
             raise error_decorator_args(("    %s\n      has duplicate task specifications: (%s)\n") %
                                         (task_name, actions))
         self._action_type = new_action_type
-        self._action_type_desc = _task.action_names[new_action_type]
+        self._action_type_desc = Task.action_names[new_action_type]
 
 
 
@@ -1022,7 +1023,7 @@ class _task (node):
         """
 
         task_name = self._name.replace("__main__.", "")
-        if self._action_type != _task.action_mkdir and in_func_format:
+        if self._action_type != Task.action_mkdir and in_func_format:
             return "def %s(...):" % task_name
         else:
             return task_name
@@ -1542,7 +1543,7 @@ class _task (node):
         #
         # replace function / function names with tasks
         #
-        tasks = self.task_follows(function_or_func_names)
+        tasks = self.decorator_follows(function_or_func_names)
         functions_to_tasks = dict(zip(function_or_func_names, tasks))
         input_params = replace_func_names_with_tasks(input_params, functions_to_tasks)
 
@@ -1566,10 +1567,10 @@ class _task (node):
     #8888888888888888888888888888888888888888888888888888888888888888888888888888888888888
     #_________________________________________________________________________________________
 
-    #   do_task_subdivide
+    #   do_decorator_subdivide
 
     #_________________________________________________________________________________________
-    def do_task_subdivide (self, orig_args, decorator_name, error_type):
+    def do_decorator_subdivide (self, orig_args, decorator_name, error_type):
         """
             @subdivide and @split are synonyms
             Common code here
@@ -1628,7 +1629,7 @@ class _task (node):
     #   task_split
 
     #_________________________________________________________________________________________
-    def do_task_simple_split (self, orig_args, decorator_name, error_type):
+    def do_decorator_simple_split (self, orig_args, decorator_name, error_type):
 
         #check enough arguments
         if len(orig_args) < 2:
@@ -1667,26 +1668,26 @@ class _task (node):
     #   task_split
 
     #_________________________________________________________________________________________
-    def task_split (self, orig_args):
+    def decorator_split (self, orig_args):
         """
         Splits a single set of input files into multiple output file names,
             where the number of output files may not be known beforehand.
         """
         decorator_name  = "@split"
         error_type      = error_task_split
-        self.set_action_type (_task.action_task_split)
+        self.set_action_type (Task.action_task_split)
 
         #
         #   This is actually @subdivide
         #
         if isinstance(orig_args[1], regex):
-            self.do_task_subdivide(orig_args, decorator_name, error_type)
+            self.do_decorator_subdivide(orig_args, decorator_name, error_type)
 
         #
         #   This is actually @split
         #
         else:
-            self.do_task_simple_split(orig_args, decorator_name, error_type)
+            self.do_decorator_simple_split(orig_args, decorator_name, error_type)
 
 
 
@@ -1695,7 +1696,7 @@ class _task (node):
     #   task_originate
 
     #_________________________________________________________________________________________
-    def task_originate (self, orig_args):
+    def decorator_originate (self, orig_args):
         """
         Splits out multiple output file names,
             where the number of output files may or may not be known beforehand.
@@ -1703,7 +1704,7 @@ class _task (node):
         """
         decorator_name  = "@originate"
         error_type      = error_task_originate
-        self.set_action_type (_task.action_task_originate)
+        self.set_action_type (Task.action_task_originate)
 
         if len(orig_args) < 1:
             raise error_type(self, "%s takes a single argument" % decorator_name)
@@ -1744,15 +1745,15 @@ class _task (node):
     #   task_subdivide
 
     #_________________________________________________________________________________________
-    def task_subdivide (self, orig_args):
+    def decorator_subdivide (self, orig_args):
         """
         Splits a single set of input files into multiple output file names,
             where the number of output files may not be known beforehand.
         """
         decorator_name  = "@subdivide"
         error_type      = error_task_subdivide
-        self.set_action_type (_task.action_task_subdivide)
-        self.do_task_subdivide(orig_args, decorator_name, error_type)
+        self.set_action_type (Task.action_task_subdivide)
+        self.do_decorator_subdivide(orig_args, decorator_name, error_type)
 
     #_________________________________________________________________________________________
 
@@ -1833,10 +1834,10 @@ class _task (node):
 
     #_________________________________________________________________________________________
 
-    #   task_product
+    #   decorator_product
 
     #_________________________________________________________________________________________
-    def task_product(self, orig_args):
+    def decorator_product(self, orig_args):
         """
         all versus all
         """
@@ -1862,7 +1863,7 @@ class _task (node):
             raise error_task_product(self, "@product expects formatter() as the second argument")
 
 
-        self.set_action_type (_task.action_task_product)
+        self.set_action_type (Task.action_task_product)
 
         #
         # replace function / function names with tasks
@@ -1894,12 +1895,12 @@ class _task (node):
 
     #_________________________________________________________________________________________
 
-    #   task_combinatorics
+    #   decorator_combinatorics
 
     #_________________________________________________________________________________________
-    def task_combinatorics (self, orig_args, combinatorics_type, decorator_name, error_type):
+    def decorator_combinatorics (self, orig_args, combinatorics_type, decorator_name, error_type):
         """
-            Common code for task_permutations, task_combinations_with_replacement, task_combinations
+            Common code for decorator_permutations, decorator_combinations_with_replacement, decorator_combinations
         """
 
         if len(orig_args) < 4:
@@ -1920,7 +1921,7 @@ class _task (node):
         file_names_transform = t_nested_formatter_file_names_transform(self, [orig_args[1]] * k_tuple, error_type, decorator_name)
 
 
-        self.set_action_type (_task.action_task_permutations)
+        self.set_action_type (Task.action_task_permutations)
 
         if not isinstance(orig_args[2], int):
             raise error_task_product(self, "%s expects an integer number as the third argument specifying the number of elements in each tuple." % decorator_name)
@@ -1950,10 +1951,10 @@ class _task (node):
 
     #_________________________________________________________________________________________
 
-    #   task_permutations
+    #   decorator_permutations
 
     #_________________________________________________________________________________________
-    def task_permutations(self, orig_args):
+    def decorator_permutations(self, orig_args):
         """
             k-permutations of n
 
@@ -1962,15 +1963,15 @@ class _task (node):
         decorator_name      = "@permutations"
         error_type          = error_task_permutations
         combinatorics_type  = t_combinatorics_type.COMBINATORICS_PERMUTATIONS
-        self.task_combinatorics (orig_args, combinatorics_type, decorator_name, error_type)
+        self.decorator_combinatorics (orig_args, combinatorics_type, decorator_name, error_type)
 
 
     #_________________________________________________________________________________________
 
-    #   task_combinations
+    #   decorator_combinations
 
     #_________________________________________________________________________________________
-    def task_combinations(self, orig_args):
+    def decorator_combinations(self, orig_args):
         """
             k-length tuples
                 Single (sorted) ordering, i.e. AB is the same as BA,
@@ -1983,15 +1984,15 @@ class _task (node):
         decorator_name      = "@combinations"
         error_type          = error_task_combinations
         combinatorics_type  = t_combinatorics_type.COMBINATORICS_COMBINATIONS
-        self.task_combinatorics (orig_args, combinatorics_type, decorator_name, error_type)
+        self.decorator_combinatorics (orig_args, combinatorics_type, decorator_name, error_type)
 
 
     #_________________________________________________________________________________________
 
-    #   task_combinations_with_replacement
+    #   decorator_combinations_with_replacement
 
     #_________________________________________________________________________________________
-    def task_combinations_with_replacement(self, orig_args):
+    def decorator_combinations_with_replacement(self, orig_args):
         """
             k-length tuples
                 Single (sorted) ordering, i.e. AB is the same as BA,
@@ -2017,17 +2018,17 @@ class _task (node):
         decorator_name      = "@combinations_with_replacement"
         error_type          = error_task_combinations_with_replacement
         combinatorics_type  = t_combinatorics_type.COMBINATORICS_COMBINATIONS_WITH_REPLACEMENT
-        self.task_combinatorics (orig_args, combinatorics_type, decorator_name, error_type)
+        self.decorator_combinatorics (orig_args, combinatorics_type, decorator_name, error_type)
 
 
 
 
     #_________________________________________________________________________________________
 
-    #   task_transform
+    #   decorator_transform
 
     #_________________________________________________________________________________________
-    def task_transform (self, orig_args):
+    def decorator_transform (self, orig_args):
         """
         Merges multiple input files into a single output.
         """
@@ -2037,7 +2038,7 @@ class _task (node):
             raise error_type(self, "Too few arguments for %s" % decorator_name)
 
 
-        self.set_action_type (_task.action_task_transform)
+        self.set_action_type (Task.action_task_transform)
 
         #
         # replace function / function names with tasks
@@ -2058,7 +2059,7 @@ class _task (node):
         #
         #   whether transform generates a list of jobs or not will depend on the parent task
         #
-        elif isinstance(input_files_task_globs.params, _task):
+        elif isinstance(input_files_task_globs.params, Task):
             self._single_job_single_output = input_files_task_globs.params
 
         #_________________________________________________________________________________
@@ -2088,10 +2089,10 @@ class _task (node):
 
     #_________________________________________________________________________________________
 
-    #   task_collate
+    #   decorator_collate
 
     #_________________________________________________________________________________________
-    def task_collate (self, orig_args):
+    def decorator_collate (self, orig_args):
         """
         Merges multiple input files into a single output.
         """
@@ -2100,7 +2101,7 @@ class _task (node):
         if len(orig_args) < 3:
             raise error_type(self, "Too few arguments for %s" % decorator_name)
 
-        self.set_action_type (_task.action_task_collate)
+        self.set_action_type (Task.action_task_collate)
 
         #
         # replace function / function names with tasks
@@ -2135,10 +2136,10 @@ class _task (node):
 
     #_________________________________________________________________________________________
 
-    #   task_merge
+    #   decorator_merge
 
     #_________________________________________________________________________________________
-    def task_merge (self, orig_args):
+    def decorator_merge (self, orig_args):
         """
         Merges multiple input files into a single output.
         """
@@ -2148,7 +2149,7 @@ class _task (node):
         if len(orig_args) < 2:
             raise error_task_merge(self, "Too few arguments for @merge")
 
-        self.set_action_type (_task.action_task_merge)
+        self.set_action_type (Task.action_task_merge)
 
         #
         # replace function / function names with tasks
@@ -2170,16 +2171,16 @@ class _task (node):
 
     #_________________________________________________________________________________________
 
-    #   task_parallel
+    #   decorator_parallel
 
     #_________________________________________________________________________________________
-    def task_parallel (self, orig_args):
+    def decorator_parallel (self, orig_args):
         """
         calls user function in parallel
             with either each of a list of parameters
             or using parameters generated by a custom function
         """
-        self.set_action_type (_task.action_parallel)
+        self.set_action_type (Task.action_parallel)
 
         #   unmodified from __init__
         #
@@ -2212,10 +2213,10 @@ class _task (node):
 
     #_________________________________________________________________________________________
 
-    #   task_files
+    #   decorator_files
 
     #_________________________________________________________________________________________
-    def task_files (self, orig_args):
+    def decorator_files (self, orig_args):
         """
         calls user function in parallel
             with either each of a list of parameters
@@ -2237,7 +2238,7 @@ class _task (node):
         if len(orig_args) == 1 and isinstance(orig_args[0], collections.Callable):
             #if len(orig_args) == 1 and type(orig_args[0]) == types.FunctionType:
 
-            self.set_action_type (_task.action_task_files_func)
+            self.set_action_type (Task.action_task_files_func)
             self.param_generator_func = files_custom_generator_param_factory(orig_args[0])
 
             # assume
@@ -2245,7 +2246,7 @@ class _task (node):
 
         #   Use parameters in supplied list
         else:
-            self.set_action_type (_task.action_task_files)
+            self.set_action_type (Task.action_task_files)
 
             if len(orig_args) > 1:
 
@@ -2292,10 +2293,10 @@ class _task (node):
 
     #_________________________________________________________________________________________
 
-    #   task_files_re
+    #   decorator_files_re
 
     #_________________________________________________________________________________________
-    def task_files_re (self, old_args):
+    def decorator_files_re (self, old_args):
         """
         calls user function in parallel
             with input_files, output_files, parameters
@@ -2317,7 +2318,7 @@ class _task (node):
         if len(old_args) < 3:
             raise error_task_files_re(self, "Too few arguments for @files_re")
 
-        self.set_action_type (_task.action_task_files_re)
+        self.set_action_type (Task.action_task_files_re)
 
         # check if parameters wrapped in combine
         combining_all_jobs, orig_args = is_file_re_combining(old_args)
@@ -2366,16 +2367,16 @@ class _task (node):
 
     #_________________________________________________________________________________________
 
-    #   task_mkdir
+    #   decorator_mkdir
 
-    #       only called within task_follows
+    #       only called within decorator_follows
 
     #_________________________________________________________________________________________
-    def task_mkdir (self, orig_args):
+    def decorator_mkdir (self, orig_args):
         self.cnt_task_mkdir += 1
         # give unique name to this instance of mkdir
         unique_name = r"(mkdir %d) before " % self.cnt_task_mkdir + self._name
-        new_node = _task(self._module_name, unique_name)
+        new_node = Task(self._module_name, unique_name)
         self.add_child(new_node)
         new_node.do_task_mkdir(orig_args)
         new_node.display_name = new_node._description
@@ -2390,7 +2391,7 @@ class _task (node):
         error_type      = error_task_mkdir
 
         #   jump through hoops
-        self.set_action_type (_task.action_mkdir)
+        self.set_action_type (Task.action_mkdir)
         self.needs_update_func    = self.needs_update_func or needs_update_check_directory_missing
                                     # don't shorten in description: full path
         self._description         = "Make directories %s" % (shorten_filenames_encoder(orig_args, 0))
@@ -2489,10 +2490,10 @@ class _task (node):
 
     #_________________________________________________________________________________________
 
-    #   task_follows
+    #   decorator_follows
 
     #_________________________________________________________________________________________
-    def task_follows (self, args):
+    def decorator_follows (self, args):
         """
         Saved decorator arguments should be:
                 (string/task,...)
@@ -2517,9 +2518,9 @@ class _task (node):
                     #   no module: use same module as current task
                     names = arg.rsplit(".", 2)
                     if len(names) == 1:
-                        arg = _task(self._module_name, arg)
+                        arg = Task(self._module_name, arg)
                     else:
-                        arg = _task(*names)
+                        arg = Task(*names)
 
                 #
                 #   add dependency
@@ -2536,7 +2537,7 @@ class _task (node):
                 self.cnt_task_mkdir += 1
                 # give unique name to this instance of mkdir
                 unique_name = r"(mkdir %d) before " % self.cnt_task_mkdir + self._name
-                new_node = _task(self._module_name, unique_name)
+                new_node = Task(self._module_name, unique_name)
                 self.add_child(new_node)
                 new_node.do_task_mkdir(arg.args)
                 new_node.display_name = new_node._description
@@ -2555,13 +2556,13 @@ class _task (node):
 
                 # add task as attribute of this function
                 if not hasattr(arg, "pipeline_task"):
-                    arg.pipeline_task = _task.create_task(arg)
+                    arg.pipeline_task = Task.create_task(arg)
                 self.add_child(arg.pipeline_task)
                 new_tasks.append(arg.pipeline_task)
 
             else:
                 raise error_decorator_args("Dependencies must be functions or function names in " +
-                                            "@task_follows %s:\n[%s]" %
+                                            "@follows %s:\n[%s]" %
                                             (self._name, str(arg)))
 
 
@@ -2571,10 +2572,10 @@ class _task (node):
 
     #_________________________________________________________________________________________
 
-    #   task_check_if_uptodate
+    #   decorator_check_if_uptodate
 
     #_________________________________________________________________________________________
-    def task_check_if_uptodate (self, args):
+    def decorator_check_if_uptodate (self, args):
         """
         Saved decorator arguments should be:
                 a function which takes the appropriate number of arguments for each job
@@ -2582,7 +2583,7 @@ class _task (node):
         if len(args) != 1 or not isinstance(args[0], collections.Callable):
         #if len(args) != 1 or type(args[0]) != types.FunctionType:
             raise error_decorator_args("Expecting a single function in  " +
-                                                "@task_check_if_uptodate %s:\n[%s]" %
+                                                "@check_if_uptodate %s:\n[%s]" %
                                                 (self._name, str(args)))
         self.needs_update_func        = args[0]
 
@@ -2590,10 +2591,10 @@ class _task (node):
 
     #_________________________________________________________________________________________
 
-    #   task_posttask
+    #   decorator_posttask
 
     #_________________________________________________________________________________________
-    def task_posttask(self, args):
+    def decorator_posttask(self, args):
         """
         Saved decorator arguments should be:
                 one or more functions which will be called if the task completes
@@ -2611,10 +2612,10 @@ class _task (node):
 
     #_________________________________________________________________________________________
 
-    #   task_jobs_limit
+    #   decorator_jobs_limit
 
     #_________________________________________________________________________________________
-    def task_jobs_limit(self, args):
+    def decorator_jobs_limit(self, args):
         """
         Limit the number of concurrent jobs
         """
@@ -2646,10 +2647,10 @@ class _task (node):
 
     #_________________________________________________________________________________________
 
-    #   task_active_if
+    #   decorator_active_if
 
     #_________________________________________________________________________________________
-    def task_active_if (self, active_if_checks):
+    def decorator_active_if (self, active_if_checks):
         """
         If any of active_checks is False or returns False, then the task is
         marked as "inactive" and its outputs removed.
@@ -2666,10 +2667,10 @@ class _task (node):
 
     #_________________________________________________________________________________________
 
-    #   task_graphviz
+    #   decorator_graphviz
 
     #_________________________________________________________________________________________
-    def task_graphviz(self, *unnamed_args, **named_args):
+    def decorator_graphviz(self, *unnamed_args, **named_args):
         self.graphviz_attributes=named_args
 
 
@@ -2679,8 +2680,8 @@ class task_encoder(json.JSONEncoder):
             return list(obj)
         if isinstance(obj, defaultdict):
             return dict(obj)
-        if isinstance(obj, _task):
-            return obj._name #, _task.action_names[obj.action_task], obj._description]
+        if isinstance(obj, Task):
+            return obj._name #, Task.action_names[obj.action_task], obj._description]
         return json.JSONEncoder.default(self, obj)
 
 
@@ -2715,11 +2716,11 @@ def link_task_names_to_functions ():
                     n.user_defined_work_func = getattr(module, n._func_name)
                 else:
                     raise error_decorator_args(("Module '%s' has no function '%s' in " +
-                                                "\n@task_follows('%s')\ndef %s...") %
+                                                "\n@follows('%s')\ndef %s...") %
                                         (n._module_name, n._func_name, n.get_task_name(), dependent_display_task_name))
             else:
                 raise error_decorator_args("Module '%s' not found in " +
-                                        "\n@task_follows('%s')\ndef %s..." %
+                                        "\n@follows('%s')\ndef %s..." %
                                 (n._module_name, n.get_task_name(), dependent_display_task_name))
 
 
@@ -2727,7 +2728,7 @@ def link_task_names_to_functions ():
         # some jobs single state status mirrors parent's state
         #   and parent task not known until know
         #
-        if isinstance(n._single_job_single_output, _task):
+        if isinstance(n._single_job_single_output, Task):
             n._single_job_single_output = n._single_job_single_output._single_job_single_output
 
 #_________________________________________________________________________________________
@@ -3347,7 +3348,7 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                         # pause for one second before first job of each tasks
                         # @originate tasks do not need to pause, because they depend on nothing!
                         if cnt_jobs_created == 0 and touch_files_only < 2:
-                            if "ONE_SECOND_PER_JOB" in runtime_data and runtime_data["ONE_SECOND_PER_JOB"] and t._action_type != _task.action_task_originate:
+                            if "ONE_SECOND_PER_JOB" in runtime_data and runtime_data["ONE_SECOND_PER_JOB"] and t._action_type != Task.action_task_originate:
                                 log_at_level (logger, 10, verbose, "   1 second PAUSE in job_parameter_generator\n\n\n")
                                 time.sleep(1.01)
                             else:

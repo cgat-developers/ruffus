@@ -1367,7 +1367,7 @@ def expand_nested_tasks_or_globs(p, tasksglobs_to_filenames):
     # Expand globs or tasks as a list only if they are top level
     #
     if (    (isinstance(p, path_str_type) and is_glob(p) and p in tasksglobs_to_filenames) or
-            p.__class__.__name__ == '_task'     or
+            p.__class__.__name__ == 'Task'     or
             isinstance(p, runtime_parameter)    ):
         return tasksglobs_to_filenames[p]
 
@@ -1385,7 +1385,7 @@ def expand_nested_tasks_or_globs(p, tasksglobs_to_filenames):
         for pp in p:
             if (isinstance(pp, path_str_type) and pp in tasksglobs_to_filenames):
                 l.extend(tasksglobs_to_filenames[pp])
-            elif pp.__class__.__name__ == '_task' or isinstance(pp, runtime_parameter):
+            elif pp.__class__.__name__ == 'Task' or isinstance(pp, runtime_parameter):
                 files = tasksglobs_to_filenames[pp]
                 # task may have produced a single output: in which case append
                 if non_str_sequence(files):
