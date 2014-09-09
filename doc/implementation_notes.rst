@@ -598,3 +598,131 @@ Parameter handling
     * In ``file_name_parameters.py.`` : ``file_names_from_tasks_globs`` , ``either_or()`` behaves like a ``glob``
     * In Extra() as well as Output()
 
+
+******************************************************************************
+ Add Object Orientated interface
+******************************************************************************
+======================================================================================================
+Todo
+======================================================================================================
+
+    TODO
+    #. Pipeline decorator methods renamed to decorator_xxx as in ``decorator_follows``
+
+        do_task_subdivide
+            input / filter / extra_input / output / extras
+        do_task_simple_split
+            input / output / extras
+        task_transform
+            input / formatter / extra_input / output / extras
+        task_collate
+            input / formatter / extra_input / output / extras
+        def task_merge (self, orig_args):
+            input / output / extras
+        task_mkdir
+            input / output
+
+        task_originate
+            output / extras
+        task_product
+            [input / formatter()]+ / extra_input / output / extras
+        task_combinatorics
+            input / formatter / ntuple / extra_input / output / extras
+
+
+        task_parallel
+            input / others
+        task_files
+            funct
+            * multiple args = single job
+            * list arg = multiple jobs
+                * input
+                * output
+                * extras
+    #. ``Task.get_task_name()``
+       -> get_display_name(): distinguish between decorator and not
+
+    #. At define time, just save arguments: do nothing
+    #. ``Pipeline.clone()``
+    #. Named parameters
+        * parse named parameters in order filling in from unnamed
+        * save parameters in dict
+        * call param_generator_func from dict
+        * one single standard setup parameter function for all sorts of task which we call before pipeline_xxx()
+        * forwards parameter dict to param_generator_func
+        * set_inputs for tasks should set task_follows to set dependencies
+        * How should product inputs be set?
+    #. ``Pipeline.xxx()``
+        .. <<python
+
+        .. code-block:: python
+
+            # forward to task
+            pipeline.originate(...)
+            pipeline.transform(...)
+            pipeline.split(...)
+            pipeline.subdivide(...)
+            pipeline.collate(...)
+            pipeline.merge(...)
+            pipeline.product(...)
+            pipeline.permutations(...)
+            pipeline.combinations(...)
+            pipeline.combinations_with_replacement(...)
+            pipeline.files(...)
+            pipeline.parallel(...)
+    ..
+        python
+
+    #. ``Task.decorator_xxx`` forwards
+    #. ``Task.xxx()``
+
+        .. <<python
+
+        .. code-block:: python
+
+            # task only
+            task.active_if
+            task.jobs_limit
+            task.mkdir
+            task.graphviz
+            task.follows
+    ..
+        python
+
+======================================================================================================
+Done
+======================================================================================================
+    #. Identifying tasks from t_job_result : TODO
+        * job results do not contain references to ``Task`` so that it can be marshalled more easily
+        * we need to look up task at job completion
+        * use  ``_node_index`` from ``graph.py`` so we have always a unique identifier for each ``Task``
+    #. Add ``pipeline`` class
+       * Create global called ``"main"``
+    #. Rename ``_task`` to ``Task``
+    #. Deferred tasks (i.e. string names which can't be resolved)
+       * Just lists in ``Pipeline`` and resolved on ``Pipeline.resolve_deferred_dependencies()``.
+       * This calls ``Pipeline.get_tail_tasks()`` for dependent pipelines which should chain deferred resolution.
+    #. ``resolve_single_job_single_output``
+        * called before pipeline functions
+        * to support wierd deprecated single job single output mode legacy for @files from Ruffus v.1
+    #. Task name lookup
+        * replace ``lookup_node_from_name`` ``is_node`` with dict() operations of pipeline
+        * For just task_name, Looks first in its own pipeline or ("main" for decorators)
+        * Otherwise Will look up across pipelines but complains if can't find unambiguous
+        * But what happens when misspelt?
+        * Looks up:
+            * ``Pipeline``:  deferred
+            * ``Task``
+            * ``collections.Callable``
+            * Fully qualifies task name
+            * task name in same pipeline
+            * task name in other pipelines
+            * function name (Fully qualitied / Same module / ``__main__``)
+        * Different ways of looking up tasks are placed in ``Pipeline`` as ``dict()`` keys TODO: needs unit test
+
+    #. All Tasks must have defined funcs
+    #. At definition, check func isn't be specified more than once
+    #. ``Pipeline`` owns tasks
+
+
+
