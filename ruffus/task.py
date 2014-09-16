@@ -2318,20 +2318,6 @@ class Task (node):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     #_________________________________________________________________________________________
 
     #   do_decorator_mkdir
@@ -2845,50 +2831,6 @@ def update_active_states_for_all_tasks ():
     for n in node._all_nodes:
         n.update_active_state()
 
-#_________________________________________________________________________________________
-
-#   task_names_to_tasks
-
-#_________________________________________________________________________________________
-def task_names_to_tasks (task_description, task_names):
-    """
-    Given a list of task names, look up the corresponding tasks
-    Will just pass through if the task_name is already a task
-    """
-
-    #
-    #   In case we are given a single item instead of a list
-    #       accepts unicode
-    #
-    if isinstance(task_names, path_str_type) or isinstance(task_names, collections.Callable):
-        task_names = [task_names]
-
-    task_nodes = []
-    for task_name in task_names:
-
-        # Is this already a function, don't do mapping if already is task
-        if isinstance(task_name, collections.Callable):
-            if hasattr(task_name, "pipeline_task"):
-                task_nodes.append(task_name.pipeline_task)
-                continue
-            else:
-                # blow up for unwrapped function
-                raise error_function_is_not_a_task(("Function def %s(...): is not a pipelined task in ruffus." %
-                                                    task_name.__name__) +
-                                                    " To include this, this function needs to have a ruffus "+
-                                                    "decoration like '@parallel', '@files', or named as a dependent "+
-                                                    "of some other Ruffus task function via '@follows'.")
-
-        # assumes is some kind of string
-        if not node.is_node(task_name):
-            if  node.is_node("__main__." + task_name):
-                task_nodes.append(node.lookup_node_from_name("__main__." + task_name))
-            else:
-                raise error_node_not_task("%s task '%s' is not a pipelined task in Ruffus. Have you mis-spelt the function name?" % (
-                                                        task_description, task_name))
-        else:
-            task_nodes.append(node.lookup_node_from_name(task_name))
-    return task_nodes
 
 
 
