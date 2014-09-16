@@ -7,6 +7,12 @@ Installation
 
 :mod:`Ruffus` is a lightweight python module for building computational pipelines.
 
+.. note ::
+
+    Ruffus requires Python 2.6 or higher or Python 3.0 or higher
+
+
+
 
 The easy way
 ============

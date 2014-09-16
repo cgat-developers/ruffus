@@ -33,6 +33,23 @@ Release
         git push
 
 ******************************************************************************
+blogger
+******************************************************************************
+
+    ::
+
+
+        .article-content h2 {color: #ad3a2b}
+        .article-content h3 {color: #0100b4}
+            #header .header-bar .title h1
+            {
+            background-image: url('http://www.ruffus.org.uk/_static/small_logo.png');
+            background-repeat: no-repeat;
+            background-position: left;
+            }
+
+
+******************************************************************************
 dbdict.py
 ******************************************************************************
 
@@ -605,53 +622,31 @@ Parameter handling
 ======================================================================================================
 Todo
 ======================================================================================================
+    #. Add unittests
+    #. ``decorator_follows`` renamed and refactored to allow for non-decorator
+    #. mkdir refactored to look like create_task
+    #. ``get_display_name()`` returns func name or task name
+    #. ``create_task()``` needs pipeline parameter so points back to parent
 
-    TODO
-    #. Pipeline decorator methods renamed to decorator_xxx as in ``decorator_follows``
+    # ``mkdir``
+        * Create new task using share makedir function as task function,
+          taking either output / extra parameters or input, filter, output, extra parameters
+        * Output parameters are made
+        * Unique task name
+    # task_parallel
+    #   input / others
+    # task_files
+        funct
+        * multiple args = single job
+        * list arg = multiple jobs
+            * input
+            * output
+            * extras
 
-        do_task_subdivide
-            input / filter / extra_input / output / extras
-        do_task_simple_split
-            input / output / extras
-        task_transform
-            input / formatter / extra_input / output / extras
-        task_collate
-            input / formatter / extra_input / output / extras
-        def task_merge (self, orig_args):
-            input / output / extras
-        task_mkdir
-            input / output
-
-        task_originate
-            output / extras
-        task_product
-            [input / formatter()]+ / extra_input / output / extras
-        task_combinatorics
-            input / formatter / ntuple / extra_input / output / extras
-
-
-        task_parallel
-            input / others
-        task_files
-            funct
-            * multiple args = single job
-            * list arg = multiple jobs
-                * input
-                * output
-                * extras
-    #. ``Task.get_task_name()``
-       -> get_display_name(): distinguish between decorator and not
-
-    #. At define time, just save arguments: do nothing
     #. ``Pipeline.clone()``
-    #. Named parameters
-        * parse named parameters in order filling in from unnamed
-        * save parameters in dict
-        * call param_generator_func from dict
-        * one single standard setup parameter function for all sorts of task which we call before pipeline_xxx()
-        * forwards parameter dict to param_generator_func
-        * set_inputs for tasks should set task_follows to set dependencies
-        * How should product inputs be set?
+    #. ``set_inputs()``
+        How should ``@product()`` ``set_inputs()`` work?
+    #. Task dependencies can be reset after ``set_inputs()`` but ``@follows`` dependencies should be persistent
     #. ``Pipeline.xxx()``
         .. <<python
 
@@ -689,16 +684,36 @@ Todo
     ..
         python
 
+
 ======================================================================================================
-Done
+Passed Unit tests
 ======================================================================================================
-    #. Identifying tasks from t_job_result : TODO
+    #. Named parameters
+        * parse named parameters in order filling in from unnamed
+        * save parameters in ``dict``  ``Task.parsed_args``
+        * call ``setup_task_func()`` afterwards which knows how to setup:
+            * poor man's OOP but
+            * allows type to be changed after constructor:
+              Because can't guarantee that ``@transform`` ``@merge`` is the first Ruffus decorator to be encountered.
+        * ``setup_task_func()`` is called for every task before pipeline_xxx()
+    #. Much more informative messages for errors when parsing decorator arguments
+    #. Pipeline decorator methods renamed to decorator_xxx as in ``decorator_follows``
+    #. ``Task.get_task_name()``
+       * rename to ``Task.get_display_name()``
+       * distinguish between decorator and OO interface
+    #. Rename ``_task`` to ``Task``
+    #. Identifying tasks from t_job_result:
         * job results do not contain references to ``Task`` so that it can be marshalled more easily
         * we need to look up task at job completion
         * use  ``_node_index`` from ``graph.py`` so we have always a unique identifier for each ``Task``
+    #. Parse arguments using ruffus_utility.parse_task_arguments
+        * Reveals full hackiness and inconsistency between ``add_inputs`` and ``inputs``. The latter only takes a single argument. Each of the elements of the former gets added along side the existing inputs.
+
+======================================================================================================
+Done
+======================================================================================================
     #. Add ``pipeline`` class
        * Create global called ``"main"``
-    #. Rename ``_task`` to ``Task``
     #. Deferred tasks (i.e. string names which can't be resolved)
        * Just lists in ``Pipeline`` and resolved on ``Pipeline.resolve_deferred_dependencies()``.
        * This calls ``Pipeline.get_tail_tasks()`` for dependent pipelines which should chain deferred resolution.
@@ -714,15 +729,12 @@ Done
             * ``Pipeline``:  deferred
             * ``Task``
             * ``collections.Callable``
-            * Fully qualifies task name
-            * task name in same pipeline
-            * task name in other pipelines
-            * function name (Fully qualitied / Same module / ``__main__``)
+            * Pipeline qualified task name
+            * task or unambiguous function name in same (main if decorator) pipeline
+            * pipeline name
+            * unambiguous task / function name across all pipelines
         * Different ways of looking up tasks are placed in ``Pipeline`` as ``dict()`` keys TODO: needs unit test
-
     #. All Tasks must have defined funcs
     #. At definition, check func isn't be specified more than once
     #. ``Pipeline`` owns tasks
-
-
 

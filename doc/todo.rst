@@ -22,12 +22,25 @@ Todo: either_or: Prevent failed jobs from propagating further
 ****************************************************************************************
 
 ****************************************************************************************
+Todo: decorator docs should pointer to manual
+****************************************************************************************
+
+****************************************************************************************
 Todo: Named parameters in decorators for clarity
 ****************************************************************************************
 
 ****************************************************************************************
 Todo: Non-decorator / Function interface
 ****************************************************************************************
+
+****************************************************************************************
+Todo: Replacements for formatter(), suffix(), regex()
+****************************************************************************************
+
+    formatter etc. should be self contained objects derived from a single base class
+    with behaviour rather than empty tags used for dispatching to functions
+
+    The design is better fit by and should be switched over to an inheritance scheme
 
 
 
