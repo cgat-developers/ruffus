@@ -78,8 +78,6 @@ from .ruffus_utility import *
 
 from . import dbdict
 
-class t_extra_inputs:
-    (ADD_TO_INPUTS, REPLACE_INPUTS, KEEP_INPUTS) = list(range(3))
 
 class t_combinatorics_type:
     (   COMBINATORICS_PRODUCT, COMBINATORICS_PERMUTATIONS,
@@ -959,7 +957,8 @@ def merge_param_factory (input_files_task_globs,
 #   originate_param_factory
 
 #_________________________________________________________________________________________
-def originate_param_factory (list_output_files_task_globs, extras):
+def originate_param_factory (list_output_files_task_globs,
+                                *extra_params):
     """
     Factory for task_originate
     """
@@ -968,7 +967,7 @@ def originate_param_factory (list_output_files_task_globs, extras):
         for output_files_task_globs in list_output_files_task_globs:
             output_param         = file_names_from_tasks_globs(output_files_task_globs,                    runtime_data)
             output_param_logging = file_names_from_tasks_globs(output_files_task_globs.unexpanded_globs(), runtime_data)
-            yield (None, output_param) + tuple(extras), (None, output_param_logging) + tuple(extras)
+            yield (None, output_param) + tuple(extra_params), (None, output_param_logging) + tuple(extra_params)
 
     return iterator
 
@@ -1105,8 +1104,8 @@ def yield_io_params_per_job (input_params,
             #          just like output params
             #
             #       So we do (2) first, ignoring tasks, then (1)
-            if extra_input_files_task_globs != None:
-
+            if extra_input_files_task_globs:
+                # DEBUGGG
                 extra_inputs = extra_input_files_task_globs.file_names_transformed (filenames, file_names_transform)
 
                 #
@@ -1116,6 +1115,8 @@ def yield_io_params_per_job (input_params,
                     input_param = file_names_from_tasks_globs(extra_inputs, runtime_data)
                 elif replace_inputs == t_extra_inputs.ADD_TO_INPUTS:
                     input_param = (orig_input_param,) + file_names_from_tasks_globs(extra_inputs, runtime_data)
+                else:
+                    input_param = orig_input_param
             else:
                 input_param = orig_input_param
 

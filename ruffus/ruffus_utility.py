@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import sys
+import re
 if sys.hexversion < 0x03000000:
     from future_builtins import zip
 ################################################################################
@@ -103,6 +104,37 @@ CHECKSUM_FUNCTIONS            = 2     # also rerun when function body has change
 CHECKSUM_FUNCTIONS_AND_PARAMS = 3     # also rerun when function parameters or function body change
 
 CHECKSUM_REGENERATE           = 2     # regenerate checksums
+
+#_________________________________________________________________________________________
+
+#   t_extra_inputs
+#       namespaced enum
+
+#_________________________________________________________________________________________
+class t_extra_inputs:
+    (ADD_TO_INPUTS, REPLACE_INPUTS, KEEP_INPUTS) = list(range(3))
+
+#_________________________________________________________________________________________
+
+#   inputs
+
+#_________________________________________________________________________________________
+class inputs(object):
+    def __init__ (self, *args):
+        self.args = args
+    def __repr__ (self, *args):
+        return 'inputs%r' % (self.args,)
+
+#_________________________________________________________________________________________
+
+#   add_inputs
+
+#_________________________________________________________________________________________
+class add_inputs(object):
+    def __init__ (self, *args):
+        self.args = args
+    def __repr__ (self, *args):
+        return 'add_inputs%r' % (self.args,)
 
 #_________________________________________________________________________________________
 #
@@ -1133,6 +1165,8 @@ def replace_func_names_with_tasks(p, func_or_name_to_task, treat_strings_as_task
 class suffix(object):
     def __init__ (self, *args):
         self.args = args
+    def __repr__ (self, *args):
+        return 'suffix%r' % (self.args,)
 
 #_________________________________________________________________________________________
 
@@ -1142,6 +1176,8 @@ class suffix(object):
 class regex(object):
     def __init__ (self, *args):
         self.args = args
+    def __repr__ (self, *args):
+        return 'regex%r' % (self.args,)
 
 #_________________________________________________________________________________________
 
@@ -1151,6 +1187,8 @@ class regex(object):
 class formatter(object):
     def __init__ (self, *args):
         self.args = args
+    def __repr__ (self, *args):
+        return 'formatter%r' % (self.args,)
 
 #_________________________________________________________________________________________
 
@@ -1404,6 +1442,301 @@ def expand_nested_tasks_or_globs(p, tasksglobs_to_filenames):
 
 
 
+#_________________________________________________________________________________________
+
+#   get_parsed_arguments_str_for_errors
+
+#       helper funciton for parse_task_arguments()
+
+#_________________________________________________________________________________________
+def get_parsed_arguments_str_for_errors (task_description, bad_arg_str, unnamed_result_strs, named_result_strs):
+    """
+    Helper function for parse_task_arguments
+        Prints out offending argument (bad_arg_str) in the context of already parsed
+        arguments so that we can quickly figure out where the error is coming from
+    """
+    indent = task_description.find("(") + 1
+    parsed_arg_str = ", ".join(unnamed_result_strs + named_result_strs)
+    # make function names clearer in arg list
+    parsed_arg_str = re.sub(r"<function (\w+) at 0x[0-9a-f]+>", r"\1", parsed_arg_str)
+    return task_description %  (parsed_arg_str + ", ...\n" +
+                                # mark out problem
+                                (" " * (indent-5 if indent - 5 > 0 else 0)) + "===> " +
+                                bad_arg_str)
+
+
+
+#_________________________________________________________________________________________
+
+#   parse_task_arguments
+
+#_________________________________________________________________________________________
+def parse_task_arguments ( orig_unnamed_arguments, orig_named_arguments, expected_arguments, task_description):
+    """
+    Parse arguments parsed into decorators or Pipeline.transform etc.
+        Special handling for optional arguments in the middle of argument list
+            1) @product
+                can have (input, filter, input1, filter1, input2, filter2....)
+            2) @transform, @subdivide, @collate, @product, @combinatorics which have
+                    (..., [add_inputs(...)|inputs(...)],...)
+                    or ([add_inputs=...|replace_inputs=...])
+                    or ([add_inputs=add_inputs(...)|replace_inputs=inputs(...)])
+        Special handling for variable number of arguments at the end of the argument list
+            which all become "extras"
+                """
+    results = {}
+    unnamed_arguments   = list(orig_unnamed_arguments)
+    named_arguments     = dict(orig_named_arguments)
+    # parsed results in string form for error messages
+    unnamed_result_strs = []
+    named_result_strs = []
+
+
+    #________________________________________________________________________________________
+    #
+    #   parse_add_inputs()
+    #
+    #________________________________________________________________________________________
+    def parse_add_inputs_args(parsed_arg, input_type, arg_name, modify_inputs_mode, result_strs):
+        """
+        Parse arguments for add_inputs and replace_inputs, i.e. 'inputs()' and 'add_inputs()'
+            input_type =inputs|add_inputs
+            arg_name = replace_inputs | add_inputs
+            modify_inputs_mode = t_extra_inputs.REPLACE_INPUTS| t_extra_inputs.ADD_TO_INPUTS
+        """
+        results["modify_inputs_mode"] = modify_inputs_mode
+        if input_type == inputs:
+            # inputs() only takes a single argument. Throw error otherwise
+            if len(parsed_arg.args) != 1:
+                err_msg = "inputs() expects a single argument:\n%s" % (
+                            get_parsed_arguments_str_for_errors(task_description,   # bad arg in context of parsed
+                                                                "%s%r" % (input_type.__name__, tuple(parsed_arg.args)),
+                                                                unnamed_result_strs,
+                                                                named_result_strs))
+                #print (err_msg, file=sys.stderr)
+                raise error_inputs_multiple_args(err_msg)
+
+        # unpack add_inputs / inputs and save results
+            results["modify_inputs"] = parsed_arg.args[0]
+        else:
+            results["modify_inputs"] = parsed_arg.args
+        result_strs.append("%s=%r" % (arg_name, parsed_arg.args))
+
+
+
+    #________________________________________________________________________________________
+    #
+    #   check_argument_type
+    #
+    #________________________________________________________________________________________
+    def check_argument_type (arg_name, parsed_arg, argument_types):
+        """
+        check if parsed_arg is right type
+        """
+        if argument_types and not isinstance(parsed_arg, argument_types):
+            err_msg = ("The '%s' argument should be %s:\n%s" %
+                        (arg_name,                                                  # argument name
+                        " or ".join("%s" % tt.__name__ for tt in argument_types),   # type names
+                        get_parsed_arguments_str_for_errors(task_description,       # bad arg in context of parsed
+                                                            "%s = %r" % (arg_name, parsed_arg),
+                                                            unnamed_result_strs, named_result_strs)))
+            #print (err_msg, file=sys.stderr)
+            raise TypeError(err_msg)
+
+        return parsed_arg
+    #________________________________________________________________________________________
+    #
+    #   parse_argument
+    #       helper function for parsing a single arguement
+    #________________________________________________________________________________________
+    def parse_argument (arg_name, expected_arguments, unnamed_arguments, named_arguments, results, task_description, mandatory, argument_types = None):
+        """
+        All missing, non-mandatory are empty list
+        """
+        # ignore if not on list
+        if not arg_name in expected_arguments:
+            return
+
+        #
+        # look among unnamed arguments first
+        #
+        if len(unnamed_arguments):
+            #
+            # check correct type
+            #
+            parsed_arg = check_argument_type (arg_name, unnamed_arguments[0], argument_types)
+            #
+            #   Save parsed results
+            #
+            results[arg_name] = parsed_arg
+            unnamed_result_strs.append("%s=%r" % (arg_name, parsed_arg))
+            del unnamed_arguments[0]
+
+        #
+        # then named
+        #
+        elif arg_name in named_arguments:
+            #
+            # check correct type
+            #
+            parsed_arg = check_argument_type (arg_name, named_arguments[arg_name], argument_types)
+            #
+            #   Save parsed results
+            #
+            results[arg_name] = parsed_arg
+            named_result_strs.append("%s=%r" % (arg_name, parsed_arg))
+            del named_arguments[arg_name]
+
+        #
+        # complain or ignore missing?
+        #
+        else:
+            if mandatory:
+                err_msg = "Missing '%s' argument:\n%s" % (
+                            arg_name,                                               # argument name
+                            get_parsed_arguments_str_for_errors(task_description,   # bad arg in
+                                                                arg_name + " = ???",#   context of parsed
+                                                                unnamed_result_strs,
+                                                                named_result_strs))
+                #print (err_msg, file=sys.stderr)
+                raise error_missing_args(err_msg)
+            else:
+                results[arg_name] = []
+
+    #
+    #   Missing input is empty list
+    #
+    parse_argument ('input', expected_arguments, unnamed_arguments, named_arguments, results, task_description, mandatory = False)
+
+    #
+    #   filter is mandatory if expected
+    #
+    parse_argument ('filter', expected_arguments, unnamed_arguments, named_arguments, results, task_description, mandatory = True, argument_types = (formatter, regex, suffix))
+
+    #
+    #   inputN
+    #
+    if 'inputN' in expected_arguments:
+        #
+        # put already parsed input and filter into the list
+        #
+        results["input"] = [results["input"]]
+        results["filter"] = [results["filter"]]
+        cnt_inputN = 1
+        #
+        #   parse argument pairs at a time, so long as the second argument is a formatter
+        #
+        while len(unnamed_arguments) >= 2 and isinstance(unnamed_arguments[1], formatter):
+            filter_name = "filter%d"    % (cnt_inputN + 1)
+            input_name  = "input%d"     % (cnt_inputN + 1)
+            unnamed_result_strs.append("%s=%r" % (input_name, unnamed_arguments[0]))
+            unnamed_result_strs.append("%s=%r" % (filter_name, unnamed_arguments[1]))
+            results["input"].append(unnamed_arguments[0])
+            results["filter"].append(unnamed_arguments[1])
+            cnt_inputN += 1
+            del unnamed_arguments[0:2]
+
+        #
+        #   parse named arguments while there is a filter2, filter3 etc.
+        #
+        filter_name = "filter%d"    % (cnt_inputN + 1)
+        input_name  = "input%d"     % (cnt_inputN + 1)
+        while filter_name in named_arguments:
+            results["filter"].append(named_arguments[filter_name])
+            named_result_strs.append("%s=%r" % (filter_name, named_arguments[filter_name]))
+            del named_arguments[filter_name]
+            #   parse input2, input3 or leave blank as empty list
+            if input_name in named_arguments:
+                results["input"].append(named_arguments[input_name])
+                named_result_strs.append("%s=%r" % (input_name, named_arguments[input_name]))
+                del named_arguments[input_name]
+            else:
+                results["input"].append([])
+            cnt_inputN += 1
+            filter_name = "filter%d"    % (cnt_inputN + 1)
+            input_name  = "input%d"     % (cnt_inputN + 1)
+
+
+    #
+    #   tuple size is int and mandatory if exists
+    #
+    parse_argument ('tuple_size', expected_arguments, unnamed_arguments, named_arguments, results, task_description, mandatory = True, argument_types = (int,))
+
+    #
+    #   add_inputs / inputs are optional
+    #
+    if 'modify_inputs' in expected_arguments:
+        results["modify_inputs_mode"] = t_extra_inputs.KEEP_INPUTS
+        results["modify_inputs"] = None
+        parse_add_inputs = ((inputs, "inputs", "replace_inputs", t_extra_inputs.REPLACE_INPUTS), (add_inputs, "add_inputs", "add_inputs", t_extra_inputs.ADD_TO_INPUTS))
+        if len(unnamed_arguments):
+            #
+            #   Is add_inputs or inputs in unnamed arguments?
+            #       Parse out contents and save in results["replace_inputs"] or results["add_inputs"]
+            #
+            for input_type, input_type_name, arg_name, modify_inputs_mode in parse_add_inputs:
+                parsed_arg = unnamed_arguments[0]
+                if isinstance(parsed_arg, input_type):
+                    parse_add_inputs_args(parsed_arg, input_type, arg_name, modify_inputs_mode, unnamed_result_strs)
+                    del unnamed_arguments[0]
+                    break
+        #
+        #   Otherwise is add_inputs or inputs in named arguments?
+        #       Parse out contents only if necessary and save in results["replace_inputs"] or results["add_inputs"]
+        #
+        if results["modify_inputs_mode"] == t_extra_inputs.KEEP_INPUTS:
+            for input_type, input_type_name, arg_name, modify_inputs_mode in parse_add_inputs:
+                if arg_name in named_arguments:
+                    parsed_arg = named_arguments[arg_name]
+                    if isinstance(parsed_arg, input_type):
+                        parse_add_inputs_args(parsed_arg, input_type, arg_name, modify_inputs_mode, named_result_strs)
+                    else:
+                        results["modify_inputs"] = parsed_arg
+                    results["modify_inputs_mode"] = modify_inputs_mode
+                    del named_arguments[arg_name]
+                    break
+
+
+    #
+    #   output is mandatory if exists
+    #
+    parse_argument ('output', expected_arguments, unnamed_arguments, named_arguments, results, task_description, mandatory = True)
+
+    #
+    #   extras is mandatory if exists
+    #
+    if 'extras' in expected_arguments:
+        if len(unnamed_arguments):
+            # move list to results: remember python does shallow copies of lists
+            results['extras'] = unnamed_arguments
+            unnamed_result_strs.append("%s=%r" % ("extras", unnamed_arguments))
+            unnamed_arguments = []
+            #del unnamed_arguments[:]
+        elif 'extras'  in named_arguments:
+            results['extras' ] = named_arguments['extras' ]
+            named_result_strs.append("%s=%r" % ("extras", named_arguments['extras' ]))
+            del named_arguments['extras' ]
+        else:
+            results['extras' ] = []
+
+
+    if len(unnamed_arguments):
+        err_msg = ("Too many unnamed arguments leftover:\n%s" %
+                    get_parsed_arguments_str_for_errors(task_description,       # bad arg in context of parsed
+                                                        (", ".join(("%r" % a) for a in unnamed_arguments)),
+                                                        unnamed_result_strs, named_result_strs))
+        print (err_msg, file=sys.stderr)
+        raise error_too_many_args(err_msg)
+    if len(named_arguments):
+        err_msg = ("Duplicate, conflicting or unrecognised arguments:\n%s" %
+                    get_parsed_arguments_str_for_errors(task_description,       # bad arg in context of parsed
+                                                        ", ".join("%s=%r" %(k, v) for k,v in named_arguments.items()),
+                                                        unnamed_result_strs, named_result_strs))
+        print (err_msg, file=sys.stderr)
+        raise error_too_many_args(err_msg)
+
+
+    return results
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -1417,6 +1750,8 @@ class combine(object):
 class output_from(object):
     def __init__ (self, *args):
         self.args = args
+    def __repr__ (self, *args):
+        return 'output_from%r' % (self.args,)
 
 class runtime_parameter(object):
     def __init__ (self, *args):

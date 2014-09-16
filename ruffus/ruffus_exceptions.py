@@ -61,7 +61,7 @@ class error_task(Exception):
         Prefix with new lines for added emphasis
         """
         # turn tasks names into 'def xxx(...): format
-        task_names = "\n".join(t.get_task_name(True) for t in self.tasks)
+        task_names = "\n".join(t.get_display_name(True) for t in self.tasks)
         if len(self.main_msg):
             return "\n\n" + self.main_msg + " for\n\n%s\n" % task_names
         else:
@@ -216,6 +216,14 @@ class error_unescaped_regular_expression_forms(error_task):
     pass
 class error_checksum_level(error_task):
     pass
+class error_missing_args(error_task):
+    pass
+class error_too_many_args(error_task):
+    pass
+class error_inputs_multiple_args(error_task):
+    pass
+
+
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888

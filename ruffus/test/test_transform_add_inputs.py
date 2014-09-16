@@ -160,7 +160,7 @@ def task2(i, o):
     touch(o)
 
     
-@transform(task1, regex(r"(.*)"), add_inputs(task2, "test_transform_inputs.*"), r"\1.output")
+@transform(input = task1, filter = regex(r"(.*)"), add_inputs = add_inputs(task2, "test_transform_inputs.*"), output = r"\1.output")
 def task3_add_inputs(i, o):
     names = ",".join(sorted(i))
     with open(o, "w") as oo:

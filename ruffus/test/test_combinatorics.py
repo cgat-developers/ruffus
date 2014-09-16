@@ -44,7 +44,7 @@ def touch (filename):
 #
 #   generate_initial_files1
 #___________________________________________________________________________
-@originate([workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"])
+@originate(output = [workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"])
 def generate_initial_files1(out_name):
     with open(out_name, 'w') as outfile:
         pass
@@ -77,12 +77,12 @@ def generate_initial_files3(out_name):
         formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
         generate_initial_files2,
         formatter(),
-        generate_initial_files3,
-        formatter(r"tmp1$" ),
         "{path[0][0]}/{FILE_PART[0][0]}.{basename[1][0]}.{basename[2][0]}.tmp2",
-        "{basename[0][0][0]}{basename[1][0][0]}{basename[2][0][0]}",       # extra: prefices only (abcd etc)
-        "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
-        "{subdir[0][0][0]}")
+        input3 = generate_initial_files3,
+        filter3 = formatter(r"tmp1$" ),
+        extras = [  "{basename[0][0][0]}{basename[1][0][0]}{basename[2][0][0]}",       # extra: prefices only (abcd etc)
+                    "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
+                    "{subdir[0][0][0]}"])
 def test_product_task( infiles, outfile,
             prefices,
             subpath,
@@ -273,13 +273,13 @@ def test_permutations3_merged_task( infiles, outfile):
 #   test_combinations_with_replacement2_task
 #___________________________________________________________________________
 @combinations_with_replacement(
-        generate_initial_files1,
-        formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
-        2,
-        "{path[0][0]}/{FILE_PART[0][0]}.{basename[1][0]}.tmp2",
-        "{basename[0][0][0]}{basename[1][0][0]}",       # extra: prefices
+        input = generate_initial_files1,
+        filter = formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
+        tuple_size = 2,
+        output = "{path[0][0]}/{FILE_PART[0][0]}.{basename[1][0]}.tmp2",
+        extras = ["{basename[0][0][0]}{basename[1][0][0]}",       # extra: prefices
         "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
-        "{subdir[0][0][0]}")
+        "{subdir[0][0][0]}"])
 def test_combinations_with_replacement2_task( infiles, outfile,
             prefices,
             subpath,

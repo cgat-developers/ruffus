@@ -68,5 +68,7 @@ echo test_cmdline.py                                                            
 python -m unittest test_cmdline                                                     && \
 echo test_graphviz.py                                                               && \
 python -m unittest test_graphviz                                                    && \
+echo test_ruffus_utility_parse_task_arguments.py                                    && \
+python -m unittest test_ruffus_utility_parse_task_arguments                         && \
 echo DONE!!!
 

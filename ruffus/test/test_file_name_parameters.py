@@ -229,7 +229,7 @@ class Test_files_re_param_factory(unittest.TestCase):
     #       self.assertRaises(ValueError, random.sample, self.seq, 20)
 
     #def get_param_iterator (self, *old_args):
-    def get_param_iterator (self, *orig_args):
+    def get_param_iterator (self, *unnamed_args, **named_args):
         #
         # replace function / function names with tasks
         #
@@ -239,33 +239,33 @@ class Test_files_re_param_factory(unittest.TestCase):
         global next_task_id
         next_task_id += 1
         fake_task = task.Task("module", "func_fake%d" % next_task_id)
-        fake_task.decorator_files_re(orig_args)
+        fake_task.decorator_files_re(unnamed_args, **named_args)
         return fake_task.param_generator_func, fake_task
 
-    def files_re (self, *old_args):
+    def files_re (self, *unnamed_args, **named_args):
         """
         This extra function is to simulate the forwarding from the decorator to
             the task creation function
         """
-        return list(p1 for (p1, ps) in self.get_param_iterator(*old_args)[0](None))
+        return list(p1 for (p1, ps) in self.get_param_iterator(*unnamed_args, **named_args)[0](None))
         #return list(self.get_param_iterator (*old_args)(None))
 
-    def check_input_files_exist(self, *old_args):
+    def check_input_files_exist(self, *unnamed_args, **named_args):
         """
         This extra function is to simulate the forwarding from the decorator to
             the task creation function
         """
-        it = self.get_param_iterator(*old_args)[0]
+        it = self.get_param_iterator(*unnamed_args, **named_args)[0]
         for param, param2 in it(None):
             check_input_files_exist (*param)
         return True
 
-    def needs_update_check_modify_time(self, *old_args):
+    def needs_update_check_modify_time(self, *unnamed_args, **named_args):
         """
         This extra function is to simulate the forwarding from the decorator to
             the task creation function
         """
-        it, task = self.get_param_iterator(*old_args)
+        it, task = self.get_param_iterator(*unnamed_args, **named_args)
         #print >> sys.stderr, [p for (p, param2) in it(None)], "??"
         return [needs_update_check_modify_time (*p, task=task,
                                                 job_history = open_job_history(history_file)) for (p, param2) in it(None)]
@@ -448,24 +448,24 @@ class Test_split_param_factory(unittest.TestCase):
     #   wrappers
 
     #_____________________________________________________________________________
-    def get_param_iterator (self, *orig_args):
+    def get_param_iterator (self, *unnamed_args, **named_args):
         #
         # replace function / function names with tasks
         #
         # fake virgin task
         fake_task = task.Task("module", "func_fake%d" % randint(1, 1000000))
-        fake_task.decorator_split(orig_args)
+        fake_task.decorator_split(unnamed_args, **named_args)
         return fake_task.param_generator_func
 
 
-    def do_task_split (self, *old_args):
+    def do_task_split (self, *unnamed_args, **named_args):
         """
         This extra function is to simulate the forwarding from the decorator to
             the task creation function
         """
         # extra dereference because we are only interested in the first (only) job
-        #return list(self.get_param_iterator (*old_args)(None))[0]
-        return list(p1 for (p1, ps) in self.get_param_iterator (*old_args)(None))[0]
+        #return list(self.get_param_iterator (*unnamed_args, **named_args)(None))[0]
+        return list(p1 for (p1, ps) in self.get_param_iterator (*unnamed_args, **named_args)(None))[0]
 
 
 
@@ -583,22 +583,22 @@ class Test_merge_param_factory(unittest.TestCase):
     #   wrappers
 
     #_____________________________________________________________________________
-    def get_param_iterator (self, *orig_args):
+    def get_param_iterator (self, *unnamed_args, **named_args):
         #
         # replace function / function names with tasks
         #
         # fake virgin task
         fake_task = task.Task("module", "func_fake%d" % randint(1, 1000000))
-        fake_task.decorator_merge(orig_args)
+        fake_task.decorator_merge(unnamed_args, **named_args)
         return fake_task.param_generator_func
 
-    def do_task_merge (self, *old_args):
+    def do_task_merge (self, *unnamed_args, **named_args):
         """
         This extra function is to simulate the forwarding from the decorator to
             the task creation function
         """
         # extra dereference because we are only interested in the first (only) job
-        return list(p1 for (p1, ps) in self.get_param_iterator (*old_args)(None))[0]
+        return list(p1 for (p1, ps) in self.get_param_iterator (*unnamed_args, **named_args)(None))[0]
 
 
 
@@ -606,6 +606,17 @@ class Test_merge_param_factory(unittest.TestCase):
         """
         test globbed form
         """
+        expected_result = (     ['DIR/f0.output',
+                                 'DIR/f0.test',
+                                 'DIR/f1.output',
+                                 'DIR/f1.test',
+                                 'DIR/f2.output',
+                                 'DIR/f2.test',
+                                ],
+                                ["test1",
+                                 "test2",
+                                 "extra.file"]
+                                               )
         #
         # simple 1 input, 1 output
         #
@@ -614,24 +625,25 @@ class Test_merge_param_factory(unittest.TestCase):
                                  "test2",
                                  "extra.file"])
         paths = recursive_replace(paths, test_path, "DIR")
-        self.assertEqual(paths,
-                        (   ['DIR/f0.output',
-                             'DIR/f0.test',
-                             'DIR/f1.output',
-                             'DIR/f1.test',
-                             'DIR/f2.output',
-                             'DIR/f2.test',
-                             ],
-                            ["test1",
-                             "test2",
-                             "extra.file"]
-                                           ))
+        self.assertEqual(paths, expected_result)
+
+        #
+        #   named parameters
+        #
+        paths = self.do_task_merge(input = test_path + "/*",
+                                output = ["test1",                               # output params
+                                         "test2",
+                                         "extra.file"])
+        paths = recursive_replace(paths, test_path, "DIR")
+        self.assertEqual(paths, expected_result)
+
+
     def test_tasks(self):
         """
         test if can use tasks to specify dependencies
         """
 
-        paths = self.do_task_merge([task.output_from("module.func1",       # input params
+        unnamed_args = [    [task.output_from("module.func1",       # input params
                                                   "module.func2",
                                                   "module.func3",
                                                   "module.func4",
@@ -640,10 +652,9 @@ class Test_merge_param_factory(unittest.TestCase):
                                 ["test1",                               # output params
                                  "test2",
                                  "extra.file"],
-                                6)                                      # extra params
-        paths = recursive_replace(paths, test_path, "DIR")
-        self.assertEqual(paths,
-                        ([
+                                6]                                      # extra params
+
+        expected_results = ([
                             5,
                             ['output4.test', 'output.ignored'],
                             'output1.test',
@@ -660,7 +671,20 @@ class Test_merge_param_factory(unittest.TestCase):
                             ['test1',                          # output params
                              'test2',
                              'extra.file'],
-                            6))
+                            6)
+
+        # unnamed arguments
+        paths = self.do_task_merge(*unnamed_args)
+        paths = recursive_replace(paths, test_path, "DIR")
+        self.assertEqual(paths, expected_results)
+
+        # NAMED ARGUMENTS
+        paths = self.do_task_merge(input = unnamed_args[0],
+                                   output = unnamed_args[1],
+                                   extras = unnamed_args[2:])
+        paths = recursive_replace(paths, test_path, "DIR")
+        self.assertEqual(paths, expected_results)
+
         paths = self.do_task_merge(task.output_from("module.func2"), "output", "extra")
         paths = self.do_task_merge(task.output_from("module.func1", "module.func2"), "output", "extra")
 
@@ -719,23 +743,23 @@ class Test_transform_param_factory(unittest.TestCase):
     #   wrappers
 
     #_____________________________________________________________________________
-    def get_param_iterator (self, *orig_args):
+    def get_param_iterator (self, *unnamed_args, **named_args):
         #
         # replace function / function names with tasks
         #
         # fake virgin task
         fake_task = task.Task("module", "func_fake%d" % randint(1, 1000000))
-        fake_task.decorator_transform(orig_args)
+        fake_task.decorator_transform(unnamed_args, **named_args)
         return fake_task.param_generator_func
 
 
-    def do_task_transform (self, *old_args):
+    def do_task_transform (self, *unnamed_args, **named_args):
         """
         This extra function is to simulate the forwarding from the decorator to
             the task creation function
         """
         # extra dereference because we are only interested in the first (only) job
-        return list(p1 for (p1, ps) in self.get_param_iterator (*old_args)(None))
+        return list(p1 for (p1, ps) in self.get_param_iterator (*unnamed_args, **named_args)(None))
 
 
     def test_simple(self):
@@ -775,18 +799,23 @@ class Test_transform_param_factory(unittest.TestCase):
         #
         # simple 1 input, 1 output
         #
-        paths = self.do_task_transform(test_path + "/*.test",
+        unnamed_args = [test_path + "/*.test",
                                             task.formatter("/(?P<name>\w+).test$"),
-                                            ["{path[0]}/{name[0]}.output1{ext[0]}", "{path[0]}/{name[0]}.output2"], "{path[0]}/{name[0]}.output3")
-                                            #["{0[path][0]}"], ".txt")
-
-        paths = recursive_replace(paths, test_path, "DIR")
-        self.assertEqual(paths,
-                        [
+                                            ["{path[0]}/{name[0]}.output1{ext[0]}", "{path[0]}/{name[0]}.output2"], "{path[0]}/{name[0]}.output3"]
+        expected_results = [
                             ('DIR/f0.test', ['DIR/f0.output1.test', 'DIR/f0.output2'], "DIR/f0.output3"),
                             ('DIR/f1.test', ['DIR/f1.output1.test', 'DIR/f1.output2'], "DIR/f1.output3"),
-                            ('DIR/f2.test', ['DIR/f2.output1.test', 'DIR/f2.output2'], "DIR/f2.output3"),
-                                           ])
+                            ('DIR/f2.test', ['DIR/f2.output1.test', 'DIR/f2.output2'], "DIR/f2.output3"),]
+        # unnamed_args                                   ]
+        paths = self.do_task_transform(*unnamed_args)
+        paths = recursive_replace(paths, test_path, "DIR")
+        self.assertEqual(paths, expected_results)
+
+        #named args
+        paths = self.do_task_transform(input = unnamed_args[0], filter = unnamed_args[1], output = unnamed_args[2], extras=unnamed_args[3:])
+        paths = recursive_replace(paths, test_path, "DIR")
+        self.assertEqual(paths, expected_results)
+
     def test_regex(self):
         """
         test regex transform with globs
@@ -794,16 +823,25 @@ class Test_transform_param_factory(unittest.TestCase):
         #
         # simple 1 input, 1 output
         #
-        paths = self.do_task_transform(test_path + "/*.test", task.regex(r"(.*)\.test"),
-                                            [r"\1.output1", r"\1.output2"], r"\1.output3")
-
-        paths = recursive_replace(paths, test_path, "DIR")
-        self.assertEqual(paths,
-                        [
+        unnamed_args = [test_path + "/*.test",
+                        task.regex(r"(.*)\.test"),
+                                            [r"\1.output1", r"\1.output2"], r"\1.output3"]
+        expected_results = [
                             ('DIR/f0.test', ['DIR/f0.output1', 'DIR/f0.output2'], "DIR/f0.output3"),
                             ('DIR/f1.test', ['DIR/f1.output1', 'DIR/f1.output2'], "DIR/f1.output3"),
-                            ('DIR/f2.test', ['DIR/f2.output1', 'DIR/f2.output2'], "DIR/f2.output3"),
-                                           ])
+                            ('DIR/f2.test', ['DIR/f2.output1', 'DIR/f2.output2'], "DIR/f2.output3"),]
+
+
+        # unnamed_args                                   ]
+        paths = self.do_task_transform(*unnamed_args)
+        paths = recursive_replace(paths, test_path, "DIR")
+        self.assertEqual(paths, expected_results)
+
+        #named args
+        paths = self.do_task_transform(input = unnamed_args[0], filter = unnamed_args[1], output = unnamed_args[2], extras=unnamed_args[3:])
+        paths = recursive_replace(paths, test_path, "DIR")
+        self.assertEqual(paths, expected_results)
+
 
     def test_inputs(self):
         """
@@ -838,17 +876,33 @@ class Test_transform_param_factory(unittest.TestCase):
         # add inputs
         #
         #
-        paths = self.do_task_transform(test_path + "/*.test", task.regex(r"(.*)\.test"),
+        unnamed_args = [test_path + "/*.test", task.regex(r"(.*)\.test"),
                                             task.add_inputs(r"\1.testwhat"),
-                                            [r"\1.output1", r"\1.output2"])
-
-        paths = recursive_replace(paths, test_path, "DIR")
-        self.assertEqual(paths,
-                        [
+                                            [r"\1.output1", r"\1.output2"]]
+        expected_results = [
                             (('DIR/f0.test','DIR/f0.testwhat'), ['DIR/f0.output1', 'DIR/f0.output2']),
                             (('DIR/f1.test','DIR/f1.testwhat'), ['DIR/f1.output1', 'DIR/f1.output2']),
                             (('DIR/f2.test','DIR/f2.testwhat'), ['DIR/f2.output1', 'DIR/f2.output2']),
-                                           ])
+                                           ]
+
+        # unnamed_args                                   ]
+        paths = self.do_task_transform(*unnamed_args)
+        paths = recursive_replace(paths, test_path, "DIR")
+        self.assertEqual(paths, expected_results)
+
+        #named args
+        paths = self.do_task_transform(input = unnamed_args[0], filter = unnamed_args[1], add_inputs = unnamed_args[2], output = unnamed_args[3], extras=unnamed_args[4:])
+        paths = recursive_replace(paths, test_path, "DIR")
+        self.assertEqual(paths, expected_results)
+
+        #named args
+        paths = self.do_task_transform(*unnamed_args[0:2], add_inputs = unnamed_args[2].args, output = unnamed_args[3], extras=unnamed_args[4:])
+        paths = recursive_replace(paths, test_path, "DIR")
+        self.assertEqual(paths, expected_results)
+
+
+
+
         paths = self.do_task_transform(test_path + "/*.test", task.suffix(".test"),
                                             task.add_inputs(r"a.testwhat"),
                                             [".output1", ".output2"], ".output3")
@@ -954,23 +1008,23 @@ class Test_collate_param_factory(unittest.TestCase):
     #   wrappers
 
     #_____________________________________________________________________________
-    def get_param_iterator (self, *orig_args):
+    def get_param_iterator (self, *unnamed_args, **named_args):
         #
         # replace function / function names with tasks
         #
         # fake virgin task
         fake_task = task.Task("module", "func_fake%d" % randint(1, 1000000))
-        fake_task.decorator_collate(orig_args)
+        fake_task.decorator_collate(unnamed_args, **named_args)
         return fake_task.param_generator_func
 
 
-    def do_task_collate (self, *old_args):
+    def do_task_collate (self, *unnamed_args, **named_args):
         """
         This extra function is to simulate the forwarding from the decorator to
             the task creation function
         """
         # extra dereference because we are only interested in the first (only) job
-        return list(p1 for (p1, ps) in self.get_param_iterator (*old_args)(None))
+        return list(p1 for (p1, ps) in self.get_param_iterator (*unnamed_args, **named_args)(None))
 
 
     def test_regex(self):
@@ -1078,12 +1132,13 @@ class Test_collate_param_factory(unittest.TestCase):
         #
         #   test python set object. Note that set is constructed with the results of the substitution
         #
-        paths = self.do_task_collate(test_path + "/*.test", task.regex(r"(.*/[ef])[a-z0-9]+\.test"),
-                                            task.inputs(r"\1.whoopee"),  set([r"\1.output1", r"\1.output2", test_path + "/e.output2"]), r"\1.extra")
 
-        paths = recursive_replace(paths, test_path, "DIR")
-        self.assertEqual(paths,
-                        [
+        unnamed_args = [test_path + "/*.test", 
+                        task.regex(r"(.*/[ef])[a-z0-9]+\.test"),
+                        task.inputs(r"\1.whoopee"),  
+                        set([r"\1.output1", r"\1.output2", test_path + "/e.output2"]), 
+                        r"\1.extra"]
+        expected_results = [
                             (
                                 ('DIR/e.whoopee',),                                 # input
                                 set(['DIR/e.output1', 'DIR/e.output2']),           # output
@@ -1094,7 +1149,28 @@ class Test_collate_param_factory(unittest.TestCase):
                                 set(['DIR/f.output1', 'DIR/f.output2', 'DIR/e.output2']),                # output
                                 'DIR/f.extra'                                      # extra
                             )
-                        ])
+                        ]
+
+        # unnamed_args                                   ]
+        paths = self.do_task_collate(*unnamed_args)
+        paths = recursive_replace(paths, test_path, "DIR")
+        self.assertEqual(paths, expected_results)
+
+        #named args
+        paths = self.do_task_collate(input = unnamed_args[0], filter = unnamed_args[1], replace_inputs = unnamed_args[2], output = unnamed_args[3], extras=unnamed_args[4:])
+        paths = recursive_replace(paths, test_path, "DIR")
+        self.assertEqual(paths, expected_results)
+
+        #named args
+        paths = self.do_task_collate(*unnamed_args[0:2], replace_inputs = unnamed_args[2], output = unnamed_args[3], extras=unnamed_args[4:])
+        paths = recursive_replace(paths, test_path, "DIR")
+        self.assertEqual(paths, expected_results)
+
+        #named args
+        paths = self.do_task_collate(*unnamed_args[0:2], replace_inputs = unnamed_args[2].args[0], output = unnamed_args[3], extras=unnamed_args[4:])
+        paths = recursive_replace(paths, test_path, "DIR")
+        self.assertEqual(paths, expected_results)
+
 
     def test_tasks(self):
         """
@@ -1201,21 +1277,21 @@ class Test_files_param_factory(unittest.TestCase):
         pass
 
 
-    def get_param_iterator (self, *orig_args):
+    def get_param_iterator (self, *unnamed_args, **named_args):
         #
         # replace function / function names with tasks
         #
         # fake virgin task
         fake_task = task.Task("module", "func_fake%d" % randint(1, 1000000))
-        fake_task.decorator_files(orig_args)
+        fake_task.decorator_files(unnamed_args, **named_args)
         return fake_task.param_generator_func
 
-    def files (self, *old_args):
+    def files (self, *unnamed_args, **named_args):
         """
         This extra function is to simulate the forwarding from the decorator to
             the task creation function
         """
-        return list(p1 for (p1, ps) in self.get_param_iterator (*old_args)(None))
+        return list(p1 for (p1, ps) in self.get_param_iterator (*unnamed_args, **named_args)(None))
 
     def _test_simple(self):
         """
@@ -1425,23 +1501,23 @@ class Test_product_param_factory(unittest.TestCase):
     #   wrappers
 
     #_____________________________________________________________________________
-    def get_param_iterator (self, *orig_args):
+    def get_param_iterator (self, *unnamed_args, **named_args):
         #
         # replace function / function names with tasks
         #
         # fake virgin task
         fake_task = task.Task("module", "func_fake%d" % randint(1, 1000000))
-        fake_task.decorator_product(orig_args)
+        fake_task.decorator_product(unnamed_args, **named_args)
         return fake_task.param_generator_func
 
 
-    def do_task_product (self, *old_args):
+    def do_task_product (self, *unnamed_args, **named_args):
         """
         This extra function is to simulate the forwarding from the decorator to
             the task creation function
         """
         # extra dereference because we are only interested in the first (only) job
-        return list(p1 for (p1, ps) in self.get_param_iterator (*old_args)(None))
+        return list(p1 for (p1, ps) in self.get_param_iterator (*unnamed_args, **named_args)(None))
 
 
     def test_simple(self):
@@ -1451,18 +1527,34 @@ class Test_product_param_factory(unittest.TestCase):
         #
         # simple 1 input, 1 output
         #
-        paths = self.do_task_product([test_path + "/a.test1", test_path + "/b.test1"],                          task.formatter("(?P<ID>\w+)\.(.+)"),
+        args = [[test_path + "/a.test1", test_path + "/b.test1"],                          task.formatter("(?P<ID>\w+)\.(.+)"),
                                      [test_path + "/c.test2", test_path + "/d.test2", test_path + "/e.ignore"], task.formatter("(?P<ID>\w+)\.(test2)"),
-                                     r"{path[0][0]}/{ID[0][0]}.{1[1][0]}.output")
-
-        self.assertEqual(recursive_replace(paths, test_path, "DIR"),
-                         [
+                                     r"{path[0][0]}/{ID[0][0]}.{1[1][0]}.output"]
+        expected_result =  [
                             (('DIR/a.test1','DIR/c.test2'),'DIR/a.c.output'),
                             (('DIR/a.test1','DIR/d.test2'),'DIR/a.d.output'),
                             (('DIR/b.test1','DIR/c.test2'),'DIR/b.c.output'),
                             (('DIR/b.test1','DIR/d.test2'),'DIR/b.d.output')
                          ]
-                         )
+        paths = self.do_task_product(*args)
+        self.assertEqual(recursive_replace(paths, test_path, "DIR"), expected_result)
+
+        # named parameters
+        paths = self.do_task_product(input = args[0], filter = args[1],
+                                     input2 = args[2], filter2 = args[3],
+                                     output = args [4])
+        self.assertEqual(recursive_replace(paths, test_path, "DIR"), expected_result)
+
+        # named parameters
+        paths = self.do_task_product(*args[0:2],
+                                     input2 = args[2], filter2 = args[3],
+                                     output = args [4])
+        self.assertEqual(recursive_replace(paths, test_path, "DIR"), expected_result)
+
+        paths = self.do_task_product(*args[0:4],
+                                     output = args [4])
+        self.assertEqual(recursive_replace(paths, test_path, "DIR"), expected_result)
+
 
     def test_inputs(self):
         """
