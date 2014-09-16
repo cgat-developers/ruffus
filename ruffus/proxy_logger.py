@@ -293,6 +293,8 @@ class LoggerProxy(multiprocessing.managers.BaseProxy):
         return self._callmethod('log', args, kwargs)
     def __str__ (self):
         return "<LoggingProxy>"
+    def __repr__ (self):
+        return 'LoggerProxy()'
 
 #
 #   Register the setup_logger function as a proxy for setup_logger
