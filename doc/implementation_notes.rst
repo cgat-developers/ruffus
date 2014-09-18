@@ -622,72 +622,23 @@ Parameter handling
 ======================================================================================================
 Todo
 ======================================================================================================
-    #. Add unittests
-    #. ``decorator_follows`` renamed and refactored to allow for non-decorator
-    #. mkdir refactored to look like create_task
+    #. Add unittests for different pipelines
+    #. Add unittests for name lookup
+    #. Add unittests for ``Pipeline.xxx()``
+    #. ``Task.follows``
     #. ``get_display_name()`` returns func name or task name
-    #. ``create_task()``` needs pipeline parameter so points back to parent
-
-    # ``mkdir``
-        * Create new task using share makedir function as task function,
-          taking either output / extra parameters or input, filter, output, extra parameters
-        * Output parameters are made
-        * Unique task name
-    # task_parallel
-    #   input / others
-    # task_files
-        funct
-        * multiple args = single job
-        * list arg = multiple jobs
-            * input
-            * output
-            * extras
-
     #. ``Pipeline.clone()``
-    #. ``set_inputs()``
+    #. ``Pipeline.get_head_tasks(self)``
+    #. ``Pipeline.get_tail_tasks(self)``
+    #. ``Task.set_input()``
+    #. ``@product`` ``set_input`` should take (``input1``, ``input2``...)
         How should ``@product()`` ``set_inputs()`` work?
     #. Task dependencies can be reset after ``set_inputs()`` but ``@follows`` dependencies should be persistent
-    #. ``Pipeline.xxx()``
-        .. <<python
-
-        .. code-block:: python
-
-            # forward to task
-            pipeline.originate(...)
-            pipeline.transform(...)
-            pipeline.split(...)
-            pipeline.subdivide(...)
-            pipeline.collate(...)
-            pipeline.merge(...)
-            pipeline.product(...)
-            pipeline.permutations(...)
-            pipeline.combinations(...)
-            pipeline.combinations_with_replacement(...)
-            pipeline.files(...)
-            pipeline.parallel(...)
-    ..
-        python
-
-    #. ``Task.decorator_xxx`` forwards
-    #. ``Task.xxx()``
-
-        .. <<python
-
-        .. code-block:: python
-
-            # task only
-            task.active_if
-            task.jobs_limit
-            task.mkdir
-            task.graphviz
-            task.follows
-    ..
-        python
-
 
 ======================================================================================================
 Passed Unit tests
 ======================================================================================================
+    #. Prefix all attributes for Task into underscore so that help(Task) is not overloaded with details
     #. Named parameters
         * parse named parameters in order filling in from unnamed
         * save parameters in ``dict``  ``Task.parsed_args``
@@ -708,33 +659,27 @@ Passed Unit tests
         * use  ``_node_index`` from ``graph.py`` so we have always a unique identifier for each ``Task``
     #. Parse arguments using ruffus_utility.parse_task_arguments
         * Reveals full hackiness and inconsistency between ``add_inputs`` and ``inputs``. The latter only takes a single argument. Each of the elements of the former gets added along side the existing inputs.
-
-======================================================================================================
-Done
-======================================================================================================
     #. Add ``pipeline`` class
        * Create global called ``"main"``
     #. Deferred tasks (i.e. string names which can't be resolved)
        * Just lists in ``Pipeline`` and resolved on ``Pipeline.resolve_deferred_dependencies()``.
        * This calls ``Pipeline.get_tail_tasks()`` for dependent pipelines which should chain deferred resolution.
-    #. ``resolve_single_job_single_output``
-        * called before pipeline functions
-        * to support wierd deprecated single job single output mode legacy for @files from Ruffus v.1
     #. Task name lookup
-        * replace ``lookup_node_from_name`` ``is_node`` with dict() operations of pipeline
-        * For just task_name, Looks first in its own pipeline or ("main" for decorators)
-        * Otherwise Will look up across pipelines but complains if can't find unambiguous
-        * But what happens when misspelt?
-        * Looks up:
-            * ``Pipeline``:  deferred
-            * ``Task``
-            * ``collections.Callable``
-            * Pipeline qualified task name
-            * task or unambiguous function name in same (main if decorator) pipeline
-            * pipeline name
-            * unambiguous task / function name across all pipelines
-        * Different ways of looking up tasks are placed in ``Pipeline`` as ``dict()`` keys TODO: needs unit test
-    #. All Tasks must have defined funcs
-    #. At definition, check func isn't be specified more than once
-    #. ``Pipeline`` owns tasks
+        * Task names are unique (Otherwise Ruffus will complain at Task creation)
+        * Can also lookup by fully qualified or unqualified function name but these can be ambiguous
+        * Ambiguous lookups give a list of tasks only so we can have nice diagnostic messages ... UI trumps clean design
+    #. Look up strings across pipelines
+       #. Is pipeline name qualified? Check that
+       #. Check default (current) pipeline
+       #. Check if pipeline name. In which case returns all tail functions
+       #. Check all pipelines
+
+       * Will blow up at any instance of ambiguity in any particular pipeline
+       * Will blow up at any instance of ambiguity across pipelines
+       * Note that mis-spellings will cause problems but if this were c++, I would enforce stricter checking
+    #. Look up functions across pipelines
+       * Try current pipeline first, then all pipelines
+       * Will blow up at any instance of ambiguity in any particular pipeline
+       * Will blow up at any instance of ambiguity across pipelines (if not in current pipeline)
+    #. @mkdir, @follows(mkdir)
 
