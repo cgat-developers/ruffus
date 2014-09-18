@@ -192,13 +192,13 @@ l1 = [["input1", "output1.test"], [3, "output2.test"], ["input3", "output3.test"
 l2 = [["output4.test", "output.ignored"]]
 l3 = []
 l4 = [[1, (2,"output5.test")]]
-t1 = task.Task("module", "func1"); t1.param_generator_func = list_generator_factory(l1)
-t2 = task.Task("module", "func2"); t2.param_generator_func = list_generator_factory(l2)
-t2._single_job_single_output = t2.single_job_single_output
-t3 = task.Task("module", "func3"); t3.param_generator_func = list_generator_factory(l3)
-t4 = task.Task("module", "func4"); t4.param_generator_func = list_generator_factory(l4)
-t4._single_job_single_output = t4.single_job_single_output
-t5 = task.Task("module", "func5"); t5.param_generator_func = None
+t1 = task.Task(list_generator_factory, "module.func1"); t1.param_generator_func = list_generator_factory(l1)
+t2 = task.Task(list_generator_factory, "module.func2"); t2.param_generator_func = list_generator_factory(l2)
+t2._is_single_job_single_output = t2._single_job_single_output
+t3 = task.Task(list_generator_factory, "module.func3"); t3.param_generator_func = list_generator_factory(l3)
+t4 = task.Task(list_generator_factory, "module.func4"); t4.param_generator_func = list_generator_factory(l4)
+t4._is_single_job_single_output = t4._single_job_single_output
+t5 = task.Task(list_generator_factory, "module.func5"); t5.param_generator_func = None
 
 next_task_id = 1
 class Test_files_re_param_factory(unittest.TestCase):
@@ -238,8 +238,9 @@ class Test_files_re_param_factory(unittest.TestCase):
         #fake_task = task.Task("module", "func_fake%d" % randint(1, 1000000))
         global next_task_id
         next_task_id += 1
-        fake_task = task.Task("module", "func_fake%d" % next_task_id)
-        fake_task.decorator_files_re(unnamed_args, **named_args)
+        fake_task = task.Task(list_generator_factory, "module.func_fake%d" % next_task_id)
+        fake_task._decorator_files_re(*unnamed_args, **named_args)
+        fake_task.setup_task_func()
         return fake_task.param_generator_func, fake_task
 
     def files_re (self, *unnamed_args, **named_args):
@@ -453,8 +454,9 @@ class Test_split_param_factory(unittest.TestCase):
         # replace function / function names with tasks
         #
         # fake virgin task
-        fake_task = task.Task("module", "func_fake%d" % randint(1, 1000000))
-        fake_task.decorator_split(unnamed_args, **named_args)
+        fake_task = task.Task(list_generator_factory, "module.func_fake%d" % randint(1, 1000000))
+        fake_task._decorator_split(*unnamed_args, **named_args)
+        fake_task.setup_task_func()
         return fake_task.param_generator_func
 
 
@@ -588,8 +590,9 @@ class Test_merge_param_factory(unittest.TestCase):
         # replace function / function names with tasks
         #
         # fake virgin task
-        fake_task = task.Task("module", "func_fake%d" % randint(1, 1000000))
-        fake_task.decorator_merge(unnamed_args, **named_args)
+        fake_task = task.Task(list_generator_factory, "module.func_fake%d" % randint(1, 1000000))
+        fake_task._decorator_merge(*unnamed_args, **named_args)
+        fake_task.setup_task_func()
         return fake_task.param_generator_func
 
     def do_task_merge (self, *unnamed_args, **named_args):
@@ -748,8 +751,9 @@ class Test_transform_param_factory(unittest.TestCase):
         # replace function / function names with tasks
         #
         # fake virgin task
-        fake_task = task.Task("module", "func_fake%d" % randint(1, 1000000))
-        fake_task.decorator_transform(unnamed_args, **named_args)
+        fake_task = task.Task(list_generator_factory, "module.func_fake%d" % randint(1, 1000000))
+        fake_task._decorator_transform(*unnamed_args, **named_args)
+        fake_task.setup_task_func()
         return fake_task.param_generator_func
 
 
@@ -1013,8 +1017,9 @@ class Test_collate_param_factory(unittest.TestCase):
         # replace function / function names with tasks
         #
         # fake virgin task
-        fake_task = task.Task("module", "func_fake%d" % randint(1, 1000000))
-        fake_task.decorator_collate(unnamed_args, **named_args)
+        fake_task = task.Task(list_generator_factory, "module.func_fake%d" % randint(1, 1000000))
+        fake_task._decorator_collate(*unnamed_args, **named_args)
+        fake_task.setup_task_func()
         return fake_task.param_generator_func
 
 
@@ -1133,10 +1138,10 @@ class Test_collate_param_factory(unittest.TestCase):
         #   test python set object. Note that set is constructed with the results of the substitution
         #
 
-        unnamed_args = [test_path + "/*.test", 
+        unnamed_args = [test_path + "/*.test",
                         task.regex(r"(.*/[ef])[a-z0-9]+\.test"),
-                        task.inputs(r"\1.whoopee"),  
-                        set([r"\1.output1", r"\1.output2", test_path + "/e.output2"]), 
+                        task.inputs(r"\1.whoopee"),
+                        set([r"\1.output1", r"\1.output2", test_path + "/e.output2"]),
                         r"\1.extra"]
         expected_results = [
                             (
@@ -1282,8 +1287,9 @@ class Test_files_param_factory(unittest.TestCase):
         # replace function / function names with tasks
         #
         # fake virgin task
-        fake_task = task.Task("module", "func_fake%d" % randint(1, 1000000))
-        fake_task.decorator_files(unnamed_args, **named_args)
+        fake_task = task.Task(list_generator_factory, "module.func_fake%d" % randint(1, 1000000))
+        fake_task._decorator_files(*unnamed_args, **named_args)
+        fake_task.setup_task_func()
         return fake_task.param_generator_func
 
     def files (self, *unnamed_args, **named_args):
@@ -1506,8 +1512,9 @@ class Test_product_param_factory(unittest.TestCase):
         # replace function / function names with tasks
         #
         # fake virgin task
-        fake_task = task.Task("module", "func_fake%d" % randint(1, 1000000))
-        fake_task.decorator_product(unnamed_args, **named_args)
+        fake_task = task.Task(list_generator_factory, "module.func_fake%d" % randint(1, 1000000))
+        fake_task._decorator_product(*unnamed_args, **named_args)
+        fake_task.setup_task_func()
         return fake_task.param_generator_func
 
 
@@ -1607,4 +1614,5 @@ if sys.argv.count("--debug"):
 #sys.argv.append("Test_merge_param_factory")
 #sys.argv.append("Test_transform_param_factory")
 #sys.argv.append("Test_files_param_factory")
-unittest.main()
+if __name__ == '__main__':
+    unittest.main()

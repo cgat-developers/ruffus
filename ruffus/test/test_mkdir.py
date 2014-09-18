@@ -94,7 +94,7 @@ class Testmkdir(unittest.TestCase):
         """Run mkdir"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_transform, test_transform2], verbose=0, multiprocess = 2)
+        pipeline_run([test_transform, test_transform2], verbose=6, multiprocess = 2)
 
 
 

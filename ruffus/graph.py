@@ -73,47 +73,47 @@ class node (object):
     _index_to_node     = dict()
     _global_node_index = 0
 
-    one_to_one              = 0
-    many_to_many            = 1
-    one_to_many             = 2
-    many_to_one             = 3
+    _one_to_one              = 0
+    _many_to_many            = 1
+    _one_to_many             = 2
+    _many_to_one             = 3
 
     @staticmethod
-    def get_leaves ():
+    def _get_leaves ():
         for n in node._all_nodes:
             if len(n._inward) == 0:
                 yield n
 
     @staticmethod
-    def get_roots ():
+    def _get_roots ():
         for n in node._all_nodes:
             if len(n._outward) == 0:
                 yield n
 
 
     @staticmethod
-    def count_nodes ():
+    def _count_nodes ():
         return len(_all_nodes)
 
     @staticmethod
-    def dump_tree_as_str ():
+    def _dump_tree_as_str ():
         """
         dumps entire tree
         """
-        return ("%d nodes " % node.count_nodes()) + "\n" + \
-            "\n".join([x.fullstr() for x in node._all_nodes])
+        return ("%d nodes " % node._count_nodes()) + "\n" + \
+            "\n".join([x._fullstr() for x in node._all_nodes])
 
 
     @staticmethod
-    def lookup_node_from_name (name):
+    def _lookup_node_from_name (name):
         return node._name_to_node[name]
 
     @staticmethod
-    def lookup_node_from_index (index):
+    def _lookup_node_from_index (index):
         return node._index_to_node[index]
 
     @staticmethod
-    def is_node (name):
+    def _is_node (name):
         return name in node._name_to_node
 
 
@@ -141,7 +141,7 @@ class node (object):
         self.args = args
         self._name = name
         self._signal = False
-        self.node_index = node._global_node_index
+        self._node_index = node._global_node_index
         node._global_node_index += 1
 
         #
@@ -149,14 +149,14 @@ class node (object):
         #
         node._all_nodes.append(self)
         node._name_to_node[self._name] = self
-        node._index_to_node[self.node_index] = self
+        node._index_to_node[self._node_index] = self
 
     #_____________________________________________________________________________________
 
-    #   add_child
+    #   _add_child
 
     #_____________________________________________________________________________________
-    def add_child(self, child, no_duplicates = True):
+    def _add_child(self, child, no_duplicates = True):
         """
         connect edges
         """
@@ -170,10 +170,10 @@ class node (object):
 
     #_____________________________________________________________________________________
 
-    #   add_child
+    #   _remove_child
 
     #_____________________________________________________________________________________
-    def remove_child(self, child):
+    def _remove_child(self, child):
         """
         disconnect edges
         """
@@ -185,17 +185,17 @@ class node (object):
         return child
     #_____________________________________________________________________________________
 
-    #   inward/outward
+    #   _get_inward/_get_outward
 
     #_____________________________________________________________________________________
-    def outward (self):
+    def _get_outward (self):
         """
         just in case we need to return inward when we mean outward!
             (for reversed graphs)
         """
         return self._outward
 
-    def inward (self):
+    def _get_inward (self):
         """
         just in case we need to return inward when we mean outward!
             (for reversed graphs)
@@ -205,10 +205,10 @@ class node (object):
 
     #_____________________________________________________________________________________
 
-    #   fullstr
+    #   _fullstr
 
     #_____________________________________________________________________________________
-    def fullstr(self):
+    def _fullstr(self):
         """
         Full dump. Normally edges are not printed out
         Everything is indented except name
@@ -230,9 +230,8 @@ class node (object):
     #_____________________________________________________________________________________
     def __str__ (self):
         """
-        Dump.
         Print everything except lists of edges
-        Everything is indented except name
+        Useful for debugging
         """
         self_desc = list()
         for k,v in sorted(self.__dict__.items(), reverse=True):
@@ -241,16 +240,16 @@ class node (object):
                 continue
             else:
                 self_desc.append(indent + str(k) + "=" + str(v))
-        return "\n".join(self_desc)
+        return "  Task = " + "\n".join(self_desc)
 
 
 
     #_____________________________________________________________________________________
 
-    #   signal
+    #   _stop_dfs
     #
     #_____________________________________________________________________________________
-    def signal (self, extra_data_for_signal = None):
+    def _stop_dfs (self, extra_data_for_signal = None):
         """
         Signals whether depth first search ends without this node
         """
@@ -275,10 +274,10 @@ class node_to_json(json.JSONEncoder):
         print(str(obj))
         if isinstance(obj, node):
             return obj._name, {
-                    "index": obj.node_index,
-                    "signal": obj._signal,
-                    "inward": [n._name for n in obj._inward],
-                    "outward": [n._name for n in obj._outward],
+                    "index": obj._node_index,
+                    "_stop_dfs": obj._signal,
+                    "_get_inward": [n._name for n in obj._inward],
+                    "_get_outward": [n._name for n in obj._outward],
                     }
         return json.JSONEncoder.default(self, obj)
 
@@ -537,7 +536,7 @@ class topological_sort_visitor (object):
         #   Note that _forced_dfs_nodes is ignored
         #
         if self._node_termination == self.NOTE_NODE_SIGNAL:
-            if node.signal(self._extra_data_for_signal):
+            if node._stop_dfs(self._extra_data_for_signal):
                 self._signalling_nodes.add(node)
             return False
 
@@ -548,14 +547,14 @@ class topological_sort_visitor (object):
         if node in self._forced_dfs_nodes:
             ##   Commented out code lets us save self_terminating_nodes even when
             ##       they have been overridden by _forced_dfs_nodes
-            #if node.signal():
+            #if node._stop_dfs():
             #    self._signalling_nodes.add(node)
             return False
 
         #
         #   OK. Go by what the node wants then
         #
-        if node.signal(self._extra_data_for_signal):
+        if node._stop_dfs(self._extra_data_for_signal):
             self._signalling_nodes.add(node)
             return True
         return False
@@ -735,7 +734,7 @@ def depth_first_visit(u, visitor, colours, outedges_func):
         visitor.finish_vertex(u)
 
 
-def depth_first_search(starting_nodes, visitor, outedges_func = node.outward):
+def depth_first_search(starting_nodes, visitor, outedges_func = node._get_outward):
     """
     depth_first_search
         go through all starting points and DFV on each of them
@@ -792,7 +791,7 @@ def topologically_sorted_nodes( to_leaves,
     force_start_from = True to get the whole tree irrespective of signalling
 
 
-    Rewritten to minimise calls to node.signal()
+    Rewritten to minimise calls to node._stop_dfs()
 
     """
 
@@ -804,7 +803,7 @@ def topologically_sorted_nodes( to_leaves,
         v = topological_sort_visitor([],
                                     topological_sort_visitor.NOTE_NODE_SIGNAL,
                                     extra_data_for_signal)
-        depth_first_search(to_leaves, v, node.outward)
+        depth_first_search(to_leaves, v, node._get_outward)
         signalling_nodes = v._signalling_nodes
     else:
         signalling_nodes = set()
@@ -816,7 +815,7 @@ def topologically_sorted_nodes( to_leaves,
         v = topological_sort_visitor([],
                                      topological_sort_visitor.IGNORE_NODE_SIGNAL,
                                     None)
-        depth_first_search(to_leaves, v, node.outward)
+        depth_first_search(to_leaves, v, node._get_outward)
 
         #
         #   not dag: no further processing
@@ -838,8 +837,8 @@ def topologically_sorted_nodes( to_leaves,
 
         #
         #   If we include these nodes anyway,
-        #       why bother to check if they do not signal?
-        #   Expensive signal checking should  be minimised
+        #       why bother to check if they do not _stop_dfs?
+        #   Expensive _stop_dfs checking should  be minimised
         #
         nodes_to_include = set()
         for n in force_start_from:
@@ -854,7 +853,7 @@ def topologically_sorted_nodes( to_leaves,
             if n in nodes_to_include:
                 continue
 
-            if not n.signal(extra_data_for_signal):
+            if not n._stop_dfs(extra_data_for_signal):
                 nodes_to_include.add(n)
                 nodes_to_include.update(get_parent_nodes([n]))
             else:
@@ -894,7 +893,7 @@ def topologically_sorted_nodes( to_leaves,
         #
         #   Forward graph iteration
         #
-        depth_first_search(to_leaves, v, node.outward)
+        depth_first_search(to_leaves, v, node._get_outward)
 
         if v.not_dag():
             v.identify_dag_violating_nodes_and_edges ()
@@ -906,7 +905,7 @@ def topologically_sorted_nodes( to_leaves,
 #
 def debug_print_nodes(to_leaves):
     v = debug_print_visitor()
-    depth_first_search(to_leaves, v, node.outward)
+    depth_first_search(to_leaves, v, node._get_outward)
 
 
 
@@ -1121,7 +1120,7 @@ def get_parent_nodes (nodes):
     """
     parent_visitor = topological_sort_visitor([],
                                             topological_sort_visitor.IGNORE_NODE_SIGNAL)
-    depth_first_search(nodes, parent_visitor, node.inward)
+    depth_first_search(nodes, parent_visitor, node._get_inward)
     return parent_visitor.topological_sorted()
 
 
@@ -1145,7 +1144,7 @@ def get_reachable_nodes(nodes, parents_as_well = True):
 
     child_visitor = topological_sort_visitor([],
                                                 topological_sort_visitor.IGNORE_NODE_SIGNAL)
-    depth_first_search(nodes, child_visitor, node.outward)
+    depth_first_search(nodes, child_visitor, node._get_outward)
     return child_visitor.topological_sorted()
 
 

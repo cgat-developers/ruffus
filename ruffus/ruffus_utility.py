@@ -1725,14 +1725,14 @@ def parse_task_arguments ( orig_unnamed_arguments, orig_named_arguments, expecte
                     get_parsed_arguments_str_for_errors(task_description,       # bad arg in context of parsed
                                                         (", ".join(("%r" % a) for a in unnamed_arguments)),
                                                         unnamed_result_strs, named_result_strs))
-        print (err_msg, file=sys.stderr)
+        #print (err_msg, file=sys.stderr)
         raise error_too_many_args(err_msg)
     if len(named_arguments):
         err_msg = ("Duplicate, conflicting or unrecognised arguments:\n%s" %
                     get_parsed_arguments_str_for_errors(task_description,       # bad arg in context of parsed
                                                         ", ".join("%s=%r" %(k, v) for k,v in named_arguments.items()),
                                                         unnamed_result_strs, named_result_strs))
-        print (err_msg, file=sys.stderr)
+        #print (err_msg, file=sys.stderr)
         raise error_too_many_args(err_msg)
 
 

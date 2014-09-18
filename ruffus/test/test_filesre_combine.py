@@ -16,78 +16,24 @@ from __future__ import print_function
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-from optparse import OptionParser
 import sys, os
 import os.path
-try:
-    import StringIO as io
-except:
-    import io as io
-
-import re
-
 # add self to search path for testing
 exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
-if __name__ == '__main__':
-    module_name = os.path.split(sys.argv[0])[1]
-    module_name = os.path.splitext(module_name)[0];
-else:
-    module_name = __name__
+sys.path.append(os.path.abspath(os.path.join(exe_path,"..", "..")))
+from ruffus import *
+import ruffus.cmdline as cmdline
 
 
+parser = cmdline.get_argparse(description='Tests legacy @files_re with combine()', version="%prog 1.0")
 
-
-parser = OptionParser(version="%prog 1.0")
-parser.add_option("-D", "--debug", dest="debug",
-                    action="store_true", default=False,
+parser.add_argument("-D", "--debug",
+                    action="store_true",
                     help="Make sure output is correct and clean up.")
-parser.add_option("-t", "--target_tasks", dest="target_tasks",
-                  action="append",
-                  default = list(),
-                  metavar="JOBNAME",
-                  type="string",
-                  help="Target task(s) of pipeline.")
-parser.add_option("-f", "--forced_tasks", dest="forced_tasks",
-                  action="append",
-                  default = list(),
-                  metavar="JOBNAME",
-                  type="string",
-                  help="Pipeline task(s) which will be included even if they are up to date.")
-parser.add_option("-j", "--jobs", dest="jobs",
-                  default=1,
-                  metavar="jobs",
-                  type="int",
-                  help="Specifies  the number of jobs (commands) to run simultaneously.")
-parser.add_option("-v", "--verbose", dest = "verbose",
-                  action="count", default=0,
-                  help="Do not echo to shell but only print to log.")
-parser.add_option("-F", "--flowchart", dest="flowchart",
-                  #default="simple.svg",
-                  metavar="FILE",
-                  type="string",
-                  help="Print a flowchart of the pipeline that would be executed "
-                        "to FILE, but do not execute it.")
-parser.add_option("--flowchart_format", dest="flowchart_format",
-                  metavar="FORMAT",
-                  type="string",
-                  default = 'svg',
-                  help="format of flowchart file. Can be 'ps' (PostScript), "+
-                  "'svg' 'svgz' (Structured Vector Graphics), " +
-                  "'png' 'gif' (bitmap  graphics) etc ")
-parser.add_option("-n", "--just_print", dest="just_print",
-                    action="store_true", default=False,
-                    help="Print a description of the jobs that would be executed, "
-                        "but do not execute them.")
-parser.add_option("-K", "--no_key_legend_in_graph", dest="no_key_legend_in_graph",
-                    action="store_true", default=False,
-                    help="Do not print out legend and key for dependency graph.")
-parser.add_option("-H", "--draw_graph_horizontally", dest="draw_horizontally",
-                    action="store_true", default=False,
-                    help="Draw horizontal dependency graph.")
+options = parser.parse_args()
 
-parameters = [
-                ]
+#  standard python logger which can be synchronised across concurrent Ruffus tasks
+logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
 
 
 
@@ -102,14 +48,13 @@ parameters = [
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
+try:
+    import StringIO as io
+except:
+    import io as io
 import re
 import operator
-import sys,os
 from collections import defaultdict
-import random
-
-sys.path.append(os.path.abspath(os.path.join(exe_path,"..", "..")))
-from ruffus import *
 
 # use simplejson in place of json for python < 2.6
 try:
@@ -128,12 +73,6 @@ except ImportError:
 
 
 
-
-# get help string
-f =io.StringIO()
-parser.print_help(f)
-helpstr = f.getvalue()
-(options, remaining_args) = parser.parse_args()
 
 species_list = defaultdict(list)
 species_list["mammals"].append("cow"       )
@@ -216,27 +155,16 @@ def check_species_correct():
 #       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 #
 if __name__ == '__main__':
-    if options.just_print:
-        pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
-                            verbose=options.verbose)
 
-    elif options.flowchart:
-        pipeline_printout_graph (     open(options.flowchart, "w"),
-                             options.flowchart_format,
-                             options.target_tasks,
-                             options.forced_tasks,
-                             draw_vertically = not options.draw_horizontally,
-                             no_key_legend  = options.no_key_legend_in_graph)
-    elif options.debug:
+
+    if options.debug:
         import os
         os.system("rm -rf %s" % tempdir)
-        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
-                            verbose = options.verbose)
-
-
+        options=cmdline.handle_verbose (options)
+        pipeline_run(target_tasks = options.target_tasks, forcedtorun_tasks  = options.forced_tasks, multiprocess = options.jobs, verbose = options.verbose)
         check_species_correct()
-        os.system("rm -rf %s" % tempdir)
+        #os.system("rm -rf %s" % tempdir)
         print("OK")
     else:
-        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
-                            verbose = options.verbose)
+        cmdline.run (options)
+

@@ -9,7 +9,7 @@ from __future__ import print_function
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   options        
+#   options
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -34,26 +34,26 @@ else:
 
 parser = OptionParser(version="%prog 1.0")
 parser.add_option("-d", "--dot_file", dest="dot_file",
-                  metavar="FILE", 
+                  metavar="FILE",
                   default = os.path.join(exe_path, "test_data/dag.dependency"),
                   type="string",
                   help="name and path of tree file in DOT format")
 parser.add_option("-u", "--uptodate_job_names", dest="uptodate_job_names",
                   action="append",
-                  metavar="JOBNAME", 
+                  metavar="JOBNAME",
                   default = list(),
                   type="string",
                   help="nodes to terminate on.")
 parser.add_option("-t", "--target_job_names", dest="target_job_names",
                   action="append",
                   default = list(),
-                  metavar="JOBNAME", 
+                  metavar="JOBNAME",
                   type="string",
                   help="nodes to start on.")
 parser.add_option("-f", "--forced_job_names", dest="forced_job_names",
                   action="append",
                   default = list(),
-                  metavar="JOBNAME", 
+                  metavar="JOBNAME",
                   type="string",
                   help="nodes to start on.")
 parser.add_option("-v", "--verbose", dest = "verbose",
@@ -69,7 +69,7 @@ parser.add_option("--skip_up_to_date", dest="skip_up_to_date",
                     action="store_true", default=False,
                     help="Only draw tasks which need to be rerun")
 
-parameters = [  
+parameters = [
                 "uptodate_job_names"
                 ]
 
@@ -82,7 +82,7 @@ mandatory_parameters = ["dot_file"]
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   imports        
+#   imports
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -116,7 +116,7 @@ def make_tree_from_dotfile (stream):
 
     #
     #   remember node
-    #         
+    #
 
 
     for linenum, line in enumerate(stream):
@@ -131,16 +131,16 @@ def make_tree_from_dotfile (stream):
             continue;
         nodes = [x.strip() for x in line.split('->')]
         for name1, name2 in adjacent_pairs_iterate(nodes):
-            if not node.is_node(name1):
+            if not node._is_node(name1):
                 node(name1)
-            if not node.is_node(name2):
+            if not node._is_node(name2):
                 node(name2)
-            node.lookup_node_from_name(name2).add_child(node.lookup_node_from_name(name1))
+            node._lookup_node_from_name(name2).add_child(node._lookup_node_from_name(name1))
 
             #
             # task hack
-            node.lookup_node_from_name(name2)._action = 1
-            node.lookup_node_from_name(name1)._action = 1
+            node._lookup_node_from_name(name2)._action = 1
+            node._lookup_node_from_name(name1)._action = 1
 
 
 
@@ -192,17 +192,17 @@ if __name__ == '__main__':
 
     #
     #   set up_to_date jobs
-    #     
+    #
     uptodate_jobs = task_names_to_tasks ("Up to date", options.uptodate_job_names)
     for n in uptodate_jobs:
         n._signal = True
 
-    graph_printout_in_dot_format (sys.stdout, 
-                                     options.target_job_names, 
-                                     options.forced_job_names, 
-                                     not options.horizontal_graph, 
+    graph_printout_in_dot_format (sys.stdout,
+                                     options.target_job_names,
+                                     options.forced_job_names,
+                                     not options.horizontal_graph,
                                      options.skip_upstream,
                                      options.skip_up_to_date)
 
 
-    
+

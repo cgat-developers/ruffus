@@ -491,20 +491,20 @@ def write_flowchart_in_dot_format(  jobs_to_run,
     #
     #   defined duplicately in graph. Bad practice
     #
-    one_to_one              = 0
-    many_to_many            = 1
-    one_to_many             = 2
-    many_to_one             = 3
+    _one_to_one              = 0
+    _many_to_many            = 1
+    _one_to_many             = 2
+    _many_to_one             = 3
 
     for n in all_jobs:
         attributes = dict()
         attributes["shape"]="box3d"
         #attributes["shape"] = "rect"
         if hasattr(n, "single_multi_io"):
-            if n.single_multi_io == one_to_many:
+            if n.single_multi_io == _one_to_many:
                 attributes["shape"] = "house"
                 attributes["peripheries"] = 2
-            elif n.single_multi_io == many_to_one:
+            elif n.single_multi_io == _many_to_one:
                 attributes["shape"] = "invhouse"
                 attributes["height"] = 1.1
                 attributes["peripheries"] = 2
@@ -514,7 +514,7 @@ def write_flowchart_in_dot_format(  jobs_to_run,
         #
         if n in dag_violating_nodes:
             get_dot_format_for_task_type ("Vicious cycle", attributes, colour_scheme, used_task_types)
-            vicious_cycle_task_strings.append('t%d' % n.node_index + attributes_to_str(attributes, _get_name(n)))
+            vicious_cycle_task_strings.append('t%d' % n._node_index + attributes_to_str(attributes, _get_name(n)))
         #
         #   these jobs will be run
         #
@@ -548,7 +548,7 @@ def write_flowchart_in_dot_format(  jobs_to_run,
             if(hasattr(n,'graphviz_attributes')):
                 for k in n.graphviz_attributes:
                     attributes[k]=n.graphviz_attributes[k]
-            stream.write('t%d' % n.node_index + attributes_to_str(attributes, _get_name(n)))
+            stream.write('t%d' % n._node_index + attributes_to_str(attributes, _get_name(n)))
 
         else:
             #
@@ -567,9 +567,9 @@ def write_flowchart_in_dot_format(  jobs_to_run,
                 #
                 else:
                     get_dot_format_for_task_type ("Down stream"            , attributes, colour_scheme, used_task_types)
-                    delayed_task_strings.append('t%d' % n.node_index + attributes_to_str(attributes, _get_name(n)))
-                    for o in n.outward():
-                        delayed_task_strings.append('t%d -> t%d[color=%s, arrowtype=normal];\n' % (o.node_index, n.node_index, colour_scheme["Up-to-date"]["linecolor"]))
+                    delayed_task_strings.append('t%d' % n._node_index + attributes_to_str(attributes, _get_name(n)))
+                    for o in n._get_outward():
+                        delayed_task_strings.append('t%d -> t%d[color=%s, arrowtype=normal];\n' % (o._node_index, n._node_index, colour_scheme["Up-to-date"]["linecolor"]))
                     continue
 
             #
@@ -579,30 +579,30 @@ def write_flowchart_in_dot_format(  jobs_to_run,
             if(hasattr(n,'graphviz_attributes')):
                 for k in n.graphviz_attributes:
                     attributes[k]=n.graphviz_attributes[k]
-            stream.write('t%d' % n.node_index + attributes_to_str(attributes, _get_name(n)))
+            stream.write('t%d' % n._node_index + attributes_to_str(attributes, _get_name(n)))
 
         #
         #   write edges
         #
         unconstrained = False
-        for o in sorted(n.outward(), reverse=True, key = lambda x: x.node_index):
+        for o in sorted(n._get_outward(), reverse=True, key = lambda x: x._node_index):
             #
             #   circularity violating DAG: highlight in red: should never be a constraint
             #       in drawing the graph
             #
             if (n, o) in dag_violating_dependencies:
-                constraint_str = ", constraint=false" if o.node_index >  n.node_index else ""
-                vicious_cycle_task_strings.append('t%d -> t%d[color=%s %s];\n' % (o.node_index, n.node_index, colour_scheme["Vicious cycle"]["linecolor"], constraint_str))
+                constraint_str = ", constraint=false" if o._node_index >  n._node_index else ""
+                vicious_cycle_task_strings.append('t%d -> t%d[color=%s %s];\n' % (o._node_index, n._node_index, colour_scheme["Vicious cycle"]["linecolor"], constraint_str))
                 continue
             elif not o in jobs_to_run or not n in jobs_to_run:
                 if not skip_uptodate_tasks:
-                    edge_str = 't%d -> t%d[color=%s, arrowtype=normal];\n' % (o.node_index, n.node_index, colour_scheme["Up-to-date"]["linecolor"])
+                    edge_str = 't%d -> t%d[color=%s, arrowtype=normal];\n' % (o._node_index, n._node_index, colour_scheme["Up-to-date"]["linecolor"])
                     if unconstrained:
                         delayed_task_strings.append(edge_str)
                     else:
                         stream.write(edge_str)
             else:
-                stream.write('t%d -> t%d[color=%s];\n' % (o.node_index, n.node_index, colour_scheme["Task to run"]["linecolor"]))
+                stream.write('t%d -> t%d[color=%s];\n' % (o._node_index, n._node_index, colour_scheme["Task to run"]["linecolor"]))
             unconstrained = True
 
     for l in delayed_task_strings:
