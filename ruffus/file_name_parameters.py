@@ -711,10 +711,6 @@ def file_names_from_tasks_globs(files_task_globs,
     Replaces glob specifications and tasks with actual files / task output
     """
 
-    #
-    # N.B. get_output_files() should never have the flattened flag == True
-    #       do that later in get_strings_in_nested_sequence
-    #
 
     # special handling for chaining tasks which conceptual have a single job
     #       i.e. @merge and @files/@parallel with single job parameters
@@ -858,7 +854,7 @@ def args_param_factory (orig_args):
 #                   ]
 #
 #_________________________________________________________________________________________
-def files_param_factory (input_files_task_globs, flatten_input,
+def files_param_factory (input_files_task_globs,
                         do_not_expand_single_job_tasks, output_extras):
     """
     Factory for functions which
@@ -884,10 +880,7 @@ def files_param_factory (input_files_task_globs, flatten_input,
 
         for input_spec, output_extra_param in zip(input_files_task_globs.param_iter(), output_extras):
             input_param = file_names_from_tasks_globs(input_spec, runtime_data, do_not_expand_single_job_tasks)
-            if flatten_input:
-                yield_param = (get_strings_in_nested_sequence(input_param),) + output_extra_param
-            else:
-                yield_param = (input_param, ) + output_extra_param
+            yield_param = (input_param, ) + output_extra_param
             yield yield_param, yield_param
     return iterator
 
@@ -912,7 +905,6 @@ def split_param_factory (input_files_task_globs, output_files_task_globs, *extra
     Factory for task_split
     """
     def iterator(runtime_data):
-        # flattened  = False
         # do_not_expand_single_job_tasks = True
 
         #
@@ -943,7 +935,6 @@ def merge_param_factory (input_files_task_globs,
     """
     #
     def iterator(runtime_data):
-        # flattened  = False
         # do_not_expand_single_job_tasks = True
         input_param = file_names_from_tasks_globs(input_files_task_globs, runtime_data, True)
         yield_param = (input_param, output_param) + extra_params
@@ -1176,7 +1167,6 @@ def yield_io_params_per_job (input_params,
 
 #_________________________________________________________________________________________
 def subdivide_param_factory (input_files_task_globs,
-                            flatten_input,
                             file_names_transform,
                             extra_input_files_task_globs,
                             replace_inputs,
@@ -1193,8 +1183,6 @@ def subdivide_param_factory (input_files_task_globs,
         #
         input_params = file_names_from_tasks_globs(input_files_task_globs, runtime_data)
 
-        if flatten_input:
-            input_params = get_strings_in_nested_sequence(input_params)
 
         if not len(input_params):
             return []
@@ -1220,7 +1208,6 @@ def subdivide_param_factory (input_files_task_globs,
 
 #_________________________________________________________________________________________
 def combinatorics_param_factory(input_files_task_globs,
-                                flatten_input,
                                 combinatorics_type,
                                 k_tuple,
                                 file_names_transform,
@@ -1242,8 +1229,6 @@ def combinatorics_param_factory(input_files_task_globs,
         if not len(input_params):
             return
 
-        if flatten_input:
-            input_params = get_strings_in_nested_sequence(input_params)
 
         if combinatorics_type == t_combinatorics_type.COMBINATORICS_PERMUTATIONS:
             combinatoric_iter = itertools.permutations(input_params, k_tuple)
@@ -1273,7 +1258,6 @@ def combinatorics_param_factory(input_files_task_globs,
 
 #_________________________________________________________________________________________
 def product_param_factory ( list_input_files_task_globs,
-                            flatten_input,
                             file_names_transform,
                             extra_input_files_task_globs,
                             replace_inputs,
@@ -1300,8 +1284,6 @@ def product_param_factory ( list_input_files_task_globs,
             if not len(input_params):
                 return
 
-        if flatten_input:
-            input_params_list = [get_strings_in_nested_sequence(ii) for ii in input_params_list]
 
         for y in yield_io_params_per_job (list_input_param_to_file_name_list(itertools.product(*input_params_list)),
                                           file_names_transform,
@@ -1323,7 +1305,6 @@ def product_param_factory ( list_input_files_task_globs,
 
 #_________________________________________________________________________________________
 def transform_param_factory (input_files_task_globs,
-                             flatten_input,
                              file_names_transform,
                              extra_input_files_task_globs,
                              replace_inputs,
@@ -1340,8 +1321,6 @@ def transform_param_factory (input_files_task_globs,
         #
         input_params = file_names_from_tasks_globs(input_files_task_globs, runtime_data)
 
-        if flatten_input:
-            input_params = get_strings_in_nested_sequence(input_params)
 
         if not len(input_params):
             return
@@ -1366,7 +1345,6 @@ def transform_param_factory (input_files_task_globs,
 
 #_________________________________________________________________________________________
 def collate_param_factory (input_files_task_globs,
-                           flatten_input,
                            file_names_transform,
                            extra_input_files_task_globs,
                            replace_inputs,
@@ -1386,8 +1364,6 @@ def collate_param_factory (input_files_task_globs,
         #
         input_params = file_names_from_tasks_globs(input_files_task_globs, runtime_data)
 
-        if flatten_input:
-            input_params = get_strings_in_nested_sequence(input_params)
 
         if not len(input_params):
             return
