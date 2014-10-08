@@ -61,7 +61,7 @@ class error_task(Exception):
         Prefix with new lines for added emphasis
         """
         # turn tasks names into 'def xxx(...): format
-        task_names = "\n".join(t._get_display_name(True) for t in self.tasks)
+        task_names = "\n".join("task = %r" % t._name for t in self.tasks)
         if len(self.main_msg):
             return "\n\n" + self.main_msg + " for\n\n%s\n" % task_names
         else:
