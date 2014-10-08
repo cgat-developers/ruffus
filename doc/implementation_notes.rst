@@ -622,22 +622,33 @@ Parameter handling
 ======================================================================================================
 Todo
 ======================================================================================================
+Need unit tests
+    #. ``Pipeline.get_head_tasks(self)``
+    #. ``Pipeline.get_tail_tasks(self)``
     #. Add unittests for different pipelines
     #. Add unittests for name lookup
     #. Add unittests for ``Pipeline.xxx()``
-    #. ``Task.follows``
-    #. ``get_display_name()`` returns func name or task name
+    #. Add unittests for ``Task`` chaining
+    #. Add unittests for Task (dependency) parsing inside @transform, pipeline.transform(input = , add_inputs, replace_inputs =), pipeline.split(..., output=)
+    #. Add unittests for ``mkdir()`` should not be allowed inside input parameters apart from @follows
+    #. Add unittests for self dependency cannot be self
+
+
+
+TBD
+    #. Deferred tasks (i.e. string names which can't be resolved)
+       * Just lists in ``Pipeline`` and resolved on ``Pipeline.resolve_deferred_dependencies()``.
+       * This calls ``Pipeline.get_tail_tasks()`` for dependent pipelines which should chain deferred resolution.
+    #. mkdir should not be a head task? ``Pipeline.get_head_tasks(self)``
     #. ``Pipeline.clone()``
-    #. ``Pipeline.get_head_tasks(self)``
-    #. ``Pipeline.get_tail_tasks(self)``
+        * Make copy of all data for each task
     #. ``Task.set_input()``
     #. ``@product`` ``set_input`` should take (``input1``, ``input2``...)
-        How should ``@product()`` ``set_inputs()`` work?
-    #. Task dependencies can be reset after ``set_inputs()`` but ``@follows`` dependencies should be persistent
 
 ======================================================================================================
 Passed Unit tests
 ======================================================================================================
+    #. Refactored to remove unused "flattened" code paths / parameters
     #. Prefix all attributes for Task into underscore so that help(Task) is not overloaded with details
     #. Named parameters
         * parse named parameters in order filling in from unnamed
@@ -661,9 +672,6 @@ Passed Unit tests
         * Reveals full hackiness and inconsistency between ``add_inputs`` and ``inputs``. The latter only takes a single argument. Each of the elements of the former gets added along side the existing inputs.
     #. Add ``pipeline`` class
        * Create global called ``"main"``
-    #. Deferred tasks (i.e. string names which can't be resolved)
-       * Just lists in ``Pipeline`` and resolved on ``Pipeline.resolve_deferred_dependencies()``.
-       * This calls ``Pipeline.get_tail_tasks()`` for dependent pipelines which should chain deferred resolution.
     #. Task name lookup
         * Task names are unique (Otherwise Ruffus will complain at Task creation)
         * Can also lookup by fully qualified or unqualified function name but these can be ambiguous

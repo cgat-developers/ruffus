@@ -13,9 +13,9 @@ Installation
 
 
 
-
+==============================================================================
 The easy way
-============
+==============================================================================
 
     *Ruffus* is available as an
     `easy-install <http://peak.telecommunity.com/DevCenter/EasyInstall>`_ -able package
@@ -25,20 +25,17 @@ The easy way
 
         sudo pip install ruffus --upgrade
 
-    This may also work for older installations
-
-    #) Install setuptools::
-
-        wget peak.telecommunity.com/dist/ez_setup.py
-        sudo python ez_setup.py
-
-    #) Install *Ruffus* automatically::
+    This may also work for older installations::
 
         easy_install -U ruffus
 
 
+    See below if ``eady_install`` is missing
+
+
+==============================================================================
 The most up-to-date code:
-==============================
+==============================================================================
         * `Download the latest sources <https://pypi.python.org/pypi/ruffus>`_ or
 
         * Check out the latest code from Google using git::
@@ -54,19 +51,49 @@ The most up-to-date code:
 
              python ./setup.py install
 
+======================
+Prequisites
+======================
+==============================================================================
+Installing easy_install
+==============================================================================
 
-======================
-Graphical flowcharts
-======================
+    If your system doesn't have ``easy_install``, you can `install  <ubuntu/linux mint>`__ one using a package manager, for example::
+
+        # ubuntu/linux mint
+        $ sudo apt-get install python-setuptools
+        $ or  sudo yum install python-setuptools
+
+    or manually::
+
+        sudo curl http://peak.telecommunity.com/dist/ez_setup.py | python
+
+    or manually::
+
+        wget peak.telecommunity.com/dist/ez_setup.py
+        sudo python ez_setup.py
+
+
+
+==============================================================================
+Installing pip
+==============================================================================
+
+    If Pip is missing::
+
+        $ sudo easy_install -U pip
+
+
+==============================================================================
+ Graphical flowcharts The most up-to-date code:
+==============================================================================
 
     **Ruffus** relies on the ``dot`` programme from `Graphviz <http://www.graphviz.org/>`_
     ("Graph visualisation") to make pretty flowchart representations of your pipelines in multiple
     graphical formats (e.g. ``png``, ``jpg``). The crossplatform Graphviz package can be
     `downloaded here <http://www.graphviz.org/Download.php>`_ for Windows,
-    Linux, Macs and Solaris. Some Linux
-    distributions may include prebuilt packages.
 
-    For Fedora, try
+    Linux, Macs and Solaris.     For Fedora, try
         ::
 
             yum list 'graphviz*'
