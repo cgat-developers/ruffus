@@ -156,12 +156,12 @@ class node (object):
     #   _add_child
 
     #_____________________________________________________________________________________
-    def _add_child(self, child, no_duplicates = True):
+    def _add_child(self, child):
         """
         connect edges
         """
         # do not add duplicates
-        if no_duplicates and child in self._outward:
+        if child in self._outward:
             return child
 
         self._outward.append(child)
@@ -188,12 +188,12 @@ class node (object):
     #   _add_parent
 
     #_____________________________________________________________________________________
-    def _add_parent(self, parent, no_duplicates = True):
+    def _add_parent(self, parent):
         """
         connect edges
         """
         # do not add duplicates
-        if no_duplicates and parent in self._inward:
+        if parent in self._inward:
             return parent
 
         self._inward.append(parent)
@@ -775,7 +775,7 @@ def depth_first_visit(u, visitor, colours, outedges_func):
         visitor.finish_vertex(u)
 
 
-def depth_first_search(starting_nodes, visitor, outedges_func = node._get_outward):
+def depth_first_search(starting_nodes, visitor, outedges_func = node._get_inward):
     """
     depth_first_search
         go through all starting points and DFV on each of them
@@ -816,7 +816,7 @@ def topologically_sorted_nodes( to_leaves,
     Get all nodes which are children of to_leaves
         in topological sorted order
 
-    Defaults to including all nodes which are non-signalled and their dependents (via get_parent_nodes())
+    Defaults to including all nodes which are non-signalled and their dependents (via include_any_children())
         i.e. includes the *last* non-signalling node on each branch and all the way up the tree
 
 
@@ -845,7 +845,7 @@ def topologically_sorted_nodes( to_leaves,
                                     topological_sort_visitor.NOTE_NODE_SIGNAL,
                                     extra_data_for_signal,
                                     signal_callback)
-        depth_first_search(to_leaves, v, node._get_outward)
+        depth_first_search(to_leaves, v, node._get_inward)
         signalling_nodes = v._signalling_nodes
     else:
         signalling_nodes = set()
@@ -855,7 +855,7 @@ def topologically_sorted_nodes( to_leaves,
         #   get whole tree, ignoring signalling
         #
         v = topological_sort_visitor([], topological_sort_visitor.IGNORE_NODE_SIGNAL)
-        depth_first_search(to_leaves, v, node._get_outward)
+        depth_first_search(to_leaves, v, node._get_inward)
 
         #
         #   not dag: no further processing
@@ -884,24 +884,24 @@ def topologically_sorted_nodes( to_leaves,
 
         #
         #   If force start from is a list of nodes,
-        #       include these and all of its dependents (via get_parent_nodes)
+        #       include these and all of its dependents (via include_any_children)
         #
         #   We don't need to bother to check if they signal (_signalled)
         #   This saves calling the expensive _signalled
         #
         if len(force_start_from):
-            nodes_to_include.update(get_parent_nodes(force_start_from))
-        # This should not be necessary because get_parent_nodes also returns self.
+            nodes_to_include.update(include_any_children(force_start_from))
+        # This should not be necessary because include_any_children also returns self.
         #for n in force_start_from:
         #    if n in nodes_to_include:
         #        continue
         #    nodes_to_include.add(n)
-        #    nodes_to_include.update(get_parent_nodes([n]))
+        #    nodes_to_include.update(include_any_children([n]))
 
 
         #
         #   Now select all nodes from ancestor -> descendant which do not signal (signal_callback() == false)
-        #       and select their descendants (via get_parent_nodes())
+        #       and select their descendants (via include_any_children())
         #
         #   Nodes which signal are added to signalling_nodes
         #
@@ -912,7 +912,7 @@ def topologically_sorted_nodes( to_leaves,
 
             if not signal_callback(n, extra_data_for_signal):
                 #nodes_to_include.add(n)
-                nodes_to_include.update(get_parent_nodes([n]))
+                nodes_to_include.update(include_any_children([n]))
             else:
                 signalling_nodes.add(n)
                 #sys.stderr.write(json.dumps(n, cls=node_to_json, sort_keys=1) + "\n")
@@ -940,11 +940,11 @@ def topologically_sorted_nodes( to_leaves,
             #       but ignore signalling for forced_nodes_and_dependencies
             #
 
-            #   Get forced nodes and all descendants via get_parent_nodes
+            #   Get forced nodes and all descendants via include_any_children
             #
             forced_nodes_and_dependencies = []
             if len(force_start_from):
-                forced_nodes_and_dependencies = get_parent_nodes(force_start_from)
+                forced_nodes_and_dependencies = include_any_children(force_start_from)
 
             v = topological_sort_visitor(   forced_nodes_and_dependencies,
                                             topological_sort_visitor.END_ON_SIGNAL,
@@ -955,7 +955,7 @@ def topologically_sorted_nodes( to_leaves,
         #
         #   Forward graph iteration
         #
-        depth_first_search(to_leaves, v, node._get_outward)
+        depth_first_search(to_leaves, v, node._get_inward)
 
         if v.not_dag():
             v.identify_dag_violating_nodes_and_edges ()
@@ -967,7 +967,7 @@ def topologically_sorted_nodes( to_leaves,
 #
 def debug_print_nodes(to_leaves):
     v = debug_print_visitor()
-    depth_first_search(to_leaves, v, node._get_outward)
+    depth_first_search(to_leaves, v, node._get_inward)
 
 
 
@@ -1177,18 +1177,18 @@ def graph_printout (stream,
 
 #_________________________________________________________________________________________
 
-#   get_parent_nodes
+#   include_any_children
 
 #_________________________________________________________________________________________
-def get_parent_nodes (nodes):
+def include_any_children (nodes):
     """
-    Get all parent nodes by DFS in the inward direction,
+    Get all children nodes by DFS in the inward direction,
     Ignores signals
-    Also includes nodes in the results
+    Also includes original nodes in the results
     """
-    parent_visitor = topological_sort_visitor([], topological_sort_visitor.IGNORE_NODE_SIGNAL)
-    depth_first_search(nodes, parent_visitor, node._get_inward)
-    return parent_visitor.topological_sorted()
+    children_visitor = topological_sort_visitor([], topological_sort_visitor.IGNORE_NODE_SIGNAL)
+    depth_first_search(nodes, children_visitor, node._get_outward)
+    return children_visitor.topological_sorted()
 
 
 #_________________________________________________________________________________________
@@ -1196,7 +1196,7 @@ def get_parent_nodes (nodes):
 #   get_reachable_nodes
 
 #_________________________________________________________________________________________
-def get_reachable_nodes(nodes, parents_as_well = True):
+def get_reachable_nodes(nodes, children_as_well = True):
     """
     Get all nodes which are parents and children of nodes
         recursing through the entire tree
@@ -1208,12 +1208,12 @@ def get_reachable_nodes(nodes, parents_as_well = True):
         """
 
     # look for parents of nodes and start there instead
-    if parents_as_well:
-        nodes = get_parent_nodes (nodes)
+    if children_as_well:
+        nodes = include_any_children (nodes)
 
-    child_visitor = topological_sort_visitor([], topological_sort_visitor.IGNORE_NODE_SIGNAL)
-    depth_first_search(nodes, child_visitor, node._get_outward)
-    return child_visitor.topological_sorted()
+    parent_visitor = topological_sort_visitor([], topological_sort_visitor.IGNORE_NODE_SIGNAL)
+    depth_first_search(nodes, parent_visitor, node._get_inward)
+    return parent_visitor.topological_sorted()
 
 
 #_________________________________________________________________________________________

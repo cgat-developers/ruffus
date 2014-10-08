@@ -875,7 +875,7 @@ class Pipeline(dict):
                                            "Pipelines. Have you misspelt '%s'?"
                                            % (task._get_display_name(), task_name))
             for new_task in new_tasks:
-                task._add_child(new_task)
+                task._add_parent(new_task)
 
         #
         #   Resolve deferred pipeline dependencies
@@ -884,7 +884,7 @@ class Pipeline(dict):
             if pipeline_name not in pipelines:
                 raise error_not_a_pipeline("%s does not name a pipeline." % pipeline_name)
             for new_task in pipelines[pipeline_name].get_tail_tasks():
-                task._add_child(new_task)
+                task._add_parent(new_task)
 
     #_____________________________________________________________________________________
 
@@ -2853,7 +2853,7 @@ class Task (node):
         cnt_task_mkdir_str = (" #%d" % self.cnt_task_mkdir) if self.cnt_task_mkdir > 1 else ""
         task_name = r"mkdir%s before %s " % (cnt_task_mkdir_str, self._name)
         new_task = self.pipeline._create_task(func = job_wrapper_mkdir, task_name = task_name)
-        self._add_child(new_task)
+        self._add_parent(new_task)
 
 
         #
@@ -3485,7 +3485,7 @@ class Task (node):
         #       duplicate dependencies are ignore automatically
         #
         for task in new_tasks:
-            self._add_child(task)
+            self._add_parent(task)
 
         return new_tasks
 
@@ -4814,7 +4814,7 @@ def pipeline_run(target_tasks                     = [],
     task_parents = defaultdict(set)
     for t in set_of_incomplete_tasks:
         task_parents[t] = set()
-        for parent in t._outward:
+        for parent in t._get_inward():
             if parent in set_of_incomplete_tasks:
                 task_parents[t].add(parent)
 

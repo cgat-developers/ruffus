@@ -568,7 +568,7 @@ def write_flowchart_in_dot_format(  jobs_to_run,
                 else:
                     get_dot_format_for_task_type ("Down stream"            , attributes, colour_scheme, used_task_types)
                     delayed_task_strings.append('t%d' % n._node_index + attributes_to_str(attributes, _get_name(n)))
-                    for o in n._get_outward():
+                    for o in n._get_inward():
                         delayed_task_strings.append('t%d -> t%d[color=%s, arrowtype=normal];\n' % (o._node_index, n._node_index, colour_scheme["Up-to-date"]["linecolor"]))
                     continue
 
@@ -585,7 +585,7 @@ def write_flowchart_in_dot_format(  jobs_to_run,
         #   write edges
         #
         unconstrained = False
-        for o in sorted(n._get_outward(), reverse=True, key = lambda x: x._node_index):
+        for o in sorted(n._get_inward(), reverse=True, key = lambda x: x._node_index):
             #
             #   circularity violating DAG: highlight in red: should never be a constraint
             #       in drawing the graph
