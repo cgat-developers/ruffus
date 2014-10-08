@@ -112,7 +112,7 @@ CHECKSUM_REGENERATE           = 2     # regenerate checksums
 
 #_________________________________________________________________________________________
 class t_extra_inputs:
-    (ADD_TO_INPUTS, REPLACE_INPUTS, KEEP_INPUTS) = list(range(3))
+    (ADD_TO_INPUTS, REPLACE_INPUTS, KEEP_INPUTS, KEEP_OUTPUTS) = list(range(4))
 
 #_________________________________________________________________________________________
 
