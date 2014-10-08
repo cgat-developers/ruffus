@@ -185,6 +185,38 @@ class node (object):
         return child
     #_____________________________________________________________________________________
 
+    #   _add_parent
+
+    #_____________________________________________________________________________________
+    def _add_parent(self, parent, no_duplicates = True):
+        """
+        connect edges
+        """
+        # do not add duplicates
+        if no_duplicates and parent in self._inward:
+            return parent
+
+        self._inward.append(parent)
+        parent._outward.append(self)
+        return parent
+
+    #_____________________________________________________________________________________
+
+    #   _remove_parent
+
+    #_____________________________________________________________________________________
+    def _remove_parent(self, parent):
+        """
+        disconnect edges
+        """
+
+        if parent in self._inward:
+            self._inward.remove(parent)
+        if self in parent._outward:
+            parent._outward.remove(self)
+        return parent
+    #_____________________________________________________________________________________
+
     #   _get_inward/_get_outward
 
     #_____________________________________________________________________________________
@@ -246,10 +278,10 @@ class node (object):
 
     #_____________________________________________________________________________________
 
-    #   _stop_dfs
+    #   _signalled
     #
     #_____________________________________________________________________________________
-    def _stop_dfs (self, extra_data_for_signal = None):
+    def _signalled (self, extra_data_for_signal = None):
         """
         Signals whether depth first search ends without this node
         """
@@ -275,7 +307,7 @@ class node_to_json(json.JSONEncoder):
         if isinstance(obj, node):
             return obj._name, {
                     "index": obj._node_index,
-                    "_stop_dfs": obj._signal,
+                    "_signal": obj._signal,
                     "_get_inward": [n._name for n in obj._inward],
                     "_get_outward": [n._name for n in obj._outward],
                     }
@@ -294,6 +326,12 @@ class node_to_json(json.JSONEncoder):
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
+
+def default_signalled (node, extra_data):
+    """
+    Depth first search stops when node._signalled return True
+    """
+    return node._signalled(extra_data)
 
 class topological_sort_visitor (object):
     """
@@ -314,7 +352,8 @@ class topological_sort_visitor (object):
     #_____________________________________________________________________________________
     def __init__ (self, forced_dfs_nodes,
                     node_termination = END_ON_SIGNAL,
-                    extra_data_for_signal = None):
+                    extra_data_for_signal = None,
+                    signal_callback = None):
         """
         list of saved results
         """
@@ -325,6 +364,8 @@ class topological_sort_visitor (object):
         self._back_edges               = set()
         self._back_nodes               = set()
         self._signalling_nodes         = set()
+
+        self.signal_callback           = signal_callback
 
         # keep order for tree traversal later
         self._examined_edges           = list()
@@ -536,7 +577,7 @@ class topological_sort_visitor (object):
         #   Note that _forced_dfs_nodes is ignored
         #
         if self._node_termination == self.NOTE_NODE_SIGNAL:
-            if node._stop_dfs(self._extra_data_for_signal):
+            if self.signal_callback(node, self._extra_data_for_signal):
                 self._signalling_nodes.add(node)
             return False
 
@@ -547,14 +588,14 @@ class topological_sort_visitor (object):
         if node in self._forced_dfs_nodes:
             ##   Commented out code lets us save self_terminating_nodes even when
             ##       they have been overridden by _forced_dfs_nodes
-            #if node._stop_dfs():
+            #if self.signal_callback(node, self._extra_data_for_signal):
             #    self._signalling_nodes.add(node)
             return False
 
         #
         #   OK. Go by what the node wants then
         #
-        if node._stop_dfs(self._extra_data_for_signal):
+        if self.signal_callback(node, self._extra_data_for_signal):
             self._signalling_nodes.add(node)
             return True
         return False
@@ -770,13 +811,13 @@ def topologically_sorted_nodes( to_leaves,
                                 gather_all_non_signalled = True,
                                 test_all_signals = False,
                                 extra_data_for_signal = None,
-                                checksum_level = None):
+                                signal_callback = None):
     """
     Get all nodes which are children of to_leaves
         in topological sorted order
 
-    Defaults to including all nodes which are non-signalled
-        i.e. includes the *last* non-signalling node on each branch
+    Defaults to including all nodes which are non-signalled and their dependents (via get_parent_nodes())
+        i.e. includes the *last* non-signalling node on each branch and all the way up the tree
 
 
     Otherwise stops at each branch just before signalling node
@@ -791,7 +832,7 @@ def topologically_sorted_nodes( to_leaves,
     force_start_from = True to get the whole tree irrespective of signalling
 
 
-    Rewritten to minimise calls to node._stop_dfs()
+    Rewritten to minimise calls to node._signalled()
 
     """
 
@@ -802,7 +843,8 @@ def topologically_sorted_nodes( to_leaves,
     if test_all_signals:
         v = topological_sort_visitor([],
                                     topological_sort_visitor.NOTE_NODE_SIGNAL,
-                                    extra_data_for_signal)
+                                    extra_data_for_signal,
+                                    signal_callback)
         depth_first_search(to_leaves, v, node._get_outward)
         signalling_nodes = v._signalling_nodes
     else:
@@ -812,9 +854,7 @@ def topologically_sorted_nodes( to_leaves,
         #
         #   get whole tree, ignoring signalling
         #
-        v = topological_sort_visitor([],
-                                     topological_sort_visitor.IGNORE_NODE_SIGNAL,
-                                    None)
+        v = topological_sort_visitor([], topological_sort_visitor.IGNORE_NODE_SIGNAL)
         depth_first_search(to_leaves, v, node._get_outward)
 
         #
@@ -827,34 +867,51 @@ def topologically_sorted_nodes( to_leaves,
 
 
         #
-        #   return entire tree
+        #   if force_start_from == True
+        #
+        #       return entire tree
         #
         if force_start_from == True:
             return (v.topological_sorted(), v._signalling_nodes, v.dag_violating_edges(),
                     v.dag_violating_nodes())
 
 
-
         #
-        #   If we include these nodes anyway,
-        #       why bother to check if they do not _stop_dfs?
-        #   Expensive _stop_dfs checking should  be minimised
+        #   Set of all nodes we are going to return
+        #   We will use v.topological_sorted to return them in the right (sorted) order
         #
         nodes_to_include = set()
-        for n in force_start_from:
-            if n in nodes_to_include:
-                continue
-            nodes_to_include.add(n)
-            nodes_to_include.update(get_parent_nodes([n]))
+
+        #
+        #   If force start from is a list of nodes,
+        #       include these and all of its dependents (via get_parent_nodes)
+        #
+        #   We don't need to bother to check if they signal (_signalled)
+        #   This saves calling the expensive _signalled
+        #
+        if len(force_start_from):
+            nodes_to_include.update(get_parent_nodes(force_start_from))
+        # This should not be necessary because get_parent_nodes also returns self.
+        #for n in force_start_from:
+        #    if n in nodes_to_include:
+        #        continue
+        #    nodes_to_include.add(n)
+        #    nodes_to_include.update(get_parent_nodes([n]))
 
 
+        #
+        #   Now select all nodes from ancestor -> descendant which do not signal (signal_callback() == false)
+        #       and select their descendants (via get_parent_nodes())
+        #
+        #   Nodes which signal are added to signalling_nodes
+        #
         reversed_nodes = v.topological_sorted()
         for n in reversed_nodes:
             if n in nodes_to_include:
                 continue
 
-            if not n._stop_dfs(extra_data_for_signal):
-                nodes_to_include.add(n)
+            if not signal_callback(n, extra_data_for_signal):
+                #nodes_to_include.add(n)
                 nodes_to_include.update(get_parent_nodes([n]))
             else:
                 signalling_nodes.add(n)
@@ -865,6 +922,10 @@ def topologically_sorted_nodes( to_leaves,
                 signalling_nodes,
                 [],[])
 
+
+    #
+    #   gather_all_non_signalled = False
+    #
     else:
 
         if force_start_from == True:
@@ -872,22 +933,23 @@ def topologically_sorted_nodes( to_leaves,
             #   get whole tree, ignoring signalling
             #
             v = topological_sort_visitor([],
-                                         topological_sort_visitor.IGNORE_NODE_SIGNAL,
-                                         extra_data_for_signal)
+                                         topological_sort_visitor.IGNORE_NODE_SIGNAL)
         else:
             #
             #   End at each branch without including signalling node
             #       but ignore signalling for forced_nodes_and_dependencies
             #
 
-            #   Get all parents of forced nodes if necessary
+            #   Get forced nodes and all descendants via get_parent_nodes
+            #
             forced_nodes_and_dependencies = []
             if len(force_start_from):
                 forced_nodes_and_dependencies = get_parent_nodes(force_start_from)
 
             v = topological_sort_visitor(   forced_nodes_and_dependencies,
                                             topological_sort_visitor.END_ON_SIGNAL,
-                                            extra_data_for_signal)
+                                            extra_data_for_signal,
+                                            signal_callback)
 
 
         #
@@ -964,18 +1026,20 @@ def graph_printout_in_dot_format (  stream,
                                     minimal_key_legend        = True,
                                     user_colour_scheme        = None,
                                     pipeline_name             = "Pipeline:",
-                                    extra_data_for_signal     = None):
+                                    extra_data_for_signal     = None,
+                                    signal_callback           = None):
     """
     print out pipeline dependencies in dot formatting
     """
 
-    (topological_sorted,
-    signalling_nodes,
+    (topological_sorted,        # tasks_to_run
+    signalling_nodes,           # up to date
     dag_violating_edges,
     dag_violating_nodes) = topologically_sorted_nodes(to_leaves, force_start_from,
                                                         gather_all_non_signalled,
                                                         test_all_signals,
-                                                        extra_data_for_signal)
+                                                        extra_data_for_signal,
+                                                        signal_callback)
 
     #
     #   N.B. For graph:
@@ -989,8 +1053,8 @@ def graph_printout_in_dot_format (  stream,
     #
     #   print out dependencies in dot format
     #
-    write_flowchart_in_dot_format(topological_sorted,
-                                  signalling_nodes,
+    write_flowchart_in_dot_format(topological_sorted,           # tasks_to_run
+                                  signalling_nodes,             # up to date
                                   dag_violating_edges,
                                   dag_violating_nodes,
                                   stream,
@@ -1024,7 +1088,8 @@ def graph_printout (stream,
                     pipeline_name             = "Pipeline:",
                     size                      = (11,8),
                     dpi                       = 120,
-                    extra_data_for_signal     = None):
+                    extra_data_for_signal     = None,
+                    signal_callback           = None):
     """
     print out pipeline dependencies in a variety of formats, using the programme "dot"
         an intermediary
@@ -1043,7 +1108,8 @@ def graph_printout (stream,
                                         minimal_key_legend,
                                         user_colour_scheme,
                                         pipeline_name,
-                                        extra_data_for_signal)
+                                        extra_data_for_signal,
+                                        signal_callback)
         return
 
     # print to dot file
@@ -1063,7 +1129,8 @@ def graph_printout (stream,
                                     minimal_key_legend,
                                     user_colour_scheme,
                                     pipeline_name,
-                                    extra_data_for_signal)
+                                    extra_data_for_signal,
+                                    signal_callback)
     temp_dot_file.close()
 
     if isinstance(size, tuple):
@@ -1117,9 +1184,9 @@ def get_parent_nodes (nodes):
     """
     Get all parent nodes by DFS in the inward direction,
     Ignores signals
+    Also includes nodes in the results
     """
-    parent_visitor = topological_sort_visitor([],
-                                            topological_sort_visitor.IGNORE_NODE_SIGNAL)
+    parent_visitor = topological_sort_visitor([], topological_sort_visitor.IGNORE_NODE_SIGNAL)
     depth_first_search(nodes, parent_visitor, node._get_inward)
     return parent_visitor.topological_sorted()
 
@@ -1134,6 +1201,8 @@ def get_reachable_nodes(nodes, parents_as_well = True):
     Get all nodes which are parents and children of nodes
         recursing through the entire tree
 
+        i.e. go up *and* down tree starting from node
+
     1) specify parents_as_well = False
         to only get children and not parents of nodes
         """
@@ -1142,8 +1211,7 @@ def get_reachable_nodes(nodes, parents_as_well = True):
     if parents_as_well:
         nodes = get_parent_nodes (nodes)
 
-    child_visitor = topological_sort_visitor([],
-                                                topological_sort_visitor.IGNORE_NODE_SIGNAL)
+    child_visitor = topological_sort_visitor([], topological_sort_visitor.IGNORE_NODE_SIGNAL)
     depth_first_search(nodes, child_visitor, node._get_outward)
     return child_visitor.topological_sorted()
 
