@@ -623,27 +623,20 @@ Parameter handling
 Todo
 ======================================================================================================
 Need unit tests
-    #. ``Pipeline.get_head_tasks(self)``
+    #. ``Pipeline.get_head_tasks(self)`` (including tasks with mkdir())
     #. ``Pipeline.get_tail_tasks(self)``
-    #. Add unittests for different pipelines
-    #. Add unittests for name lookup
-    #. Add unittests for ``Pipeline.xxx()``
-    #. Add unittests for ``Task`` chaining
-    #. Add unittests for Task (dependency) parsing inside @transform, pipeline.transform(input = , add_inputs, replace_inputs =), pipeline.split(..., output=)
-    #. Add unittests for ``mkdir()`` should not be allowed inside input parameters apart from @follows
-    #. Add unittests for self dependency cannot be self
-
-
-
-TBD
-    #. Deferred tasks (i.e. string names which can't be resolved)
-       * Just lists in ``Pipeline`` and resolved on ``Pipeline.resolve_deferred_dependencies()``.
-       * This calls ``Pipeline.get_tail_tasks()`` for dependent pipelines which should chain deferred resolution.
-    #. mkdir should not be a head task? ``Pipeline.get_head_tasks(self)``
+    #. ``Pipeline._complete_task_setup()`` which follows chain of dependencies for each task in a pipeline
+    #. whether setup occurs ``pipeline_run()`` where ``target_tasks`` and ``forcedtorun_tasks `` are in different linked or unlinked pipelines
+    #. name lookup
+    #. ``Pipeline.xxx()``
+    #. ``Task`` chaining
+    #. Task (dependency) parsing inside @transform, pipeline.transform(input = , add_inputs, replace_inputs =), pipeline.split(..., output=)
+    #. ``mkdir()`` should not be allowed inside input parameters apart from @follows
+    #. Cannot dependency cannot be self
     #. ``Pipeline.clone()``
-        * Make copy of all data for each task
     #. ``Task.set_input()``
-    #. ``@product`` ``set_input`` should take (``input1``, ``input2``...)
+    #. ``@product`` ``set_input`` should take (``input``, ``input2``...)
+
 
 ======================================================================================================
 Passed Unit tests
