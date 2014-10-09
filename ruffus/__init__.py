@@ -24,9 +24,26 @@
 #   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #   THE SOFTWARE.
 #################################################################################
-#from graph import *
-#from print_dependencies import *
-from .task import pipeline_printout, pipeline_printout_graph, pipeline_run, pipeline_get_task_names, register_cleanup, check_if_uptodate, active_if, split, transform, merge, collate, files, files_re, follows, parallel, stderr_logger, black_hole_logger, suffix, regex, inputs, add_inputs, touch_file, combine, mkdir, output_from, posttask, JobSignalledBreak, runtime_parameter, jobs_limit, formatter, subdivide, originate, graphviz
+# pipeline functions
+from .task import Pipeline, Task
+
+# pipeline functions
+from .task import pipeline_printout, pipeline_printout_graph, pipeline_run, pipeline_get_task_names, register_cleanup
+
+# decorators
+from .task import originate, split, subdivide, transform, merge, collate, follows
+
+# esoteric decorators
+from .task import files, parallel
+
+# filter / indicators
+from .task import suffix, regex, formatter, inputs, add_inputs, touch_file
+
+# deprecated
+from .task import files_re, combine
+
+from .task import check_if_uptodate, active_if, jobs_limit, graphviz, mkdir, output_from, posttask
+from .task import stderr_logger, black_hole_logger, JobSignalledBreak, runtime_parameter
 from .graph  import graph_colour_demo_printout
 from .file_name_parameters import needs_update_check_modify_time
 from . import cmdline

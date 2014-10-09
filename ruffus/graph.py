@@ -925,6 +925,7 @@ def topologically_sorted_nodes( to_leaves,
 
     #
     #   gather_all_non_signalled = False
+    #       stop at first signalled
     #
     else:
 

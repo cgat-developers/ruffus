@@ -1058,7 +1058,8 @@ def get_nested_tasks_or_globs(p, treat_strings_as_tasks = False, runtime_data_na
     #   task function
     #
     if (isinstance(p, collections.Callable)):
-    #if (type(p) == types.FunctionType):
+        tasks.add(p)
+    elif p.__class__.__name__ == 'Task':
         tasks.add(p)
     elif isinstance(p, runtime_parameter):
         runtime_data_names.add(p)

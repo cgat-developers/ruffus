@@ -222,6 +222,12 @@ class error_too_many_args(error_task):
     pass
 class error_inputs_multiple_args(error_task):
     pass
+class error_set_input(error_task):
+    pass
+class error_no_head_tasks(error_task):
+    pass
+class error_no_tail_tasks(error_task):
+    pass
 
 
 
