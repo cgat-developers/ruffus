@@ -837,13 +837,18 @@ class Pipeline(dict):
         # If the task name is already taken but with a different function, this will blow up
         # But if the function is being reused and with a previously different task name then OK
         else:
-            task = main_pipeline._create_task(task_func)
+            task = Task(task_func, task_name, self)
 
 
 
         return task
 
 
+    #_____________________________________________________________________________________
+
+    #   _complete_task_setup
+
+    #_____________________________________________________________________________________
     def _complete_task_setup (self):
         """
         Finishes initialising all tasks
@@ -984,11 +989,41 @@ class Pipeline(dict):
                 name = "mkdir"
             else:
                 name = "mkdir # %d" % self.cnt_mkdir
-        task = self._create_task(func = job_wrapper_mkdir, task_name = name)
+        task = self._create_task(task_func = job_wrapper_mkdir, task_name = name)
         task.created_via_decorator = False
         task.syntax  = "pipeline.mkdir"
         task.description_with_args_placeholder = "%s(name = %r, %%s)" % (task.syntax, task._get_display_name())
         task._prepare_mkdir (unnamed_args, named_args, task.description_with_args_placeholder)
+        return task
+
+
+    #_____________________________________________________________________________________
+
+    #   transform
+
+    #_____________________________________________________________________________________
+    def _do_create_task_by_OOP (self, task_func, named_args, syntax):
+        """
+        Helper function for
+            Pipeline.transform
+            Pipeline.originate
+            pipeline.split
+            pipeline.subdivide
+            pipeline.parallel
+            pipeline.files
+            pipeline.combinations_with_replacement
+            pipeline.combinations
+            pipeline.permutations
+            pipeline.product
+            pipeline.collate
+            pipeline.merge
+        """
+        name = get_name_from_args(named_args)
+        task = self._create_task(task_func, name)
+        task.created_via_decorator = False
+        task.syntax  = syntax
+        task.description_with_args_placeholder = "%s(name = %r, task_func = %s, %%s)" % (task.syntax,
+                                                        task._get_display_name(), task_func.__name__)
         return task
 
 
@@ -1002,12 +1037,7 @@ class Pipeline(dict):
         Transforms each incoming input to a corresponding output
         This is a One to One operation
         """
-        name = get_name_from_args(named_args)
-        task = self._create_task(task_func, name)
-        task.created_via_decorator = False
-        task.syntax  = "pipeline.transform"
-        task.description_with_args_placeholder = "%s(name = %r, task_func = %s, %%s)" % (task.syntax,
-                                                        task._get_display_name(), task_func.__name__)
+        task = _do_create_task_by_OOP(task_func, named_args, "pipeline.transform")
         task._prepare_transform (unnamed_args, named_args)
         return task
 
@@ -1021,12 +1051,7 @@ class Pipeline(dict):
         """
         Originates a new set of output files, one output per call to the task function
         """
-        name = get_name_from_args(named_args)
-        task = self._create_task(task_func, name)
-        task.created_via_decorator = False
-        task.syntax  = "pipeline.originate"
-        task.description_with_args_placeholder = "%s(name = %r, task_func = %s, %%s)" % (task.syntax,
-                                                                task._get_display_name(), task_func.__name__)
+        task = _do_create_task_by_OOP(task_func, named_args, "pipeline.originate")
         task._prepare_originate (unnamed_args, named_args)
         return task
 
@@ -1042,12 +1067,7 @@ class Pipeline(dict):
             where the number of output files may not be known beforehand.
         This is a One to Many operation
         """
-        name = get_name_from_args(named_args)
-        task = self._create_task(task_func, name)
-        task.created_via_decorator = False
-        task.syntax  = "pipeline.split"
-        task.description_with_args_placeholder = "%s(name = %r, task_func = %s, %%s)" % (task.syntax,
-                                                                   task._get_display_name(), task_func.__name__)
+        task = _do_create_task_by_OOP(task_func, named_args, "pipeline.split")
         task._prepare_split (unnamed_args, named_args)
         return task
 
@@ -1063,12 +1083,7 @@ class Pipeline(dict):
             where the number of output files may not be known beforehand.
         This is a Many to Even More operation
         """
-        name = get_name_from_args(named_args)
-        task = self._create_task(task_func, name)
-        task.created_via_decorator = False
-        task.syntax  = "pipeline.subdivide"
-        task.description_with_args_placeholder = "%s(name = %r, task_func = %s, %%s)" % (task.syntax,
-                                                                   task._get_display_name(), task_func.__name__)
+        task = _do_create_task_by_OOP(task_func, named_args, "pipeline.subdivide")
         task._prepare_subdivide (unnamed_args, named_args)
         return task
 
@@ -1082,12 +1097,7 @@ class Pipeline(dict):
         Merges multiple input files into a single output.
         This is a Many to One operation
         """
-        name = get_name_from_args(named_args)
-        task = self._create_task(task_func, name)
-        task.created_via_decorator = False
-        task.syntax  = "pipeline.merge"
-        task.description_with_args_placeholder = "%s(name = %r, task_func = %s, %%s)" % (task.syntax,
-                                                                   task._get_display_name(), task_func.__name__)
+        task = _do_create_task_by_OOP(task_func, named_args, "pipeline.merge")
         task._prepare_merge (unnamed_args, named_args)
         return task
 
@@ -1101,12 +1111,7 @@ class Pipeline(dict):
         Collates each set of multiple matching input files into an output.
         This is a Many to Fewer operation
         """
-        name = get_name_from_args(named_args)
-        task = self._create_task(task_func, name)
-        task.created_via_decorator = False
-        task.syntax  = "pipeline.collate"
-        task.description_with_args_placeholder = "%s(name = %r, task_func = %s, %%s)" % (task.syntax,
-                                                                   task._get_display_name(), task_func.__name__)
+        task = _do_create_task_by_OOP(task_func, named_args, "pipeline.collate")
         task._prepare_collate (unnamed_args, named_args)
         return task
 
@@ -1119,12 +1124,7 @@ class Pipeline(dict):
         """
         All-vs-all Product between items from each set of inputs
         """
-        name = get_name_from_args(named_args)
-        task = self._create_task(task_func, name)
-        task.created_via_decorator = False
-        task.syntax  = "pipeline.product"
-        task.description_with_args_placeholder = "%s(name = %r, task_func = %s, %%s)" % (task.syntax,
-                                                                   task._get_display_name(), task_func.__name__)
+        task = _do_create_task_by_OOP(task_func, named_args, "pipeline.product")
         task._prepare_product (unnamed_args, named_args)
         return task
 
@@ -1140,12 +1140,7 @@ class Pipeline(dict):
         * all possible orderings
         * no self vs self
         """
-        name = get_name_from_args(named_args)
-        task = self._create_task(task_func, name)
-        task.created_via_decorator = False
-        task.syntax  = "pipeline.permutations"
-        task.description_with_args_placeholder = "%s(name = %r, task_func = %s, %%s)" % (task.syntax,
-                                                                   task._get_display_name(), task_func.__name__)
+        task = _do_create_task_by_OOP(task_func, named_args, "pipeline.permutations")
         task._prepare_combinatorics (unnamed_args, named_args, error_task_permutations)
         return task
 
@@ -1165,12 +1160,7 @@ class Pipeline(dict):
             combinations("ABCD", 3) = ['ABC', 'ABD', 'ACD', 'BCD']
             combinations("ABCD", 2) = ['AB', 'AC', 'AD', 'BC', 'BD', 'CD']
         """
-        name = get_name_from_args(named_args)
-        task = self._create_task(task_func, name)
-        task.created_via_decorator = False
-        task.syntax  = "pipeline.combinations"
-        task.description_with_args_placeholder = "%s(name = %r, task_func = %s, %%s)" % (task.syntax,
-                                                                   task._get_display_name(), task_func.__name__)
+        task = _do_create_task_by_OOP(task_func, named_args, "pipeline.combinations")
         task._prepare_combinatorics (unnamed_args, named_args, error_task_combinations)
         return task
 
@@ -1202,12 +1192,7 @@ class Pipeline(dict):
                                                         'CDD',
                                                         'DDD']
         """
-        name = get_name_from_args(named_args)
-        task = self._create_task(task_func, name)
-        task.created_via_decorator = False
-        task.syntax  = "pipeline.combinations_with_replacement"
-        task.description_with_args_placeholder = "%s(name = %r, task_func = %s, %%s)" % (task.syntax,
-                                                                   task._get_display_name(), task_func.__name__)
+        task = _do_create_task_by_OOP(task_func, named_args, "combinations_with_replacement")
         task._prepare_combinatorics (unnamed_args, named_args, error_task_combinations_with_replacement)
         return task
 
@@ -1227,12 +1212,7 @@ class Pipeline(dict):
                 The first two items of each set of parameters must
                 be input/output files or lists of files or Null
         """
-        name = get_name_from_args(named_args)
-        task = self._create_task(task_func, name)
-        task.created_via_decorator = False
-        task.syntax  = "pipeline.files"
-        task.description_with_args_placeholder = "%s(name = %r, task_func = %s, %%s)" % (task.syntax,
-                                                                   task._get_display_name(), task_func.__name__)
+        task = _do_create_task_by_OOP(task_func, named_args, "pipeline.files")
         task._prepare_files (unnamed_args, named_args)
         return task
 
@@ -1247,20 +1227,31 @@ class Pipeline(dict):
             with either each of a list of parameters
             or using parameters generated by a custom function
         """
-        name = get_name_from_args(named_args)
-        task = self._create_task(task_func, name)
-        task.created_via_decorator = False
-        task.syntax  = "pipeline.parallel"
-        task.description_with_args_placeholder = "%s(name = %r, task_func = %s, %%s)" % (task.syntax,
-                                                                   task._get_display_name(), task_func.__name__)
+        task = _do_create_task_by_OOP(task_func, named_args, "pipeline.parallel")
         task._prepare_parallel (unnamed_args, named_args)
         return task
 
+    #_____________________________________________________________________________________
+
+    #   run
+    #   printout
+    #
+    #       Forwarding functions
+    #       Should bring procedural function here and forward from the other direction?
+
+    #_____________________________________________________________________________________
     def run(self, *unnamed_args, **named_args):
         pipeline_run(pipeline = self, *unnamed_args, **named_args)
 
     def printout(self, *unnamed_args, **named_args):
         pipeline_printout(pipeline = self, *unnamed_args, **named_args)
+
+    def get_task_names(self, *unnamed_args, **named_args):
+        pipeline_get_task_names(pipeline = self, *unnamed_args, **named_args)
+
+    def printout_graph(self, *unnamed_args, **named_args):
+        pipeline_printout_graph(pipeline = self, *unnamed_args, **named_args)
+
 #
 #   Global default shared pipeline (used for decorators)
 #
@@ -2956,7 +2947,7 @@ class Task (node):
         self.cnt_task_mkdir += 1
         cnt_task_mkdir_str = (" #%d" % self.cnt_task_mkdir) if self.cnt_task_mkdir > 1 else ""
         task_name = r"mkdir%s before %s " % (cnt_task_mkdir_str, self._name)
-        new_task = self.pipeline._create_task(func = job_wrapper_mkdir, task_name = task_name)
+        new_task = self.pipeline._create_task(task_func = job_wrapper_mkdir, task_name = task_name)
         self._add_parent(new_task)
 
 
@@ -3583,7 +3574,7 @@ class Task (node):
 
                 # add new task to pipeline if necessary
                 if not task:
-                    task = main_pipeline._create_task(arg)
+                    task = main_pipeline._create_task(task_func = arg)
                 new_tasks.append(task)
 
             else:
