@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import sys
-#import signal
+# import signal
 if sys.hexversion < 0x03000000:
     from future_builtins import zip, map
 ################################################################################
@@ -79,18 +79,18 @@ Running the pipeline
 
 """
 
-
-
-import os,sys,copy, multiprocessing
-#from collections import namedtuple
+import os
+import sys
+import copy
+import multiprocessing
 import collections
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   imports
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
 import logging
 import re
 from collections import defaultdict, deque
@@ -117,13 +117,13 @@ from . import dbdict
 
 if __name__ == '__main__':
     import sys
-    sys.path.insert(0,".")
+    sys.path.insert(0, ".")
 
 from .graph import *
 from .print_dependencies import *
-from .ruffus_exceptions import  *
+from .ruffus_exceptions import *
 from .ruffus_utility import *
-from .file_name_parameters import  *
+from .file_name_parameters import *
 
 if sys.hexversion >= 0x03000000:
     # everything is unicode in python3
@@ -147,83 +147,110 @@ if sys.hexversion >= 0x03000000:
 else:
     import Queue as queue
 
+
 class Ruffus_Keyboard_Interrupt_Exception (Exception):
     pass
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #
 #   light weight logging objects
 #
 #
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
+
+
 class t_black_hole_logger:
+
     """
     Does nothing!
     """
-    def info (self, message, *args, **kwargs):
+
+    def info(self, message, *args, **kwargs):
         pass
-    def debug (self, message, *args, **kwargs):
+
+    def debug(self, message, *args, **kwargs):
         pass
-    def warning (self, message, *args, **kwargs):
+
+    def warning(self, message, *args, **kwargs):
         pass
-    def error (self, message, *args, **kwargs):
+
+    def error(self, message, *args, **kwargs):
         pass
 
 
 class t_stderr_logger:
+
     """
     Everything to stderr
     """
-    def __init__ (self):
+
+    def __init__(self):
         self.unique_prefix = ""
-    def add_unique_prefix (self):
+
+    def add_unique_prefix(self):
         import random
         random.seed()
-        self.unique_prefix= str(random.randint(0,1000)) + " "
-    def info (self, message):
-        sys.stderr.write(self.unique_prefix + message + "\n")
-    def warning (self, message):
-        sys.stderr.write("\n\n" + self.unique_prefix + "WARNING:\n    " + message + "\n\n")
-    def error (self, message):
-        sys.stderr.write("\n\n" + self.unique_prefix + "ERROR:\n    " + message + "\n\n")
-    def debug (self, message):
+        self.unique_prefix = str(random.randint(0, 1000)) + " "
+
+    def info(self, message):
         sys.stderr.write(self.unique_prefix + message + "\n")
 
+    def warning(self, message):
+        sys.stderr.write("\n\n" + self.unique_prefix + "WARNING:\n    " + message + "\n\n")
+
+    def error(self, message):
+        sys.stderr.write("\n\n" + self.unique_prefix + "ERROR:\n    " + message + "\n\n")
+
+    def debug(self, message):
+        sys.stderr.write(self.unique_prefix + message + "\n")
+
+
 class t_stream_logger:
+
     """
     Everything to stderr
     """
-    def __init__ (self, stream):
+
+    def __init__(self, stream):
         self.stream = stream
-    def info (self, message):
+
+    def info(self, message):
         self.stream.write(message + "\n")
-    def warning (self, message):
+
+    def warning(self, message):
         sys.stream.write("\n\nWARNING:\n    " + message + "\n\n")
-    def error (self, message):
+
+    def error(self, message):
         sys.stream.write("\n\nERROR:\n    " + message + "\n\n")
-    def debug (self, message):
+
+    def debug(self, message):
         self.stream.write(message + "\n")
 
 black_hole_logger = t_black_hole_logger()
-stderr_logger     = t_stderr_logger()
+stderr_logger = t_stderr_logger()
+
 
 class t_verbose_logger:
-    def __init__ (self, verbose, verbose_abbreviated_path, logger, runtime_data):
+
+    def __init__(self, verbose, verbose_abbreviated_path, logger, runtime_data):
         self.verbose = verbose
         self.logger = logger
         self.runtime_data = runtime_data
         self.verbose_abbreviated_path = verbose_abbreviated_path
 
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 #
 #   logging helper function
 #
-#________________________________________________________________________________________
-def log_at_level (logger, message_level, verbose_level, msg):
+# _____________________________________________________________________________
+
+
+def log_at_level(logger, message_level, verbose_level, msg):
     """
     writes to log if message_level > verbose level
-    Returns anything written in case we might want to drop down and output at a lower log level
+    Returns anything written in case we might want to drop down and output at a
+    lower log level
     """
     if message_level <= verbose_level:
         logger.info(msg)
@@ -231,25 +258,19 @@ def log_at_level (logger, message_level, verbose_level, msg):
     return False
 
 
-
-
-
-
-
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
 
 
 #   queue management objects
 
 #       inserted into queue like job parameters to control multi-processing queue
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
 
 # fake parameters to signal in queue
 class all_tasks_complete:
     pass
+
 
 class waiting_for_more_tasks_to_complete:
     pass
@@ -258,8 +279,8 @@ class waiting_for_more_tasks_to_complete:
 #
 # synchronisation data
 #
-#SyncManager()
-#syncmanager.start()
+# SyncManager()
+# syncmanager.start()
 
 #
 # do nothing semaphore
@@ -269,26 +290,21 @@ def do_nothing_semaphore():
     yield
 
 
-
 # EXTRA pipeline_run DEBUGGING
 EXTRA_PIPELINERUN_DEBUGGING = False
 
 
-
-
-
-
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   task_decorator
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
 class task_decorator(object):
+
     """
         Forwards to functions within Task
     """
+
     def __init__(self, *decoratorArgs, **decoratorNamedArgs):
         """
             saves decorator arguments
@@ -304,17 +320,15 @@ class task_decorator(object):
         # check for duplicate tasks inside _create_task
         task = main_pipeline._create_task(task_func)
 
-
         # call the method called
         #   task.decorator_xxxx
         #   where xxxx = transform subdivide etc
         task_decorator_function = getattr(task, "_decorator_" + self.__class__.__name__)
         task.created_via_decorator = True
         # create empty placeholder with the args %s actually inside the task function
-        task.description_with_args_placeholder = task._get_decorated_function().replace("...", "%s", 1)
+        task.description_with_args_placeholder = task._get_decorated_function(
+            ).replace("...", "%s", 1)
         task_decorator_function(*self.args, **self.named_args)
-
-
 
         #
         #   don't change the function so we can call it unaltered
@@ -328,12 +342,9 @@ class task_decorator(object):
 class follows(task_decorator):
     pass
 
+
 class files(task_decorator):
     pass
-
-
-
-
 
 
 #
@@ -342,24 +353,31 @@ class files(task_decorator):
 class split(task_decorator):
     pass
 
+
 class transform(task_decorator):
     pass
 
+
 class subdivide(task_decorator):
+
     """
     Splits a each set of input files into multiple output file names,
         where the number of output files may not be known beforehand.
     """
     pass
 
+
 class originate(task_decorator):
     pass
+
 
 class merge(task_decorator):
     pass
 
+
 class posttask(task_decorator):
     pass
+
 
 class jobs_limit(task_decorator):
     pass
@@ -371,17 +389,22 @@ class jobs_limit(task_decorator):
 class collate(task_decorator):
     pass
 
+
 class active_if(task_decorator):
     pass
 
 #
 #   Esoteric
 #
+
+
 class check_if_uptodate(task_decorator):
     pass
 
+
 class parallel(task_decorator):
     pass
+
 
 class graphviz(task_decorator):
     pass
@@ -389,73 +412,80 @@ class graphviz(task_decorator):
 #
 #   Obsolete
 #
+
+
 class files_re(task_decorator):
     pass
 
 
-
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   indicator objects
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-#_________________________________________________________________________________________
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
+# _____________________________________________________________________________
 
 #   mkdir
 
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 class mkdir(task_decorator):
-    #def __init__ (self, *args):
+    # def __init__ (self, *args):
     #    self.args = args
     pass
 
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 
 #   touch_file
 
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
+
+
 class touch_file(object):
-    def __init__ (self, *args):
+
+    def __init__(self, *args):
         self.args = args
 
 
-
-
-#8888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #       job descriptors
 
 #           given parameters, returns strings describing job
 #           First returned parameter is string in strong form
-#           Second returned parameter is a list of strings for input, output and extra parameters
+#           Second returned parameter is a list of strings for input,
+#               output and extra parameters
 #               intended to be reformatted with indentation
 #           main use in error logging
 
-#8888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-def generic_job_descriptor (param, verbose_abbreviated_path, runtime_data):
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
+def generic_job_descriptor(param, verbose_abbreviated_path, runtime_data):
     if param in ([], None):
         m = "Job"
     else:
         m = "Job  = %s" % ignore_unknown_encoder(param)
-
     return m, [m]
 
-def io_files_job_descriptor (param, verbose_abbreviated_path, runtime_data):
-    extra_param = ", " + shorten_filenames_encoder(param[2:], verbose_abbreviated_path)[1:-1] if len(param) > 2 else ""
-    out_param   =        shorten_filenames_encoder(param[1], verbose_abbreviated_path)        if len(param) > 1 else "??"
-    in_param    =        shorten_filenames_encoder(param[0], verbose_abbreviated_path)        if len(param) > 0 else "??"
+
+def io_files_job_descriptor(param, verbose_abbreviated_path, runtime_data):
+    extra_param = ", " + shorten_filenames_encoder(param[2:], verbose_abbreviated_path)[1:-1] \
+        if len(param) > 2 else ""
+    out_param = shorten_filenames_encoder(param[1], verbose_abbreviated_path) \
+        if len(param) > 1 else "??"
+    in_param = shorten_filenames_encoder(param[0], verbose_abbreviated_path) \
+        if len(param) > 0 else "??"
 
     return ("Job  = [%s -> %s%s]" % (in_param, out_param, extra_param),
             ["Job  = [%s" % in_param, "-> " + out_param + extra_param + "]"])
 
 
-def io_files_one_to_many_job_descriptor (param, verbose_abbreviated_path, runtime_data):
+def io_files_one_to_many_job_descriptor(param, verbose_abbreviated_path, runtime_data):
 
-    extra_param = ", " + shorten_filenames_encoder(param[2:], verbose_abbreviated_path)[1:-1] if len(param) > 2 else ""
-    out_param   =        shorten_filenames_encoder(param[1], verbose_abbreviated_path)        if len(param) > 1 else "??"
-    in_param    =        shorten_filenames_encoder(param[0], verbose_abbreviated_path)        if len(param) > 0 else "??"
+    extra_param = ", " + shorten_filenames_encoder(param[2:], verbose_abbreviated_path)[1:-1] \
+        if len(param) > 2 else ""
+    out_param = shorten_filenames_encoder(param[1], verbose_abbreviated_path) \
+        if len(param) > 1 else "??"
+    in_param = shorten_filenames_encoder(param[0], verbose_abbreviated_path) \
+        if len(param) > 0 else "??"
 
     # start with input parameter
     ret_params = ["Job  = [%s" % in_param]
@@ -464,21 +494,23 @@ def io_files_one_to_many_job_descriptor (param, verbose_abbreviated_path, runtim
     #   processing one by one if multiple output parameters
     if len(param) > 1:
         if isinstance(param[1], (list, tuple)):
-            ret_params.extend("-> " + shorten_filenames_encoder(p, verbose_abbreviated_path) for p in param[1])
+            ret_params.extend(
+                "-> " + shorten_filenames_encoder(p, verbose_abbreviated_path) for p in param[1])
         else:
             ret_params.append("-> " + out_param)
 
     # add extra
-    if len(param) > 2 :
-        ret_params.append(" , " + shorten_filenames_encoder(param[2:], verbose_abbreviated_path)[1:-1])
+    if len(param) > 2:
+        ret_params.append(
+            " , " + shorten_filenames_encoder(param[2:], verbose_abbreviated_path)[1:-1])
 
     # add closing bracket
-    ret_params[-1] +="]"
+    ret_params[-1] += "]"
 
     return ("Job  = [%s -> %s%s]" % (in_param, out_param, extra_param), ret_params)
 
 
-def mkdir_job_descriptor (param, verbose_abbreviated_path, runtime_data):
+def mkdir_job_descriptor(param, verbose_abbreviated_path, runtime_data):
     # input, output and parameters
     if len(param) == 1:
         m = "Make directories %s" % (shorten_filenames_encoder(param[0], verbose_abbreviated_path))
@@ -489,17 +521,17 @@ def mkdir_job_descriptor (param, verbose_abbreviated_path, runtime_data):
     return m, [m]
 
 
-#8888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #       job wrappers
 #           registers files/directories for cleanup
 
-#8888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-#_________________________________________________________________________________________
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
+# _____________________________________________________________________________
 
 #   generic job wrapper
 
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 def job_wrapper_generic(param, user_defined_work_func, register_cleanup, touch_files_only):
     """
     run func
@@ -507,18 +539,21 @@ def job_wrapper_generic(param, user_defined_work_func, register_cleanup, touch_f
     assert(user_defined_work_func)
     return user_defined_work_func(*param)
 
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 
 #   job wrapper for all that deal with i/o files
 
-#_________________________________________________________________________________________
-def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_files_only, output_files_only = False):
+# _____________________________________________________________________________
+
+
+def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_files_only,
+                         output_files_only=False):
     """
     run func on any i/o if not up to date
     """
     assert(user_defined_work_func)
 
-    i,o = param[0:2]
+    i, o = param[0:2]
 
     if touch_files_only == 0:
         # @originate only uses output files
@@ -535,16 +570,17 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
                 # Reraise KeyboardInterrupt as a normal Exception
                 # EXTRA pipeline_run DEBUGGING
                 if EXTRA_PIPELINERUN_DEBUGGING:
-                    sys.stderr.write("E" * 36 + "[[ KeyboardInterrupt from task() ]]" + "E" * 9 + "\n")
+                    sys.stderr.write("E" * 36 + "[[ KeyboardInterrupt from task() ]]" +
+                                     "E" * 9 + "\n")
                 raise Ruffus_Keyboard_Interrupt_Exception("KeyboardInterrupt")
             except:
-                #sys.stderr.write("?? %s ??" % (tuple(param),))
+                # sys.stderr.write("?? %s ??" % (tuple(param),))
                 raise
     elif touch_files_only == 1:
-        #job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
+        # job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
 
         #
-        #   Do not touch any output files which are the same as any in the input
+        #   Do not touch any output files which are the same as any input
         #       i.e. which are just being passed through
         #
         # list of input files
@@ -565,17 +601,15 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
             #
             with open(f, 'a') as ff:
                 os.utime(f, None)
-            #if not os.path.exists(f):
+            # if not os.path.exists(f):
             #    open(f, 'w')
             #    mtime = os.path.getmtime(f)
-            #else:
+            # else:
             #    os.utime(f, None)
             #    mtime = os.path.getmtime(f)
 
-
-            #job_history[f] = chksum  # update file times and job details in history
-
-
+            # job_history[f] = chksum  # update file times and job details in
+            # history
 
     #
     # register strings in output file for cleanup
@@ -584,54 +618,57 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
         register_cleanup(f, "file")
 
 
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 
 #   job wrapper for all that only deals with output files
 
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 def job_wrapper_output_files(param, user_defined_work_func, register_cleanup, touch_files_only):
     """
     run func on any output file if not up to date
     """
-    job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_files_only, output_files_only = True)
+    job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_files_only,
+                         output_files_only=True)
 
 
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 
 #   job wrapper for mkdir
 
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 def job_wrapper_mkdir(param, user_defined_work_func, register_cleanup, touch_files_only):
     """
     Make missing directories including any intermediate directories on the specified path(s)
     """
     #
-    #   Just in case, swallow file exist errors because some other makedirs might be subpath
-    #       of this directory
+    #   Just in case, swallow file exist errors because some other makedirs
+    #       might be subpath of this directory
     #   Should not be necessary because of "sorted" in task_mkdir
     #
     #
     if len(param) == 1:
         dirs = param[0]
 
-    # if there are two parameters, they are i/o, and the directories to be created are the output
+    # if there are two parameters, they are i/o, and the directories to be
+    # created are the output
     elif len(param) >= 2:
         dirs = param[1]
     else:
         raise Exception("No arguments in mkdir check %s" % (param,))
 
     # get all file names in flat list
-    dirs = get_strings_in_nested_sequence (dirs)
+    dirs = get_strings_in_nested_sequence(dirs)
 
     for d in dirs:
         try:
-            os.makedirs(d)  # Please email the authors if an uncaught exception is raised here
+            # Please email the authors if an uncaught exception is raised here
+            os.makedirs(d)
             register_cleanup(d, "makedirs")
         except:
             #
             #   ignore exception if
-            #       exception == OSError        + "File exists" or              // Linux
-            #       exception == WindowsError   + "file already exists"        // Windows
+            #      exception == OSError      + "File exists" or      // Linux
+            #      exception == WindowsError + "file already exists" // Windows
             #   Are other exceptions raised by other OS?
             #
             #
@@ -645,35 +682,42 @@ def job_wrapper_mkdir(param, user_defined_work_func, register_cleanup, touch_fil
             raise
 
         #   changed for compatibility with python 3.x
-        #except OSError, e:
+        # except OSError, e:
         #    if "File exists" not in e:
         #        raise
 
 
-JOB_ERROR           = 0
+JOB_ERROR = 0
 JOB_SIGNALLED_BREAK = 1
-JOB_UP_TO_DATE      = 2
-JOB_COMPLETED       = 3
+JOB_UP_TO_DATE = 2
+JOB_COMPLETED = 3
 
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 
 #   t_job_result
 #       Previously a collections.namedtuple (introduced in python 2.6)
 #       Now using implementation from running
-#           t_job_result = namedtuple('t_job_result', 'task_name state job_name return_value exception', verbose =1)
+#           t_job_result = namedtuple('t_job_result',
+#                'task_name state job_name return_value exception', verbose =1)
 #           for compatibility with python 2.5
 
-#_________________________________________________________________________________________
-t_job_result        = namedtuple('t_job_result', 'task_name node_index state job_name return_value exception params', verbose =0)
+# _____________________________________________________________________________
+t_job_result = namedtuple('t_job_result',
+                          'task_name '
+                          'node_index state '
+                          'job_name '
+                          'return_value '
+                          'exception '
+                          'params',
+                          verbose=0)
 
 
-
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 
 #   multiprocess_callback
 #
-#_________________________________________________________________________________________
-def run_pooled_job_without_exceptions (process_parameters):
+# _____________________________________________________________________________
+def run_pooled_job_without_exceptions(process_parameters):
     """
     handles running jobs in parallel
     Make sure exceptions are caught here:
@@ -681,18 +725,18 @@ def run_pooled_job_without_exceptions (process_parameters):
         return any exceptions which will be rethrown at the other end:
         See RethrownJobError /  run_all_jobs_in_task
     """
-    #signal.signal(signal.SIGINT, signal.SIG_IGN)
+    # signal.signal(signal.SIGINT, signal.SIG_IGN)
     (param, task_name, node_index, job_name, job_wrapper, user_defined_work_func,
-            job_limit_semaphore, death_event, touch_files_only) = process_parameters
+     job_limit_semaphore, death_event, touch_files_only) = process_parameters
 
-    ##job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
-    ##outfile = param[1] if len(param) > 1 else None   # mkdir has no output
-    ##if not isinstance(outfile, list):
-    ##    outfile = [outfile]
-    ##for o in outfile:
-    ##    job_history.pop(o, None)  # remove outfile from history if it exists
+    # #job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
+    #  outfile = param[1] if len(param) > 1 else None   # mkdir has no output
+    #  if not isinstance(outfile, list):
+    # #    outfile = [outfile]
+    #  for o in outfile:
+    #  job_history.pop(o, None)  # remove outfile from history if it exists
 
-    if job_limit_semaphore == None:
+    if job_limit_semaphore is None:
         job_limit_semaphore = do_nothing_semaphore()
 
     try:
@@ -700,19 +744,22 @@ def run_pooled_job_without_exceptions (process_parameters):
             # EXTRA pipeline_run DEBUGGING
             if EXTRA_PIPELINERUN_DEBUGGING:
                 sys.stderr.write(">" * 36 + "[[ job_wrapper ]]" + ">" * 27 + "\n")
-            return_value =  job_wrapper(param, user_defined_work_func, register_cleanup, touch_files_only)
+            return_value = job_wrapper(param, user_defined_work_func,
+                                       register_cleanup, touch_files_only)
 
             #
             #   ensure one second between jobs
             #
-            #if one_second_per_job:
+            # if one_second_per_job:
             #    time.sleep(1.01)
             # EXTRA pipeline_run DEBUGGING
             if EXTRA_PIPELINERUN_DEBUGGING:
                 sys.stderr.write("<" * 36 + "[[ job_wrapper done ]]" + "<" * 22 + "\n")
-            return t_job_result(task_name, node_index, JOB_COMPLETED, job_name, return_value, None, param)
+            return t_job_result(task_name, node_index, JOB_COMPLETED, job_name, return_value, None,
+                                param)
     except KeyboardInterrupt as e:
-        # Reraise KeyboardInterrupt as a normal Exception. Should never be necessary here
+        # Reraise KeyboardInterrupt as a normal Exception.
+        #   Should never be necessary here
         # EXTRA pipeline_run DEBUGGING
         if EXTRA_PIPELINERUN_DEBUGGING:
             sys.stderr.write("E" * 36 + "[[ KeyboardInterrupt ]]" + "E" * 21 + "\n")
@@ -724,11 +771,12 @@ def run_pooled_job_without_exceptions (process_parameters):
             sys.stderr.write("E" * 36 + "[[ Other Interrupt ]]" + "E" * 23 + "\n")
         #   Wrap up one or more exceptions rethrown across process boundaries
         #
-        #       See multiprocessor.Server.handle_request/serve_client for an analogous function
+        # See multiprocessor.Server.handle_request/serve_client for an
+        # analogous function
         exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-        exception_stack  = traceback.format_exc()
-        exception_name   = exceptionType.__module__ + '.' + exceptionType.__name__
-        exception_value  = str(exceptionValue)
+        exception_stack = traceback.format_exc()
+        exception_name = exceptionType.__module__ + '.' + exceptionType.__name__
+        exception_value = str(exceptionValue)
         if len(exception_value):
             exception_value = "(%s)" % exception_value
 
@@ -747,30 +795,31 @@ def run_pooled_job_without_exceptions (process_parameters):
                              exception_stack], param)
 
 
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Helper function
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
 
 
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 
 #   register_cleanup
 
 #       to do
 
-#_________________________________________________________________________________________
-def register_cleanup (file_name, operation):
+# _____________________________________________________________________________
+def register_cleanup(file_name, operation):
     pass
 
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 
 #   pipeline functions only have "name" as a named parameter
 
-#_________________________________________________________________________________________
-def get_name_from_args (named_args):
+# _____________________________________________________________________________
+
+
+def get_name_from_args(named_args):
     if "name" in named_args:
         name = named_args["name"]
         del named_args["name"]
@@ -778,12 +827,12 @@ def get_name_from_args (named_args):
     else:
         return None
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Pipeline
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
 
 class Pipeline(dict):
     pipelines = dict()
@@ -792,7 +841,8 @@ class Pipeline(dict):
     def __init__(self, name, *arg, **kw):
         """
         Each Ruffus Pipeline object has to have a unique name.
-        "main" is reserved for "main_pipeline", the default pipeline for all Ruffus decorators.
+        "main" is reserved for "main_pipeline", the default pipeline for all
+            Ruffus decorators.
         """
         # initialise dict
         super(Pipeline, self).__init__(*arg, **kw)
@@ -805,17 +855,18 @@ class Pipeline(dict):
         self.name = name
         self.original_name = name
         if name in Pipeline.pipelines:
-            raise Exception("Error:\nDuplicate pipeline. A pipeline named '%s' already exists.\n" % name)
+            raise Exception("Error:\nDuplicate pipeline. "
+                            "A pipeline named '%s' already exists.\n" % name)
         Pipeline.pipelines[name] = self
         self.head_tasks = []
         self.tail_tasks = []
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _create_task
 
-    #_____________________________________________________________________________________
-    def _create_task(self, task_func, task_name = None):
+    # _________________________________________________________________________
+    def _create_task(self, task_func, task_name=None):
         """
         Create task with a function
         """
@@ -824,32 +875,33 @@ class Pipeline(dict):
             if task_func.__module__ == "__main__":
                 task_name = task_func.__name__
             else:
-                task_name = str(task_func.__module__) + "." + task_func.__name__
+                task_name = str(task_func.__module__) + \
+                    "." + task_func.__name__
 
         if task_name not in self:
             task = Task(task_func, task_name, self)
 
         # task_name already there as the identifying task_name.
         # If the task_func also matches everything is fine
-        elif task_name in self.task_names and self[task_name][0].user_defined_work_func == task_func:
+        elif (task_name in self.task_names and
+              self[task_name][0].user_defined_work_func == task_func):
             task = self[task_name][0]
 
-        # If the task name is already taken but with a different function, this will blow up
-        # But if the function is being reused and with a previously different task name then OK
+        # If the task name is already taken but with a different function,
+        #   this will blow up
+        # But if the function is being reused and with a previously different
+        # task name then OK
         else:
             task = Task(task_func, task_name, self)
 
-
-
         return task
 
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _complete_task_setup
 
-    #_____________________________________________________________________________________
-    def _complete_task_setup (self):
+    # _________________________________________________________________________
+    def _complete_task_setup(self):
         """
         Finishes initialising all tasks
         Make sure all tasks in dependency list are linked to real functions
@@ -857,7 +909,7 @@ class Pipeline(dict):
 
         processed_pipelines = set([self.name])
         unprocessed_tasks = deque(self.tasks)
-        processed_tasks  = set()
+        processed_tasks = set()
         while len(unprocessed_tasks):
             task = unprocessed_tasks.popleft()
             for ancestral_task in task.setup_task_func():
@@ -871,89 +923,86 @@ class Pipeline(dict):
             #       Breaks @merge otherwise
             #
             if isinstance(task._is_single_job_single_output, Task):
-                task._is_single_job_single_output = task._is_single_job_single_output._is_single_job_single_output
-
-
-        #print("_" * 80, file = sys.stderr)
+                task._is_single_job_single_output = \
+                    task._is_single_job_single_output._is_single_job_single_output
 
         return processed_pipelines
 
-
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   get_head_tasks
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
     def get_head_tasks(self):
         """
-        Return tasks at the head of the pipeline, i.e. with only descendants/dependants
+        Return tasks at the head of the pipeline,
+            i.e. with only descendants/dependants
         N.B. Head and Tail sets can overlap
 
-        Most of the time when this is empty, it has been left undefined by mistake.
+        Most of the time when self.head_tasks == [], it has been left undefined by mistake.
             So we usually throw an exception at the point of use
         """
         return self.head_tasks
 
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   set_head_tasks
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
     def set_head_tasks(self, head_tasks):
         """
-        Return tasks at the head of the pipeline, i.e. with only descendants/dependants
+        Return tasks at the head of the pipeline,
+            i.e. with only descendants/dependants
         """
         self.head_tasks = head_tasks
 
-
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   get_tail_tasks
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
     def get_tail_tasks(self):
         """
-        Return tasks at the tail of the pipeline, i.e. without descendants/dependants
+        Return tasks at the tail of the pipeline,
+            i.e. without descendants/dependants
         N.B. Head and Tail sets can overlap
 
-        Most of the time when this is empty, it has been left undefined by mistake.
+        Most of the time when self.tail_tasks == [],
+            it has been left undefined by mistake.
             So we usually throw an exception at the point of use
         """
         return self.tail_tasks
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   set_tail_tasks
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
     def set_tail_tasks(self, tail_tasks):
         """
-        Return tasks at the tail of the pipeline, i.e. with only descendants/dependants
+        Return tasks at the tail of the pipeline,
+            i.e. with only descendants/dependants
         """
         self.tail_tasks = tail_tasks
 
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   set_input
 
     #       forward to head tasks
 
-    #_____________________________________________________________________________________
-    def set_input (self, **args):
+    # _________________________________________________________________________
+    def set_input(self, **args):
         if not len(self.get_head_tasks()):
             raise error_no_head_tasks("pipeline %s has no head tasks defined." % self.name)
         for tt in self.get_head_tasks():
             tt.set_input(**args)
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   clone
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
     def clone(self, name, *arg, **kw):
 
         # setup new pipeline
@@ -971,11 +1020,11 @@ class Pipeline(dict):
         new_pipeline.head_tasks = [new_pipeline[t._name] for t in self.tail_tasks]
         return new_pipeline
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   mkdir
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
     def mkdir(self, *unnamed_args, **named_args):
         """
         Makes directories each incoming input to a corresponding output
@@ -983,26 +1032,26 @@ class Pipeline(dict):
         """
         name = get_name_from_args(named_args)
         # func is a placeholder...
-        if name == None:
+        if name is None:
             self.cnt_mkdir += 1
             if self.cnt_mkdir == 1:
                 name = "mkdir"
             else:
                 name = "mkdir # %d" % self.cnt_mkdir
-        task = self._create_task(task_func = job_wrapper_mkdir, task_name = name)
+        task = self._create_task(task_func=job_wrapper_mkdir, task_name=name)
         task.created_via_decorator = False
-        task.syntax  = "pipeline.mkdir"
-        task.description_with_args_placeholder = "%s(name = %r, %%s)" % (task.syntax, task._get_display_name())
-        task._prepare_mkdir (unnamed_args, named_args, task.description_with_args_placeholder)
+        task.syntax = "pipeline.mkdir"
+        task.description_with_args_placeholder = "%s(name = %r, %%s)" % (
+            task.syntax, task._get_display_name())
+        task._prepare_mkdir(unnamed_args, named_args, task.description_with_args_placeholder)
         return task
 
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   transform
 
-    #_____________________________________________________________________________________
-    def _do_create_task_by_OOP (self, task_func, named_args, syntax):
+    # _________________________________________________________________________
+    def _do_create_task_by_OOP(self, task_func, named_args, syntax):
         """
         Helper function for
             Pipeline.transform
@@ -1021,46 +1070,89 @@ class Pipeline(dict):
         name = get_name_from_args(named_args)
         task = self._create_task(task_func, name)
         task.created_via_decorator = False
-        task.syntax  = syntax
-        task.description_with_args_placeholder = "%s(name = %r, task_func = %s, %%s)" % (task.syntax,
-                                                        task._get_display_name(), task_func.__name__)
+        task.syntax = syntax
+        task.description_with_args_placeholder = "%s(name = %r, task_func = %s, %%s)" \
+            % (task.syntax, task._get_display_name(), task_func.__name__)
         return task
 
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   transform
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
+    def lookup_task_from_name(self, task_name, default_module_name):
+        """
+        If lookup returns None, means ambiguous: do nothing
+        Only ever returns a list of one
+        """
+        multiple_tasks = []
+
+        #
+        #   Does the unqualified name uniquely identify?
+        #
+        if task_name in self:
+            if len(self[task_name]) == 1:
+                return self[task_name]
+            else:
+                multiple_tasks = self[task_name]
+
+        #
+        #   Even if the unqualified name does not uniquely identify,
+        #       maybe the qualified name does
+        #
+        full_qualified_name = default_module_name + "." + task_name
+        if full_qualified_name in self:
+            if len(self[full_qualified_name]) == 1:
+                return self[full_qualified_name]
+            else:
+                multiple_tasks = self[task_name]
+
+        #
+        #   Nothing matched
+        #
+        if not multiple_tasks:
+            return []
+
+        #
+        #   If either the qualified or unqualified name is ambiguous, throw...
+        #
+        task_names = ",".join(t._name for t in multiple_tasks)
+        raise error_ambiguous_task("%s is ambiguous. Which do you mean? (%s)."
+                                   % (task_name, task_names))
+
+    # _________________________________________________________________________
+
+    #   transform
+
+    # _________________________________________________________________________
     def transform(self, task_func, *unnamed_args, **named_args):
         """
         Transforms each incoming input to a corresponding output
         This is a One to One operation
         """
         task = _do_create_task_by_OOP(task_func, named_args, "pipeline.transform")
-        task._prepare_transform (unnamed_args, named_args)
+        task._prepare_transform(unnamed_args, named_args)
         return task
 
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   originate
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
     def originate(self, task_func, *unnamed_args, **named_args):
         """
-        Originates a new set of output files, one output per call to the task function
+        Originates a new set of output files,
+            one output per call to the task function
         """
         task = _do_create_task_by_OOP(task_func, named_args, "pipeline.originate")
-        task._prepare_originate (unnamed_args, named_args)
+        task._prepare_originate(unnamed_args, named_args)
         return task
 
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   split
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
     def split(self, task_func, *unnamed_args, **named_args):
         """
         Splits a single set of input files into multiple output file names,
@@ -1068,15 +1160,14 @@ class Pipeline(dict):
         This is a One to Many operation
         """
         task = _do_create_task_by_OOP(task_func, named_args, "pipeline.split")
-        task._prepare_split (unnamed_args, named_args)
+        task._prepare_split(unnamed_args, named_args)
         return task
 
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   subdivide
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
     def subdivide(self, task_func, *unnamed_args, **named_args):
         """
         Subdivides a each set of input files into multiple output file names,
@@ -1084,55 +1175,55 @@ class Pipeline(dict):
         This is a Many to Even More operation
         """
         task = _do_create_task_by_OOP(task_func, named_args, "pipeline.subdivide")
-        task._prepare_subdivide (unnamed_args, named_args)
+        task._prepare_subdivide(unnamed_args, named_args)
         return task
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   merge
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
     def merge(self, task_func, *unnamed_args, **named_args):
         """
         Merges multiple input files into a single output.
         This is a Many to One operation
         """
         task = _do_create_task_by_OOP(task_func, named_args, "pipeline.merge")
-        task._prepare_merge (unnamed_args, named_args)
+        task._prepare_merge(unnamed_args, named_args)
         return task
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   collate
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
     def collate(self, task_func, *unnamed_args, **named_args):
         """
         Collates each set of multiple matching input files into an output.
         This is a Many to Fewer operation
         """
         task = _do_create_task_by_OOP(task_func, named_args, "pipeline.collate")
-        task._prepare_collate (unnamed_args, named_args)
+        task._prepare_collate(unnamed_args, named_args)
         return task
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   product
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
     def product(self, task_func, *unnamed_args, **named_args):
         """
         All-vs-all Product between items from each set of inputs
         """
         task = _do_create_task_by_OOP(task_func, named_args, "pipeline.product")
-        task._prepare_product (unnamed_args, named_args)
+        task._prepare_product(unnamed_args, named_args)
         return task
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   permutations
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
     def permutations(self, task_func, *unnamed_args, **named_args):
         """
         Permutations between items from a set of inputs
@@ -1141,15 +1232,15 @@ class Pipeline(dict):
         * no self vs self
         """
         task = _do_create_task_by_OOP(task_func, named_args, "pipeline.permutations")
-        task._prepare_combinatorics (unnamed_args, named_args, error_task_permutations)
+        task._prepare_combinatorics(
+            unnamed_args, named_args, error_task_permutations)
         return task
 
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   combinations
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
     def combinations(self, task_func, *unnamed_args, **named_args):
         """
         Combinations of items from a set of inputs
@@ -1161,47 +1252,49 @@ class Pipeline(dict):
             combinations("ABCD", 2) = ['AB', 'AC', 'AD', 'BC', 'BD', 'CD']
         """
         task = _do_create_task_by_OOP(task_func, named_args, "pipeline.combinations")
-        task._prepare_combinatorics (unnamed_args, named_args, error_task_combinations)
+        task._prepare_combinatorics(unnamed_args, named_args, error_task_combinations)
         return task
 
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   combinations_with_replacement
 
-    #_____________________________________________________________________________________
-    def combinations_with_replacement(self, task_func, *unnamed_args, **named_args):
+    # _________________________________________________________________________
+    def combinations_with_replacement(self, task_func, *unnamed_args,
+                                      **named_args):
         """
         Combinations with replacement of items from a set of inputs
         * k-length tuples
         * Single (sorted) ordering, i.e. AB is the same as BA,
         * Repeats. AA, BB, AAC etc.
         For Example:
-            combinations_with_replacement("ABCD", 2) = ['AA', 'AB', 'AC', 'AD',
-                                                        'BB', 'BC', 'BD',
-                                                        'CC', 'CD',
-                                                        'DD']
-            combinations_with_replacement("ABCD", 3) = ['AAA', 'AAB', 'AAC', 'AAD',
-                                                        'ABB', 'ABC', 'ABD',
-                                                        'ACC', 'ACD',
-                                                        'ADD',
-                                                        'BBB', 'BBC', 'BBD',
-                                                        'BCC', 'BCD',
-                                                        'BDD',
-                                                        'CCC', 'CCD',
-                                                        'CDD',
-                                                        'DDD']
+            combinations_with_replacement("ABCD", 2) = [
+                'AA', 'AB', 'AC', 'AD',
+                'BB', 'BC', 'BD',
+                'CC', 'CD',
+                'DD']
+            combinations_with_replacement("ABCD", 3) = [
+                'AAA', 'AAB', 'AAC', 'AAD',
+                'ABB', 'ABC', 'ABD',
+                'ACC', 'ACD',
+                'ADD',
+                'BBB', 'BBC', 'BBD',
+                'BCC', 'BCD',
+                'BDD',
+                'CCC', 'CCD',
+                'CDD',
+                'DDD']
         """
         task = _do_create_task_by_OOP(task_func, named_args, "combinations_with_replacement")
-        task._prepare_combinatorics (unnamed_args, named_args, error_task_combinations_with_replacement)
+        task._prepare_combinatorics(unnamed_args, named_args,
+                                    error_task_combinations_with_replacement)
         return task
 
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   files
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
     def files(self, task_func, *unnamed_args, **named_args):
         """
         calls user function in parallel
@@ -1213,14 +1306,14 @@ class Pipeline(dict):
                 be input/output files or lists of files or Null
         """
         task = _do_create_task_by_OOP(task_func, named_args, "pipeline.files")
-        task._prepare_files (unnamed_args, named_args)
+        task._prepare_files(unnamed_args, named_args)
         return task
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   parallel
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
     def parallel(self, task_func, *unnamed_args, **named_args):
         """
         calls user function in parallel
@@ -1228,56 +1321,55 @@ class Pipeline(dict):
             or using parameters generated by a custom function
         """
         task = _do_create_task_by_OOP(task_func, named_args, "pipeline.parallel")
-        task._prepare_parallel (unnamed_args, named_args)
+        task._prepare_parallel(unnamed_args, named_args)
         return task
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   run
     #   printout
     #
     #       Forwarding functions
-    #       Should bring procedural function here and forward from the other direction?
+    # Should bring procedural function here and forward from the other
+    # direction?
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
     def run(self, *unnamed_args, **named_args):
-        pipeline_run(pipeline = self, *unnamed_args, **named_args)
+        pipeline_run(pipeline=self, *unnamed_args, **named_args)
 
     def printout(self, *unnamed_args, **named_args):
-        pipeline_printout(pipeline = self, *unnamed_args, **named_args)
+        pipeline_printout(pipeline=self, *unnamed_args, **named_args)
 
     def get_task_names(self, *unnamed_args, **named_args):
-        pipeline_get_task_names(pipeline = self, *unnamed_args, **named_args)
+        pipeline_get_task_names(pipeline=self, *unnamed_args, **named_args)
 
     def printout_graph(self, *unnamed_args, **named_args):
-        pipeline_printout_graph(pipeline = self, *unnamed_args, **named_args)
+        pipeline_printout_graph(pipeline=self, *unnamed_args, **named_args)
 
 #
 #   Global default shared pipeline (used for decorators)
 #
-main_pipeline = Pipeline(name = "main")
+main_pipeline = Pipeline(name="main")
 
 
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Functions
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-#_________________________________________________________________________________________
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
+# _____________________________________________________________________________
 
 #   lookup_unique_task_from_func
 
-#_________________________________________________________________________________________
-def lookup_unique_task_from_func (task_func, default_pipeline_name = "main"):
+# _____________________________________________________________________________
+def lookup_unique_task_from_func(task_func, default_pipeline_name="main"):
     """
     Go through all pipelines and match task_func to find a unique task
     Throw exception if ambiguous
     """
 
-    def lookup_unique_task_from_func_in_pipeline (task_func, pipeline):
+    def unique_task_from_func_in_pipeline(task_func, pipeline):
         if task_func in pipeline:
             if len(pipeline[task_func]) == 1:
                 # Found task!
@@ -1285,24 +1377,25 @@ def lookup_unique_task_from_func (task_func, default_pipeline_name = "main"):
 
             # Found too many tasks! Ambiguous...
             task_names = ", ".join(task._name for task in pipeline[task_func])
-            raise error_ambiguous_task("Function def %s(...): is used by multiple tasks (%s). Which one do you mean?."
-                                                   % (task_func.__name__, task_names))
+            raise error_ambiguous_task(
+                "Function def %s(...): is used by multiple tasks (%s). Which one do you mean?."
+                % (task_func.__name__, task_names))
         return None
 
     #
     #   Iterate through all pipelines starting with the specified pipeline
     #
-    task = lookup_unique_task_from_func_in_pipeline (task_func, Pipeline.pipelines[default_pipeline_name])
+    task = unique_task_from_func_in_pipeline(task_func, Pipeline.pipelines[default_pipeline_name])
     if task:
         return task
 
     #
-    #   Sees if function uniquely identifies a single task across other pipelines
+    #   Sees if function uniquely identifies a single task across pipelines
     #
     found_tasks = []
     found_pipelines = []
     for pipeline in Pipeline.pipelines.values():
-        task = lookup_unique_task_from_func_in_pipeline (task_func, pipeline)
+        task = unique_task_from_func_in_pipeline(task_func, pipeline)
         if task:
             found_tasks.append(task)
             found_pipelines.append(pipeline)
@@ -1311,122 +1404,99 @@ def lookup_unique_task_from_func (task_func, default_pipeline_name = "main"):
         return found_tasks[0]
 
     if len(found_tasks) > 1:
-        raise error_ambiguous_task("Task Name %s is ambiguous and specifies different tasks across multiple pipelines (%s)."
-                                               % (task_func.__name__, ",".join(found_pipelines)))
+        raise error_ambiguous_task("Task Name %s is ambiguous and specifies different tasks "
+                                   "across multiple pipelines (%s)."
+                                   % (task_func.__name__, ",".join(found_pipelines)))
 
     return None
 
 
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 
 #   lookup_tasks_from_name
 
-#_________________________________________________________________________________________
-def lookup_tasks_from_name (task_name, default_pipeline_name, default_module_name = "__main__"):
+# _____________________________________________________________________________
+def lookup_tasks_from_name(task_name, default_pipeline_name, default_module_name="__main__"):
     """
 
         Tries:
             (1) Named pipeline in the format pipeline::task_name
             (2) tasks matching task_name in default_pipeline_name
             (3) pipeline names matching task_name
-            (4) if task_name uniquely identifies a task in all other pipelines...
+            (4) if task_name uniquely identifies any task in all other pipelines...
+
+        Only returns multiple tasks if (3) task_name is the name of a pipeline
     """
-
-    def lookup_task_in_pipeline_from_name(task_name, pipeline_name, default_module_name):
-        """
-        Look in specified pipeline to see if contains task
-        If lookup returns None, means ambiguous: do nothing
-        Only ever returns a list of one
-        """
-        multiple_tasks = []
-        if pipeline_name not in Pipeline.pipelines:
-            raise error_not_a_pipeline("%s does not name a pipeline." % pipeline_name)
-
-        #
-        #   Does the unqualified name uniquely identify?
-        #
-        pipeline = Pipeline.pipelines[pipeline_name]
-        if task_name in pipeline:
-            if len(pipeline[task_name]) == 1:
-                return pipeline[task_name]
-            else:
-                multiple_tasks = pipeline[task_name]
-
-        #
-        #   Even if the unqualified name does not uniquely identify, maybe the qualified name does
-        #
-        full_qualified_name = default_module_name + "." + task_name
-        if full_qualified_name in pipeline:
-            if len(pipeline[full_qualified_name]) == 1:
-                return pipeline[full_qualified_name]
-            else:
-                multiple_tasks = pipeline[task_name]
-
-        #
-        #   If either the qualified or unqualified name is ambiguous, throw...
-        #
-        if multiple_tasks:
-            raise error_ambiguous_task("%s is ambiguous and specifies different tasks (%s)."
-                                        % (task_name, ",".join(task._name for task in multiple_tasks)))
-
-        #
-        #   Nothing matched
-        #
-        return []
-
-
 
     # Lookup the task from the function or task name
     pipeline_name, task_name = re.match("(?:(.+)::)?(.*)", task_name).groups()
 
-    # Only try specified pipeline if there is one.
-    #   Will blow up if task_name is ambiguous
+    #
+    #   (1) Look in specified pipeline
+    #      Will blow up if task_name is ambiguous
+    #
     if pipeline_name:
-        return lookup_task_in_pipeline_from_name(task_name, pipeline_name, default_module_name)
+        if pipeline_name not in Pipeline.pipelines:
+            raise error_not_a_pipeline("%s is not a pipeline." % pipeline_name)
+        pipeline = Pipeline.pipelines[pipeline_name]
+        return pipeline.lookup_task_from_name(task_name, default_module_name)
 
-    # Try default pipeline first
-    #   Will blow up if task_name is ambiguous
-    #   Note that tasks only ever has 0 or 1 items
-    tasks = lookup_task_in_pipeline_from_name(task_name, default_pipeline_name, default_module_name)
+    #
+    #   (2) Try default pipeline
+    #      Will blow up if task_name is ambiguous
+    #
+    if default_pipeline_name not in Pipeline.pipelines:
+        raise error_not_a_pipeline("%s is not a pipeline." % default_pipeline_name)
+    pipeline = Pipeline.pipelines[default_pipeline_name]
+    tasks = pipeline.lookup_task_from_name(task_name, default_module_name)
     if tasks:
         return tasks
 
-    # task_name names a pipeline? Run the whole thing
+    #   (3) task_name is actually the name of a pipeline
+    #      Alias for pipeline.get_tail_tasks()
+    #      N.B. This is the *only* time multiple tasks might be returned
+    #
     if task_name in Pipeline.pipelines:
         if not len(Pipeline.pipelines[task_name].get_tail_tasks()):
-            raise error_no_tail_tasks(("Pipeline %s has no tail tasks defined. "
-                "Which task do you mean when you specify the whole pipeline has a dependency?") % task_name)
+            raise error_no_tail_tasks(
+                "Pipeline %s has no tail tasks defined. Which task do you "
+                "mean when you specify the whole pipeline as a dependency?" % task_name)
         return Pipeline.pipelines[task_name].get_tail_tasks()
 
     #
-    #   Otherwise all other pipelines and complain if ambiguous
+    #   (4) Try all other pipelines
+    #      Will blow up if task_name is ambiguous
     #
     found_tasks = []
     found_pipelines = []
-    for pipeline_name in Pipeline.pipelines:
-
-        tasks = lookup_task_in_pipeline_from_name(task_name, pipeline_name, default_module_name)
+    for pipeline_name, pipeline in Pipeline.pipelines.items():
+        tasks = pipeline.lookup_task_from_name(task_name, default_module_name)
         if tasks:
             found_tasks.append(tasks)
             found_pipelines.append(pipeline_name)
 
+    # unambiguous: good
     if len(found_tasks) == 1:
         return found_tasks[0]
 
+    # ambiguous: bad
     if len(found_tasks) > 1:
-        raise error_ambiguous_task("Task Name %s is ambiguous and specifies different tasks across multiple pipelines (%s)."
-                                               % (task_name, ",".join(found_pipelines)))
+        raise error_ambiguous_task(
+            "Task Name %s is ambiguous and specifies different tasks across "
+            "several pipelines (%s)." % (task_name, ",".join(found_pipelines)))
 
+    # Nothing found
     return []
 
 
-
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 
 #   lookup_tasks_from_user_specified_names
 #
-#_________________________________________________________________________________________
-def lookup_tasks_from_user_specified_names (task_description, task_names, default_pipeline_name = "main", default_module_name = "__main__"):
+# _____________________________________________________________________________
+def lookup_tasks_from_user_specified_names(task_description, task_names,
+                                           default_pipeline_name="main",
+                                           default_module_name="__main__"):
     """
     Given a list of task names, look up the corresponding tasks
     Will just pass through if the task_name is already a task
@@ -1449,8 +1519,8 @@ def lookup_tasks_from_user_specified_names (task_description, task_names, defaul
 
         elif isinstance(task_name, Pipeline):
             if not len(task_name.get_tail_tasks()):
-                raise error_no_tail_tasks(("Pipeline %s has no tail tasks defined. "
-                    "Which task do you mean when you specify the whole pipeline has a dependency?") % task_name.name)
+                raise error_no_tail_tasks("Pipeline %s has no 'tail tasks'. Which task do you mean"
+                                          " when you specify the whole pipeline?" % task_name.name)
             task_list.extend(task_name.get_tail_tasks())
             continue
 
@@ -1459,25 +1529,24 @@ def lookup_tasks_from_user_specified_names (task_description, task_names, defaul
             task = lookup_unique_task_from_func(task_name)
             # blow up for unwrapped function
             if not task:
-                raise error_function_is_not_a_task(("Function def %s(...): is not a Ruffus task." %
-                                                    task_func.__name__) +
-                                                    " The function needs to have a ruffus decoration "
-                                                    "like '@transform', or be a member of a ruffus.Pipeline().")
+                raise error_function_is_not_a_task(
+                    ("Function def %s(...): is not a Ruffus task." % task_func.__name__) +
+                    " The function needs to have a ruffus decoration like "
+                    "'@transform', or be a member of a ruffus.Pipeline().")
 
             task_list.append(task)
             continue
-
 
         # some kind of string: task or func or pipeline name?
         if isinstance(task_name, path_str_type):
 
             # Will throw Exception if ambiguous
-            tasks = lookup_tasks_from_name(task_name, default_pipeline_name, default_module_name)
+            tasks = lookup_tasks_from_name(
+                task_name, default_pipeline_name, default_module_name)
             # not found
             if not tasks:
-                raise error_node_not_task("%s task '%s' is not a pipelined task in Ruffus. Have you mis-spelt the function or task name?" % (
-                                                            task_description, task_name))
-
+                raise error_node_not_task("%s task '%s' is not a pipelined task in Ruffus. Is it "
+                                          "spelt correctly ?" % (task_description, task_name))
             task_list.extend(tasks)
             continue
 
@@ -1486,17 +1555,13 @@ def lookup_tasks_from_user_specified_names (task_description, task_names, defaul
     return task_list
 
 
-
-
-
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Task
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
 class Task (node):
+
     """
 
     * Represents each stage of a pipeline.
@@ -1506,159 +1571,157 @@ class Task (node):
     """
 
     _action_names = ["unspecified",
-                    "task",
-                    "task_files_re",
-                    "task_split",
-                    "task_merge",
-                    "task_transform",
-                    "task_collate",
-                    "task_files_func",
-                    "task_files",
-                    "task_mkdir",
-                    "task_parallel",
-                    "task_active_if",
-                    "task_product",
-                    "task_permutations",
-                    "task_combinations",
-                    "task_combinations_with_replacement",
-                    "task_subdivide",
-                    "task_originate",
-                    "task_graphviz",
-                    ]
-    _action_unspecified                          =  0
-    _action_task                                 =  1
-    _action_task_files_re                        =  2
-    _action_task_split                           =  3
-    _action_task_merge                           =  4
-    _action_task_transform                       =  5
-    _action_task_collate                         =  6
-    _action_task_files_func                      =  7
-    _action_task_files                           =  8
-    _action_mkdir                                =  9
-    _action_task_parallel                        = 10
-    _action_active_if                            = 11
-    _action_task_product                         = 12
-    _action_task_permutations                    = 13
-    _action_task_combinations                    = 14
-    _action_task_combinations_with_replacement   = 15
-    _action_task_subdivide                       = 16
-    _action_task_originate                       = 17
-    _action_task_graphviz                        = 18
+                     "task",
+                     "task_files_re",
+                     "task_split",
+                     "task_merge",
+                     "task_transform",
+                     "task_collate",
+                     "task_files_func",
+                     "task_files",
+                     "task_mkdir",
+                     "task_parallel",
+                     "task_active_if",
+                     "task_product",
+                     "task_permutations",
+                     "task_combinations",
+                     "task_combinations_with_replacement",
+                     "task_subdivide",
+                     "task_originate",
+                     "task_graphviz",
+                     ]
+    # ENUMS
+    (_action_unspecified,
+     _action_task,
+     _action_task_files_re,
+     _action_task_split,
+     _action_task_merge,
+     _action_task_transform,
+     _action_task_collate,
+     _action_task_files_func,
+     _action_task_files,
+     _action_mkdir,
+     _action_task_parallel,
+     _action_active_if,
+     _action_task_product,
+     _action_task_permutations,
+     _action_task_combinations,
+     _action_task_combinations_with_replacement,
+     _action_task_subdivide,
+     _action_task_originate,
+     _action_task_graphviz) = range(19)
 
-
-
-    _multiple_jobs_outputs    = 0
-    _single_job_single_output = 1
-    _job_single_matches_parent= 2
+    (_multiple_jobs_outputs,
+     _single_job_single_output,
+     _job_single_matches_parent) = range(3)
 
     _job_limit_semaphores = {}
 
-
-
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _get_action_name
 
-    #_________________________________________________________________________________________
-    def _get_action_name (self):
+    # _________________________________________________________________________
+    def _get_action_name(self):
         return Task._action_names[self._action_type]
 
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   __init__
 
-    #_________________________________________________________________________________________
-    def __init__ (self, func, task_name = None, pipeline = None):
+    # _________________________________________________________________________
+    def __init__(self, func, task_name=None, pipeline=None):
         """
         * Creates a Task object with a specified python function and task name
-        * The type of the Task (whether it is a transform or merge or collate etc. operation)
-            is specified subsequently. This is because Ruffus decorators do not have to
-            be specified in order, and we don't know ahead of time.
+        * The type of the Task (whether it is a transform or merge or collate
+            etc. operation) is specified subsequently. This is because Ruffus
+            decorators do not have to be specified in order, and we don't
+            know ahead of time.
         """
         if not pipeline:
             pipeline = main_pipeline
         self.pipeline = pipeline
         self.func_module_name = str(func.__module__)
-        self.func_name   = func.__name__
+        self.func_name = func.__name__
         # convert description into one line
         self.func_description = re.sub("\n\s+", " ", func.__doc__).strip() if func.__doc__ else ""
 
         if not task_name:
             task_name = self.func_module_name + "." + self.func_name
 
-        node.__init__ (self, task_name)
-        self._action_type  = Task._action_task
+        node.__init__(self, task_name)
+        self._action_type = Task._action_task
         self._action_type_desc = Task._action_names[self._action_type]
 
         #   Each task has its own checksum level
-        #   At the moment this is really so multiple pipelines in the same script can have
-        #       different checksum levels
-        #   Though set by pipeline_xxxx functions, have initial valid value so unit tests work :-|
-        self.checksum_level             = CHECKSUM_FILE_TIMESTAMPS
-        self.param_generator_func       = None
-        self.needs_update_func          = None
-        self.job_wrapper                = job_wrapper_generic
+        #   At the moment this is really so multiple pipelines in the same
+        #       script can have different checksum levels
+        # Though set by pipeline_xxxx functions, have initial valid value so
+        # unit tests work :-|
+        self.checksum_level = CHECKSUM_FILE_TIMESTAMPS
+        self.param_generator_func = None
+        self.needs_update_func = None
+        self.job_wrapper = job_wrapper_generic
 
         #
-        self.job_descriptor             = generic_job_descriptor
+        self.job_descriptor = generic_job_descriptor
 
         # jobs which produce a single output.
         # special handling for task.get_output_files for dependency chaining
-        self._is_single_job_single_output  = self._multiple_jobs_outputs
-        self.single_multi_io            = self._many_to_many
+        self._is_single_job_single_output = self._multiple_jobs_outputs
+        self.single_multi_io = self._many_to_many
 
         # function which is decorated and does the actual work
         self.user_defined_work_func = func
 
-
         # functions which will be called when task completes
-        self.posttask_functions         = []
+        self.posttask_functions = []
 
         # give makedir automatically made parent tasks unique names
-        self.cnt_task_mkdir             = 0
+        self.cnt_task_mkdir = 0
 
         # whether only task function itself knows what output it will produce
         # i.e. output is a glob or something similar
-        self.indeterminate_output       = 0
+        self.indeterminate_output = 0
 
         # cache output file names here
-        self.output_filenames           = None
+        self.output_filenames = None
 
         # semaphore name must be unique
-        self.semaphore_name             = pipeline.name + ":" + task_name
+        self.semaphore_name = pipeline.name + ":" + task_name
 
         # do not test for whether task is active
-        self.active_if_checks           = None
+        self.active_if_checks = None
 
         # extra flag for outputfiles
-        self.is_active                  = True
+        self.is_active = True
 
         # Created via decorator or OO interface
         #   so that display_name looks more natural
-        self.created_via_decorator      = False
+        self.created_via_decorator = False
 
         # Finish setting up task
-        self.setup_task_func            = self._do_nothing_setup
+        self.setup_task_func = self._do_nothing_setup
 
         # Finish setting up task
-        self.parsed_args                = {}
-        self.error_type                 = None
+        self.parsed_args = {}
+        self.error_type = None
 
         # @split or pipeline.split etc.
-        self.syntax                     = ""
+        self.syntax = ""
 
         self.description_with_args_placeholder = "%s"
 
         # whether task has a (re-specifiable) input parameter
-        self.has_input_param            = True
-        self.has_pipeline_in_input_param= False
-
+        self.has_input_param = True
+        self.has_pipeline_in_input_param = False
 
         # add to pipeline's lookup
-        # this code is here rather than the pipeline so that current unittests do not
-        #   need to bother about pipeline
+        # this code is here rather than the pipeline so that current unittests
+        #   do not need to bother about pipeline
         if task_name in self.pipeline.task_names:
-            raise error_duplicate_task_name("Same task name %s specified multiple times in the same pipeline (%s)" % (task_name, self.pipeline.name))
+            raise error_duplicate_task_name("Same task name %s specified multiple times in the "
+                                            "same pipeline (%s)" % (task_name, self.pipeline.name))
 
         self.pipeline.tasks.add(self)
 
@@ -1676,102 +1739,103 @@ class Task (node):
         #
 
         for lookup in (func, self.func_name, self.func_module_name + "." + self.func_name):
-            # don't add to lookup if this conflicts with a task_name which is always unique and overriding
+            # don't add to lookup if this conflicts with a task_name which is
+            # always unique and overriding
             if lookup not in self.pipeline.task_names:
                 if lookup in self.pipeline:
                     self.pipeline[lookup].append(self)
                 else:
                     self.pipeline[lookup] = [self]
 
-
-
     #
 
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _clone
 
-    #_________________________________________________________________________________________
-    def _clone (self, pipeline):
+    # _________________________________________________________________________
+    def _clone(self, pipeline):
         """
         * Clones a Task object from self
         """
         new_task = Task(self.user_defined_work_func, self._name, pipeline)
-
-        new_task._action_type                           = self._action_type
-        new_task._action_type_desc                      = self._action_type_desc
-        new_task.checksum_level                         = self.checksum_level
-        new_task.param_generator_func                   = self.param_generator_func
-        new_task.needs_update_func                      = self.needs_update_func
-        new_task.job_wrapper                            = self.job_wrapper
-        new_task.job_descriptor                         = self.job_descriptor
-        new_task._is_single_job_single_output           = self._is_single_job_single_output
-        new_task.single_multi_io                        = self.single_multi_io
-        new_task.posttask_functions                     = self.posttask_functions
-        new_task.cnt_task_mkdir                         = self.cnt_task_mkdir
-        new_task.indeterminate_output                   = self.indeterminate_output
-        new_task.semaphore_name                         = self.semaphore_name
-        new_task.is_active                              = self.is_active
-        new_task.created_via_decorator                  = self.created_via_decorator
-        new_task.setup_task_func                        = self.setup_task_func
-        new_task.error_type                             = self.error_type
-        new_task.syntax                                 = self.syntax
-        new_task.description_with_args_placeholder      = self.description_with_args_placeholder
-        new_task.has_input_param                        = self.has_input_param
-        new_task.has_pipeline_in_input_param            = self.has_pipeline_in_input_param
-        new_task.output_filenames                       = list(self.output_filenames)
-        new_task.active_if_checks                       = list(self.active_if_checks)
-        new_task.parsed_args                            = dict(self.parsed_args)
+        new_task._action_type = self._action_type
+        new_task._action_type_desc = self._action_type_desc
+        new_task.checksum_level = self.checksum_level
+        new_task.param_generator_func = self.param_generator_func
+        new_task.needs_update_func = self.needs_update_func
+        new_task.job_wrapper = self.job_wrapper
+        new_task.job_descriptor = self.job_descriptor
+        new_task._is_single_job_single_output = self._is_single_job_single_output
+        new_task.single_multi_io = self.single_multi_io
+        new_task.posttask_functions = self.posttask_functions
+        new_task.cnt_task_mkdir = self.cnt_task_mkdir
+        new_task.indeterminate_output = self.indeterminate_output
+        new_task.semaphore_name = self.semaphore_name
+        new_task.is_active = self.is_active
+        new_task.created_via_decorator = self.created_via_decorator
+        new_task.setup_task_func = self.setup_task_func
+        new_task.error_type = self.error_type
+        new_task.syntax = self.syntax
+        new_task.description_with_args_placeholder = self.description_with_args_placeholder
+        new_task.has_input_param = self.has_input_param
+        new_task.has_pipeline_in_input_param = self.has_pipeline_in_input_param
+        new_task.output_filenames = list(self.output_filenames)
+        new_task.active_if_checks = list(self.active_if_checks)
+        new_task.parsed_args = dict(self.parsed_args)
 
         return new_task
 
-
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _init_for_pipeline
 
-    #_________________________________________________________________________________________
-    def set_input (self, **args):
+    # _________________________________________________________________________
+    def set_input(self, **args):
         #
         #   For product: filter parameter is a list of formatter()
         #
-        if "filter" in self.parsed_args and isinstance(self.parsed_args["filter"], list):
+        if ("filter" in self.parsed_args and
+                isinstance(self.parsed_args["filter"], list)):
             # the number of input is the count of filter
             cnt_expected_input = len(self.parsed_args["filter"])
 
-            # make sure the parsed parameter argument is setup, with empty lists if necessary
-            # should have been done already...
-            #if self.parsed_args["input"] == None:
-            #    self.parsed_args["input"] = [[] for i in range(cnt_expected_input)]
+            # make sure the parsed parameter argument is setup, with empty
+            # lists if necessary
+            # Should have been done already...
+            # if self.parsed_args["input"] is None:
+            #    self.parsed_args["input"] = [[]
+            #       for i in range(cnt_expected_input)]
 
             #   update each element of the list accordingly
             #   removing args so we can check if there is anything left over
             for inputN in range(cnt_expected_input):
-                input_name  = "input%d" % (inputN + 1)
+                input_name = "input%d" % (inputN + 1)
                 if input_name in args:
                     self.parsed_args["input"][inputN] = args[input_name]
                     del args[input_name]
 
             if len(args):
-                raise error_set_input ("Unexpected arguments in set_input(%s). Only expecting inputN=???" % (args,))
+                raise error_set_input("Unexpected arguments in set_input(%s). "
+                                      "Only expecting inputN=???" % (args,))
             return
-
 
         if "input" in args:
             self.parsed_args["input"] = args["input"]
             del args["input"]
         else:
-            raise error_set_input ("Missing arguments in set_input(input=???)")
+            raise error_set_input("Missing arguments in set_input(input=???)")
 
         if len(args):
-            raise error_set_input ("Unexpected arguments in set_input(%s). Only expecting input=???" % (args,))
+            raise error_set_input("Unexpected arguments in set_input(%s). "
+                                  "Only expecting input=???" % (args,))
 
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _init_for_pipeline
 
-    #_________________________________________________________________________________________
-    def _init_for_pipeline (self):
+    # _________________________________________________________________________
+    def _init_for_pipeline(self):
         """
         Initialize variables for pipeline run / printout
 
@@ -1781,7 +1845,8 @@ class Task (node):
 
         Because state is stored, ruffus is *not* reentrant.
 
-        TODO: Need to create runtime DAG to mirror task DAG which holds output_filenames to be reentrant
+        TODO: Need to create runtime DAG to mirror task DAG which holds
+                output_filenames to be reentrant
 
         **********
           BEWARE
@@ -1791,13 +1856,12 @@ class Task (node):
         # cache output file names here
         self.output_filenames = None
 
-
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _set_action_type
 
-    #_________________________________________________________________________________________
-    def _set_action_type (self, new_action_type):
+    # _________________________________________________________________________
+    def _set_action_type(self, new_action_type):
         """
         Save how this task
             1) tests whether it is up-to-date and
@@ -1810,44 +1874,40 @@ class Task (node):
             old_action = Task._action_names[self._action_type]
             new_action = Task._action_names[new_action_type]
             actions = " and ".join(list(set((old_action, new_action))))
-            raise error_decorator_args(("%s\n      has duplicate (conflicting) task specifications: (%s)\n") %
-                                        (self.description_with_args_placeholder % "...", actions))
+            raise error_decorator_args("%s\n      has conflicting task specifications: (%s)\n" %
+                                       (self.description_with_args_placeholder % "...", actions))
         self._action_type = new_action_type
         self._action_type_desc = Task._action_names[new_action_type]
 
-
-
-
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _get_job_name
 
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
     def _get_job_name(self, descriptive_param, verbose_abbreviated_path, runtime_data):
         """
-        Use job descriptor to return short name for job, including any parameters
+        Use job descriptor to return short name for job including any parameters
 
-            runtime_data is not (yet) used but may be used to add context in future
+        runtime_data is not (yet) used but may be used to add context in future
         """
         return self.job_descriptor(descriptive_param, verbose_abbreviated_path, runtime_data)[0]
 
-
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _get_display_name
 
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
     def _get_display_name(self):
         """
         Returns task name, removing __main__. namespace or main. if present
         """
         return self._name.replace("__main__.", "").replace("main.", "")
 
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _get_decorated_function
 
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
     def _get_decorated_function(self):
         """
         Returns name of task function, removing __main__ namespace if necessary
@@ -1858,69 +1918,73 @@ class Task (node):
         if not self.created_via_decorator:
             return ""
 
-        func_name = (self.func_module_name + "." + self.func_name) if self.func_module_name != "__main__" else self.func_name
+        func_name = (self.func_module_name + "." +
+                     self.func_name) \
+            if self.func_module_name != "__main__" else self.func_name
         return "def %s(...):\n    ...\n" % func_name
 
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _update_active_state
 
-    #_________________________________________________________________________________________
-    def _update_active_state (self):
+    # _________________________________________________________________________
+    def _update_active_state(self):
         #
         #   If has an @active_if decorator, check if the task needs to be run
         #       @active_if parameters may be call back functions or booleans
         #
-        if (self.active_if_checks != None and
-            any( not arg() if isinstance(arg, collections.Callable) else not arg
-                     for arg in self.active_if_checks)):
+        if (self.active_if_checks is not None and
+            any(not arg() if isinstance(arg, collections.Callable) else not arg
+                for arg in self.active_if_checks)):
                 # flip is active to false.
                 #   ( get_output_files() will return empty if inactive )
-                #   Remember each iteration of pipeline_printout pipeline_run will have
-                #   another bite at changing this value
-                self.is_active = False
+                #   Remember each iteration of pipeline_printout pipeline_run
+                #   will have another bite at changing this value
+            self.is_active = False
         else:
-            # flip is active to True so that downstream dependencies will be correct
-            #   ( get_output_files() will return empty if inactive )
-            #   Remember each iteration of pipeline_printout pipeline_run will have
-            #   another bite at changing this value
+            # flip is active to True so that downstream dependencies will be
+            #   correct ( get_output_files() will return empty if inactive )
+            #   Remember each iteration of pipeline_printout pipeline_run will
+            #   have another bite at changing this value
             self.is_active = True
 
-
-
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _printout
 
-    #       This code will look so much better once we have job level dependencies
-    #           pipeline_run has dependencies percolating up/down. Don't want to
-    #           recreate all the logic here
+    #       This code will look much better once we have job level dependencies
+    #           pipeline_run has dependencies percolating up/down. Don't want
+    #           to recreate all the logic here
 
-    #_________________________________________________________________________________________
-    def _printout (self, runtime_data, force_rerun, job_history, task_is_out_of_date, verbose=1, verbose_abbreviated_path = 2, indent = 4):
+    # _________________________________________________________________________
+    def _printout(self, runtime_data, force_rerun, job_history, task_is_out_of_date, verbose=1,
+                  verbose_abbreviated_path=2, indent=4):
         """
         Print out all jobs for this task
 
             verbose =
                     level 1 : logs Out-of-date Task names
-                    level 2 : logs All Tasks (including any task function docstrings)
-                    level 3 : logs Out-of-date Jobs in Out-of-date Tasks, no explanation
-                    level 4 : logs Out-of-date Jobs in Out-of-date Tasks, saying why they are out of date (include only list of up-to-date tasks)
-                    level 5 : All Jobs in Out-of-date Tasks (include only list of up-to-date tasks)
+                    level 2 : logs All Tasks (including any task function
+                              docstrings)
+                    level 3 : logs Out-of-date Jobs in Out-of-date Tasks, no
+                              explanation
+                    level 4 : logs Out-of-date Jobs in Out-of-date Tasks,
+                              saying why they are out of date (include only
+                              list of up-to-date tasks)
+                    level 5 : All Jobs in Out-of-date Tasks (include only list
+                              of up-to-date tasks)
                     level 6 : All jobs in All Tasks whether out of date or not
 
         """
 
-        def _get_job_names (param, indent_str):
+        def _get_job_names(param, indent_str):
             job_names = self.job_descriptor(param, verbose_abbreviated_path, runtime_data)[1]
             if len(job_names) > 1:
-                job_names = ([indent_str + job_names[0]]  +
+                job_names = ([indent_str + job_names[0]] +
                              [indent_str + "      " + jn for jn in job_names[1:]])
             else:
                 job_names = ([indent_str + job_names[0]])
             return job_names
-
-
 
         if not verbose:
             return []
@@ -1930,11 +1994,13 @@ class Task (node):
         messages = []
 
         # LOGGER: level 1 : logs Out-of-date Tasks (names and warnings)
-        messages.append("Task = %r %s " % (self._get_display_name(), ("    >>Forced to rerun<<" if force_rerun else "")))
-        if verbose ==1:
+        messages.append("Task = %r %s " % (self._get_display_name(),
+                        ("    >>Forced to rerun<<" if force_rerun else "")))
+        if verbose == 1:
             return messages
 
-        # LOGGER: level 2 : logs All Tasks (including any task function docstrings)
+        # LOGGER: level 2 : logs All Tasks (including any task function
+        # docstrings)
         if verbose >= 2 and len(self.func_description):
             messages.append(indent_str + '"' + self.func_description + '"')
 
@@ -1947,11 +2013,11 @@ class Task (node):
             elif self._is_single_job_single_output == self._multiple_jobs_outputs:
                 messages.append("    Multiple jobs Multiple outputs")
             else:
-                messages.append("    Single jobs status depends on %r" % self._is_single_job_single_output._get_display_name())
-
+                messages.append("    Single jobs status depends on %r" %
+                                self._is_single_job_single_output._get_display_name())
 
         # LOGGER: No job if less than 2
-        if verbose <= 2 :
+        if verbose <= 2:
             return messages
 
         # increase indent for jobs up to date status
@@ -1973,7 +2039,7 @@ class Task (node):
         #
         #   No parameters: just call task function
         #
-        if self.param_generator_func == None:
+        if self.param_generator_func is None:
             # LOGGER
             if verbose <= 3:
                 return messages
@@ -1982,32 +2048,37 @@ class Task (node):
             #   needs update func = None: always needs update
             #
             if not self.needs_update_func:
-                messages.append(indent_str + "Task needs update: No function to check if up-to-date or not")
+                messages.append(indent_str + "Task needs update: No func to check if up-to-date.")
                 return messages
 
             if self.needs_update_func == needs_update_check_modify_time:
-                needs_update, msg = self.needs_update_func (task=self, job_history = job_history, verbose_abbreviated_path = verbose_abbreviated_path)
+                needs_update, msg = self.needs_update_func(
+                    task=self, job_history=job_history,
+                    verbose_abbreviated_path=verbose_abbreviated_path)
             else:
-                needs_update, msg = self.needs_update_func ()
+                needs_update, msg = self.needs_update_func()
 
             if needs_update:
                 messages.append(indent_str + "Task needs update: %s" % msg)
             #
             #   Get rid of up-to-date messages:
-            #       Superfluous for parts of the pipeline which are up-to-date and
-            #       Misleading for parts of the pipeline which require updating:
-            #           tasks might have to run based on dependencies anyway
+            #       Superfluous for parts of the pipeline which are up-to-date
+            #       Misleading for parts of the pipeline which require
+            #           updating: tasks might have to run based on dependencies
+            #           anyway
             #
-            #else:
+            # else:
             #    if task_is_out_of_date:
-            #        messages.append(indent_str + "Task appears up-to-date but will rerun after its dependencies")
+            #        messages.append(indent_str + "Task appears up-to-date but
+            #                        will rerun after its dependencies")
             #    else:
             #        messages.append(indent_str + "Task up-to-date")
 
         else:
             runtime_data["MATCH_FAILURE"] = []
             #
-            #   return messages description per job if verbose > 5 else whether up to date or not
+            #   return messages description per job if verbose > 5 else
+            #       whether up to date or not
             #
             cnt_jobs = 0
             for param, descriptive_param in self.param_generator_func(runtime_data):
@@ -2018,43 +2089,44 @@ class Task (node):
                 #
                 if not self.needs_update_func:
                     if verbose >= 5:
-                        messages.extend(_get_job_names (descriptive_param, indent_str))
-                        messages.append(indent_str + "  Jobs needs update: No function to check if up-to-date or not")
+                        messages.extend(_get_job_names(descriptive_param, indent_str))
+                        messages.append(indent_str + "  Jobs needs update: No "
+                                        "function to check if up-to-date or not")
                     continue
 
                 if self.needs_update_func == needs_update_check_modify_time:
-                    needs_update, msg = self.needs_update_func (*param, task=self, job_history = job_history, verbose_abbreviated_path = verbose_abbreviated_path)
+                    needs_update, msg = self.needs_update_func(
+                        *param, task=self, job_history=job_history,
+                        verbose_abbreviated_path=verbose_abbreviated_path)
                 else:
-                    needs_update, msg = self.needs_update_func (*param)
+                    needs_update, msg = self.needs_update_func(*param)
 
                 if needs_update:
-                    messages.extend(_get_job_names (descriptive_param, indent_str))
+                    messages.extend(_get_job_names(descriptive_param, indent_str))
                     if verbose >= 4:
-                        per_job_messages = [(indent_str + s) for s in ("  Job needs update: %s" % msg).split("\n")]
+                        per_job_messages = [(indent_str + s)
+                                            for s in ("  Job needs update: %s" % msg).split("\n")]
                         messages.extend(per_job_messages)
                     else:
                         messages.append(indent_str + "  Job needs update")
-
 
                 # up to date: log anyway if verbose
                 else:
                     # LOGGER
                     if (task_is_out_of_date and verbose >= 5) or verbose >= 6:
-                        messages.extend(_get_job_names (descriptive_param, indent_str))
+                        messages.extend(_get_job_names(descriptive_param, indent_str))
                         #
                         #   Get rid of up-to-date messages:
-                        #       Superfluous for parts of the pipeline which are up-to-date and
+                        #       Superfluous for parts of the pipeline which are up-to-date
                         #       Misleading for parts of the pipeline which require updating:
                         #           tasks might have to run based on dependencies anyway
                         #
-                        #if not task_is_out_of_date:
+                        # if not task_is_out_of_date:
                         #    messages.append(indent_str + "  Job up-to-date")
 
-
             if cnt_jobs == 0:
-                messages.append(indent_str + "!!! No jobs for this task. "
-                                             "Are you sure there is not a error in your "
-                                             "code / regular expression?")
+                messages.append(indent_str + "!!! No jobs for this task. Are you sure there is "
+                                "not a error in your code / regular expression?")
             # LOGGER
             if verbose >= 4 or (verbose and cnt_jobs == 0):
                 if runtime_data and "MATCH_FAILURE" in runtime_data:
@@ -2064,10 +2136,7 @@ class Task (node):
         messages.append("")
         return messages
 
-
-
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _is_up_to_date
     #
@@ -2075,55 +2144,54 @@ class Task (node):
     #       returns whether up to date
     #       stops recursing if true
     #
-    #_____________________________________________________________________________________
-    def _is_up_to_date (self, verbose_logger_job_history):
+    # _________________________________________________________________________
+    def _is_up_to_date(self, verbose_logger_job_history):
         """
         If true, depth first search will not pass through this node
         """
         if not verbose_logger_job_history:
             raise Exception("verbose_logger_job_history is None")
 
-        verbose_logger      = verbose_logger_job_history[0]
-        job_history         = verbose_logger_job_history[1]
+        verbose_logger = verbose_logger_job_history[0]
+        job_history = verbose_logger_job_history[1]
 
         try:
-            logger              = verbose_logger.logger
-            verbose             = verbose_logger.verbose
-            runtime_data        = verbose_logger.runtime_data
+            logger = verbose_logger.logger
+            verbose = verbose_logger.verbose
+            runtime_data = verbose_logger.runtime_data
             verbose_abbreviated_path = verbose_logger.verbose_abbreviated_path
 
-            log_at_level (logger, 10, verbose, "  Task = %r " % self._get_display_name())
+            log_at_level(logger, 10, verbose, "  Task = %r " % self._get_display_name())
 
             #
             #   If job is inactive, always consider it up-to-date
             #
-            if (self.active_if_checks != None and
-                any( not arg() if isinstance(arg, collections.Callable) else not arg
-                         for arg in self.active_if_checks)):
-                log_at_level (logger, 10, verbose,
-                                "    Inactive task: treat as Up to date")
-                #print 'signaling that the inactive task is up to date'
+            if (self.active_if_checks is not None and
+                any(not arg() if isinstance(arg, collections.Callable) else not arg
+                    for arg in self.active_if_checks)):
+                log_at_level(logger, 10, verbose, "    Inactive task: treat as Up to date")
+                # print 'signaling that the inactive task is up to date'
                 return True
 
             #
             #   Always needs update if no way to check if up to date
             #
-            if self.needs_update_func == None:
-                log_at_level (logger, 10, verbose,
-                                "    No update function: treat as out of date")
+            if self.needs_update_func is None:
+                log_at_level(logger, 10, verbose, "    No update function: treat as out of date")
                 return False
 
             #
             #   if no parameters, just return the results of needs update
             #
-            if self.param_generator_func == None:
+            if self.param_generator_func is None:
                 if self.needs_update_func:
                     if self.needs_update_func == needs_update_check_modify_time:
-                        needs_update, msg = self.needs_update_func (task=self, job_history = job_history, verbose_abbreviated_path = verbose_abbreviated_path)
+                        needs_update, msg = self.needs_update_func(
+                            task=self, job_history=job_history,
+                            verbose_abbreviated_path=verbose_abbreviated_path)
                     else:
-                        needs_update, msg = self.needs_update_func ()
-                    log_at_level (logger, 10, verbose,
-                                    "    Needs update = %s" % needs_update)
+                        needs_update, msg = self.needs_update_func()
+                    log_at_level(logger, 10, verbose, "    Needs update = %s" % needs_update)
                     return not needs_update
                 else:
                     return True
@@ -2133,25 +2201,27 @@ class Task (node):
                 #
                 for param, descriptive_param in self.param_generator_func(runtime_data):
                     if self.needs_update_func == needs_update_check_modify_time:
-                        needs_update, msg = self.needs_update_func (*param, task=self, job_history = job_history, verbose_abbreviated_path = verbose_abbreviated_path)
+                        needs_update, msg = self.needs_update_func(
+                            *param, task=self, job_history=job_history,
+                            verbose_abbreviated_path=verbose_abbreviated_path)
                     else:
-                        needs_update, msg = self.needs_update_func (*param)
+                        needs_update, msg = self.needs_update_func(*param)
                     if needs_update:
-                        log_at_level (logger, 10, verbose, "    Needing update:\n      %s" % self._get_job_name(descriptive_param, verbose_abbreviated_path, runtime_data))
+                        log_at_level(logger, 10, verbose, "    Needing update:\n      %s"
+                                     % self._get_job_name(descriptive_param,
+                                                          verbose_abbreviated_path, runtime_data))
                         return False
 
                 #
                 #   Percolate warnings from parameter factories
                 #
                 if (verbose >= 1 and "ruffus_WARNING" in runtime_data and
-                    self.param_generator_func in runtime_data["ruffus_WARNING"]):
+                        self.param_generator_func in runtime_data["ruffus_WARNING"]):
                     for msg in runtime_data["ruffus_WARNING"][self.param_generator_func]:
-                        logger.warning("    'In Task\n%s\n%s" % (self.description_with_args_placeholder % "...", msg))
+                        logger.warning("    'In Task\n%s\n%s" % (
+                                       self.description_with_args_placeholder % "...", msg))
 
-                log_at_level (logger, 10, verbose, "    All jobs up to date")
-
-
-
+                log_at_level(logger, 10, verbose, "    All jobs up to date")
 
                 return True
 
@@ -2159,7 +2229,7 @@ class Task (node):
         # removed for compatibility with python 3.x
         #
         # rethrow exception after adding task name
-        #except error_task, inst:
+        # except error_task, inst:
         #    inst.specify_task(self, "Exceptions in dependency checking")
         #    raise
 
@@ -2173,33 +2243,33 @@ class Task (node):
                 inst.specify_task(self, "Exceptions in dependency checking")
                 raise
 
-            exception_stack  = traceback.format_exc()
-            exception_name   = exceptionType.__module__ + '.' + exceptionType.__name__
-            exception_value  = str(exceptionValue)
+            exception_stack = traceback.format_exc()
+            exception_name = exceptionType.__module__ + '.' + exceptionType.__name__
+            exception_value = str(exceptionValue)
             if len(exception_value):
                 exception_value = "(%s)" % exception_value
             errt = RethrownJobError([(self._name,
-                                     "",
-                                     exception_name,
-                                     exception_value,
-                                     exception_stack)])
+                                      "",
+                                      exception_name,
+                                      exception_value,
+                                      exception_stack)])
             errt.specify_task(self, "Exceptions generating parameters")
             raise errt
 
-
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _get_output_files
     #
     #
-    #_____________________________________________________________________________________
-    def _get_output_files (self, do_not_expand_single_job_tasks, runtime_data):
+    # _________________________________________________________________________
+    def _get_output_files(self, do_not_expand_single_job_tasks, runtime_data):
         """
         Cache output files
 
-            Normally returns a list with one item for each job or a just a list of file names.
-            For "_single_job_single_output" i.e. @merge and @files with single jobs,
+            Normally returns a list with one item for each job or a just a list
+            of file names.
+            For "_single_job_single_output"
+                i.e. @merge and @files with single jobs,
                 returns the output of a single job (i.e. can be a string)
         """
 
@@ -2207,40 +2277,41 @@ class Task (node):
         #   N.B. active_if_checks is called once per task
         #        in make_job_parameter_generator() for consistency
         #
-        #   self.is_active can be set using self.active_if_checks in that function,
-        #       and therefore can be changed BETWEEN invocations of pipeline_run
+        #   self.is_active can be set using self.active_if_checks in that
+        #       function, and therefore can be changed BETWEEN invocations
+        #       of pipeline_run
         #
         #   self.is_active is not used anywhere else
         #
         if (not self.is_active):
             return []
 
-        if self.output_filenames == None:
+        if self.output_filenames is None:
 
             self.output_filenames = []
 
             # skip tasks which don't have parameters
-            if self.param_generator_func != None:
+            if self.param_generator_func is not None:
 
                 cnt_jobs = 0
                 for param, descriptive_param in self.param_generator_func(runtime_data):
                     cnt_jobs += 1
                     # skip tasks which don't have output parameters
                     if len(param) >= 2:
-                        # make sure each @split or @subdivide or @originate returns a list of jobs
-                        #   i.e. each @split or @subdivide or @originate is always a ->many operation
+                        # make sure each @split or @subdivide or @originate
+                        #   returns a list of jobs
+                        #   i.e. each @split or @subdivide or @originate is
+                        #       always a ->many operation
                         #       even if len(many) can be 1 (or zero)
                         if self.indeterminate_output and not non_str_sequence(param[1]):
                             self.output_filenames.append([param[1]])
                         else:
                             self.output_filenames.append(param[1])
 
-
                 if self._is_single_job_single_output == self._single_job_single_output:
                     if cnt_jobs > 1:
-                        raise error_task_get_output(self,
-                               "Task which is supposed to produce a single output "
-                               "somehow has more than one job.")
+                        raise error_task_get_output(self, "Task which is supposed to produce a "
+                                                    "single output somehow has more than one job.")
 
                 #
                 #   The output of @split should be treated as multiple jobs
@@ -2255,21 +2326,23 @@ class Task (node):
                 #               So len(list)  = 1
                 #
                 #         2) The output of each @split job is a list
-                #            The items in this list of lists are each a job in subsequent tasks
+                #            The items in this list of lists are each a job in
+                #               subsequent tasks
                 #
                 #
-                #         So we need to concatenate these separate lists into a single list of output
+                #         So we need to concatenate these separate lists into a
+                #         single list of output
                 #
                 #         For example:
                 #         @split(["a.1", "b.1"], regex(r"(.)\.1"), r"\1.*.2")
                 #         def example(input, output):
-                #             # JOB 1
-                #             #   a.1 -> a.i.2
-                #             #       -> a.j.2
+                # JOB 1
+                # a.1 -> a.i.2
+                # -> a.j.2
                 #
-                #             # JOB 2
-                #             #   b.1 -> b.i.2
-                #             #       -> b.j.2
+                # JOB 2
+                # b.1 -> b.i.2
+                # -> b.j.2
                 #
                 #         output_filenames = [ [a.i.2, a.j.2], [b.i.2, b.j.2] ]
                 #
@@ -2279,38 +2352,35 @@ class Task (node):
                 #
                 #         @split("a.1", r"a.*.2")
                 #         def example(input, output):
-                #             # only job
-                #             #   a.1 -> a.i.2
-                #             #       -> a.j.2
+                # only job
+                # a.1 -> a.i.2
+                # -> a.j.2
                 #
                 #         output_filenames = [ [a.i.2, a.j.2] ]
                 #
                 #         we want [ a.i.2, a.j.2 ]
                 #
                 if len(self.output_filenames) and self.indeterminate_output:
-                    self.output_filenames = reduce(lambda x,y: x + y, self.output_filenames)
+                    self.output_filenames = reduce(lambda x, y: x + y, self.output_filenames)
 
-
-        # special handling for jobs which have a single task,
+        # special handling for jobs which have a single task
         if (do_not_expand_single_job_tasks and
-            self._is_single_job_single_output and
-            len(self.output_filenames) ):
+                self._is_single_job_single_output and
+                len(self.output_filenames)):
             return self.output_filenames[0]
 
         #
         # sort by jobs so it is just a weeny little bit less deterministic
         #
-        return sorted(self.output_filenames, key = lambda x: str(x))
+        return sorted(self.output_filenames, key=lambda x: str(x))
 
-
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _completed
     #
     #       All logging logic moved to caller site
-    #_____________________________________________________________________________________
-    def _completed (self):
+    # _________________________________________________________________________
+    def _completed(self):
         """
         called even when all jobs are up to date
         """
@@ -2322,25 +2392,18 @@ class Task (node):
             f()
 
         #
-        #   indeterminate output. Check actual output again if someother tasks job function depend on it
+        #   indeterminate output. Check actual output again if someother tasks
+        #       job function depend on it
         #       used for @split
         #
         if self.indeterminate_output:
             self.output_filenames = None
 
-
-
-
-
-
-
-
-
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _handle_tasks_globs_in_inputs
 
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
     def _handle_tasks_globs_in_inputs(self, input_params, modify_inputs_mode):
         """
         Helper function for tasks which
@@ -2348,7 +2411,9 @@ class Task (node):
             2) Replaces tasks names and functions with actual tasks
             3) Adds task dependencies automatically via task_follows
 
-            modify_inputs_mode = results["modify_inputs_mode"] = t_extra_inputs.ADD_TO_INPUTS | REPLACE_INPUTS | KEEP_INPUTS | KEEP_OUTPUTS
+            modify_inputs_mode = results["modify_inputs_mode"] =
+                t_extra_inputs.ADD_TO_INPUTS | REPLACE_INPUTS |
+                               KEEP_INPUTS | KEEP_OUTPUTS
         """
         #
         # get list of function/function names and globs
@@ -2359,13 +2424,17 @@ class Task (node):
         # replace function / function names with tasks
         #
         if modify_inputs_mode == t_extra_inputs.ADD_TO_INPUTS:
-            description_with_args_placeholder = self.description_with_args_placeholder % "add_inputs = add_inputs(%r)"
+            description_with_args_placeholder = \
+                self.description_with_args_placeholder % "add_inputs = add_inputs(%r)"
         elif modify_inputs_mode == t_extra_inputs.REPLACE_INPUTS:
-            description_with_args_placeholder = self.description_with_args_placeholder % "replace_inputs = add_inputs(%r)"
+            description_with_args_placeholder = \
+                self.description_with_args_placeholder % "replace_inputs = add_inputs(%r)"
         elif modify_inputs_mode == t_extra_inputs.KEEP_OUTPUTS:
-            description_with_args_placeholder = self.description_with_args_placeholder % "output =%r"
-        else:   #t_extra_inputs.KEEP_INPUTS
-            description_with_args_placeholder = self.description_with_args_placeholder % "input =%r"
+            description_with_args_placeholder = \
+                self.description_with_args_placeholder % "output =%r"
+        else:  # t_extra_inputs.KEEP_INPUTS
+            description_with_args_placeholder = \
+                self.description_with_args_placeholder % "input =%r"
 
         tasks = self._do_follows(description_with_args_placeholder, True, *function_or_func_names)
         functions_to_tasks = dict(zip(function_or_func_names, tasks))
@@ -2373,42 +2442,50 @@ class Task (node):
 
         return t_params_tasks_globs_run_time_data(input_params, tasks, globs, runtime_data_names)
 
-
-
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _choose_file_names_transform
 
-    #_________________________________________________________________________________________
-    def _choose_file_names_transform (self, file_name_transform_tag, valid_tags = (regex, suffix, formatter)):
+    # _________________________________________________________________________
+    def _choose_file_names_transform(self, file_name_transform_tag,
+                                     valid_tags=(regex, suffix, formatter)):
         """
-        shared code for subdivide, transform, product etc for choosing method for transform input file to output files
+        shared code for subdivide, transform, product etc for choosing method
+        for transform input file to output files
         """
-        valid_tag_names = [];
+        valid_tag_names = []
         # regular expression match
         if (regex in valid_tags):
             valid_tag_names.append("regex()")
             if isinstance(file_name_transform_tag, regex):
-                return t_regex_file_names_transform(self, file_name_transform_tag, self.error_type, self.syntax)
+                return t_regex_file_names_transform(self,
+                                                    file_name_transform_tag,
+                                                    self.error_type,
+                                                    self.syntax)
 
         # simulate end of string (suffix) match
         if (suffix in valid_tags):
             valid_tag_names.append("suffix()")
             if isinstance(file_name_transform_tag, suffix):
-                return t_suffix_file_names_transform(self, file_name_transform_tag, self.error_type, self.syntax)
+                return t_suffix_file_names_transform(self,
+                                                     file_name_transform_tag,
+                                                     self.error_type,
+                                                     self.syntax)
 
         # new style string.format()
         if (formatter in valid_tags):
             valid_tag_names.append("formatter()")
             if isinstance(file_name_transform_tag, formatter):
-                return t_formatter_file_names_transform(self, file_name_transform_tag, self.error_type, self.syntax)
+                return t_formatter_file_names_transform(self,
+                                                        file_name_transform_tag,
+                                                        self.error_type,
+                                                        self.syntax)
 
-        raise self.error_type(self, "%s expects one of %s as the second argument" % (self.syntax, ", ".join(valid_tag_names)))
+        raise self.error_type(self,
+                              "%s expects one of %s as the second argument"
+                              % (self.syntax, ", ".join(valid_tag_names)))
 
-
-
-
-    #8888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+    # 8888888888888888888888888888888888888888888888888888888888888888888888888
 
     #       task handlers
 
@@ -2418,148 +2495,151 @@ class Task (node):
     #               3) needs_update_func
     #               4) job wrapper
 
+    # 8888888888888888888888888888888888888888888888888888888888888888888888888
 
-    #8888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-    def _do_nothing_setup (self):
+    def _do_nothing_setup(self):
         """
         Task is already set up: do nothing
         """
         return set()
 
-    #=====================================================================================
+    # ========================================================================
 
     #   _decorator_originate
 
     #       originate does have an Input param.
     #       It is just None (and not set-able)
 
-    #=====================================================================================
-    def _decorator_originate (self, *unnamed_args, **named_args):
+    # ========================================================================
+    def _decorator_originate(self, *unnamed_args, **named_args):
         """
         @originate
         """
-        self.syntax   = "@originate"
-        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax, self._get_decorated_function())
-        self._prepare_originate (unnamed_args, named_args)
+        self.syntax = "@originate"
+        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax,
+                                                                  self._get_decorated_function())
+        self._prepare_originate(unnamed_args, named_args)
 
         # originate
-        #self.has_input_param        = True
+        # self.has_input_param        = True
 
-
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _prepare_originate
 
-    #_____________________________________________________________________________________
-    def _prepare_originate (self, unnamed_args, named_args):
+    # _________________________________________________________________________
+    def _prepare_originate(self, unnamed_args, named_args):
         """
         Common function for pipeline.originate and @originate
         """
-        self.error_type           = error_task_originate
-        self._set_action_type (Task._action_task_originate)
-        self.setup_task_func      = self._originate_setup
-        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
-        self.job_wrapper          = job_wrapper_output_files
-        self.job_descriptor       = io_files_one_to_many_job_descriptor
-        self.single_multi_io      = self._many_to_many
+        self.error_type = error_task_originate
+        self._set_action_type(Task._action_task_originate)
+        self.setup_task_func = self._originate_setup
+        self.needs_update_func = self.needs_update_func or needs_update_check_modify_time
+        self.job_wrapper = job_wrapper_output_files
+        self.job_descriptor = io_files_one_to_many_job_descriptor
+        self.single_multi_io = self._many_to_many
         # output is not a glob
         self.indeterminate_output = 0
 
         #
         #   Parse named and unnamed arguments
         #
-        self.parsed_args = parse_task_arguments (unnamed_args, named_args,
-                                                 ["output", "extras"], self.description_with_args_placeholder)
+        self.parsed_args = parse_task_arguments(unnamed_args, named_args, ["output", "extras"],
+                                                self.description_with_args_placeholder)
 
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _originate_setup
 
-    #_________________________________________________________________________________________
-    def _originate_setup (self):
+    # _________________________________________________________________________
+    def _originate_setup(self):
         """
         Finish setting up originate
         """
         #
         # If self.parsed_args["output"] is a single item (e.g. file name),
         # that will be treated as a list
-        # Each item in the list of these will be called as an output in a separate function call
+        # Each item in the list of these will be called as an output in a
+        #   separate function call
         #
         output_params = self.parsed_args["output"]
-        if not non_str_sequence (output_params):
+        if not non_str_sequence(output_params):
             output_params = [output_params]
 
-
         #
-        #   output globs will be replaced with files. But there should not be tasks here!
+        #   output globs will be replaced with files. But there should not be
+        #       tasks here!
         #
-        list_output_files_task_globs = [self._handle_tasks_globs_in_inputs(oo, t_extra_inputs.KEEP_INPUTS) for oo in output_params]
+        list_output_files_task_globs = [self._handle_tasks_globs_in_inputs(
+                                        oo, t_extra_inputs.KEEP_INPUTS) for oo in output_params]
         for oftg in list_output_files_task_globs:
             if len(oftg.tasks):
-                raise self.error_type(self, ("%s cannot output to another task. "
-                                              "Do not include tasks in output parameters.") % self.syntax)
+                raise self.error_type(self, "%s cannot output to another "
+                                      "task. Do not include tasks in "
+                                      "output parameters." % self.syntax)
 
-        self.param_generator_func = originate_param_factory (   list_output_files_task_globs,
-                                                                *self.parsed_args["extras"])
+        self.param_generator_func = originate_param_factory(list_output_files_task_globs,
+                                                            *self.parsed_args["extras"])
         return []
 
-    #=====================================================================================
+    # ========================================================================
 
     #   _decorator_transform
 
-    #=====================================================================================
-    def _decorator_transform (self, *unnamed_args, **named_args):
+    # ========================================================================
+    def _decorator_transform(self, *unnamed_args, **named_args):
         """
         @originate
         """
-        self.syntax  = "@transform"
-        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax, self._get_decorated_function())
-        self._prepare_transform (unnamed_args, named_args)
+        self.syntax = "@transform"
+        self.description_with_args_placeholder = "%s(%%s)\n%s" % (
+            self.syntax, self._get_decorated_function())
+        self._prepare_transform(unnamed_args, named_args)
 
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _prepare_transform
 
-    #_____________________________________________________________________________________
-    def _prepare_transform (self, unnamed_args, named_args):
+    # _________________________________________________________________________
+    def _prepare_transform(self, unnamed_args, named_args):
         """
         Common function for pipeline.transform and @transform
         """
-        self.error_type           = error_task_transform
-        self._set_action_type (Task._action_task_transform)
-        self.setup_task_func      = self._transform_setup
-        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
-        self.job_wrapper          = job_wrapper_io_files
-        self.job_descriptor       = io_files_job_descriptor
-        self.single_multi_io      = self._many_to_many
+        self.error_type = error_task_transform
+        self._set_action_type(Task._action_task_transform)
+        self.setup_task_func = self._transform_setup
+        self.needs_update_func = self.needs_update_func or needs_update_check_modify_time
+        self.job_wrapper = job_wrapper_io_files
+        self.job_descriptor = io_files_job_descriptor
+        self.single_multi_io = self._many_to_many
 
         #
         #   Parse named and unnamed arguments
         #
-        self.parsed_args = parse_task_arguments (unnamed_args, named_args,
-                                                 ["input", "filter", "modify_inputs", "output", "extras"], self.description_with_args_placeholder)
+        self.parsed_args = parse_task_arguments(unnamed_args, named_args,
+                                                ["input", "filter", "modify_inputs",
+                                                 "output", "extras"],
+                                                self.description_with_args_placeholder)
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _transform_setup
 
-    #_____________________________________________________________________________________
-    def _transform_setup (self):
+    # _________________________________________________________________________
+    def _transform_setup(self):
         """
         Finish setting up transform
         """
 
-
         #
         # replace function / function names with tasks
         #
-        input_files_task_globs = self._handle_tasks_globs_in_inputs(self.parsed_args["input"], t_extra_inputs.KEEP_INPUTS)
+        input_files_task_globs = self._handle_tasks_globs_in_inputs(self.parsed_args["input"],
+                                                                    t_extra_inputs.KEEP_INPUTS)
         ancestral_tasks = set(input_files_task_globs.tasks)
 
-        #_________________________________________________________________________________
+        # _____________________________________________________________________
         #
         #       _single_job_single_output is bad policy. Can we remove it?
         #       What does this actually mean in Ruffus semantics?
@@ -2570,85 +2650,80 @@ class Task (node):
             self._is_single_job_single_output = self._single_job_single_output
 
         #
-        #   whether transform generates a list of jobs or not will depend on the parent task
+        #   whether transform generates a list of jobs or not will depend on
+        #       the parent task
         #
         elif isinstance(input_files_task_globs.params, Task):
             self._is_single_job_single_output = input_files_task_globs.params
 
-        #_________________________________________________________________________________
+        # _____________________________________________________________________
 
         # how to transform input to output file name
-        file_names_transform = self._choose_file_names_transform (self.parsed_args["filter"])
+        file_names_transform = self._choose_file_names_transform(self.parsed_args["filter"])
 
         modify_inputs = self.parsed_args["modify_inputs"]
-        if modify_inputs != None:
-            modify_inputs = self._handle_tasks_globs_in_inputs(modify_inputs, self.parsed_args["modify_inputs_mode"])
+        if modify_inputs is not None:
+            modify_inputs = self._handle_tasks_globs_in_inputs(
+                modify_inputs, self.parsed_args["modify_inputs_mode"])
             ancestral_tasks = ancestral_tasks.union(modify_inputs.tasks)
 
-
-
-        self.param_generator_func = transform_param_factory (   input_files_task_globs,
-                                                                #False, # flatten input removed
-                                                                file_names_transform,
-                                                                modify_inputs,
-                                                                self.parsed_args["modify_inputs_mode"],
-                                                                self.parsed_args["output"],
-                                                                *self.parsed_args["extras"])
-
+        self.param_generator_func = transform_param_factory(input_files_task_globs,
+                                                            file_names_transform,
+                                                            modify_inputs,
+                                                            self.parsed_args["modify_inputs_mode"],
+                                                            self.parsed_args["output"],
+                                                            *self.parsed_args["extras"])
 
         return ancestral_tasks
 
-
-
-
-
-    #=====================================================================================
+    # ========================================================================
 
     #   _decorator_subdivide
 
-    #=====================================================================================
-    def _decorator_subdivide (self, *unnamed_args, **named_args):
+    # ========================================================================
+    def _decorator_subdivide(self, *unnamed_args, **named_args):
         """
         @subdivide
         """
-        self.syntax  = "@subdivide"
-        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax, self._get_decorated_function())
-        self._prepare_subdivide (unnamed_args, named_args)
+        self.syntax = "@subdivide"
+        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax,
+                                                                  self._get_decorated_function())
+        self._prepare_subdivide(unnamed_args, named_args)
 
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _prepare_subdivide
 
-    #_____________________________________________________________________________________
-    def _prepare_subdivide (self, unnamed_args, named_args):
+    # _________________________________________________________________________
+    def _prepare_subdivide(self, unnamed_args, named_args):
         """
             Common code for @subdivide and pipeline.subdivide
             @split can also end up here
         """
-        self.error_type           = error_task_subdivide
-        self._set_action_type (Task._action_task_subdivide)
-        self.setup_task_func      = self._subdivide_setup
-        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
-        self.job_wrapper          = job_wrapper_io_files
-        self.job_descriptor       = io_files_one_to_many_job_descriptor
-        self.single_multi_io      = self._many_to_many
+        self.error_type = error_task_subdivide
+        self._set_action_type(Task._action_task_subdivide)
+        self.setup_task_func = self._subdivide_setup
+        self.needs_update_func = self.needs_update_func or needs_update_check_modify_time
+        self.job_wrapper = job_wrapper_io_files
+        self.job_descriptor = io_files_one_to_many_job_descriptor
+        self.single_multi_io = self._many_to_many
         # output is a glob
         self.indeterminate_output = 2
 
         #
         #   Parse named and unnamed arguments
         #
-        self.parsed_args = parse_task_arguments (unnamed_args, named_args,
-                                                 ["input", "filter", "modify_inputs", "output", "extras"], self.description_with_args_placeholder)
+        self.parsed_args = parse_task_arguments(unnamed_args, named_args,
+                                                ["input", "filter", "modify_inputs",
+                                                 "output", "extras"],
+                                                self.description_with_args_placeholder)
 
-
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _subdivide_setup
 
-    #_________________________________________________________________________________________
-    def _subdivide_setup (self):
+    # _________________________________________________________________________
+    def _subdivide_setup(self):
         """
         Finish setting up subdivide
         """
@@ -2656,56 +2731,63 @@ class Task (node):
         #
         # replace function / function names with tasks
         #
-        input_files_task_globs = self._handle_tasks_globs_in_inputs(self.parsed_args["input"], t_extra_inputs.KEEP_INPUTS)
+        input_files_task_globs = self._handle_tasks_globs_in_inputs(self.parsed_args["input"],
+                                                                    t_extra_inputs.KEEP_INPUTS)
 
         #   allows split to take a single file or task
         input_files_task_globs.single_file_to_list()
 
         ancestral_tasks = set(input_files_task_globs.tasks)
 
-
         # how to transform input to output file name
-        file_names_transform = self._choose_file_names_transform (self.parsed_args["filter"])
+        file_names_transform = self._choose_file_names_transform(self.parsed_args["filter"])
 
         modify_inputs = self.parsed_args["modify_inputs"]
-        if modify_inputs != None:
-            modify_inputs = self._handle_tasks_globs_in_inputs(modify_inputs, self.parsed_args["modify_inputs_mode"])
+        if modify_inputs is not None:
+            modify_inputs = self._handle_tasks_globs_in_inputs(
+                modify_inputs, self.parsed_args["modify_inputs_mode"])
             ancestral_tasks = ancestral_tasks.union(modify_inputs.tasks)
 
         #
-        #   output globs will be replaced with files. But there should not be tasks here!
+        #   output globs will be replaced with files.
+        #       But there should not be tasks here!
         #
-        output_files_task_globs = self._handle_tasks_globs_in_inputs(self.parsed_args["output"], t_extra_inputs.KEEP_OUTPUTS)
+        output_files_task_globs = self._handle_tasks_globs_in_inputs(self.parsed_args["output"],
+                                                                     t_extra_inputs.KEEP_OUTPUTS)
         if len(output_files_task_globs.tasks):
-            raise self.error_type(self, ("%s cannot output to another task. "
-                                          "Do not include tasks in output parameters.") % self.syntax)
+            raise self.error_type(self, ("%s cannot output to another task. Do not include tasks "
+                                         "in output parameters.") % self.syntax)
 
-        self.param_generator_func = subdivide_param_factory (   input_files_task_globs,
-                                                                #False, # flatten input removed
-                                                                file_names_transform,
-                                                                modify_inputs,
-                                                                self.parsed_args["modify_inputs_mode"],
-                                                                output_files_task_globs,
-                                                                *self.parsed_args["extras"])
+        self.param_generator_func = subdivide_param_factory(input_files_task_globs,
+                                                            # False, #
+                                                            # flatten input
+                                                            # removed
+                                                            file_names_transform,
+                                                            modify_inputs,
+                                                            self.parsed_args["modify_inputs_mode"],
+                                                            output_files_task_globs,
+                                                            *self.parsed_args["extras"])
         return ancestral_tasks
 
-    #=====================================================================================
+    # ========================================================================
 
     #   _decorator_split
 
-    #=====================================================================================
-    def _decorator_split (self, *unnamed_args, **named_args):
+    # ========================================================================
+    def _decorator_split(self, *unnamed_args, **named_args):
         """
         @split
         """
-        self.syntax  = "@split"
-        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax, self._get_decorated_function())
+        self.syntax = "@split"
+        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax,
+                                                                  self._get_decorated_function())
 
         #
         #   This is actually @subdivide
         #
         if isinstance(unnamed_args[1], regex):
-            self._prepare_subdivide (unnamed_args, named_args, self.description_with_args_placeholder)
+            self._prepare_subdivide(unnamed_args, named_args,
+                                    self.description_with_args_placeholder)
 
         #
         #   This is actually @split
@@ -2713,39 +2795,38 @@ class Task (node):
         else:
             self._prepare_split(unnamed_args, named_args)
 
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _prepare_split
 
-    #_________________________________________________________________________________________
-    def _prepare_split (self, unnamed_args, named_args):
+    # _________________________________________________________________________
+    def _prepare_split(self, unnamed_args, named_args):
         """
         Common code for @split and pipeline.split
         """
-        self.error_type      = error_task_split
-        self._set_action_type (Task._action_task_split)
-        self.setup_task_func      = self._split_setup
-        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
-        self.job_wrapper          = job_wrapper_io_files
-        self.job_descriptor       = io_files_one_to_many_job_descriptor
-        self.single_multi_io      = self._one_to_many
+        self.error_type = error_task_split
+        self._set_action_type(Task._action_task_split)
+        self.setup_task_func = self._split_setup
+        self.needs_update_func = self.needs_update_func or needs_update_check_modify_time
+        self.job_wrapper = job_wrapper_io_files
+        self.job_descriptor = io_files_one_to_many_job_descriptor
+        self.single_multi_io = self._one_to_many
         # output is a glob
         self.indeterminate_output = 1
 
         #
         #   Parse named and unnamed arguments
         #
-        self.parsed_args = parse_task_arguments (unnamed_args, named_args,
-                                                 ["input", "output", "extras"], self.description_with_args_placeholder)
+        self.parsed_args = parse_task_arguments(unnamed_args, named_args,
+                                                ["input", "output", "extras"],
+                                                self.description_with_args_placeholder)
 
-
-
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _split_setup
 
-    #_________________________________________________________________________________________
-    def _split_setup (self):
+    # _________________________________________________________________________
+    def _split_setup(self):
         """
         Finish setting up split
         """
@@ -2753,124 +2834,129 @@ class Task (node):
         #
         # replace function / function names with tasks
         #
-        input_files_task_globs = self._handle_tasks_globs_in_inputs(self.parsed_args["input"], t_extra_inputs.KEEP_INPUTS)
+        input_files_task_globs = self._handle_tasks_globs_in_inputs(self.parsed_args["input"],
+                                                                    t_extra_inputs.KEEP_INPUTS)
 
         #
-        #   output globs will be replaced with files. But there should not be tasks here!
+        #   output globs will be replaced with files.
+        #       But there should not be tasks here!
         #
-        output_files_task_globs = self._handle_tasks_globs_in_inputs(self.parsed_args["output"], t_extra_inputs.KEEP_OUTPUTS)
+        output_files_task_globs = self._handle_tasks_globs_in_inputs(self.parsed_args["output"],
+                                                                     t_extra_inputs.KEEP_OUTPUTS)
         if len(output_files_task_globs.tasks):
-            raise self.error_type(self, ("%s cannot output to another task. "
-                                          "Do not include tasks in output parameters.") % self.syntax)
+            raise self.error_type(self, "%s cannot output to another task. "
+                                        "Do not include tasks in output "
+                                        "parameters." % self.syntax)
 
-        self.param_generator_func = split_param_factory (   input_files_task_globs,
-                                                                output_files_task_globs,
-                                                                *self.parsed_args["extras"])
+        self.param_generator_func = split_param_factory(input_files_task_globs,
+                                                        output_files_task_globs,
+                                                        *self.parsed_args["extras"])
         return set(input_files_task_globs.tasks)
 
-
-
-
-    #=====================================================================================
+    # ========================================================================
 
     #   _decorator_merge
 
-    #=====================================================================================
-    def _decorator_merge (self, *unnamed_args, **named_args):
+    # ========================================================================
+    def _decorator_merge(self, *unnamed_args, **named_args):
         """
         @merge
         """
-        self.syntax  = "@merge"
-        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax, self._get_decorated_function())
-        self._prepare_merge (unnamed_args, named_args)
+        self.syntax = "@merge"
+        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax,
+                                                                  self._get_decorated_function())
+        self._prepare_merge(unnamed_args, named_args)
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _prepare_merge
 
-    #_____________________________________________________________________________________
-    def _prepare_merge (self, unnamed_args, named_args):
+    # _________________________________________________________________________
+    def _prepare_merge(self, unnamed_args, named_args):
         """
         Common code for @merge and pipeline.merge
         """
-        self.error_type           = error_task_merge
-        self._set_action_type (Task._action_task_merge)
-        self.setup_task_func      = self._merge_setup
-        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
-        self.job_wrapper          = job_wrapper_io_files
-        self.job_descriptor       = io_files_job_descriptor
-        self.single_multi_io      = self._many_to_one
+        self.error_type = error_task_merge
+        self._set_action_type(Task._action_task_merge)
+        self.setup_task_func = self._merge_setup
+        self.needs_update_func = self.needs_update_func or needs_update_check_modify_time
+        self.job_wrapper = job_wrapper_io_files
+        self.job_descriptor = io_files_job_descriptor
+        self.single_multi_io = self._many_to_one
         self._is_single_job_single_output = self._single_job_single_output
 
         #
         #   Parse named and unnamed arguments
         #
-        self.parsed_args = parse_task_arguments (unnamed_args, named_args, ["input", "output", "extras"], self.description_with_args_placeholder)
+        self.parsed_args = parse_task_arguments(unnamed_args, named_args,
+                                                ["input", "output", "extras"],
+                                                self.description_with_args_placeholder)
 
-
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _merge_setup
 
-    #_________________________________________________________________________________________
-    def _merge_setup (self):
+    # _________________________________________________________________________
+    def _merge_setup(self):
         """
         Finish setting up merge
         """
         #
         # replace function / function names with tasks
         #
-        input_files_task_globs = self._handle_tasks_globs_in_inputs(self.parsed_args["input"], t_extra_inputs.KEEP_INPUTS)
+        input_files_task_globs = self._handle_tasks_globs_in_inputs(self.parsed_args["input"],
+                                                                    t_extra_inputs.KEEP_INPUTS)
 
-        self.param_generator_func = merge_param_factory (   input_files_task_globs,
-                                                            self.parsed_args["output"],
-                                                            *self.parsed_args["extras"])
+        self.param_generator_func = merge_param_factory(input_files_task_globs,
+                                                        self.parsed_args["output"],
+                                                        *self.parsed_args["extras"])
         return set(input_files_task_globs.tasks)
 
-
-    #=====================================================================================
+    # ========================================================================
 
     #   _decorator_collate
 
-    #=====================================================================================
-    def _decorator_collate (self, *unnamed_args, **named_args):
+    # ========================================================================
+    def _decorator_collate(self, *unnamed_args, **named_args):
         """
         @collate
         """
-        self.syntax  = "@collate"
-        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax, self._get_decorated_function())
-        self._prepare_collate (unnamed_args, named_args)
+        self.syntax = "@collate"
+        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax,
+                                                                  self._get_decorated_function())
+        self._prepare_collate(unnamed_args, named_args)
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _prepare_collate
 
-    #_____________________________________________________________________________________
-    def _prepare_collate (self, unnamed_args, named_args):
+    # _________________________________________________________________________
+    def _prepare_collate(self, unnamed_args, named_args):
         """
         Common code for @collate and pipeline.collate
         """
-        self.error_type           = error_task_collate
-        self._set_action_type (Task._action_task_collate)
-        self.setup_task_func      = self._collate_setup
-        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
-        self.job_wrapper          = job_wrapper_io_files
-        self.job_descriptor       = io_files_job_descriptor
-        self.single_multi_io      = self._many_to_many
+        self.error_type = error_task_collate
+        self._set_action_type(Task._action_task_collate)
+        self.setup_task_func = self._collate_setup
+        self.needs_update_func = self.needs_update_func or needs_update_check_modify_time
+        self.job_wrapper = job_wrapper_io_files
+        self.job_descriptor = io_files_job_descriptor
+        self.single_multi_io = self._many_to_many
 
         #
         #   Parse named and unnamed arguments
         #
-        self.parsed_args = parse_task_arguments (unnamed_args, named_args,
-                                                 ["input", "filter", "modify_inputs", "output", "extras"],
-                                                 self.description_with_args_placeholder)
+        self.parsed_args = parse_task_arguments(unnamed_args, named_args,
+                                                ["input", "filter", "modify_inputs",
+                                                 "output", "extras"],
+                                                self.description_with_args_placeholder)
 
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _collate_setup
 
-    #_________________________________________________________________________________________
-    def _collate_setup (self):
+    # _________________________________________________________________________
+    def _collate_setup(self):
         """
         Finish setting up collate
         """
@@ -2878,62 +2964,69 @@ class Task (node):
         #
         # replace function / function names with tasks
         #
-        input_files_task_globs = self._handle_tasks_globs_in_inputs(self.parsed_args["input"], t_extra_inputs.KEEP_INPUTS)
+        input_files_task_globs = self._handle_tasks_globs_in_inputs(self.parsed_args["input"],
+                                                                    t_extra_inputs.KEEP_INPUTS)
         ancestral_tasks = set(input_files_task_globs.tasks)
 
         # how to transform input to output file name
-        file_names_transform = self._choose_file_names_transform (self.parsed_args["filter"], (regex, formatter))
+        file_names_transform = self._choose_file_names_transform(self.parsed_args["filter"],
+                                                                 (regex, formatter))
 
         modify_inputs = self.parsed_args["modify_inputs"]
-        if modify_inputs != None:
-            modify_inputs = self._handle_tasks_globs_in_inputs(modify_inputs, self.parsed_args["modify_inputs_mode"])
+        if modify_inputs is not None:
+            modify_inputs = self._handle_tasks_globs_in_inputs(
+                modify_inputs, self.parsed_args["modify_inputs_mode"])
             ancestral_tasks = ancestral_tasks.union(modify_inputs.tasks)
 
-
-        self.param_generator_func = collate_param_factory (     input_files_task_globs,
-                                                                #False, # flatten input removed
-                                                                file_names_transform,
-                                                                modify_inputs,
-                                                                self.parsed_args["modify_inputs_mode"],
-                                                                self.parsed_args["output"],
-                                                                *self.parsed_args["extras"])
+        self.param_generator_func = collate_param_factory(input_files_task_globs,
+                                                          # False, #
+                                                          # flatten input
+                                                          # removed
+                                                          file_names_transform,
+                                                          modify_inputs,
+                                                          self.parsed_args["modify_inputs_mode"],
+                                                          self.parsed_args["output"],
+                                                          *self.parsed_args["extras"])
 
         return set(ancestral_tasks)
 
-
-    #=====================================================================================
+    # ========================================================================
 
     #   _decorator_mkdir
 
-    #=====================================================================================
-    def _decorator_mkdir (self, *unnamed_args, **named_args):
+    # ========================================================================
+    def _decorator_mkdir(self, *unnamed_args, **named_args):
         """
         @mkdir
         """
         syntax = "@mkdir"
-        description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax, (self.description_with_args_placeholder % "..."))
-        self._prepare_preceding_mkdir ( unnamed_args, named_args, syntax, description_with_args_placeholder)
+        description_with_args_placeholder = "%s(%%s)\n%s" % (
+            self.syntax, (self.description_with_args_placeholder % "..."))
+        self._prepare_preceding_mkdir(unnamed_args, named_args, syntax,
+                                      description_with_args_placeholder)
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   mkdir
 
-    #_____________________________________________________________________________________
-    def mkdir (self, unnamed_args, **named_args):
+    # _________________________________________________________________________
+    def mkdir(self, unnamed_args, **named_args):
         """
-        Make missing directories including any intermediate directories before the this task
+        Make missing directories including any intermediate directories before
+            this task
         """
         syntax = "Task(name = %s).mkdir" % self._name
         description_with_args_placeholder = "%s(%%s)" % (self.syntax)
-        self._prepare_preceding_mkdir (unnamed_args, named_args, syntax, description_with_args_placeholder)
+        self._prepare_preceding_mkdir(unnamed_args, named_args, syntax,
+                                      description_with_args_placeholder)
 
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _prepare_dependent_mkdir
 
-    #_____________________________________________________________________________________
-    def _prepare_preceding_mkdir (self, unnamed_args, named_args, syntax, task_description):
+    # _________________________________________________________________________
+    def _prepare_preceding_mkdir(self, unnamed_args, named_args, syntax,
+                                 task_description):
         """
         Add mkdir Task to run before self
             Common to
@@ -2947,57 +3040,54 @@ class Task (node):
         self.cnt_task_mkdir += 1
         cnt_task_mkdir_str = (" #%d" % self.cnt_task_mkdir) if self.cnt_task_mkdir > 1 else ""
         task_name = r"mkdir%s before %s " % (cnt_task_mkdir_str, self._name)
-        new_task = self.pipeline._create_task(task_func = job_wrapper_mkdir, task_name = task_name)
+        new_task = self.pipeline._create_task(task_func=job_wrapper_mkdir, task_name=task_name)
         self._add_parent(new_task)
-
 
         #
         #   Prepare new node
         #
         new_task.syntax = syntax
-        new_task._prepare_mkdir (unnamed_args, named_args, task_description)
-
-        #print ("Create child\nname=%s\nspec=%s\ndescription=%s" % (new_task._name, syntax, task_description), file = sys.stderr)
+        new_task._prepare_mkdir(unnamed_args, named_args, task_description)
 
         #
         #   Hack:
         #       If the task name is too ugly,
-        #       we can override it for flowchart printing using the display_name
+        #       we can override it for flowchart printing using the
+        #       display_name
         #
-        #new_node.display_name = ??? new_node.func_description
+        # new_node.display_name = ??? new_node.func_description
 
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _prepare_mkdir
 
-    #_____________________________________________________________________________________
-    def _prepare_mkdir (self, unnamed_args, named_args, task_description):
+    # _________________________________________________________________________
+    def _prepare_mkdir(self, unnamed_args, named_args, task_description):
 
-        self.error_type         = error_task_mkdir
-        self._set_action_type (Task._action_mkdir)
-        self.needs_update_func  = self.needs_update_func or needs_update_check_directory_missing
-        self.job_wrapper        = job_wrapper_mkdir
-        self.job_descriptor     = mkdir_job_descriptor
-
+        self.error_type = error_task_mkdir
+        self._set_action_type(Task._action_mkdir)
+        self.needs_update_func = self.needs_update_func or needs_update_check_directory_missing
+        self.job_wrapper = job_wrapper_mkdir
+        self.job_descriptor = mkdir_job_descriptor
 
         # doesn't have a real function
         #  use job_wrapper just so it is not None
         self.user_defined_work_func = self.job_wrapper
 
-
         #
         # @transform like behaviour with regex / suffix or formatter
         #
-        if (len(unnamed_args) > 1 and isinstance(unnamed_args[1], (formatter, suffix, regex))) or "filter" in named_args:
-            self.single_multi_io      = self._many_to_many
-            self.setup_task_func      = self._transform_setup
+        if (len(unnamed_args) > 1 and
+                isinstance(unnamed_args[1], (formatter, suffix, regex))) or "filter" in named_args:
+            self.single_multi_io = self._many_to_many
+            self.setup_task_func = self._transform_setup
 
             #
             #   Parse named and unnamed arguments
             #
-            self.parsed_args = parse_task_arguments (unnamed_args, named_args, ["input", "filter", "modify_inputs", "output", "extras"], task_description)
-
+            self.parsed_args = parse_task_arguments(unnamed_args, named_args,
+                                                    ["input", "filter", "modify_inputs",
+                                                     "output", "extras"], task_description)
 
         #
         # simple behaviour: just make directories in list of strings
@@ -3007,264 +3097,287 @@ class Task (node):
 
             #
             # override funct description normally parsed from func.__doc__
-            #   "Make missing directories including any intermediate directories on the specified path(s)"
+            #   "Make missing directories including any intermediate
+            #   directories on the specified path(s)"
             #
-            self.func_description     = "Make missing directories %s" % (shorten_filenames_encoder(unnamed_args, 0))
+            self.func_description = "Make missing directories %s" % (
+                shorten_filenames_encoder(unnamed_args, 0))
 
-
-            self.single_multi_io        = self._one_to_one
-            self.setup_task_func        = self._do_nothing_setup
-            self.has_input_param        = False
+            self.single_multi_io = self._one_to_one
+            self.setup_task_func = self._do_nothing_setup
+            self.has_input_param = False
 
             #
             #
             #
             # if a single argument collection of parameters, keep that as is
             if len(unnamed_args) == 0:
-                self.parsed_args["output"]  = []
+                self.parsed_args["output"] = []
             elif len(unnamed_args) > 1:
-                self.parsed_args["output"]  = unnamed_args
+                self.parsed_args["output"] = unnamed_args
             # len(unnamed_args) == 1: unpack unnamed_args[0]
-            elif non_str_sequence (unnamed_args[0]):
-                self.parsed_args["output"]  = unnamed_args[0]
+            elif non_str_sequence(unnamed_args[0]):
+                self.parsed_args["output"] = unnamed_args[0]
             # single string or other non collection types
             else:
-                self.parsed_args["output"]  = unnamed_args
-
+                self.parsed_args["output"] = unnamed_args
 
             #   all directories created in one job to reduce race conditions
             #    so we are converting [a,b,c] into [   [(a, b,c)]   ]
             #    where unnamed_args = (a,b,c)
-            #   i.e. one job whose solitory argument is a tuple/list of directory names
+            # i.e. one job whose solitory argument is a tuple/list of directory
+            # names
             self.param_generator_func = args_param_factory([[sorted(self.parsed_args["output"])]])
 
+            # print ("mkdir %s" % (self.func_description), file = sys.stderr)
 
-            #print ("mkdir %s" % (self.func_description), file = sys.stderr)
-
-
-    #=====================================================================================
+    # ========================================================================
 
     #   _decorator_product
 
-    #=====================================================================================
-    def _decorator_product (self, *unnamed_args, **named_args):
+    # ========================================================================
+    def _decorator_product(self, *unnamed_args, **named_args):
         """
         @product
         """
-        self.syntax  = "@product"
-        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax, self._get_decorated_function())
-        self._prepare_product (unnamed_args, named_args)
+        self.syntax = "@product"
+        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax,
+                                                                  self._get_decorated_function())
+        self._prepare_product(unnamed_args, named_args)
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _prepare_product
 
-    #_____________________________________________________________________________________
-    def _prepare_product (self, unnamed_args, named_args):
+    # _________________________________________________________________________
+    def _prepare_product(self, unnamed_args, named_args):
         """
         Common code for @product and pipeline.product
         """
-        self.error_type           = error_task_product
-        self._set_action_type (Task._action_task_product)
-        self.setup_task_func      = self._product_setup
-        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
-        self.job_wrapper          = job_wrapper_io_files
-        self.job_descriptor       = io_files_job_descriptor
-        self.single_multi_io      = self._many_to_many
-
+        self.error_type = error_task_product
+        self._set_action_type(Task._action_task_product)
+        self.setup_task_func = self._product_setup
+        self.needs_update_func = self.needs_update_func or needs_update_check_modify_time
+        self.job_wrapper = job_wrapper_io_files
+        self.job_descriptor = io_files_job_descriptor
+        self.single_multi_io = self._many_to_many
 
         #
         #   Parse named and unnamed arguments
         #
-        self.parsed_args = parse_task_arguments (unnamed_args, named_args,
-                                                 ["input", "filter", "inputN", "modify_inputs", "output", "extras"],
-                                                 self.description_with_args_placeholder)
+        self.parsed_args = parse_task_arguments(unnamed_args, named_args,
+                                                ["input", "filter", "inputN", "modify_inputs",
+                                                 "output", "extras"],
+                                                self.description_with_args_placeholder)
 
-
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _product_setup
 
-    #_________________________________________________________________________________________
-    def _product_setup (self):
+    # _________________________________________________________________________
+    def _product_setup(self):
         """
         Finish setting up product
         """
         #
         # replace function / function names with tasks
         #
-        list_input_files_task_globs = [self._handle_tasks_globs_in_inputs(ii, t_extra_inputs.KEEP_INPUTS) for ii in self.parsed_args["input"]]
+        list_input_files_task_globs = [self._handle_tasks_globs_in_inputs(ii,
+                                       t_extra_inputs.KEEP_INPUTS)
+                                       for ii in self.parsed_args["input"]]
         ancestral_tasks = set()
         for input_files_task_globs in list_input_files_task_globs:
             ancestral_tasks = ancestral_tasks.union(input_files_task_globs.tasks)
 
         # how to transform input to output file name
-        file_names_transform = t_nested_formatter_file_names_transform(self, self.parsed_args["filter"], self.error_type, self.syntax)
+        file_names_transform = t_nested_formatter_file_names_transform(self,
+                                                                       self.parsed_args["filter"],
+                                                                       self.error_type,
+                                                                       self.syntax)
 
         modify_inputs = self.parsed_args["modify_inputs"]
-        if modify_inputs != None:
-            modify_inputs = self._handle_tasks_globs_in_inputs(modify_inputs, self.parsed_args["modify_inputs_mode"])
+        if modify_inputs is not None:
+            modify_inputs = self._handle_tasks_globs_in_inputs(
+                modify_inputs, self.parsed_args["modify_inputs_mode"])
             ancestral_tasks = ancestral_tasks.union(modify_inputs.tasks)
 
-
-        self.param_generator_func = product_param_factory (     list_input_files_task_globs,
-                                                                #False, # flatten input removed
-                                                                file_names_transform,
-                                                                modify_inputs,
-                                                                self.parsed_args["modify_inputs_mode"],
-                                                                self.parsed_args["output"],
-                                                                *self.parsed_args["extras"])
+        self.param_generator_func = product_param_factory(list_input_files_task_globs,
+                                                          # False, #
+                                                          # flatten input
+                                                          # removed
+                                                          file_names_transform,
+                                                          modify_inputs,
+                                                          self.parsed_args["modify_inputs_mode"],
+                                                          self.parsed_args["output"],
+                                                          *self.parsed_args["extras"])
 
         return ancestral_tasks
 
-
-
-    #=====================================================================================
+    # ========================================================================
 
     #   _decorator_permutations
     #   _decorator_combinations
     #   _decorator_combinations_with_replacement
 
-    #=====================================================================================
+    # ========================================================================
     def _decorator_permutations(self, *unnamed_args, **named_args):
         """
         @permutations
         """
         self.syntax = "@permutations"
-        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax, self._get_decorated_function())
-        self._prepare_combinatorics (unnamed_args, named_args, error_task_permutations)
+        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax,
+                                                                  self._get_decorated_function())
+        self._prepare_combinatorics(unnamed_args, named_args, error_task_permutations)
 
     def _decorator_combinations(self, *unnamed_args, **named_args):
         """
         @combinations
         """
-        self.syntax  = "@combinations"
-        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax, self._get_decorated_function())
-        self._prepare_combinatorics (unnamed_args, named_args, error_task_combinations)
+        self.syntax = "@combinations"
+        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax,
+                                                                  self._get_decorated_function())
+        self._prepare_combinatorics(unnamed_args, named_args, error_task_combinations)
 
-    def _decorator_combinations_with_replacement(self, *unnamed_args, **named_args):
+    def _decorator_combinations_with_replacement(self, *unnamed_args,
+                                                 **named_args):
         """
         @combinations_with_replacement
         """
-        self.syntax  = "@combinations_with_replacement"
-        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax, self._get_decorated_function())
-        self._prepare_combinatorics (unnamed_args, named_args, error_task_combinations_with_replacement)
+        self.syntax = "@combinations_with_replacement"
+        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax,
+                                                                  self._get_decorated_function())
+        self._prepare_combinatorics(unnamed_args, named_args,
+                                    error_task_combinations_with_replacement)
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _prepare_combinatorics
 
-    #_____________________________________________________________________________________
-    def _prepare_combinatorics (self, unnamed_args, named_args, error_type):
+    # _________________________________________________________________________
+    def _prepare_combinatorics(self, unnamed_args, named_args, error_type):
         """
         Common code for
             @permutations and pipeline.permutations
             @combinations and pipeline.combinations
-            @combinations_with_replacement and pipeline.combinations_with_replacement
+            @combinations_with_replacement and
+                pipeline.combinations_with_replacement
         """
-        self.error_type           = error_type
-        self.setup_task_func      = self._combinatorics_setup
-        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
-        self.job_wrapper          = job_wrapper_io_files
-        self.job_descriptor       = io_files_job_descriptor
-        self.single_multi_io      = self._many_to_many
-
+        self.error_type = error_type
+        self.setup_task_func = self._combinatorics_setup
+        self.needs_update_func = self.needs_update_func or needs_update_check_modify_time
+        self.job_wrapper = job_wrapper_io_files
+        self.job_descriptor = io_files_job_descriptor
+        self.single_multi_io = self._many_to_many
 
         #
         #   Parse named and unnamed arguments
         #
-        self.parsed_args = parse_task_arguments (unnamed_args, named_args,
-                                                 ["input", "filter", "tuple_size", "modify_inputs", "output", "extras"],
-                                                 self.description_with_args_placeholder)
+        self.parsed_args = parse_task_arguments(unnamed_args, named_args,
+                                                ["input", "filter", "tuple_size",
+                                                 "modify_inputs", "output", "extras"],
+                                                self.description_with_args_placeholder)
 
-
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _combinatorics_setup
 
-    #_________________________________________________________________________________________
-    def _combinatorics_setup (self):
+    # _________________________________________________________________________
+    def _combinatorics_setup(self):
         """
             Finish setting up combinatorics
         """
         #
         # replace function / function names with tasks
         #
-        input_files_task_globs = self._handle_tasks_globs_in_inputs(self.parsed_args["input"], t_extra_inputs.KEEP_INPUTS)
+        input_files_task_globs = self._handle_tasks_globs_in_inputs(self.parsed_args["input"],
+                                                                    t_extra_inputs.KEEP_INPUTS)
         ancestral_tasks = set(input_files_task_globs.tasks)
 
-        # how to transform input to output file name: len(k-tuples) of (identical) formatters
-        file_names_transform = t_nested_formatter_file_names_transform(self, [self.parsed_args["filter"]] * self.parsed_args["tuple_size"], self.error_type, self.syntax)
+        # how to transform input to output file name: len(k-tuples) of
+        # (identical) formatters
+        file_names_transform = t_nested_formatter_file_names_transform(
+            self, [self.parsed_args["filter"]] * self.parsed_args["tuple_size"],
+            self.error_type, self.syntax)
 
         modify_inputs = self.parsed_args["modify_inputs"]
-        if modify_inputs != None:
-            modify_inputs = self._handle_tasks_globs_in_inputs(modify_inputs, self.parsed_args["modify_inputs_mode"])
+        if modify_inputs is not None:
+            modify_inputs = self._handle_tasks_globs_in_inputs(
+                modify_inputs, self.parsed_args["modify_inputs_mode"])
             ancestral_tasks = ancestral_tasks.union(modify_inputs.tasks)
 
         # we are not going to specify what type of combinatorics this is twice:
         #       just look up from our error type
         error_type_to_combinatorics_type = {
-            error_task_combinations_with_replacement  : t_combinatorics_type.COMBINATORICS_COMBINATIONS_WITH_REPLACEMENT,
-            error_task_combinations                   : t_combinatorics_type.COMBINATORICS_COMBINATIONS,
-            error_task_permutations                   : t_combinatorics_type.COMBINATORICS_PERMUTATIONS
+            error_task_combinations_with_replacement:
+            t_combinatorics_type.COMBINATORICS_COMBINATIONS_WITH_REPLACEMENT,
+            error_task_combinations:
+            t_combinatorics_type.COMBINATORICS_COMBINATIONS,
+            error_task_permutations:
+            t_combinatorics_type.COMBINATORICS_PERMUTATIONS
         }
 
-        self.param_generator_func = combinatorics_param_factory (   input_files_task_globs,
-                                                                    #False, # flatten input removed
-                                                                    error_type_to_combinatorics_type[self.error_type],
-                                                                    self.parsed_args["tuple_size"],
-                                                                    file_names_transform,
-                                                                    modify_inputs,
-                                                                    self.parsed_args["modify_inputs_mode"],
-                                                                    self.parsed_args["output"],
-                                                                    *self.parsed_args["extras"])
+        self.param_generator_func = \
+            combinatorics_param_factory(input_files_task_globs,
+                                        # False, #
+                                        # flatten
+                                        # input
+                                        # removed
+                                        error_type_to_combinatorics_type[
+                                            self.error_type],
+                                        self.parsed_args["tuple_size"],
+                                        file_names_transform,
+                                        modify_inputs,
+                                        self.parsed_args["modify_inputs_mode"],
+                                        self.parsed_args["output"],
+                                        *self.parsed_args["extras"])
 
         return ancestral_tasks
 
-
-    #=====================================================================================
+    # ========================================================================
 
     #   _decorator_files
 
-    #=====================================================================================
-    def _decorator_files (self, *unnamed_args, **named_args):
+    # ========================================================================
+    def _decorator_files(self, *unnamed_args, **named_args):
         """
         @files
         """
-        self.syntax  = "@files"
-        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax, self._get_decorated_function())
-        self._prepare_files (unnamed_args, named_args)
+        self.syntax = "@files"
+        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax,
+                                                                  self._get_decorated_function())
+        self._prepare_files(unnamed_args, named_args)
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _prepare_files
 
-    #_____________________________________________________________________________________
-    def _prepare_files (self, unnamed_args, named_args):
+    # _________________________________________________________________________
+    def _prepare_files(self, unnamed_args, named_args):
         """
         Common code for @files and pipeline.files
         """
-        self.error_type             = error_task_files
-        self.setup_task_func        = self._do_nothing_setup
-        self.needs_update_func      = self.needs_update_func or needs_update_check_modify_time
-        self.job_wrapper            = job_wrapper_io_files
-        self.job_descriptor         = io_files_job_descriptor
+        self.error_type = error_task_files
+        self.setup_task_func = self._do_nothing_setup
+        self.needs_update_func = self.needs_update_func or needs_update_check_modify_time
+        self.job_wrapper = job_wrapper_io_files
+        self.job_descriptor = io_files_job_descriptor
 
         if len(unnamed_args) == 0:
             raise error_task_files(self, "Too few arguments for @files")
 
         #   Use parameters generated by a custom function
-        if len(unnamed_args) == 1 and isinstance(unnamed_args[0], collections.Callable):
+        if len(unnamed_args) == 1 and isinstance(unnamed_args[0],
+                                                 collections.Callable):
 
-            self._set_action_type (Task._action_task_files_func)
+            self._set_action_type(Task._action_task_files_func)
             self.param_generator_func = files_custom_generator_param_factory(unnamed_args[0])
 
             # assume
-            self.single_multi_io           = self._many_to_many
+            self.single_multi_io = self._many_to_many
 
         #   Use parameters in supplied list
         else:
-            self._set_action_type (Task._action_task_files)
+            self._set_action_type(Task._action_task_files)
 
             if len(unnamed_args) > 1:
 
@@ -3274,78 +3387,75 @@ class Task (node):
                 # If you want different behavior, use @transform
                 params = copy.copy([unnamed_args])
                 self._is_single_job_single_output = self._single_job_single_output
-                self.single_multi_io           = self._one_to_one
-
+                self.single_multi_io = self._one_to_one
 
             else:
 
                 # multiple jobs with input/output parameters etc.
                 params = copy.copy(unnamed_args[0])
                 self._is_single_job_single_output = self._multiple_jobs_outputs
-                self.single_multi_io           = self._many_to_many
+                self.single_multi_io = self._many_to_many
 
-            check_files_io_parameters (self, params, error_task_files)
+            check_files_io_parameters(self, params, error_task_files)
 
-            self.parsed_args["input"]   =[pp[0]         for pp in params]
-            self.parsed_args["output"]  =[tuple(pp[1:]) for pp in params]
+            self.parsed_args["input"] = [pp[0] for pp in params]
+            self.parsed_args["output"] = [tuple(pp[1:]) for pp in params]
             self.setup_task_func = self._files_setup
 
-
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _files_setup
 
-    #_________________________________________________________________________________________
-    def _files_setup (self):
+    # _________________________________________________________________________
+    def _files_setup(self):
         """
             Finish setting up @files
         """
         #
         # replace function / function names with tasks
         #
-        input_files_task_globs = self._handle_tasks_globs_in_inputs(self.parsed_args["input"], t_extra_inputs.KEEP_INPUTS)
+        input_files_task_globs = self._handle_tasks_globs_in_inputs(self.parsed_args["input"],
+                                                                    t_extra_inputs.KEEP_INPUTS)
 
-
-        self.param_generator_func = files_param_factory (input_files_task_globs,
-                                                         #False, # flatten input removed
-                                                         True,  # do_not_expand_single_job_tasks
-                                                         self.parsed_args["output"])
+        self.param_generator_func = files_param_factory(input_files_task_globs,
+                                                        True,
+                                                        self.parsed_args["output"])
         return set(input_files_task_globs.tasks)
 
-    #=====================================================================================
+    # ========================================================================
 
     #   _decorator_parallel
 
-    #=====================================================================================
-    def _decorator_parallel (self, *unnamed_args, **named_args):
+    # ========================================================================
+    def _decorator_parallel(self, *unnamed_args, **named_args):
         """
         @parallel
         """
-        self.syntax  = "@parallel"
-        self._prepare_parallel (unnamed_args, named_args)
+        self.syntax = "@parallel"
+        self._prepare_parallel(unnamed_args, named_args)
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _prepare_parallel
 
-    #_____________________________________________________________________________________
-    def _prepare_parallel (self, unnamed_args, named_args):
+    # _________________________________________________________________________
+    def _prepare_parallel(self, unnamed_args, named_args):
         """
         Common code for @parallel and pipeline.parallel
         """
-        self.error_type           = error_task_parallel
-        self._set_action_type (Task._action_task_parallel)
-        self.setup_task_func      = self._do_nothing_setup
-        self.needs_update_func    = None
-        self.job_wrapper          = job_wrapper_generic
-        self.job_descriptor       = io_files_job_descriptor
-
+        self.error_type = error_task_parallel
+        self._set_action_type(Task._action_task_parallel)
+        self.setup_task_func = self._do_nothing_setup
+        self.needs_update_func = None
+        self.job_wrapper = job_wrapper_generic
+        self.job_descriptor = io_files_job_descriptor
 
         if len(unnamed_args) == 0:
             raise error_task_parallel(self, "Too few arguments for @parallel")
 
         #   Use parameters generated by a custom function
-        if len(unnamed_args) == 1 and isinstance(unnamed_args[0], collections.Callable):
+        if len(unnamed_args) == 1 and isinstance(unnamed_args[0],
+                                                 collections.Callable):
             self.param_generator_func = args_param_factory(unnamed_args[0]())
 
         # list of  params
@@ -3357,19 +3467,16 @@ class Task (node):
             else:
                 # multiple jobs with input/output parameters etc.
                 params = copy.copy(unnamed_args[0])
-                check_parallel_parameters (self, params, error_task_parallel)
+                check_parallel_parameters(self, params, error_task_parallel)
 
-            self.param_generator_func = args_param_factory (params)
+            self.param_generator_func = args_param_factory(params)
 
-
-
-
-    #=====================================================================================
+    # ========================================================================
 
     #   _decorator_files_re
 
-    #=====================================================================================
-    def _decorator_files_re (self, *unnamed_args, **named_args):
+    # ========================================================================
+    def _decorator_files_re(self, *unnamed_args, **named_args):
         """
         @files_re
 
@@ -3379,27 +3486,29 @@ class Task (node):
                 getting all file names in the supplied list/glob pattern
             There are two variations:
 
-            1)    inputfiles = all files in glob which match the regular expression
+            1)    inputfiles = all files in glob which match the regular
+                                expression
                   outputfile = generated from the replacement string
 
-            2)    inputfiles = all files in glob which match the regular expression and
-                                          generated from the "from" replacement string
-                  outputfiles = all files in glob which match the regular expression and
-                                          generated from the "to" replacement string
+            2)    inputfiles = all files in glob which match the regular
+                                    expression and generated from the "from"
+                                    replacement string
+                  outputfiles = all files in glob which match the regular
+                                    expression and generated from the "to"
+                                    replacement string
         """
-        self.syntax  = "@files_re"
-        self.error_type           = error_task_files_re
-        self._set_action_type (Task._action_task_files_re)
-        self.needs_update_func    = self.needs_update_func or needs_update_check_modify_time
-        self.job_wrapper          = job_wrapper_io_files
-        self.job_descriptor       = io_files_job_descriptor
-        self.single_multi_io      = self._many_to_many
-
+        self.syntax = "@files_re"
+        self.error_type = error_task_files_re
+        self._set_action_type(Task._action_task_files_re)
+        self.needs_update_func = self.needs_update_func or needs_update_check_modify_time
+        self.job_wrapper = job_wrapper_io_files
+        self.job_descriptor = io_files_job_descriptor
+        self.single_multi_io = self._many_to_many
 
         if len(unnamed_args) < 3:
             raise self.error_type(self, "Too few arguments for @files_re")
 
-        #888888888888888888888888888888888888888888888888888888888888888888888888888888888
+        # 888888888888888888888888888888888888888888888888888888888888888888888
 
         #   !! HERE BE DRAGONS !!
 
@@ -3417,23 +3526,21 @@ class Task (node):
         if len(unnamed_args) > 3:
             unnamed_args[2] = inputs(unnamed_args[2])
 
-        #888888888888888888888888888888888888888888888888888888888888888888888888888888888
+        # 888888888888888888888888888888888888888888888888888888888888888888888
 
-        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax, self._get_decorated_function())
-        self.parsed_args = parse_task_arguments (unnamed_args, named_args, ["input", "filter", "modify_inputs", "output", "extras"], self.description_with_args_placeholder)
+        self.description_with_args_placeholder = "%s(%%s)\n%s" % (self.syntax,
+                                                                  self._get_decorated_function())
+        self.parsed_args = parse_task_arguments(unnamed_args, named_args,
+                                                ["input", "filter", "modify_inputs",
+                                                 "output", "extras"],
+                                                self.description_with_args_placeholder)
 
         if combining_all_jobs:
-            self.setup_task_func      = self._collate_setup
+            self.setup_task_func = self._collate_setup
         else:
-            self.setup_task_func      = self._transform_setup
+            self.setup_task_func = self._transform_setup
 
-
-
-
-
-
-
-    #8888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+    # 8888888888888888888888888888888888888888888888888888888888888888888888888
 
     #   Task functions
 
@@ -3444,44 +3551,47 @@ class Task (node):
     #       active_if
     #       graphviz
 
+    # 8888888888888888888888888888888888888888888888888888888888888888888888888
 
-    #8888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-    #=====================================================================================
+    # ========================================================================
 
     #   follows
 
-    #=====================================================================================
-    def follows (self, *unnamed_args, **named_args):
+    # ========================================================================
+    def follows(self, *unnamed_args, **named_args):
         """
         unnamed_args can be string or function or Task
         For strings, if lookup fails, will defer.
         """
-        description_with_args_placeholder = (self.description_with_args_placeholder % "...") + ".follows(%r)"
-        self._do_follows (description_with_args_placeholder, False, *unnamed_args, **named_args)
+        description_with_args_placeholder = (
+            self.description_with_args_placeholder % "...") + ".follows(%r)"
+        self._do_follows(description_with_args_placeholder, False,
+                         *unnamed_args, **named_args)
         return self
 
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _decorator_follows
 
-    #_________________________________________________________________________________________
-    def _decorator_follows (self, *unnamed_args, **named_args):
+    # _________________________________________________________________________
+    def _decorator_follows(self, *unnamed_args, **named_args):
         """
         unnamed_args can be string or function or Task
         For strings, if lookup fails, will defer.
         """
-        description_with_args_placeholder = "@follows(%r)\n" + (self.description_with_args_placeholder % "...")
-        self._do_follows (description_with_args_placeholder, False, *unnamed_args, **named_args)
+        description_with_args_placeholder = "@follows(%r)\n" + (
+            self.description_with_args_placeholder % "...")
+        self._do_follows(description_with_args_placeholder, False, *unnamed_args, **named_args)
 
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _do_follows
     #       Deferred tasks will need to be resolved later
     #       Because deferred tasks can belong to other pipelines
 
-    #_________________________________________________________________________________________
-    def _do_follows (self, description_with_args_placeholder, no_mkdir, *unnamed_args, **named_args):
+    # _________________________________________________________________________
+    def _do_follows(self, description_with_args_placeholder, no_mkdir,
+                    *unnamed_args, **named_args):
         """
         unnamed_args can be string or function or Task
         For strings, if lookup fails, will defer.
@@ -3489,9 +3599,12 @@ class Task (node):
         Called from
             * task.follows
             * @follows
-            * decorators, e.g. @transform _handle_tasks_globs_in_inputs (input dependencies)
-            * pipeline.transform etc. _handle_tasks_globs_in_inputs (input dependencies)
-            * @split / pipeline.split _handle_tasks_globs_in_inputs (output dependencies)
+            * decorators, e.g. @transform _handle_tasks_globs_in_inputs
+              (input dependencies)
+            * pipeline.transform etc. _handle_tasks_globs_in_inputs
+              (input dependencies)
+            * @split / pipeline.split _handle_tasks_globs_in_inputs
+              (output dependencies)
         """
         new_tasks = []
         for arg in unnamed_args:
@@ -3500,37 +3613,41 @@ class Task (node):
             #
             if isinstance(arg, Task):
                 if arg == self:
-                    raise error_decorator_args("Cannot have a task as its own (circular) dependency:\n" +
-                                                description_with_args_placeholder % (arg,))
+                    raise error_decorator_args(
+                        "Cannot have a task as its own (circular) dependency:\n"
+                        % description_with_args_placeholder % (arg,))
 
                 #
                 #   re-lookup from task name to handle cloning
                 #
-                if arg.pipeline.name == self.pipeline.original_name and self.pipeline.original_name != self.pipeline.name:
-                    tasks = lookup_tasks_from_name(arg._name, default_pipeline_name = self.pipeline.name, default_module_name = self.func_module_name)
+                if arg.pipeline.name == self.pipeline.original_name and \
+                        self.pipeline.original_name != self.pipeline.name:
+                    tasks = lookup_tasks_from_name(arg._name,
+                                                   default_pipeline_name=self.pipeline.name,
+                                                   default_module_name=self.func_module_name)
                     new_tasks.extend(tasks)
 
                     if not tasks:
-                        raise error_node_not_task("task '%s' '%s::%s' is not somehow absent in the cloned pipeline (%s)!%s" % (
-                                                                    self.pipeline.original_name,
-                                                                    arg._name,
-                                                                    self.pipeline.name, description_with_args_placeholder % (arg._name,)))
+                        raise error_node_not_task(
+                            "task '%s' '%s::%s' is somehow absent in the cloned pipeline (%s)!%s"
+                            % (self.pipeline.original_name, arg._name, self.pipeline.name,
+                               description_with_args_placeholder % (arg._name,)))
                 else:
                     new_tasks.append(arg)
-
-
 
             #
             #   Pipeline: defer
             #
             elif isinstance(arg, Pipeline):
                 if arg == self.Pipeline:
-                    raise error_decorator_args("Cannot have your own pipeline as a (circular) dependency of a Task:\n" +
-                                                description_with_args_placeholder % (arg,))
+                    raise error_decorator_args("Cannot have your own pipeline as a (circular) "
+                                               "dependency of a Task:\n" +
+                                               description_with_args_placeholder % (arg,))
 
                 if not len(arg.get_tail_tasks()):
-                    raise error_no_tail_tasks(("Pipeline %s has no tail tasks defined. "
-                        "Which task do you mean when you specify the whole pipeline has a dependency?") % arg.name)
+                    raise error_no_tail_tasks("Pipeline %s has no tail tasks defined. Which task "
+                                              "do you mean when you specify the whole pipeline as "
+                                              "a dependency?" % arg.name)
                 new_tasks.extend(arg.get_tail_tasks())
 
             #
@@ -3538,15 +3655,18 @@ class Task (node):
             #
             elif isinstance(arg, path_str_type):
                 # handle pipeline cloning
-                task_name = arg.replace(self.pipeline.original_name + "::", self.pipeline.name + "::")
+                task_name = arg.replace(self.pipeline.original_name + "::",
+                                        self.pipeline.name + "::")
 
-                tasks = lookup_tasks_from_name(arg, default_pipeline_name = self.pipeline.name, default_module_name = self.func_module_name)
+                tasks = lookup_tasks_from_name(arg,
+                                               default_pipeline_name=self.pipeline.name,
+                                               default_module_name=self.func_module_name)
                 new_tasks.extend(tasks)
 
                 if not tasks:
-                    raise error_node_not_task("task '%s'  is not a pipelined task in Ruffus. Have you mis-spelt the function or task name?\n%s" % (
-                                                        arg, description_with_args_placeholder % (arg,)))
-
+                    raise error_node_not_task("task '%s' is not a pipelined task in Ruffus. "
+                                              "Have you mis-spelt the function or task name?\n%s"
+                                              % (arg, description_with_args_placeholder % (arg,)))
 
             #
             #   for mkdir, automatically generate task with unique name
@@ -3561,8 +3681,10 @@ class Task (node):
                     mkdir_task_syntax = "@follows(mkdir())"
                 else:
                     mkdir_task_syntax = "Task(name=%r).follows(mkdir())" % self._get_display_name()
-                mkdir_description_with_args_placeholder = description_with_args_placeholder % "mkdir(%s)"
-                self._prepare_preceding_mkdir (arg.args, {}, mkdir_task_syntax, mkdir_description_with_args_placeholder)
+                mkdir_description_with_args_placeholder = \
+                    description_with_args_placeholder % "mkdir(%s)"
+                self._prepare_preceding_mkdir(arg.args, {}, mkdir_task_syntax,
+                                              mkdir_description_with_args_placeholder)
 
             #
             #   Is this a function?
@@ -3570,18 +3692,17 @@ class Task (node):
             #           (add task as attribute of this function)
             #       Add self as dependent
             elif isinstance(arg, collections.Callable):
-                task = lookup_unique_task_from_func (arg, default_pipeline_name = self.pipeline.name)
+                task = lookup_unique_task_from_func(arg, default_pipeline_name=self.pipeline.name)
 
                 # add new task to pipeline if necessary
                 if not task:
-                    task = main_pipeline._create_task(task_func = arg)
+                    task = main_pipeline._create_task(task_func=arg)
                 new_tasks.append(task)
 
             else:
-                raise error_decorator_args("Expecting a function or "
-                                           "function name or task name or Task or "
-                                           "Pipeline.\n" + description_with_args_placeholder % (arg,))
-
+                raise error_decorator_args("Expecting a function or function name or task name or "
+                                           "Task or Pipeline.\n" +
+                                           description_with_args_placeholder % (arg,))
 
         #
         #   add dependency
@@ -3592,284 +3713,265 @@ class Task (node):
 
         return new_tasks
 
-
-
-
-
-    #=====================================================================================
+    # ========================================================================
 
     #   check_if_uptodate
 
-    #=====================================================================================
-    def check_if_uptodate (self, func):
+    # ========================================================================
+    def check_if_uptodate(self, func):
         """
         func returns true if input / output files are up to date
         func takes as many arguments as the task function
         """
         if not isinstance(func, collections.Callable):
-            description_with_args_placeholder = (self.description_with_args_placeholder % "...") + ".check_if_uptodate(%r)"
+            description_with_args_placeholder = \
+                (self.description_with_args_placeholder % "...") + ".check_if_uptodate(%r)"
             raise error_decorator_args("Expected a single function or Callable object in \n" +
-                                        description_with_args_placeholder % (func,))
-        self.needs_update_func        = func
+                                       description_with_args_placeholder % (func,))
+        self.needs_update_func = func
         return self
 
-
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _decorator_check_if_uptodate
 
-    #_____________________________________________________________________________________
-    def _decorator_check_if_uptodate (self, *args):
+    # _________________________________________________________________________
+    def _decorator_check_if_uptodate(self, *args):
         """
         @check_if_uptodate
         """
         if len(args) != 1 or not isinstance(args[0], collections.Callable):
-            description_with_args_placeholder = "@check_if_uptodate(%r)\n" + (self.description_with_args_placeholder % "...")
+            description_with_args_placeholder = "@check_if_uptodate(%r)\n" + (
+                                                self.description_with_args_placeholder % "...")
             raise error_decorator_args("Expected a single function or Callable object in \n" +
-                                        description_with_args_placeholder % (args,))
-        self.needs_update_func      = args[0]
+                                       description_with_args_placeholder % (args,))
+        self.needs_update_func = args[0]
 
-
-    #=====================================================================================
+    # ========================================================================
 
     #   posttask
 
-    #=====================================================================================
+    # ========================================================================
     def posttask(self, *funcs):
         """
         Takes one or more functions which will be called if the task completes
         """
         description_with_args_placeholder = ("Expecting simple functions or touch_file() in \n" +
-                                            (self.description_with_args_placeholder % "...") +
-                                            ".posttask(%r)")
+                                             (self.description_with_args_placeholder % "...") +
+                                             ".posttask(%r)")
         self._set_posttask(description_with_args_placeholder, *funcs)
         return self
 
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _decorator_posttask
 
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
     def _decorator_posttask(self, *funcs):
         """
         @posttask
         """
         description_with_args_placeholder = ("Expecting simple functions or touch_file() in \n" +
-                                            "@posttask(%r)\n" +
-                                            (self.description_with_args_placeholder % "..."))
+                                             "@posttask(%r)\n" +
+                                             (self.description_with_args_placeholder % "..."))
         self._set_posttask(description_with_args_placeholder, *funcs)
 
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _set_posttask
 
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
     def _set_posttask(self, description_with_args_placeholder, *funcs):
         """
         Takes one or more functions which will be called if the task completes
         """
         for arg in funcs:
             if isinstance(arg, touch_file):
-                self.posttask_functions.append(touch_file_factory (arg.args, register_cleanup))
+                self.posttask_functions.append(touch_file_factory(arg.args, register_cleanup))
             elif isinstance(arg, collections.Callable):
                 self.posttask_functions.append(arg)
             else:
                 raise PostTaskArgumentError(description_with_args_placeholder % (arg,))
 
-
-
-    #=====================================================================================
+    # ========================================================================
 
     #   jobs_limit
 
-    #=====================================================================================
-    def jobs_limit(self, maximum_jobs_in_parallel, limit_name = None):
+    # ========================================================================
+    def jobs_limit(self, maximum_jobs_in_parallel, limit_name=None):
         """
         Limit the number of concurrent jobs
         """
         description_with_args_placeholder = ((self.description_with_args_placeholder % "...") +
-                                            ".jobs_limit(%r%s)")
-        self._set_jobs_limit(description_with_args_placeholder, maximum_jobs_in_parallel, limit_name)
+                                             ".jobs_limit(%r%s)")
+        self._set_jobs_limit(description_with_args_placeholder,
+                             maximum_jobs_in_parallel, limit_name)
         return self
 
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _decorator_jobs_limit
 
-    #_________________________________________________________________________________________
-    def _decorator_jobs_limit(self, maximum_jobs_in_parallel, limit_name = None):
+    # _________________________________________________________________________
+    def _decorator_jobs_limit(self, maximum_jobs_in_parallel, limit_name=None):
         """
         @jobs_limit
         """
         description_with_args_placeholder = ("@jobs_limit(%r%s)\n" +
-                                            (self.description_with_args_placeholder % "..."))
-        self._set_jobs_limit(description_with_args_placeholder, maximum_jobs_in_parallel, limit_name)
+                                             (self.description_with_args_placeholder % "..."))
+        self._set_jobs_limit(description_with_args_placeholder,
+                             maximum_jobs_in_parallel, limit_name)
 
-    #_________________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _set_jobs_limit
 
-    #_________________________________________________________________________________________
-    def _set_jobs_limit(self, description_with_args_placeholder, maximum_jobs_in_parallel, limit_name = None):
+    # _________________________________________________________________________
+    def _set_jobs_limit(self, description_with_args_placeholder,
+                        maximum_jobs_in_parallel, limit_name=None):
         try:
             maximum_jobs_in_parallel = int(maximum_jobs_in_parallel)
             assert(maximum_jobs_in_parallel >= 1)
         except:
             limit_name = ", " + limit_name if limit_name else ""
             raise JobsLimitArgumentError("Expecting a positive integer > 1 in \n" +
-                                            description_with_args_placeholder %
-                                         (maximum_jobs_in_parallel, limit_name))
+                                         description_with_args_placeholder
+                                         % (maximum_jobs_in_parallel, limit_name))
 
         # set semaphore name to other than the "pipeline.name:task name"
-        if limit_name != None:
+        if limit_name is not None:
             self.semaphore_name = limit_name
         if self.semaphore_name in self._job_limit_semaphores:
             prev_maximum_jobs = self._job_limit_semaphores[self.semaphore_name]
             if prev_maximum_jobs != maximum_jobs_in_parallel:
                 limit_name = ", " + limit_name if limit_name else ""
-                raise JobsLimitArgumentError('The job limit %r cannot re-defined from the previous limit of %d in \n' % (
-                                              self.semaphore_name, prev_maximum_jobs) +
-                                             description_with_args_placeholder % (maximum_jobs_in_parallel, limit_name))
+                raise JobsLimitArgumentError('The job limit %r cannot re-defined from the former '
+                                             'limit of %d in \n'
+                                             % (self.semaphore_name, prev_maximum_jobs) +
+                                             description_with_args_placeholder
+                                             % (maximum_jobs_in_parallel, limit_name))
         else:
             #
             #   save semaphore and limit
             #
-            self._job_limit_semaphores[self.semaphore_name] = maximum_jobs_in_parallel
+            self._job_limit_semaphores[
+                self.semaphore_name] = maximum_jobs_in_parallel
 
-    #=====================================================================================
+    # ========================================================================
 
     #   active_if
 
-    #=====================================================================================
-    def active_if (self, *active_if_checks):
+    # ========================================================================
+    def active_if(self, *active_if_checks):
         """
         If any of active_checks is False or returns False, then the task is
         marked as "inactive" and its outputs removed.
         """
-        #print 'job is active:', active_checks, [
-        #                arg() if isinstance(arg, collections.Callable) else arg
-        #                for arg in active_checks]
-        if self.active_if_checks == None:
+        # print 'job is active:', active_checks, [
+        #             arg() if isinstance(arg, collections.Callable) else arg
+        #             for arg in active_checks]
+        if self.active_if_checks is None:
             self.active_if_checks = []
         self.active_if_checks.extend(active_if_checks)
-        #print(self.active_if_checks)
+        # print(self.active_if_checks)
         return self
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _decorator_active_if
 
-    #_____________________________________________________________________________________
-    def _decorator_active_if (self, *active_if_checks):
+    # _________________________________________________________________________
+    def _decorator_active_if(self, *active_if_checks):
         """
         @active_if
         """
         self.active_if(*active_if_checks)
 
-
-    #=====================================================================================
+    # ========================================================================
 
     #   _decorator_graphviz
 
-    #=====================================================================================
+    # ========================================================================
     def graphviz(self, *unnamed_args, **named_args):
-        self.graphviz_attributes=named_args
+        self.graphviz_attributes = named_args
         if len(unnamed_args):
             raise TypeError("Only named arguments expected in :" +
                             self.description_with_args_placeholder % "..." +
                             ".graphviz(%r)\n" % unnamed_args)
         return self
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
 
     #   _decorator_graphviz
 
-    #_____________________________________________________________________________________
+    # _________________________________________________________________________
     def _decorator_graphviz(self, *unnamed_args, **named_args):
-        self.graphviz_attributes=named_args
+        self.graphviz_attributes = named_args
         if len(unnamed_args):
             raise TypeError("Only named arguments expected in :" +
                             "@graphviz(%r)\n" % unnamed_args +
                             self.description_with_args_placeholder % "...")
 
 
-
-
-
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #   End of Task
 
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-
-
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 class task_encoder(json.JSONEncoder):
+
     def default(self, obj):
         if isinstance(obj, set):
             return list(obj)
         if isinstance(obj, defaultdict):
             return dict(obj)
         if isinstance(obj, Task):
-            return obj._name #, Task._action_names[obj._action_task], obj.func_description]
+            # , Task._action_names[obj._action_task], obj.func_description]
+            return obj._name
         return json.JSONEncoder.default(self, obj)
 
 
-
-
-
-
-
-
-
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 
 #   is_node_up_to_date
 
-#_________________________________________________________________________________________
-def is_node_up_to_date (node, extra_data):
+# _____________________________________________________________________________
+def is_node_up_to_date(node, extra_data):
     """
-    Forwards tree depth first search "signalling" mechanism to node _is_up_to_date method
+    Forwards tree depth first search "signalling" mechanism to
+        node _is_up_to_date method
     Depth first search stops when node._is_up_to_date return True
     """
     return node._is_up_to_date(extra_data)
 
 
-
-
-
-
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Functions
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888
 
 
-
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 
 #   update_checksum_level_on_tasks
 
-#_________________________________________________________________________________________
-def update_checksum_level_on_tasks (checksum_level):
+# _____________________________________________________________________________
+def update_checksum_level_on_tasks(checksum_level):
     """Reset the checksum level for all tasks"""
     for n in node._all_nodes:
         n.checksum_level = checksum_level
 
 
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 
 #   update_active_states_for_all_tasks
 
-#_________________________________________________________________________________________
-def update_active_states_for_all_tasks ():
+# _____________________________________________________________________________
+def update_active_states_for_all_tasks():
     """
 
     @active_if decorated tasks can change their active state every time
@@ -3882,12 +3984,12 @@ def update_active_states_for_all_tasks ():
         n._update_active_state()
 
 
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 
 #   lookup_pipeline
 
-#_________________________________________________________________________________________
-def lookup_pipeline (pipeline):
+# _____________________________________________________________________________
+def lookup_pipeline(pipeline):
     """
     If pipeline is
         None                : main_pipeline
@@ -3909,59 +4011,75 @@ def lookup_pipeline (pipeline):
     raise error_not_a_pipeline("%s does not name a pipeline." % pipeline)
 
 
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 
 #   pipeline_printout_in_dot_format
 
-#_________________________________________________________________________________________
-def pipeline_printout_graph (stream,
-                             output_format                  = None,
-                             target_tasks                   = [],
-                             forcedtorun_tasks              = [],
-                             draw_vertically                = True,
-                             ignore_upstream_of_target      = False,
-                             skip_uptodate_tasks            = False,
-                             gnu_make_maximal_rebuild_mode  = True,
-                             test_all_task_for_update       = True,
-                             no_key_legend                  = False,
-                             minimal_key_legend             = True,
-                             user_colour_scheme             = None,
-                             pipeline_name                  = "Pipeline:",
-                             size                           = (11,8),
-                             dpi                            = 120,
-                             runtime_data                   = None,
-                             checksum_level                 = None,
-                             history_file                   = None,
-                             pipeline                       = None):
-                             # Remember to add further extra parameters here to "extra_pipeline_printout_graph_options" inside cmdline.py
-                             # This will forward extra parameters from the command line to pipeline_printout_graph
+# _____________________________________________________________________________
+def pipeline_printout_graph(stream,
+                            output_format=None,
+                            target_tasks=[],
+                            forcedtorun_tasks=[],
+                            draw_vertically=True,
+                            ignore_upstream_of_target=False,
+                            skip_uptodate_tasks=False,
+                            gnu_make_maximal_rebuild_mode=True,
+                            test_all_task_for_update=True,
+                            no_key_legend=False,
+                            minimal_key_legend=True,
+                            user_colour_scheme=None,
+                            pipeline_name="Pipeline:",
+                            size=(11, 8),
+                            dpi = 120,
+                            runtime_data = None,
+                            checksum_level = None,
+                            history_file = None,
+                            pipeline = None):
+    # Remember to add further extra parameters here to
+    #   "extra_pipeline_printout_graph_options" inside cmdline.py
+    # This will forward extra parameters from the
+    # command line to pipeline_printout_graph
     """
     print out pipeline dependencies in various formats
 
     :param stream: where to print to
     :type stream: file-like object with ``write()`` function
-    :param output_format: ["dot", "jpg", "svg", "ps", "png"]. All but the first depends on the `dot <http://www.graphviz.org>`_ program.
-    :param target_tasks: targets task functions which will be run if they are out-of-date.
-    :param forcedtorun_tasks: task functions which will be run whether or not they are out-of-date.
+    :param output_format: ["dot", "jpg", "svg", "ps", "png"]. All but the
+                          first depends on the
+                          `dot <http://www.graphviz.org>`_ program.
+    :param target_tasks: targets task functions which will be run if they are
+                         out-of-date.
+    :param forcedtorun_tasks: task functions which will be run whether or not
+                              they are out-of-date.
     :param draw_vertically: Top to bottom instead of left to right.
     :param ignore_upstream_of_target: Don't draw upstream tasks of targets.
     :param skip_uptodate_tasks: Don't draw up-to-date tasks if possible.
-    :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all* out-of-date tasks. Runs minimal
-                                          set to build targets if set to ``True``. Use with caution.
-    :param test_all_task_for_update: Ask all task functions if they are up-to-date.
+    :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all*
+                                          out-of-date tasks. Runs minimal
+                                          set to build targets if set to
+                                          ``True``. Use with caution.
+    :param test_all_task_for_update: Ask all task functions if they are
+                                     up-to-date.
     :param no_key_legend: Don't draw key/legend for graph.
-    :param minimal_key_legend: Only add entries to the legend for task types which appear
-    :param user_colour_scheme: Dictionary specifying colour scheme for flowchart
+    :param minimal_key_legend: Only legend entries for used task types
+    :param user_colour_scheme: Dictionary specifying flowchart colour scheme
     :param pipeline_name: Pipeline Title
     :param size: tuple of x and y dimensions
     :param dpi: print resolution
-    :param runtime_data: Experimental feature for passing data to tasks at run time
-    :param history_file: The database file which stores checksums and file timestamps for input/output files.
-    :param checksum_level: Several options for checking up-to-dateness are available: Default is level 1.
-                    level 0 : Use only file timestamps
-                    level 1 : above, plus timestamp of successful job completion
-                    level 2 : above, plus a checksum of the pipeline function body
-                    level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
+    :param runtime_data: Experimental feature: pass data to tasks at run time
+    :param history_file: Database file storing checksums and file timestamps
+                         for input/output files.
+    :param checksum_level: Several options for checking up-to-dateness are
+                           available: Default is level 1.
+                           level 0 : Use only file timestamps
+                           level 1 : above, plus timestamp of successful
+                                     job completion
+                           level 2 : above, plus a checksum of the pipeline
+                                     function body
+                           level 3 : above, plus a checksum of the pipeline
+                                     function default arguments and the
+                                     additional arguments passed in by task
+                                     decorators
     """
 
     # EXTRA pipeline_run DEBUGGING
@@ -3971,62 +4089,64 @@ def pipeline_printout_graph (stream,
     if checksum_level is None:
         checksum_level = get_default_checksum_level()
 
-
     #
     #   pipeline must be a Pipeline or a string naming a pipeline
     #
-    pipeline = lookup_pipeline (pipeline)
+    pipeline = lookup_pipeline(pipeline)
     #
     #   Make sure all tasks in dependency list are linked to real functions
     #
     completed_pipeline_names = pipeline._complete_task_setup()
 
-    update_checksum_level_on_tasks (checksum_level)
+    update_checksum_level_on_tasks(checksum_level)
 
     #
     # @active_if decorated tasks can change their active state every time
     #   pipeline_run / pipeline_printout / pipeline_printout_graph is called
     #
-    update_active_states_for_all_tasks ()
+    update_active_states_for_all_tasks()
 
     #
     #   run time data
     #
-    if runtime_data == None:
+    if runtime_data is None:
         runtime_data = {}
     if not isinstance(runtime_data, dict):
-        raise Exception("pipeline_run parameter runtime_data should be a dictionary of "
-                        "values passes to jobs at run time.")
+        raise Exception("pipeline_run parameter runtime_data should be a "
+                        "dictionary of values passes to jobs at run time.")
 
     #
     #   If we aren't using checksums, and history file hasn't been specified,
-    #       we might be a bit surprised to find Ruffus writing to a sqlite db anyway.
-    #       Let us just use a in memory db which will be thrown away
-    #   Of course, if history_file is specified, we presume you know what you are doing
+    #       we might be a bit surprised to find Ruffus writing to a
+    #       sqlite db anyway.
+    #   Let us just dump to a placeholder memory db that can then be discarded
+    #   Of course, if history_file is specified, we presume you know what
+    #       you are doing
     #
-    if checksum_level == CHECKSUM_FILE_TIMESTAMPS and history_file == None:
+    if checksum_level == CHECKSUM_FILE_TIMESTAMPS and history_file is None:
         history_file = ':memory:'
 
     #
     # load previous job history if it exists, otherwise create an empty history
     #
-    job_history = open_job_history (history_file)
+    job_history = open_job_history(history_file)
 
     #
     #   target jobs
     #
-    if target_tasks == None:
+    if target_tasks is None:
         target_tasks = []
-    if forcedtorun_tasks == None:
+    if forcedtorun_tasks is None:
         forcedtorun_tasks = []
-    target_tasks        = lookup_tasks_from_user_specified_names ("Target", target_tasks, pipeline.name)
+    target_tasks = lookup_tasks_from_user_specified_names("Target", target_tasks, pipeline.name)
     if not target_tasks:
         target_tasks = list(pipeline.tasks)
-    forcedtorun_tasks   = lookup_tasks_from_user_specified_names ("Forced to run", forcedtorun_tasks, pipeline.name)
-
+    forcedtorun_tasks = lookup_tasks_from_user_specified_names("Forced to run", forcedtorun_tasks,
+                                                               pipeline.name)
 
     #
-    #   forcedtorun_tasks and target_tasks may include more pipelines which have to be setup
+    #   forcedtorun_tasks and target_tasks may include more pipelines
+    #       which have to be setup
     #
     incomplete_pipeline_names = set()
     for task in forcedtorun_tasks + target_tasks:
@@ -4036,57 +4156,52 @@ def pipeline_printout_graph (stream,
     for pipeline_name in incomplete_pipeline_names:
         if pipeline_name in completed_pipeline_names:
             continue
-        completed_pipeline_names = completed_pipeline_names.union(pipeline.pipelines[pipeline_name]._complete_task_setup())
+        completed_pipeline_names = completed_pipeline_names.union(
+            pipeline.pipelines[pipeline_name]._complete_task_setup())
 
-
-
-
-
-    (topological_sorted, ignore_param1, ignore_param2,
-         ignore_param3) = topologically_sorted_nodes(target_tasks, forcedtorun_tasks,
-                                                        gnu_make_maximal_rebuild_mode,
-                                                        extra_data_for_signal = [t_verbose_logger(0, 0, None, runtime_data), job_history],
-                                                        signal_callback = is_node_up_to_date)
+    (topological_sorted, ignore_param1, ignore_param2, ignore_param3) = \
+        topologically_sorted_nodes(target_tasks, forcedtorun_tasks,
+                                   gnu_make_maximal_rebuild_mode,
+                                   extra_data_for_signal=[
+                                       t_verbose_logger(0, 0, None, runtime_data), job_history],
+                                   signal_callback=is_node_up_to_date)
     if not len(target_tasks):
         target_tasks = topological_sorted[-1:]
 
-
-
     # open file if (unicode?) string
     if isinstance(stream, path_str_type):
-        stream = open(stream, "w")
+        stream = open(stream, "wb")
 
     # derive format automatically from name
-    if output_format == None:
+    if output_format is None:
         output_format = os.path.splitext(stream.name)[1].lstrip(".")
 
+    graph_printout(stream,
+                   output_format,
+                   target_tasks,
+                   forcedtorun_tasks,
+                   draw_vertically,
+                   ignore_upstream_of_target,
+                   skip_uptodate_tasks,
+                   gnu_make_maximal_rebuild_mode,
+                   test_all_task_for_update,
+                   no_key_legend,
+                   minimal_key_legend,
+                   user_colour_scheme,
+                   pipeline_name,
+                   size,
+                   dpi,
+                   extra_data_for_signal=[t_verbose_logger(0, 0, None, runtime_data), job_history],
+                   signal_callback=is_node_up_to_date)
 
 
-    graph_printout (stream,
-                    output_format,
-                    target_tasks,
-                    forcedtorun_tasks,
-                    draw_vertically,
-                    ignore_upstream_of_target,
-                    skip_uptodate_tasks,
-                    gnu_make_maximal_rebuild_mode,
-                    test_all_task_for_update,
-                    no_key_legend,
-                    minimal_key_legend,
-                    user_colour_scheme,
-                    pipeline_name,
-                    size,
-                    dpi,
-                    extra_data_for_signal = [t_verbose_logger(0, 0, None, runtime_data), job_history],
-                    signal_callback = is_node_up_to_date)
-
-
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 
 #   get_completed_task_strings
 
-#_________________________________________________________________________________________
-def get_completed_task_strings (incomplete_tasks, all_tasks, forcedtorun_tasks, verbose, verbose_abbreviated_path, indent, runtime_data, job_history):
+# _____________________________________________________________________________
+def get_completed_task_strings(incomplete_tasks, all_tasks, forcedtorun_tasks, verbose,
+                               verbose_abbreviated_path, indent, runtime_data, job_history):
     """
     Printout list of completed tasks
     """
@@ -4104,7 +4219,9 @@ def get_completed_task_strings (incomplete_tasks, all_tasks, forcedtorun_tasks, 
             if t in set_of_incomplete_tasks:
                 continue
             # LOGGER
-            completed_task_strings.extend(t._printout(runtime_data, t in forcedtorun_tasks, job_history, False, verbose, verbose_abbreviated_path, indent))
+            completed_task_strings.extend(t._printout(runtime_data,
+                                                      t in forcedtorun_tasks, job_history, False,
+                                                      verbose, verbose_abbreviated_path, indent))
 
         completed_task_strings.append("_" * 40)
         completed_task_strings.append("")
@@ -4112,69 +4229,98 @@ def get_completed_task_strings (incomplete_tasks, all_tasks, forcedtorun_tasks, 
 
     return completed_task_strings
 
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 
 #   pipeline_printout
 
-#_________________________________________________________________________________________
-def pipeline_printout(  output_stream                   = None,
-                        target_tasks                    = [],
-                        forcedtorun_tasks               = [],
-                        # verbose defaults to 4 if None
-                        verbose                         = None,
-                        indent                          = 4,
-                        gnu_make_maximal_rebuild_mode   = True,
-                        wrap_width                      = 100,
-                        runtime_data                    = None,
-                        checksum_level                  = None,
-                        history_file                    = None,
-                        verbose_abbreviated_path        = None,
-                        pipeline                        = None):
-                      # Remember to add further extra parameters here to "extra_pipeline_printout_options" inside cmdline.py
-                      # This will forward extra parameters from the command line to pipeline_printout
+# _____________________________________________________________________________
+
+
+def pipeline_printout(output_stream=None,
+                      target_tasks=[],
+                      forcedtorun_tasks=[],
+                      # verbose defaults to 4 if None
+                      verbose=None,
+                      indent=4,
+                      gnu_make_maximal_rebuild_mode=True,
+                      wrap_width=100,
+                      runtime_data=None,
+                      checksum_level=None,
+                      history_file=None,
+                      verbose_abbreviated_path=None,
+                      pipeline=None):
+    # Remember to add further extra parameters here to
+    #   "extra_pipeline_printout_options" inside cmdline.py
+    # This will forward extra parameters from the command
+    # line to pipeline_printout
     """
     Printouts the parts of the pipeline which will be run
 
-    Because the parameters of some jobs depend on the results of previous tasks, this function
-    produces only the current snap-shot of task jobs. In particular, tasks which generate
-    variable number of inputs into following tasks will not produce the full range of jobs.
+    Because the parameters of some jobs depend on the results of previous
+    tasks, this function produces only the current snap-shot of task jobs.
+    In particular, tasks which generate variable number of inputs into
+    following tasks will not produce the full range of jobs.
 
     ::
         verbose = 0 : Nothing
         verbose = 1 : Out-of-date Task names
         verbose = 2 : All Tasks (including any task function docstrings)
         verbose = 3 : Out-of-date Jobs in Out-of-date Tasks, no explanation
-        verbose = 4 : Out-of-date Jobs in Out-of-date Tasks, with explanations and warnings
-        verbose = 5 : All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)
+        verbose = 4 : Out-of-date Jobs in Out-of-date Tasks, with explanations
+                      and warnings
+        verbose = 5 : All Jobs in Out-of-date Tasks,  (include only list of
+                      up-to-date tasks)
         verbose = 6 : All jobs in All Tasks whether out of date or not
 
     :param output_stream: where to print to
     :type output_stream: file-like object with ``write()`` function
-    :param target_tasks: targets task functions which will be run if they are out-of-date
-    :param forcedtorun_tasks: task functions which will be run whether or not they are out-of-date
+    :param target_tasks: targets task functions which will be run if they are
+                         out-of-date
+    :param forcedtorun_tasks: task functions which will be run whether or not
+                              they are out-of-date
     :param verbose: level 0 : nothing
                     level 1 : Out-of-date Task names
-                    level 2 : All Tasks (including any task function docstrings)
-                    level 3 : Out-of-date Jobs in Out-of-date Tasks, no explanation
-                    level 4 : Out-of-date Jobs in Out-of-date Tasks, with explanations and warnings
-                    level 5 : All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)
+                    level 2 : All Tasks (including any task function
+                              docstrings)
+                    level 3 : Out-of-date Jobs in Out-of-date Tasks, no
+                              explanation
+                    level 4 : Out-of-date Jobs in Out-of-date Tasks, with
+                              explanations and warnings
+                    level 5 : All Jobs in Out-of-date Tasks,  (include only
+                              list of up-to-date tasks)
                     level 6 : All jobs in All Tasks whether out of date or not
-                    level 10: logs messages useful only for debugging ruffus pipeline code
+                    level 10: logs messages useful only for debugging ruffus
+                              pipeline code
     :param indent: How much indentation for pretty format.
-    :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all* out-of-date tasks. Runs minimal
-                                          set to build targets if set to ``True``. Use with caution.
+    :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all*
+                                          out-of-date tasks. Runs minimal
+                                          set to build targets if set to
+                                          ``True``. Use with caution.
     :param wrap_width: The maximum length of each line
-    :param runtime_data: Experimental feature for passing data to tasks at run time
-    :param checksum_level: Several options for checking up-to-dateness are available: Default is level 1.
-                    level 0 : Use only file timestamps
-                    level 1 : As above, plus timestamp of successful job completion
-                    level 2 : As above, plus a checksum of the pipeline function body
-                    level 3 : As above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
-    :param history_file: The database file which stores checksums and file timestamps for input/output files.
-    :param verbose_abbreviated_path: whether input and output paths are abbreviated.
-                    level 0: The full (expanded, abspath) input or output path
-                    level > 1: The number of subdirectories to include. Abbreviated paths are prefixed with ``[,,,]/``
-                    level < 0: level < 0: Input / Output parameters are truncated to ``MMM`` letters where ``verbose_abbreviated_path ==-MMM``. Subdirectories are first removed to see if this allows the paths to fit in the specified limit. Otherwise abbreviated paths are prefixed by ``<???>``
+    :param runtime_data: Experimental feature: pass data to tasks at run time
+    :param checksum_level: Several options for checking up-to-dateness are
+                           available: Default is level 1.
+                           level 0 : Use only file timestamps
+                           level 1 : above, plus timestamp of successful
+                                     job completion
+                           level 2 : above, plus a checksum of the pipeline
+                                     function body
+                           level 3 : above, plus a checksum of the pipeline
+                                     function default arguments and the
+                                     additional arguments passed in by task
+                                     decorators
+    :param history_file: Database file storing checksums and file timestamps
+                         for input/output files.
+    :param verbose_abbreviated_path: whether input and output paths are
+                                     abbreviated.
+        level 0: The full (expanded, abspath) input or output path
+        level > 1: The number of subdirectories to include.
+                   Abbreviated paths are prefixed with ``[,,,]/``
+        level < 0: level < 0: Input / Output parameters are truncated to
+                   ``MMM`` letters where ``verbose_abbreviated_path ==-MMM``.
+                   Subdirectories are first removed to see if this allows the
+                   paths to fit in the specified limit. Otherwise abbreviated
+                   paths are prefixed by ``<???>``
     """
     # do nothing!
     if verbose == 0:
@@ -4183,27 +4329,28 @@ def pipeline_printout(  output_stream                   = None,
     #
     # default values
     #
-    if verbose_abbreviated_path == None:
+    if verbose_abbreviated_path is None:
         verbose_abbreviated_path = 2
-    if verbose == None:
+    if verbose is None:
         verbose = 4
 
     # EXTRA pipeline_run DEBUGGING
     global EXTRA_PIPELINERUN_DEBUGGING
     EXTRA_PIPELINERUN_DEBUGGING = False
 
-    if output_stream == None:
+    if output_stream is None:
         output_stream = sys.stdout
 
-
     if not hasattr(output_stream, "write"):
-        raise Exception("The first parameter to pipeline_printout needs to be an output file, e.g. sys.stdout and not %s" % str(output_stream))
+        raise Exception("The first parameter to pipeline_printout needs to be "
+                        "an output file, e.g. sys.stdout and not %s"
+                        % str(output_stream))
 
-    if runtime_data == None:
+    if runtime_data is None:
         runtime_data = {}
     if not isinstance(runtime_data, dict):
-        raise Exception("pipeline_run parameter runtime_data should be a dictionary of "
-                        "values passes to jobs at run time.")
+        raise Exception("pipeline_run parameter runtime_data should be a "
+                        "dictionary of values passes to jobs at run time.")
 
     if checksum_level is None:
         checksum_level = get_default_checksum_level()
@@ -4211,7 +4358,7 @@ def pipeline_printout(  output_stream                   = None,
     #
     #   pipeline must be a Pipeline or a string naming a pipeline
     #
-    pipeline = lookup_pipeline (pipeline)
+    pipeline = lookup_pipeline(pipeline)
     #
     #   Make sure all tasks in dependency list are linked to real functions
     #
@@ -4223,18 +4370,20 @@ def pipeline_printout(  output_stream                   = None,
     # @active_if decorated tasks can change their active state every time
     #   pipeline_run / pipeline_printout / pipeline_printout_graph is called
     #
-    update_active_states_for_all_tasks ()
+    update_active_states_for_all_tasks()
 
     #
     #   target jobs
     #
-    target_tasks = lookup_tasks_from_user_specified_names ("Target", target_tasks, pipeline.name)
+    target_tasks = lookup_tasks_from_user_specified_names("Target", target_tasks, pipeline.name)
     if not target_tasks:
         target_tasks = list(pipeline.tasks)
-    forcedtorun_tasks = lookup_tasks_from_user_specified_names ("Forced to run", forcedtorun_tasks, pipeline.name)
+    forcedtorun_tasks = lookup_tasks_from_user_specified_names("Forced to run", forcedtorun_tasks,
+                                                               pipeline.name)
 
     #
-    #   forcedtorun_tasks and target_tasks may include more pipelines which have to be setup
+    #   forcedtorun_tasks and target_tasks may include more pipelines
+    #       which have to be setup
     #
     incomplete_pipeline_names = set()
     for task in forcedtorun_tasks + target_tasks:
@@ -4244,33 +4393,36 @@ def pipeline_printout(  output_stream                   = None,
     for pipeline_name in incomplete_pipeline_names:
         if pipeline_name in completed_pipeline_names:
             continue
-        completed_pipeline_names = completed_pipeline_names.union(pipeline.pipelines[pipeline_name]._complete_task_setup())
+        completed_pipeline_names = completed_pipeline_names.union(
+            pipeline.pipelines[pipeline_name]._complete_task_setup())
 
-
-    logging_strm = t_verbose_logger(verbose, verbose_abbreviated_path, t_stream_logger(output_stream), runtime_data)
+    logging_strm = t_verbose_logger(verbose, verbose_abbreviated_path,
+                                    t_stream_logger(output_stream), runtime_data)
 
     #
     #   If we aren't using checksums, and history file hasn't been specified,
-    #       we might be a bit surprised to find Ruffus writing to a sqlite db anyway.
-    #       Let us just use a in memory db which will be thrown away
-    #   Of course, if history_file is specified, we presume you know what you are doing
-    #
-    if checksum_level == CHECKSUM_FILE_TIMESTAMPS and history_file == None:
+    #       we might be a bit surprised to find Ruffus writing to a
+    #       sqlite db anyway.
+    #   Let us just dump to a placeholder memory db that can then be discarded
+    #   Of course, if history_file is specified, we presume you know what
+    #       you are doing
+    if checksum_level == CHECKSUM_FILE_TIMESTAMPS and history_file is None:
         history_file = ':memory:'
 
     #
     # load previous job history if it exists, otherwise create an empty history
     #
-    job_history = open_job_history (history_file)
+    job_history = open_job_history(history_file)
 
     (incomplete_tasks,
-    self_terminated_nodes,
-    dag_violating_edges,
-    dag_violating_nodes) = topologically_sorted_nodes(target_tasks, forcedtorun_tasks,
-                                                        gnu_make_maximal_rebuild_mode,
-                                                        extra_data_for_signal = [t_verbose_logger(0, 0, None, runtime_data), job_history],
-                                                        signal_callback = is_node_up_to_date)
-
+     self_terminated_nodes,
+     dag_violating_edges,
+     dag_violating_nodes) = \
+        topologically_sorted_nodes(target_tasks, forcedtorun_tasks,
+                                   gnu_make_maximal_rebuild_mode,
+                                   extra_data_for_signal=[
+                                       t_verbose_logger(0, 0, None, runtime_data), job_history],
+                                   signal_callback=is_node_up_to_date)
 
     #
     #   raise error if DAG violating nodes
@@ -4278,9 +4430,8 @@ def pipeline_printout(  output_stream                   = None,
     if len(dag_violating_nodes):
         dag_violating_tasks = ", ".join(t._name for t in dag_violating_nodes)
 
-        e = error_circular_dependencies("Circular dependencies found in the "
-                                        "pipeline involving one or more of (%s)" %
-                                            (dag_violating_tasks))
+        e = error_circular_dependencies("Circular dependencies found in the pipeline involving "
+                                        "one or more of (%s)" % (dag_violating_tasks,))
         raise e
 
     wrap_indent = " " * (indent + 11)
@@ -4290,32 +4441,39 @@ def pipeline_printout(  output_stream                   = None,
     #
     #   LOGGER level 6 : All jobs in All Tasks whether out of date or not
     if verbose == 2 or verbose >= 5:
-        (all_tasks, ignore_param1, ignore_param2,
-         ignore_param3) = topologically_sorted_nodes(target_tasks, True,
-                                                     gnu_make_maximal_rebuild_mode,
-                                                     extra_data_for_signal = [t_verbose_logger(0, 0, None, runtime_data), job_history],
-                                                    signal_callback = is_node_up_to_date)
-        for m in get_completed_task_strings (incomplete_tasks, all_tasks, forcedtorun_tasks, verbose, verbose_abbreviated_path, indent, runtime_data, job_history):
-            output_stream.write(textwrap.fill(m, subsequent_indent = wrap_indent, width = wrap_width) + "\n")
+        (all_tasks, ignore_param1, ignore_param2, ignore_param3) = \
+            topologically_sorted_nodes(target_tasks, True, gnu_make_maximal_rebuild_mode,
+                                       extra_data_for_signal=[
+                                           t_verbose_logger(0, 0, None, runtime_data),
+                                           job_history],
+                                       signal_callback=is_node_up_to_date)
+        for m in get_completed_task_strings(incomplete_tasks, all_tasks, forcedtorun_tasks,
+                                            verbose, verbose_abbreviated_path, indent,
+                                            runtime_data, job_history):
+            output_stream.write(textwrap.fill(m, subsequent_indent=wrap_indent,
+                                              width=wrap_width) + "\n")
 
     output_stream.write("\n" + "_" * 40 + "\nTasks which will be run:\n\n")
     for t in incomplete_tasks:
         # LOGGER
-        messages = t._printout(runtime_data, t in forcedtorun_tasks, job_history, True, verbose, verbose_abbreviated_path, indent)
+        messages = t._printout(runtime_data, t in forcedtorun_tasks,
+                               job_history, True, verbose,
+                               verbose_abbreviated_path, indent)
         for m in messages:
-            output_stream.write(textwrap.fill(m, subsequent_indent = wrap_indent, width = wrap_width) + "\n")
+            output_stream.write(textwrap.fill(m, subsequent_indent=wrap_indent,
+                                              width=wrap_width) + "\n")
 
     if verbose:
         # LOGGER
         output_stream.write("_" * 40 + "\n")
 
 
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 
 #   get_semaphore
 
-#_________________________________________________________________________________________
-def get_semaphore (t, _job_limit_semaphores, syncmanager):
+# _____________________________________________________________________________
+def get_semaphore(t, _job_limit_semaphores, syncmanager):
     """
     return semaphore to limit the number of concurrent jobs
     """
@@ -4325,7 +4483,6 @@ def get_semaphore (t, _job_limit_semaphores, syncmanager):
     if t.semaphore_name not in t._job_limit_semaphores:
         return None
 
-
     #
     #   create semaphore if not yet created
     #
@@ -4334,24 +4491,140 @@ def get_semaphore (t, _job_limit_semaphores, syncmanager):
         _job_limit_semaphores[t.semaphore_name] = syncmanager.BoundedSemaphore(maximum_jobs_num)
     return _job_limit_semaphores[t.semaphore_name]
 
-#_________________________________________________________________________________________
+
+# _____________________________________________________________________________
+
+#   job_needs_to_run
+
+#       Helper function for make_job_parameter_generator
+# _____________________________________________________________________________
+def job_needs_to_run(task, param, force_rerun, logger, verbose, job_name,
+                     job_history, verbose_abbreviated_path):
+    """
+    Check if job parameters out of date / needs to rerun
+    """
+
+    #
+    #    Out of date because forced to run
+    #
+    if force_rerun:
+        # LOGGER: Out-of-date Jobs in Out-of-date Tasks
+        log_at_level(logger, 3, verbose, "    force task %s to rerun "
+                     % job_name)
+        return True
+
+    if not task.needs_update_func:
+        # LOGGER: Out-of-date Jobs in Out-of-date Tasks
+        log_at_level(logger, 3, verbose, "    %s no function to check "
+                     "if up-to-date " % job_name)
+        return True
+
+    # extra clunky hack to also pass task info--
+    # makes sure that there haven't been code or
+    # arg changes
+    if task.needs_update_func == needs_update_check_modify_time:
+        needs_update, msg = task.needs_update_func(
+            *param, task=task, job_history=job_history,
+            verbose_abbreviated_path=verbose_abbreviated_path)
+    else:
+        needs_update, msg = task.needs_update_func(*param)
+
+    if not needs_update:
+        # LOGGER: All Jobs in Out-of-date Tasks
+        log_at_level(logger, 5, verbose,
+                     "    %s unnecessary: already up to date " % job_name)
+        return False
+
+    # LOGGER: Out-of-date Jobs in Out-of-date
+    # Tasks: Why out of date
+    if not log_at_level(logger, 4, verbose, "    %s %s " % (job_name, msg)):
+        # LOGGER: Out-of-date Jobs in
+        # Out-of-date Tasks: No explanation
+        log_at_level(logger, 3, verbose, "    %s" % (job_name))
+
+    #
+    #   Clunky hack to make sure input files exists right
+    #       before job is called for better error messages
+    #
+    if task.needs_update_func == needs_update_check_modify_time:
+        check_input_files_exist(*param)
+
+    return True
+
+
+# _____________________________________________________________________________
 #
-#   Parameter generator for all jobs / tasks
+#   remove_completed_tasks
 #
-#________________________________________________________________________________________
-def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forcedtorun_tasks,
-                                    task_with_completed_job_q, runtime_data, verbose,
-                                    verbose_abbreviated_path,
-                                    syncmanager,
-                                    death_event,
-                                    touch_files_only, job_history):
+#       Helper function for make_job_parameter_generator
+# _____________________________________________________________________________
+def remove_completed_tasks(task_with_completed_job_q, incomplete_tasks,
+                           count_remaining_jobs, logger, verbose):
+    """
+    Remove completed tasks in same thread as job parameters generation to
+        prevent race conditions
+    Task completion is usually signalled from pipeline_run
+    """
+    while True:
+        try:
+            (job_completed_task,
+             job_completed_task_name,
+             job_completed_node_index,
+             job_completed_name) = task_with_completed_job_q.get_nowait()
+
+            if job_completed_task not in incomplete_tasks:
+                raise Exception("Last job %s for %s. Missing from "
+                                "incomplete tasks in make_job_parameter_generator"
+                                % (job_completed_name, job_completed_task_name))
+            count_remaining_jobs[job_completed_task] -= 1
+            #
+            #   Negative job count : something has gone very wrong
+            #
+            if count_remaining_jobs[job_completed_task] < 0:
+                raise Exception("job %s for %s causes job count < 0."
+                                % (job_completed_name,
+                                   job_completed_task_name))
+
+            #
+            #   This Task completed
+            #
+            if count_remaining_jobs[job_completed_task] == 0:
+                log_at_level(logger, 10, verbose, "   Last job for %r. "
+                             "Retired from incomplete tasks in pipeline_run "
+                             % job_completed_task._get_display_name())
+                incomplete_tasks.remove(job_completed_task)
+                job_completed_task._completed()
+                log_at_level(logger, 1, verbose, "Completed Task = %r "
+                             % job_completed_task._get_display_name())
+
+        except queue.Empty:
+            break
+
+
+# _____________________________________________________________________________
+#
+#   Parameter generator factory for all jobs / tasks
+#
+# _____________________________________________________________________________
+def make_job_parameter_generator(incomplete_tasks, task_parents, logger,
+                                 forcedtorun_tasks, task_with_completed_job_q,
+                                 runtime_data, verbose,
+                                 verbose_abbreviated_path,
+                                 syncmanager,
+                                 death_event,
+                                 touch_files_only, job_history):
 
     inprogress_tasks = set()
     _job_limit_semaphores = dict()
 
+    # _________________________________________________________________________
+    #
+    #   Parameter generator returned by factory
+    #
+    # _________________________________________________________________________
     def parameter_generator():
         count_remaining_jobs = defaultdict(int)
-        log_at_level (logger, 10, verbose, "   job_parameter_generator BEGIN")
+        log_at_level(logger, 10, verbose, "   job_parameter_generator BEGIN")
         while len(incomplete_tasks):
             cnt_jobs_created_for_all_tasks = 0
             cnt_tasks_processed = 0
@@ -4360,46 +4633,23 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
             #   get rid of all completed tasks first
             #       Completion is signalled from pipeline_run
             #
-            while True:
-                try:
-                    item = task_with_completed_job_q.get_nowait()
-                    job_completed_task, job_completed_task_name, job_completed_node_index, job_completed_name = item
-
-
-                    if not job_completed_task in incomplete_tasks:
-                        raise Exception("Last job %s for %s. Missing from incomplete tasks in make_job_parameter_generator" % (job_completed_name, job_completed_task_name))
-                    count_remaining_jobs[job_completed_task] = count_remaining_jobs[job_completed_task] - 1
-                    #
-                    #   This is bad: something has gone very wrong
-                    #
-                    if count_remaining_jobs[t] < 0:
-                        raise Exception("job %s for %s causes job count < 0." % (job_completed_name, job_completed_task_name))
-
-                    #
-                    #   This Task completed
-                    #
-                    if count_remaining_jobs[job_completed_task] == 0:
-                        log_at_level (logger, 10, verbose, "   Last job for %r. Retired from incomplete tasks in pipeline_run " % job_completed_task._get_display_name())
-                        incomplete_tasks.remove(job_completed_task)
-                        job_completed_task._completed ()
-                        # LOGGER: Out-of-date Tasks
-                        log_at_level (logger, 1, verbose, "Completed Task = %r " % job_completed_task._get_display_name())
-
-                except queue.Empty:
-                    break
+            remove_completed_tasks(task_with_completed_job_q, incomplete_tasks,
+                                   count_remaining_jobs, logger, verbose)
 
             for t in list(incomplete_tasks):
                 #
-                #   wrap in execption handler so that we know which task exception
-                #       came from
+                #   wrap in execption handler so that we know
+                #       which task the original exception came from
                 #
                 try:
-                    log_at_level (logger, 10, verbose, "   job_parameter_generator consider task = %r" % t._get_display_name())
+                    log_at_level(logger, 10, verbose, "   job_parameter_generator consider "
+                                 "task = %r" % t._get_display_name())
 
                     # ignore tasks in progress
                     if t in inprogress_tasks:
                         continue
-                    log_at_level (logger, 10, verbose, "   job_parameter_generator task %r not in progress" % t._get_display_name())
+                    log_at_level(logger, 10, verbose, "   job_parameter_generator task %r not in "
+                                 "progress" % t._get_display_name())
 
                     # ignore tasks with incomplete dependencies
                     incomplete_parent = False
@@ -4410,50 +4660,48 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                     if incomplete_parent:
                         continue
 
-                    log_at_level (logger, 10, verbose, "   job_parameter_generator start task %r (parents completed)" % t._get_display_name())
+                    log_at_level(logger, 10, verbose, "   job_parameter_generator start task %r "
+                                 "(parents completed)" % t._get_display_name())
                     force_rerun = t in forcedtorun_tasks
-                    #
-                    # Only log active task
-                    #
-                    if t.is_active:
-                        # LOGGER: Out-of-date Tasks
-                        log_at_level (logger, 1, verbose, "Task enters queue = %r %s" % (t._get_display_name(), (": Forced to rerun" if force_rerun else "")))
-                        # LOGGER: logs All Tasks (including any task function docstrings)
-                        # indent string
-                        if len(t.func_description):
-                            log_at_level (logger, 2, verbose, "    " + t.func_description)
                     inprogress_tasks.add(t)
                     cnt_tasks_processed += 1
 
+                    #
+                    # Log active task
+                    #
+                    if t.is_active:
+                        forced_msg = ": Forced to rerun" if force_rerun else ""
+                        log_at_level(logger, 1, verbose, "Task enters queue = %r %s"
+                                     % (t._get_display_name(), forced_msg))
+                        if len(t.func_description):
+                            log_at_level(logger, 2, verbose, "    " + t.func_description)
+                    #
+                    #   Inactive skip loop
+                    #
+                    else:
+                        incomplete_tasks.remove(t)
+                        # N.B. inactive tasks are not _completed()
+                        # t._completed()
+                        t.output_filenames = None
+                        log_at_level(logger, 2, verbose, "Inactive Task = %r"
+                                     % t._get_display_name())
+                        continue
 
                     #
-                    #   Use output parameters actually generated by running task
+                    #   Use output parameters generated by running task
                     #
                     t.output_filenames = []
 
-
-
                     #
                     #   If no parameters: just call task function (empty list)
                     #
-                    #if (t.active_if_checks != None):
-                    #    t.is_active = all(arg() if isinstance(arg, collections.Callable) else arg
-                    #                        for arg in t.active_if_checks)
-                    if not t.is_active:
-                        parameters = []
-
-
-
-                    #
-                    #   If no parameters: just call task function (empty list)
-                    #
-                    elif t.param_generator_func == None:
+                    if t.param_generator_func is None:
                         parameters = ([[], []],)
                     else:
                         parameters = t.param_generator_func(runtime_data)
 
                     #
-                    #   iterate through parameters
+                    #   iterate through jobs
                     #
                     cnt_jobs_created = 0
                     for param, descriptive_param in parameters:
@@ -4464,157 +4712,134 @@ def make_job_parameter_generator (incomplete_tasks, task_parents, logger, forced
                         if len(param) >= 2:
                             t.output_filenames.append(param[1])
 
-                        job_name = t._get_job_name(descriptive_param, verbose_abbreviated_path, runtime_data)
+                        job_name = t._get_job_name(descriptive_param,
+                                                   verbose_abbreviated_path,
+                                                   runtime_data)
 
-                        #
-                        #    don't run if up to date unless force to run
-                        #
-                        if force_rerun:
-                            # LOGGER: Out-of-date Jobs in Out-of-date Tasks
-                            log_at_level (logger, 3, verbose, "    force task %s to rerun " % job_name)
-                        else:
-                            if not t.needs_update_func:
-                                # LOGGER: Out-of-date Jobs in Out-of-date Tasks
-                                log_at_level (logger, 3, verbose, "    %s no function to check if up-to-date " % job_name)
-                            else:
-                                # extra clunky hack to also pass task info--
-                                # makes sure that there haven't been code or arg changes
-                                if t.needs_update_func == needs_update_check_modify_time:
-                                    needs_update, msg = t.needs_update_func (*param, task=t, job_history = job_history, verbose_abbreviated_path = verbose_abbreviated_path)
-                                else:
-                                    needs_update, msg = t.needs_update_func (*param)
-
-                                if not needs_update:
-                                    # LOGGER: All Jobs in Out-of-date Tasks
-                                    log_at_level (logger, 5, verbose, "    %s unnecessary: already up to date " % job_name)
-                                    continue
-                                else:
-                                    # LOGGER: Out-of-date Jobs in Out-of-date Tasks: Why out of date
-                                    if not log_at_level (logger, 4, verbose, "    %s %s " % (job_name, msg)):
-
-                                        # LOGGER: Out-of-date Jobs in Out-of-date Tasks: No explanation
-                                        log_at_level (logger, 3, verbose, "    %s" % (job_name))
-
-                        #
-                        #   Clunky hack to make sure input files exists right before
-                        #        job is called for better error messages
-                        #
-                        if t.needs_update_func == needs_update_check_modify_time:
-                            check_input_files_exist (*param)
+                        if not job_needs_to_run(t, param, force_rerun, logger, verbose, job_name,
+                                                job_history, verbose_abbreviated_path):
+                            continue
 
                         # pause for one second before first job of each tasks
-                        # @originate tasks do not need to pause, because they depend on nothing!
+                        # @originate tasks do not need to pause,
+                        #   because they depend on nothing!
                         if cnt_jobs_created == 0 and touch_files_only < 2:
-                            if "ONE_SECOND_PER_JOB" in runtime_data and runtime_data["ONE_SECOND_PER_JOB"] and t._action_type != Task._action_task_originate:
-                                log_at_level (logger, 10, verbose, "   1 second PAUSE in job_parameter_generator\n\n\n")
+                            if "ONE_SECOND_PER_JOB" in runtime_data and \
+                                    runtime_data["ONE_SECOND_PER_JOB"] and \
+                                    t._action_type != Task._action_task_originate:
+                                log_at_level(logger, 10, verbose,
+                                             "   1 second PAUSE in job_parameter_generator\n\n\n")
                                 time.sleep(1.01)
                             else:
                                 time.sleep(0.1)
-
 
                         count_remaining_jobs[t] += 1
                         cnt_jobs_created += 1
                         cnt_jobs_created_for_all_tasks += 1
                         yield (param,
-                                t._name,
-                                t._node_index,
-                                job_name,
-                                t.job_wrapper,
-                                t.user_defined_work_func,
-                                get_semaphore (t, _job_limit_semaphores, syncmanager),
-                                death_event,
-                                touch_files_only)
+                               t._name,
+                               t._node_index,
+                               job_name,
+                               t.job_wrapper,
+                               t.user_defined_work_func,
+                               get_semaphore(t, _job_limit_semaphores, syncmanager),
+                               death_event,
+                               touch_files_only)
 
                     # if no job came from this task, this task is complete
-                    #   we need to retire it here instead of normal completion at end of job tasks
-                    #   precisely because it created no jobs
+                    #   we need to retire it here instead of normal completion
+                    #       at end of job tasks precisely
+                    #       because it created no jobs
                     if cnt_jobs_created == 0:
                         incomplete_tasks.remove(t)
-                        t._completed ()
-                        if not t.is_active:
-                            log_at_level (logger, 2, verbose, "Inactive Task = %r" % t._get_display_name())
-                        else:
-                            log_at_level (logger, 2, verbose, "Uptodate Task = %r" % t._get_display_name())
+                        t._completed()
+                        log_at_level(logger, 2, verbose,
+                                     "Uptodate Task = %r" % t._get_display_name())
                         # LOGGER: logs All Tasks (including any task function docstrings)
-                        log_at_level (logger, 10, verbose, "   No jobs created for %r. Retired in parameter_generator " % t._get_display_name())
+                        log_at_level(logger, 10, verbose, "   No jobs created for %r. Retired "
+                                     "in parameter_generator " % t._get_display_name())
 
                         #
                         #   Add extra warning if no regular expressions match:
                         #   This is a common class of frustrating errors
                         #
-                        if (verbose >= 1 and "ruffus_WARNING" in runtime_data and
-                            t.param_generator_func in runtime_data["ruffus_WARNING"]):
-                            for msg in runtime_data["ruffus_WARNING"][t.param_generator_func]:
-                                logger.warning("    'In Task %r:' %s " % (t._get_display_name(), msg))
-
+                        if verbose >= 1 and \
+                                "ruffus_WARNING" in runtime_data and \
+                                t.param_generator_func in runtime_data["ruffus_WARNING"]:
+                            for msg in runtime_data["ruffus_WARNING"][
+                                    t.param_generator_func]:
+                                logger.warning("    'In Task %r:' %s "
+                                               % (t._get_display_name(), msg))
 
                 #
-                #   GeneratorExit is thrown when this generator does not complete.
+                #   GeneratorExit thrown when generator doesn't complete.
                 #       I.e. there is a break in the pipeline_run loop.
-                #       This happens where there are exceptions signalled from within a job
+                #       This happens where there are exceptions
+                #           signalled from within a job
                 #
-                #   This is not really an exception, more a way to exit the generator loop
-                #       asynchrononously so that cleanups can happen (e.g. the "with" statement
-                #       or finally.)
+                #   This is not really an exception, more a way to exit the
+                #       generator loop asynchrononously so that cleanups can
+                #       happen (e.g. the "with" statement or finally.)
                 #
-                #   We could write except Exception: below which will catch everything but
-                #       KeyboardInterrupt and StopIteration and GeneratorExit in python 2.6
+                #   We could write except Exception: below which will catch
+                #       everything but KeyboardInterrupt and StopIteration
+                #       and GeneratorExit in python 2.6
                 #
-                #   However, in python 2.5, GeneratorExit inherits from Exception. So
-                #       we explicitly catch and rethrow GeneratorExit.
+                #   However, in python 2.5, GeneratorExit inherits from
+                #       Exception. So we explicitly catch and rethrow
+                #       GeneratorExit.
                 except GeneratorExit:
                     raise
                 except:
                     exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-                    exception_stack  = traceback.format_exc()
-                    exception_name   = exceptionType.__module__ + '.' + exceptionType.__name__
-                    exception_value  = str(exceptionValue)
+                    exception_stack = traceback.format_exc()
+                    exception_name = exceptionType.__module__ + '.' + exceptionType.__name__
+                    exception_value = str(exceptionValue)
                     if len(exception_value):
                         exception_value = "(%s)" % exception_value
                     errt = RethrownJobError([(t._name,
-                                             "",
-                                             exception_name,
-                                             exception_value,
-                                             exception_stack)])
+                                              "",
+                                              exception_name,
+                                              exception_value,
+                                              exception_stack)])
                     errt.specify_task(t, "Exceptions generating parameters")
                     raise errt
 
-
-
             # extra tests incase final tasks do not result in jobs
-            if len(incomplete_tasks) and (not cnt_tasks_processed or cnt_jobs_created_for_all_tasks):
-                log_at_level (logger, 10, verbose, "    incomplete tasks = " +
-                                       ",".join([t._name for t in incomplete_tasks] ))
+            if len(incomplete_tasks) and \
+                    (not cnt_tasks_processed or cnt_jobs_created_for_all_tasks):
+                log_at_level(logger, 10, verbose, "    incomplete tasks = " +
+                             ",".join([t._name for t in incomplete_tasks]))
                 yield waiting_for_more_tasks_to_complete()
 
         yield all_tasks_complete()
         # This function is done
-        log_at_level (logger, 10, verbose, "   job_parameter_generator END")
+        log_at_level(logger, 10, verbose, "   job_parameter_generator END")
 
     return parameter_generator
 
 
-
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 #
 #   feed_job_params_to_process_pool
 #
 #
-#________________________________________________________________________________________
-def feed_job_params_to_process_pool_factory (parameter_q, death_event, logger, verbose):
+# _____________________________________________________________________________
+def feed_job_params_to_process_pool_factory(parameter_q, death_event, logger,
+                                            verbose):
     """
     Process pool gets its parameters from this generator
     Use factory function to save parameter_queue
     """
-    def feed_job_params_to_process_pool ():
-        log_at_level (logger, 10, verbose, "   Send param to Pooled Process START")
+    def feed_job_params_to_process_pool():
+        log_at_level(logger, 10, verbose, "   Send param to Pooled Process START")
         while 1:
-            log_at_level (logger, 10, verbose, "   Get next parameter size = %d" %
-                                                        parameter_q.qsize())
+            log_at_level(logger, 10, verbose,
+                         "   Get next parameter size = %d" % parameter_q.qsize())
             if not parameter_q.qsize():
                 time.sleep(0.1)
             param = parameter_q.get()
-            log_at_level (logger, 10, verbose, "   Get next parameter done")
+            log_at_level(logger, 10, verbose, "   Get next parameter done")
 
             # all tasks done
             if isinstance(param, all_tasks_complete):
@@ -4624,53 +4849,57 @@ def feed_job_params_to_process_pool_factory (parameter_q, death_event, logger, v
                 death_event.clear()
                 break
 
-            log_at_level (logger, 10, verbose, "   Send param to Pooled Process=>" + str(param[0]))
+            log_at_level(logger, 10, verbose,
+                         "   Send param to Pooled Process=>" + str(param[0]))
             yield param
 
-        log_at_level (logger, 10, verbose, "   Send param to Pooled Process END")
+        log_at_level(logger, 10, verbose, "   Send param to Pooled Process END")
 
     # return generator
     return feed_job_params_to_process_pool
 
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 #
 #   fill_queue_with_job_parameters
 #
-#________________________________________________________________________________________
-def fill_queue_with_job_parameters (job_parameters, parameter_q, POOL_SIZE, logger, verbose):
+# _____________________________________________________________________________
+
+
+def fill_queue_with_job_parameters(job_parameters, parameter_q, POOL_SIZE,
+                                   logger, verbose):
     """
-    Ensures queue is filled with number of parameters > jobs / slots (POOL_SIZE)
+    Ensures queue filled with number of parameters > jobs / slots (POOL_SIZE)
     """
-    log_at_level (logger, 10, verbose, "    fill_queue_with_job_parameters START")
+    log_at_level(logger, 10, verbose, "    fill_queue_with_job_parameters START")
     for param in job_parameters:
 
         # stop if no more jobs available
         if isinstance(param, waiting_for_more_tasks_to_complete):
-            log_at_level (logger, 10, verbose, "    fill_queue_with_job_parameters WAITING for task to complete")
+            log_at_level(logger, 10, verbose,
+                         "    fill_queue_with_job_parameters WAITING for task to complete")
             break
 
         if not isinstance(param, all_tasks_complete):
-            log_at_level (logger, 10, verbose, "    fill_queue_with_job_parameters=>" + str(param[0]))
+            log_at_level(logger, 10, verbose, "    fill_queue_with_job_parameters=>" +
+                         str(param[0]))
 
         # put into queue
         parameter_q.put(param)
 
-        # queue size needs to be at least 2 so that the parameter queue never consists of a single
-        #   waiting_for_task_to_complete entry which will cause
-        #   a loop and everything to hang!
+        # queue size needs to be at least 2 so that the parameter queue never
+        #   consists of a singlewaiting_for_task_to_complete entry which will
+        #   cause a loop and everything to hang!
         if parameter_q.qsize() > POOL_SIZE + 1:
             break
-    log_at_level (logger, 10, verbose, "    fill_queue_with_job_parameters END")
+    log_at_level(logger, 10, verbose, "    fill_queue_with_job_parameters END")
 
 
-
-
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 
 #   pipeline_get_task_names
 
-#_________________________________________________________________________________________
-def pipeline_get_task_names (pipeline = None):
+# _____________________________________________________________________________
+def pipeline_get_task_names(pipeline=None):
     """
     Get all task names in a pipeline
     Not that does not check if pipeline is wired up properly
@@ -4683,19 +4912,16 @@ def pipeline_get_task_names (pipeline = None):
     #
     #   pipeline must be a Pipeline or a string naming a pipeline
     #
-    pipeline = lookup_pipeline (pipeline)
+    pipeline = lookup_pipeline(pipeline)
 
     #
     #   Make sure all tasks in dependency list are linked to real functions
     #
     completed_pipeline_names = pipeline._complete_task_setup()
 
-
-
     #
     #   Return task names for all nodes willy nilly
     #
-
 
     return [n._name for n in node._all_nodes]
 
@@ -4713,90 +4939,132 @@ def pipeline_get_task_names (pipeline = None):
 #        else:
 #
 #            loops through jobs until no more jobs in non-dependent tasks
-#               separate loop in generator so that list of incomplete_tasks does not
-#               get updated half way through
+#               separate loop in generator so that list of incomplete_tasks
+#               does not get updated half way through
 #               causing race conditions
 #
 #               parameter_q.put(param)
 #               until waiting_for_more_tasks_to_complete
 #               until queue is full (check *after*)
 #
-#_________________________________________________________________________________________
+# _____________________________________________________________________________
 
 #   pipeline_run
 
-#_________________________________________________________________________________________
-def pipeline_run(target_tasks                     = [],
-                 forcedtorun_tasks                = [],
-                 multiprocess                     = 1,
-                 logger                           = stderr_logger,
-                 gnu_make_maximal_rebuild_mode    = True,
-                 #verbose defaults to 1 if None
-                 verbose                          = None,
-                 runtime_data                     = None,
-                 one_second_per_job               = None,
-                 touch_files_only                 = False,
-                 exceptions_terminate_immediately = False,
-                 log_exceptions                   = False,
-                 checksum_level                   = None,
-                 multithread                      = 0,
-                 history_file                     = None,
+# _____________________________________________________________________________
+def pipeline_run(target_tasks=[],
+                 forcedtorun_tasks=[],
+                 multiprocess=1,
+                 logger=stderr_logger,
+                 gnu_make_maximal_rebuild_mode=True,
+                 # verbose defaults to 1 if None
+                 verbose=None,
+                 runtime_data=None,
+                 one_second_per_job=None,
+                 touch_files_only=False,
+                 exceptions_terminate_immediately=False,
+                 log_exceptions=False,
+                 checksum_level=None,
+                 multithread=0,
+                 history_file=None,
                  # defaults to 2 if None
-                 verbose_abbreviated_path         = None,
-                 pipeline                         = None):
-                 # Remember to add further extra parameters here to "extra_pipeline_run_options" inside cmdline.py
-                 # This will forward extra parameters from the command line to pipeline_run
+                 verbose_abbreviated_path=None,
+                 pipeline=None):
+    # Remember to add further extra parameters here to
+    #   "extra_pipeline_run_options" inside cmdline.py
+    # This will forward extra parameters from the command line to
+    # pipeline_run
     """
     Run pipelines.
 
-    :param target_tasks: targets task functions which will be run if they are out-of-date
-    :param forcedtorun_tasks: task functions which will be run whether or not they are out-of-date
-    :param multiprocess: The number of concurrent jobs running on different processes.
-    :param multithread: The number of concurrent jobs running as different threads. If > 1, ruffus will use multithreading *instead of* multiprocessing (and ignore the multiprocess parameter). Using multi threading is particularly useful to manage high performance clusters which otherwise are prone to "processor storms" when large number of cores finish jobs at the same time. (Thanks Andreas Heger)
+    :param target_tasks: targets task functions which will be run if they are
+                         out-of-date
+    :param forcedtorun_tasks: task functions which will be run whether or not
+                              they are out-of-date
+    :param multiprocess: The number of concurrent jobs running on different
+                         processes.
+    :param multithread: The number of concurrent jobs running as different
+                        threads. If > 1, ruffus will use multithreading
+                        *instead of* multiprocessing (and ignore the
+                        multiprocess parameter). Using multi threading
+                        is particularly useful to manage high performance
+                        clusters which otherwise are prone to
+                        "processor storms" when large number of cores finish
+                        jobs at the same time. (Thanks Andreas Heger)
     :param logger: Where progress will be logged. Defaults to stderr output.
-    :type logger: `logging <http://docs.python.org/library/logging.html>`_ objects
+    :type logger: `logging <http://docs.python.org/library/logging.html>`_
+                  objects
     :param verbose: level 0 : nothing
                     level 1 : Out-of-date Task names
-                    level 2 : All Tasks (including any task function docstrings)
-                    level 3 : Out-of-date Jobs in Out-of-date Tasks, no explanation
-                    level 4 : Out-of-date Jobs in Out-of-date Tasks, with explanations and warnings
-                    level 5 : All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)
+                    level 2 : All Tasks (including any task function
+                              docstrings)
+                    level 3 : Out-of-date Jobs in Out-of-date Tasks, no
+                              explanation
+                    level 4 : Out-of-date Jobs in Out-of-date Tasks, with
+                              explanations and warnings
+                    level 5 : All Jobs in Out-of-date Tasks,  (include only
+                              list of up-to-date tasks)
                     level 6 : All jobs in All Tasks whether out of date or not
-                    level 10: logs messages useful only for debugging ruffus pipeline code
-    :param touch_files_only: Create or update input/output files only to simulate running the pipeline. Do not run jobs. If set to CHECKSUM_REGENERATE, will regenerate the checksum history file to reflect the existing i/o files on disk.
-    :param exceptions_terminate_immediately: Exceptions cause immediate termination
-                        rather than waiting for N jobs to finish where N = multiprocess
-    :param log_exceptions: Print exceptions to the logger as soon as they occur.
-    :param checksum_level: Several options for checking up-to-dateness are available: Default is level 1.
+                    level 10: logs messages useful only for debugging ruffus
+                              pipeline code
+    :param touch_files_only: Create or update input/output files only to
+                             simulate running the pipeline. Do not run jobs.
+                             If set to CHECKSUM_REGENERATE, will regenerate
+                             the checksum history file to reflect the existing
+                             i/o files on disk.
+    :param exceptions_terminate_immediately: Exceptions cause immediate
+                                             termination rather than waiting
+                                             for N jobs to finish where
+                                             N = multiprocess
+    :param log_exceptions: Print exceptions to logger as soon as they occur.
+    :param checksum_level: Several options for checking up-to-dateness are
+                           available: Default is level 1.
                            level 0 : Use only file timestamps
-                           level 1 : above, plus timestamp of successful job completion
-                           level 2 : above, plus a checksum of the pipeline function body
-                           level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
-    :param one_second_per_job: To work around poor file timepstamp resolution for some file systems. Defaults to True if checksum_level is 0 forcing Tasks to take a minimum of 1 second to complete.
-    :param runtime_data: Experimental feature for passing data to tasks at run time
-    :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all* out-of-date tasks. Runs minimal
-                                          set to build targets if set to ``True``. Use with caution.
-    :param history_file: The database file which stores checksums and file timestamps for input/output files.
-    :param verbose_abbreviated_path: whether input and output paths are abbreviated.
-                          level 0: The full (expanded, abspath) input or output path
-                          level > 1: The number of subdirectories to include. Abbreviated paths are prefixed with ``[,,,]/``
-                          level < 0: level < 0: Input / Output parameters are truncated to ``MMM`` letters where ``verbose_abbreviated_path ==-MMM``. Subdirectories are first removed to see if this allows the paths to fit in the specified limit. Otherwise abbreviated paths are prefixed by ``<???>``
+                           level 1 : above, plus timestamp of successful
+                                     job completion
+                           level 2 : above, plus a checksum of the pipeline
+                                     function body
+                           level 3 : above, plus a checksum of the pipeline
+                                     function default arguments and the
+                                     additional arguments passed in by task
+                                     decorators
+    :param one_second_per_job: To work around poor file timepstamp resolution
+                               for some file systems. Defaults to True if
+                               checksum_level is 0 forcing Tasks to take a
+                               minimum of 1 second to complete.
+    :param runtime_data: Experimental feature: pass data to tasks at run time
+    :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all*
+                                          out-of-date tasks. Runs minimal
+                                          set to build targets if set to
+                                          ``True``. Use with caution.
+    :param history_file: Database file storing checksums and file timestamps
+                         for input/output files.
+    :param verbose_abbreviated_path: whether input and output paths are
+                                     abbreviated.
+        level 0: The full (expanded, abspath) input or output path
+        level > 1: The number of subdirectories to include.
+                   Abbreviated paths are prefixed with ``[,,,]/``
+        level < 0: level < 0: Input / Output parameters are truncated to
+                   ``MMM`` letters where ``verbose_abbreviated_path ==-MMM``.
+                   Subdirectories are first removed to see if this allows the
+                   paths to fit in the specified limit. Otherwise abbreviated
+                   paths are prefixed by ``<???>``
     """
 
     #
     # default values
     #
-    if touch_files_only == False:
+    if touch_files_only is False:
         touch_files_only = 0
-    elif touch_files_only == True:
+    elif touch_files_only is True:
         touch_files_only = 1
     else:
         touch_files_only = 2
         # we are not running anything so do it as quickly as possible
         one_second_per_job = False
-    if verbose == None:
+    if verbose is None:
         verbose = 1
-    if verbose_abbreviated_path == None:
+    if verbose_abbreviated_path is None:
         verbose_abbreviated_path = 2
 
     # EXTRA pipeline_run DEBUGGING
@@ -4806,15 +5074,13 @@ def pipeline_run(target_tasks                     = [],
     else:
         EXTRA_PIPELINERUN_DEBUGGING = False
 
-
     syncmanager = multiprocessing.Manager()
 
-    if runtime_data == None:
+    if runtime_data is None:
         runtime_data = {}
     if not isinstance(runtime_data, dict):
-        raise Exception("pipeline_run parameter runtime_data should be a dictionary of "
-                        "values passes to jobs at run time.")
-
+        raise Exception("pipeline_run parameter runtime_data should be a "
+                        "dictionary of values passes to jobs at run time.")
 
     #
     #   whether using multiprocessing or multithreading
@@ -4836,27 +5102,30 @@ def pipeline_run(target_tasks                     = [],
     #   Supplement mtime with system clock if using CHECKSUM_HISTORY_TIMESTAMPS
     #       we don't need to default to adding 1 second delays between jobs
     #
-    if one_second_per_job == None:
-         if checksum_level == CHECKSUM_FILE_TIMESTAMPS:
-            log_at_level (logger, 10, verbose, "   Checksums rely on FILE TIMESTAMPS only and we don't know if the system file time resolution: Pause 1 second...")
+    if one_second_per_job is None:
+        if checksum_level == CHECKSUM_FILE_TIMESTAMPS:
+            log_at_level(logger, 10, verbose,
+                         "   Checksums rely on FILE TIMESTAMPS only and we don't know if the "
+                         "system file time resolution: Pause 1 second...")
             runtime_data["ONE_SECOND_PER_JOB"] = True
-         else:
-            log_at_level (logger, 10, verbose, "   Checksum use calculated time as well: No 1 second pause...")
+        else:
+            log_at_level(logger, 10, verbose, "   Checksum use calculated time as well: "
+                         "No 1 second pause...")
             runtime_data["ONE_SECOND_PER_JOB"] = False
     else:
-        log_at_level (logger, 10, verbose, "   One second per job specified to be %s" % one_second_per_job)
+        log_at_level(logger, 10, verbose, "   One second per job specified to be %s"
+                     % one_second_per_job)
         runtime_data["ONE_SECOND_PER_JOB"] = one_second_per_job
-
 
     if verbose == 0:
         logger = black_hole_logger
     elif verbose >= 11:
         #   debugging aid: See t_stderr_logger
-        #   Each invocation of add_unique_prefix adds a unique prefix to all subsequent output
-        #       So that individual runs of pipeline run are tagged
+        #   Each invocation of add_unique_prefix adds a unique prefix to
+        #       all subsequent output So that individual runs of pipeline run
+        #       are tagged
         if hasattr(logger, "add_unique_prefix"):
             logger.add_unique_prefix()
-
 
     if touch_files_only and verbose >= 1:
         logger.info("Touch output files instead of remaking them.")
@@ -4864,46 +5133,45 @@ def pipeline_run(target_tasks                     = [],
     #
     #   pipeline must be a Pipeline or a string naming a pipeline
     #
-    pipeline = lookup_pipeline (pipeline)
+    pipeline = lookup_pipeline(pipeline)
     #
     #   Make sure all tasks in dependency list are linked to real functions
     #
     completed_pipeline_names = pipeline._complete_task_setup()
 
-    #link_task_names_to_functions ()
-    update_checksum_level_on_tasks (checksum_level)
+    # link_task_names_to_functions ()
+    update_checksum_level_on_tasks(checksum_level)
 
     #
     #   If we aren't using checksums, and history file hasn't been specified,
-    #       we might be a bit surprised to find Ruffus writing to a sqlite db anyway.
-    #       Let us just use a in-memory db which will be thrown away
-    #   Of course, if history_file is specified, we presume you know what you are doing
-    #
-    if checksum_level == CHECKSUM_FILE_TIMESTAMPS and history_file == None:
+    #       we might be a bit surprised to find Ruffus writing to a
+    #       sqlite db anyway.
+    #   Let us just dump to a placeholder memory db that can then be discarded
+    #   Of course, if history_file is specified, we presume you know what
+    #       you are doing
+    if checksum_level == CHECKSUM_FILE_TIMESTAMPS and history_file is None:
         history_file = ':memory:'
 
-    job_history = open_job_history (history_file)
-
-
-
+    job_history = open_job_history(history_file)
 
     #
     # @active_if decorated tasks can change their active state every time
     #   pipeline_run / pipeline_printout / pipeline_printout_graph is called
     #
-    update_active_states_for_all_tasks ()
-
+    update_active_states_for_all_tasks()
 
     #
     #   target jobs
     #
-    target_tasks = lookup_tasks_from_user_specified_names ("Target", target_tasks, pipeline.name)
+    target_tasks = lookup_tasks_from_user_specified_names("Target", target_tasks, pipeline.name)
     if not target_tasks:
         target_tasks = list(pipeline.tasks)
-    forcedtorun_tasks = lookup_tasks_from_user_specified_names ("Forced to run", forcedtorun_tasks, pipeline.name)
+    forcedtorun_tasks = lookup_tasks_from_user_specified_names("Forced to run", forcedtorun_tasks,
+                                                               pipeline.name)
 
     #
-    #   forcedtorun_tasks and target_tasks may include more pipelines which have to be setup
+    #   forcedtorun_tasks and target_tasks may include more pipelines
+    #       which have to be setup
     #
     incomplete_pipeline_names = set()
     for task in forcedtorun_tasks + target_tasks:
@@ -4913,45 +5181,49 @@ def pipeline_run(target_tasks                     = [],
     for pipeline_name in incomplete_pipeline_names:
         if pipeline_name in completed_pipeline_names:
             continue
-        completed_pipeline_names = completed_pipeline_names.union(pipeline.pipelines[pipeline_name]._complete_task_setup())
+        completed_pipeline_names = completed_pipeline_names.union(
+            pipeline.pipelines[pipeline_name]._complete_task_setup())
 
     #
-    #   To update the checksum file, we force all tasks to rerun but then don't actually call the task function...
+    #   To update the checksum file, we force all tasks to rerun
+    #       but then don't actually call the task function...
     #
-    #   So starting with target_tasks and forcedtorun_tasks, we harvest all upstream dependencies willy, nilly
-    #           and assign the results to forcedtorun_tasks
+    #   So starting with target_tasks and forcedtorun_tasks,
+    #       we harvest all upstream dependencies willy, nilly
+    #       and assign the results to forcedtorun_tasks
     #
     if touch_files_only == 2:
-        (forcedtorun_tasks, ignore_param1, ignore_param2,
-         ignore_param3) = topologically_sorted_nodes(target_tasks + forcedtorun_tasks, True,
-                                                     gnu_make_maximal_rebuild_mode,
-                                                     extra_data_for_signal = [t_verbose_logger(0, 0, None, runtime_data), job_history],
-                                                     signal_callback = is_node_up_to_date)
-
-
+        (forcedtorun_tasks, ignore_param1, ignore_param2, ignore_param3) = \
+            topologically_sorted_nodes(target_tasks + forcedtorun_tasks, True,
+                                       gnu_make_maximal_rebuild_mode,
+                                       extra_data_for_signal=[t_verbose_logger(0, 0, None,
+                                                                               runtime_data),
+                                                              job_history],
+                                       signal_callback=is_node_up_to_date)
 
     #
     #   If verbose >=10, for debugging:
     #       Prints which tasks trigger the pipeline rerun...
-    #       i.e. start from the farthest task, prints out all the up to date tasks, and the first out of date task
+    #       i.e. start from the farthest task, prints out all the up to date
+    #       tasks, and the first out of date task
     #
-    (incomplete_tasks,
-    self_terminated_nodes,
-    dag_violating_edges,
-    dag_violating_nodes) = topologically_sorted_nodes(  target_tasks, forcedtorun_tasks,
-                                                        gnu_make_maximal_rebuild_mode,
-                                                        extra_data_for_signal = [t_verbose_logger(verbose, verbose_abbreviated_path, logger, runtime_data), job_history],
-                                                        signal_callback = is_node_up_to_date)
+    (incomplete_tasks, self_terminated_nodes,
+     dag_violating_edges, dag_violating_nodes) = \
+        topologically_sorted_nodes(target_tasks, forcedtorun_tasks,
+                                   gnu_make_maximal_rebuild_mode,
+                                   extra_data_for_signal=[
+                                       t_verbose_logger(verbose, verbose_abbreviated_path,
+                                                        logger, runtime_data),
+                                       job_history],
+                                   signal_callback=is_node_up_to_date)
 
     if len(dag_violating_nodes):
         dag_violating_tasks = ", ".join(t._name for t in dag_violating_nodes)
 
         e = error_circular_dependencies("Circular dependencies found in the "
-                                        "pipeline involving one or more of (%s)" %
-                                            (dag_violating_tasks))
+                                        "pipeline involving one or more of "
+                                        "(%s)" % (dag_violating_tasks))
         raise e
-
-
 
     #
     # get dependencies. Only include tasks which will be run
@@ -4964,30 +5236,31 @@ def pipeline_run(target_tasks                     = [],
             if parent in set_of_incomplete_tasks:
                 task_parents[t].add(parent)
 
-
     #
     #   Print Complete tasks
     #
     #   LOGGER level 5 : All jobs in All Tasks whether out of date or not
     if verbose == 2 or verbose >= 5:
-        (all_tasks, ignore_param1, ignore_param2,
-         ignore_param3) = topologically_sorted_nodes(target_tasks, True,
-                                                     gnu_make_maximal_rebuild_mode,
-                                                     extra_data_for_signal = [t_verbose_logger(0, 0, None, runtime_data), job_history],
-                                                    signal_callback = is_node_up_to_date)
+        (all_tasks, ignore_param1, ignore_param2, ignore_param3) \
+            = topologically_sorted_nodes(target_tasks, True,
+                                         gnu_make_maximal_rebuild_mode,
+                                         extra_data_for_signal=[t_verbose_logger(0, 0, None,
+                                                                                 runtime_data),
+                                                                job_history],
+                                         signal_callback=is_node_up_to_date)
         # indent hardcoded to 4
-        for m in get_completed_task_strings (incomplete_tasks, all_tasks, forcedtorun_tasks, verbose, verbose_abbreviated_path, 4, runtime_data, job_history):
+        for m in get_completed_task_strings(incomplete_tasks, all_tasks,
+                                            forcedtorun_tasks, verbose,
+                                            verbose_abbreviated_path, 4,
+                                            runtime_data, job_history):
             logger.info(m)
 
-
-    #print json.dumps(task_parents.items(), indent=4, cls=task_encoder)
+    # print json.dumps(task_parents.items(), indent=4, cls=task_encoder)
     logger.info("")
     logger.info("_" * 40)
     logger.info("Tasks which will be run:")
     logger.info("")
     logger.info("")
-
-
 
     # prepare tasks for pipeline run:
     #
@@ -5006,37 +5279,36 @@ def pipeline_run(target_tasks                     = [],
     for t in incomplete_tasks:
         t._init_for_pipeline()
 
-
     #
     # prime queue with initial set of job parameters
     #
     death_event = syncmanager.Event()
-    #death_event = None
     parameter_q = queue.Queue()
     task_with_completed_job_q = queue.Queue()
-    parameter_generator = make_job_parameter_generator (incomplete_tasks, task_parents,
-                                                        logger, forcedtorun_tasks,
-                                                        task_with_completed_job_q,
-                                                        runtime_data, verbose,
-                                                        verbose_abbreviated_path,
-                                                        syncmanager,
-                                                        death_event,
-                                                        touch_files_only, job_history)
+    parameter_generator = make_job_parameter_generator(incomplete_tasks, task_parents,
+                                                       logger, forcedtorun_tasks,
+                                                       task_with_completed_job_q,
+                                                       runtime_data, verbose,
+                                                       verbose_abbreviated_path,
+                                                       syncmanager, death_event,
+                                                       touch_files_only, job_history)
     job_parameters = parameter_generator()
     fill_queue_with_job_parameters(job_parameters, parameter_q, parallelism, logger, verbose)
 
     #
     #   N.B.
     #   Handling keyboard shortcuts may require
-    #       See http://stackoverflow.com/questions/1408356/keyboard-interrupts-with-pythons-multiprocessing-pool
+    #       See http://stackoverflow.com/questions/1408356/
+    #           keyboard-interrupts-with-pythons-multiprocessing-pool
     #
-    #   When waiting for a condition in threading.Condition.wait(), KeyboardInterrupt is never sent
+    #   When waiting for a condition in threading.Condition.wait(),
+    #       KeyboardInterrupt is never sent
     #       unless a timeout is specified
     #
     #
     #
     #   #
-    #   #   whether using multiprocessing
+    # whether using multiprocessing
     #   #
     #   pool = Pool(parallelism) if multiprocess > 1 else None
     #   if pool:
@@ -5050,7 +5322,8 @@ def pipeline_run(target_tasks                     = [],
     #   ....
     #
     #
-    #   it = pool_func(run_pooled_job_without_exceptions, feed_job_params_to_process_pool())
+    #   it = pool_func(run_pooled_job_without_exceptions,
+    #                  feed_job_params_to_process_pool())
     #   while 1:
     #      try:
     #          job_result = it.next(*job_iterator_timeout)
@@ -5060,24 +5333,19 @@ def pipeline_run(target_tasks                     = [],
     #      except StopIteration:
     #          break
 
-
-
-
     if pool:
         pool_func = pool.imap_unordered
     else:
         pool_func = map
 
-
-
-    feed_job_params_to_process_pool = feed_job_params_to_process_pool_factory (parameter_q, death_event, logger, verbose)
+    feed_job_params_to_process_pool = feed_job_params_to_process_pool_factory(
+        parameter_q, death_event, logger, verbose)
 
     #
     #   for each result from job
     #
     job_errors = RethrownJobError()
     tasks_with_errors = set()
-
 
     #
     #   job_result.job_name / job_result.return_value
@@ -5087,19 +5355,22 @@ def pipeline_run(target_tasks                     = [],
     #   Rewrite for loop so we can call iter.next() with a timeout
     try:
 
-        #for job_result in pool_func(run_pooled_job_without_exceptions, feed_job_params_to_process_pool()):
-        ii  = iter(pool_func(run_pooled_job_without_exceptions, feed_job_params_to_process_pool()))
+        # for job_result in pool_func(run_pooled_job_without_exceptions,
+        # feed_job_params_to_process_pool()):
+        ii = iter(pool_func(run_pooled_job_without_exceptions, feed_job_params_to_process_pool()))
         while 1:
-            #   Use a timeout of 3 years per job..., so that the condition we are waiting for in the thread
-            #       can be interrupted by signals... In other words, so that Ctrl-C works
-            #   Yucky part is that timeout is an extra parameter to IMapIterator.next(timeout=None)
-            #       but next() for normal iterators do not take any extra parameters.
+            #   Use a timeout of 3 years per job..., so that the condition
+            #       we are waiting for in the thread can be interrupted by
+            #       signals... In other words, so that Ctrl-C works
+            #   Yucky part is that timeout is an extra parameter to
+            #       IMapIterator.next(timeout=None) but next() for normal
+            #       iterators do not take any extra parameters.
             if pool:
                 job_result = ii.next(timeout=99999999)
             else:
                 job_result = next(ii)
             # run next task
-            log_at_level (logger, 11, verbose, "r" * 80 + "\n")
+            log_at_level(logger, 11, verbose, "r" * 80 + "\n")
             t = node._lookup_node_from_index(job_result.node_index)
 
             # remove failed jobs from history-- their output is bogus now!
@@ -5107,7 +5378,8 @@ def pipeline_run(target_tasks                     = [],
 
                 if len(job_result.params) > 1:  # some jobs have no outputs
                     output_file_name = job_result.params[1]
-                    if not isinstance(output_file_name, list): # some have multiple outputs from one job
+                    # some have multiple outputs from one job
+                    if not isinstance(output_file_name, list):
                         output_file_name = [output_file_name]
                     #
                     # N.B. output parameters are not necessary all strings
@@ -5117,11 +5389,13 @@ def pipeline_run(target_tasks                     = [],
                         # use paths relative to working directory
                         #
                         o_f_n = os.path.relpath(o_f_n)
-                        job_history.pop(o_f_n, None)  # remove outfile from history if it exists
+                        # remove outfile from history if it exists
+                        job_history.pop(o_f_n, None)
 
             # only save poolsize number of errors
             if job_result.state == JOB_ERROR:
-                log_at_level (logger, 10, verbose, "   Exception caught for %s" % job_result.job_name)
+                log_at_level(logger, 10, verbose, "   Exception caught for %s"
+                             % job_result.job_name)
                 job_errors.append(job_result.exception)
                 tasks_with_errors.add(t)
 
@@ -5129,52 +5403,58 @@ def pipeline_run(target_tasks                     = [],
                 # print to logger immediately
                 #
                 if log_exceptions:
-                    log_at_level (logger, 10, verbose, "   Log Exception")
+                    log_at_level(logger, 10, verbose, "   Log Exception")
                     logger.error(job_errors.get_nth_exception_str())
 
                 #
                 # break if too many errors
                 #
                 if len(job_errors) >= parallelism or exceptions_terminate_immediately:
-                    log_at_level (logger, 10, verbose, "   Break loop %s %s %s " % (exceptions_terminate_immediately, len(job_errors), parallelism) )
+                    log_at_level(logger, 10, verbose, "   Break loop %s %s %s "
+                                 % (exceptions_terminate_immediately,
+                                    len(job_errors), parallelism))
                     parameter_q.put(all_tasks_complete())
                     break
-
 
             # break immediately if the user says stop
             elif job_result.state == JOB_SIGNALLED_BREAK:
                 job_errors.append(job_result.exception)
                 job_errors.specify_task(t, "Exceptions running jobs")
-                log_at_level (logger, 10, verbose, "   Break loop JOB_SIGNALLED_BREAK %s %s " % (len(job_errors), parallelism) )
+                log_at_level(logger, 10, verbose, "   Break loop JOB_SIGNALLED_BREAK %s %s "
+                             % (len(job_errors), parallelism))
                 parameter_q.put(all_tasks_complete())
                 break
 
             else:
                 if job_result.state == JOB_UP_TO_DATE:
                     # LOGGER: All Jobs in Out-of-date Tasks
-                    log_at_level (logger, 5, verbose, "    %s unnecessary: already up to date" % job_result.job_name)
+                    log_at_level(logger, 5, verbose, "    %s unnecessary: already up to date"
+                                 % job_result.job_name)
                 else:
                     # LOGGER: Out-of-date Jobs in Out-of-date Tasks
-                    log_at_level (logger, 3, verbose, "    %s completed" % job_result.job_name)
+                    log_at_level(logger, 3, verbose, "    %s completed" % job_result.job_name)
                     # save this task name and the job (input and output files)
                     # alternatively, we could just save the output file and its
                     # completion time, or on the other end of the spectrum,
                     # we could save a checksum of the function that generated
                     # this file, something akin to:
-                    # chksum = md5.md5(marshal.dumps(t.user_defined_work_func.func_code.co_code))
+                    # chksum = md5.md5(marshal.dumps(t.user_defined_work_func.
+                    #                                func_code.co_code))
                     # we could even checksum the arguments to the function that
                     # generated this file:
-                    # chksum2 = md5.md5(marshal.dumps(t.user_defined_work_func.func_defaults) +
+                    # chksum2 = md5.md5(marshal.dumps(t.user_defined_work_func.
+                    #                                 func_defaults) +
                     #                   marshal.dumps(t.args))
 
                     if len(job_result.params) > 1:  # some jobs have no outputs
                         output_file_name = job_result.params[1]
-                        if not isinstance(output_file_name, list): # some have multiple outputs from one job
+                        # some have multiple outputs from one job
+                        if not isinstance(output_file_name, list):
                             output_file_name = [output_file_name]
                         #
                         # N.B. output parameters are not necessary all strings
-                        #       and not all files have been successfully created,
-                        #       even though the task apparently completed properly!
+                        #   and not all files have been successfully created,
+                        #   even though the task apparently completed properly!
                         # Remember to expand globs
                         #
                         for possible_glob_str in get_strings_in_nested_sequence(output_file_name):
@@ -5184,70 +5464,78 @@ def pipeline_run(target_tasks                     = [],
                                 #
                                 o_f_n = os.path.relpath(o_f_n)
                                 try:
-                                    log_at_level (logger, 10, verbose, "   Job History for : " + o_f_n)
+                                    log_at_level(logger, 10, verbose, "   Job History : " + o_f_n)
                                     mtime = os.path.getmtime(o_f_n)
                                     #
-                                    #   use probably higher resolution time.time() over mtime
-                                    #       which might have 1 or 2s resolutions, unless there is
-                                    #       clock skew and the filesystem time > system time
+                                    #   use probably higher resolution
+                                    #       time.time() over mtime which might
+                                    #       have 1 or 2s resolutions, unless
+                                    #       there is clock skew and the
+                                    #       filesystem time > system time
                                     #       (e.g. for networks)
                                     #
                                     epoch_seconds = time.time()
-                                    # Aargh. go back to insert one second between jobs
+                                    # Aargh. go back to insert one second
+                                    # between jobs
                                     if epoch_seconds < mtime:
-                                        if one_second_per_job == None and not runtime_data["ONE_SECOND_PER_JOB"]:
-                                            log_at_level (logger, 10, verbose, "   Switch to one second per job")
+                                        if one_second_per_job is None and \
+                                                not runtime_data["ONE_SECOND_PER_JOB"]:
+                                            log_at_level(logger, 10, verbose,
+                                                         "   Switch to one second per job")
                                             runtime_data["ONE_SECOND_PER_JOB"] = True
-                                    elif  epoch_seconds - mtime < 1.1:
+                                    elif epoch_seconds - mtime < 1.1:
                                         mtime = epoch_seconds
-                                    chksum = JobHistoryChecksum(o_f_n, mtime, job_result.params[2:], t)
+                                    chksum = JobHistoryChecksum(o_f_n, mtime,
+                                                                job_result.params[2:], t)
                                     job_history[o_f_n] = chksum
                                 except:
                                     pass
 
-                    ##for output_file_name in t.output_filenames:
-                    ##    # could use current time instead...
-                    ##    if not isinstance(output_file_name, list):
-                    ##        output_file_name = [output_file_name]
-                    ##    for o_f_n in output_file_name:
-                    ##        mtime = os.path.getmtime(o_f_n)
-                    ##        chksum = JobHistoryChecksum(o_f_n, mtime, job_result.params[2:], t)
-                    ##        job_history[o_f_n] = chksum
+                    # for output_file_name in t.output_filenames:
+                    # could use current time instead...
+                    # # if not isinstance(output_file_name, list):
+                    # #        output_file_name = [output_file_name]
+                    # # for o_f_n in output_file_name:
+                    # #        mtime = os.path.getmtime(o_f_n)
+                    # #        chksum = JobHistoryChecksum(o_f_n, mtime,
+                    #               job_result.params[2:], t)
+                    # #        job_history[o_f_n] = chksum
 
-
-            log_at_level (logger, 10, verbose, "   _is_up_to_date completed task after checksumming...")
+            log_at_level(logger, 10, verbose, "   _is_up_to_date completed task & checksum...")
             #
             #   _is_up_to_date completed task after checksumming
             #
-            task_with_completed_job_q.put((t, job_result.task_name, job_result.node_index, job_result.job_name))
-
+            task_with_completed_job_q.put((t,
+                                           job_result.task_name,
+                                           job_result.node_index,
+                                           job_result.job_name))
 
             # make sure queue is still full after each job is retired
             # do this after undating which jobs are incomplete
-            log_at_level (logger, 10, verbose, "   job errors?")
+            log_at_level(logger, 10, verbose, "   job errors?")
             if len(job_errors):
-                #parameter_q.clear()
-                #if len(job_errors) == 1 and not parameter_q._closed:
-                log_at_level (logger, 10, verbose, "   all tasks completed...")
+                # parameter_q.clear()
+                # if len(job_errors) == 1 and not parameter_q._closed:
+                log_at_level(logger, 10, verbose, "   all tasks completed...")
                 parameter_q.put(all_tasks_complete())
             else:
-                log_at_level (logger, 10, verbose, "   Fill queue with more parameter...")
-                fill_queue_with_job_parameters(job_parameters, parameter_q, parallelism, logger, verbose)
+                log_at_level(logger, 10, verbose, "   Fill queue with more parameter...")
+                fill_queue_with_job_parameters(job_parameters, parameter_q, parallelism, logger,
+                                               verbose)
     # The equivalent of the normal end of a fall loop
     except StopIteration as e:
         pass
     except:
         exception_name, exception_value, exception_Traceback = sys.exc_info()
-        exception_stack  = traceback.format_exc()
+        exception_stack = traceback.format_exc()
         # save exception to rethrow later
         job_errors.append((None, None, exception_name, exception_value, exception_stack))
-        log_at_level (logger, 10, verbose, "       Exception caught %s" % (exception_value))
-        log_at_level (logger, 10, verbose, "       Exception caught %s" % (exception_name))
-        log_at_level (logger, 10, verbose, "       Exception caught %s" % (exception_stack))
-        log_at_level (logger, 10, verbose, "   Get next parameter size = %d" %
-                                                    parameter_q.qsize())
-        log_at_level (logger, 10, verbose, "   Task with completed jobs size = %d" %
-                                                    task_with_completed_job_q.qsize())
+        log_at_level(logger, 10, verbose, "       Exception caught %s" % (exception_value))
+        log_at_level(logger, 10, verbose, "       Exception caught %s" % (exception_name))
+        log_at_level(logger, 10, verbose, "       Exception caught %s" % (exception_stack))
+        log_at_level(logger, 10, verbose, "   Get next parameter size = %d" % parameter_q.qsize())
+        log_at_level(logger, 10, verbose, "   Task with completed "
+                     "jobs size = %d" % task_with_completed_job_q.qsize())
         parameter_q.put(all_tasks_complete())
         try:
             death_event.clear()
@@ -5255,33 +5543,31 @@ def pipeline_run(target_tasks                     = [],
             pass
 
         if pool:
-            log_at_level (logger, 10, verbose, "       pool.close")
+            log_at_level(logger, 10, verbose, "       pool.close")
             pool.close()
-            log_at_level (logger, 10, verbose, "       pool.terminate")
+            log_at_level(logger, 10, verbose, "       pool.terminate")
             try:
                 pool.terminate()
             except:
                 pass
-            log_at_level (logger, 10, verbose, "       pool.terminated")
+            log_at_level(logger, 10, verbose, "       pool.terminated")
         raise job_errors
 
-
-    #log_at_level (logger, 10, verbose, "       syncmanager.shutdown")
-    #syncmanager.shutdown()
-
+    # log_at_level (logger, 10, verbose, "       syncmanager.shutdown")
+    # syncmanager.shutdown()
 
     if pool:
-        log_at_level (logger, 10, verbose, "       pool.close")
-        #pool.join()
+        log_at_level(logger, 10, verbose, "       pool.close")
+        # pool.join()
         pool.close()
-        log_at_level (logger, 10, verbose, "       pool.terminate")
+        log_at_level(logger, 10, verbose, "       pool.terminate")
         # an exception may be thrown after a signal is caught (Ctrl-C)
         #   when the EventProxy(s) for death_event might be left hanging
         try:
             pool.terminate()
         except:
             pass
-        log_at_level (logger, 10, verbose, "       pool.terminated")
+        log_at_level(logger, 10, verbose, "       pool.terminated")
 
     # Switch back off EXTRA pipeline_run DEBUGGING
     EXTRA_PIPELINERUN_DEBUGGING = False
@@ -5290,19 +5576,15 @@ def pipeline_run(target_tasks                     = [],
         raise job_errors
 
 
-
 #   use high resolution timestamps where available
 #       default in python 2.5 and greater
-#   N.B. File modify times / stat values have 1 second precision for many file systems
-#       and may not be accurate to boot, especially over the network.
+#   N.B. File modify times / stat values have 1 second precision for many file
+#       systems and may not be accurate to boot, especially over the network.
 os.stat_float_times(True)
 
 
 if __name__ == '__main__':
     import unittest
-
-
-
 
     #
     #   debug parameter ignored if called as a module

@@ -433,7 +433,7 @@ def write_flowchart_in_dot_format(  jobs_to_run,
                                        "fillcolor"
                                        Specifies legend colours
     """
-    if user_colour_scheme == None:
+    if user_colour_scheme is None:
         colour_scheme = get_default_colour_scheme()
     else:
         if "colour_scheme_index" in user_colour_scheme:
@@ -482,7 +482,7 @@ def write_flowchart_in_dot_format(  jobs_to_run,
     #   all jobs should be specified
     #       this is a bad fall-back
     #       because there is no guarantee that we are printing what we want to print
-    if all_jobs == None:
+    if all_jobs is None:
         all_jobs = node.all_nodes
 
 

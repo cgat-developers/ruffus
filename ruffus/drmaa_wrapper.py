@@ -226,7 +226,7 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
     #
     #   used specified session else module session
     #
-    if drmaa_session == None:
+    if drmaa_session is None:
         raise error_drmaa_job( "Please specify a drmaa_session in run_job()")
 
     #

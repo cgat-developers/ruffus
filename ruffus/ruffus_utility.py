@@ -171,7 +171,7 @@ def get_default_checksum_level ():
     #
     #   check environmental variable is valid string
     #
-    if checksum_level == None:
+    if checksum_level is None:
         raise error_checksum_level(("The environmental value "
                                    "DEFAULT_RUFFUS_CHECKSUM_LEVEL should be: [0-3 | "
                                    "CHECKSUM_FILE_TIMESTAMPS | "
@@ -306,7 +306,7 @@ def parameter_list_as_string (parameters):
         E.g.
 
     """
-    if parameters == None:
+    if parameters is None:
         return ""
     elif not isinstance(parameters, list):
         raise Exception("Unexpected parameter list %s" % (parameters,))
@@ -474,11 +474,11 @@ def regex_match_str(test_str, compiled_regex):
             compiled_regex = re.compile(compiled_regex)
         mm = compiled_regex.search(test_str)
         # Match failed
-        if mm == None:
+        if mm is None:
             return False
         else:
             # No capture
-            if mm.lastindex == None:
+            if mm.lastindex is None:
                 return {0: mm.group(0)}
             # Combined named and unnamed captures
             else:
@@ -560,7 +560,7 @@ def path_decomposition_regex_match (test_str, compiled_regex):
 
     # regular expression not specified
     # just path
-    if compiled_regex == None:
+    if compiled_regex is None:
         return pp
 
     rr = regex_match_str(test_str, compiled_regex)
@@ -588,7 +588,7 @@ def check_compiled_regexes (compiled_regexes, expected_num):
     """
     check compiled_regexes are of the right type and number
     """
-    if compiled_regexes == None:
+    if compiled_regexes is None:
         return [None] * expected_num
 
     if not isinstance(compiled_regexes, list):
@@ -860,7 +860,7 @@ def get_strings_in_nested_sequence_aux(p, l = None):
     """
     Unravels arbitrarily nested sequence and returns lists of strings
     """
-    if l == None:
+    if l is None:
         l = []
     if isinstance(p, path_str_type):
         l.append(p)
@@ -875,11 +875,11 @@ def get_strings_in_nested_sequence_aux(p, l = None):
 #   non_str_sequence
 
 #_________________________________________________________________________________________
-def get_strings_in_nested_sequence (p, first_only = False):
+def get_strings_in_nested_sequence (p):
     """
     Traverses nested sequence and for each element, returns first string encountered
     """
-    if p == None:
+    if p is None:
         return []
 
     #
@@ -891,22 +891,8 @@ def get_strings_in_nested_sequence (p, first_only = False):
     #
     #  Get all strings flattened into list
     #
-    if not first_only:
-        return get_strings_in_nested_sequence_aux(p)
+    return get_strings_in_nested_sequence_aux(p)
 
-
-    #
-    #  Get all first string in each element
-    #
-    elif non_str_sequence (p):
-        filenames = []
-        for pp in p:
-            l = get_strings_in_nested_sequence_aux(pp)
-            if len(l):
-                filenames.append(l[0])
-        return filenames
-
-    return []
 
 #_________________________________________________________________________________________
 
@@ -914,7 +900,7 @@ def get_strings_in_nested_sequence (p, first_only = False):
 
 #_________________________________________________________________________________________
 def get_first_string_in_nested_sequence (p):
-    if p == None:
+    if p is None:
         return None
 
     #
@@ -1051,7 +1037,7 @@ def get_nested_tasks_or_globs(p, treat_strings_as_tasks = False, runtime_data_na
     #
     # create storage if this is not a recursive call
     #
-    if globs == None:
+    if globs is None:
         runtime_data_names, tasks, globs = set(), set(), set()
 
     #

@@ -507,10 +507,10 @@ class topological_sort_visitor (object):
                         #
                         backtracked_nodes = set()
                         for f,t,n in self._examined_edges[cycle_start:cycle_end]:
-                            if t == None:
+                            if t is None:
                                 backtracked_nodes.add(n)
                         for f,t,n in self._examined_edges[cycle_start:cycle_end]:
-                            if f == None or f in backtracked_nodes or t in  backtracked_nodes:
+                            if f is None or f in backtracked_nodes or t in  backtracked_nodes:
                                 continue
                             cycle_edges.add((f,t))
                             self._back_nodes.add(f)

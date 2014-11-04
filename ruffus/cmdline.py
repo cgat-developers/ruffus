@@ -675,7 +675,7 @@ def handle_verbose (options):
     #
     #   verbosity specified manually or deliberately disabled: use that
     #
-    if options.verbose == None or isinstance(options.verbose, int):
+    if options.verbose is None or isinstance(options.verbose, int):
         #   verbose_abbreviated_path default to None unless set explicity by the user
         #       in which case we shall prudently not override it!
         #   verbose_abbreviated_path of None will be set to the default at
@@ -810,7 +810,7 @@ def run (options, **extra_options):
             extra_options["logger"] = None
         if extra_options["logger"] == False:
            extra_options["logger"] = task.black_hole_logger
-        elif extra_options["logger"] == None:
+        elif extra_options["logger"] is None:
             extra_options["logger"] = task.stderr_logger
         appropriate_options = get_extra_options_appropriate_for_command (extra_pipeline_run_options, extra_options)
         task.pipeline_run(  options.target_tasks,
