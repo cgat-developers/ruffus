@@ -537,8 +537,8 @@ Parameter handling
                 list_input_param_to_file_name_list()
 
             This is done at the iterator level because the combinatorics decorators do not have just a
-            list of input parameters (But combinatios, permutations, products of input parameters etc)
-            but a list of lists of input parameters.
+            list of input parameters (They have combinations, permutations, products of
+            input parameters etc) but a list of lists of input parameters.
 
             transform, collate, subdivide => list of strings.
             combinatorics / product       => list of lists of strings
@@ -558,14 +558,67 @@ Parameter handling
 
                 This should be changed:
 
-                If the flattened list of input file names is empty, ie. if the input paramters contain just other stuff,
-                then the entire parameter is ignored.
+                If the flattened list of input file names is empty, ie. if the input parameters
+                contain just other stuff, then the entire parameter is ignored.
+
+======================================================================================================
+ Handling file names
+======================================================================================================
+
+    All strings in input (or output parameters) are treated as file names unless they are wrapped
+    with ``output_from`` in which case they are ``Task``, ``Pipeline`` or function names.
+
+    A list of strings for ready for substitution to output parameters is obtained from the
+    ``ruffus_utility.get_strings_in_flattened_sequence()``
+
+    This is called from:
+
+        file_name_parameters
+
+            (1) Either to check that input files exist:
+                ``check_input_files_exist()``
+                ``needs_update_check_directory_missing()``
+                ``needs_update_check_exist()``
+                ``needs_update_check_modify_time()``
+
+            (2) Or to generate parameters from the various param factories
+
+                ``product_param_factory()``
+                ``transform_param_factory()``
+                ``collate_param_factory()``
+                ``combinatorics_param_factory()``
+                ``subdivide_param_factory()``
+
+            These first call ``file_names_from_tasks_globs()`` to get the input parameters,
+            then pass a flattened list of strings to ``yield_io_params_per_job()``
+                -> ``file_names_from_tasks_globs()``
+                -> ``yield_io_params_per_job(`` ``input_param_to_file_name_list()`` / ``list_input_param_to_file_name_list()`` ``)``
+
+
+        task
+
+            (3) to obtain a list of file names to ``touch``
+
+                ``job_wrapper_io_files``
+
+            (4) to make directories
+
+                ``job_wrapper_mkdir``
+
+            (5) update / remove files in ``job_history`` if job succeeded or failed
+
+                ``pipeline_run``
+
 
 ======================================================================================================
  Refactor to handle input parameter objects with ruffus_params() functions
 ======================================================================================================
 
-    Expand in file_names_from_tasks_globs()
+    We want to expand objects with ruffus_params *only* when doing output parameter
+    substitution, i.e. Case (2) above. They are not file names: cases (1), (3), (4), (5).
+
+    Therefore: Expand in ``file_names_from_tasks_globs()`` which also handles
+    ``inputs()`` and ``add_inputs`` and ``@split`` outputs.
 
 ======================================================================================================
  Refactor to handle formatter() replacement with "{EXTRAS[0][1][3]}" and "[INPUTS[1][2]]"
@@ -579,8 +632,19 @@ Parameter handling
         output / extras     "[INPUTS[1][2]]" refers to substituted input
 
 
+    In addition to the flattened input paramters, we need to pass in the unflattened input and extra parameters
+
     In ``file_name_parameters.py.``: ``yield_io_params_per_job``
 
+        From:
+        .. code-block:: python
+
+            extra_inputs = extra_input_files_task_globs.file_names_transformed (filenames, file_names_transform)
+            extra_params = tuple( file_names_transform.substitute(filenames, p) for p in extra_specs)
+            output_pattern_transformed = output_pattern.file_names_transformed (filenames, file_names_transform)
+            output_param = file_names_transform.substitute_output_files(filenames, output_pattern)
+
+        To:
         .. code-block:: python
 
             extra_inputs = extra_input_files_task_globs.file_names_transformed (orig_input_param, extra_specs, filenames, file_names_transform)
@@ -609,11 +673,33 @@ Parameter handling
 ======================================================================================================
 
     * what happens to get_outputs or checkpointing when the job completes but the output files are not made?
-    * either_or matches the first alternative to have all files existing
-    * No nested either_or but can contain arbitrarily nested objects and be at any nesting level
-    * ``task.get_output_files()`` and task.param_generator_func() stays the same. Changed logic in the caller
-    * In ``file_name_parameters.py.`` : ``file_names_from_tasks_globs`` , ``either_or()`` behaves like a ``glob``
-    * In Extra() as well as Output()
+    * either_or matches
+
+        * the only alternative to have all files existing
+        * the alternative with the most recent file
+
+    * either_or behaves as ``list()`` in ``file_name_parameters.py.`` : ``file_names_from_tasks_globs``
+
+
+
+    * Handled to check that input files exist:
+
+            ``check_input_files_exist()``
+            ``needs_update_check_directory_missing()``
+            ``needs_update_check_exist()``
+            ``needs_update_check_modify_time()``
+
+    * Handled to update / remove files in ``job_history`` if job succeeded or failed
+
+    * Only first either_or is used to obtain list of file names to ``touch``
+
+        ``task.job_wrapper_io_files``
+
+    * Only first either_or is used to obtain list of file names to make directories
+
+        ``job_wrapper_mkdir``
+
+    * What happens in ``task.get_output_files()``?
 
 
 ******************************************************************************
