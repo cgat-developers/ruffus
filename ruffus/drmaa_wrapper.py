@@ -261,7 +261,7 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
         msg = str(exceptionValue)
         # ignore message 24 in PBS
         # code 24: drmaa: Job finished but resource usage information and/or termination status could not be provided.":
-        if not msg.message.startswith("code 24"): raise
+        if not msg.startswith("code 24"): raise
         if logger:
             logger.log(MESSAGE, "Warning %s\n"
                                    "The original command was:\n%s\njobid=jobid\n"
