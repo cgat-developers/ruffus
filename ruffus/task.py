@@ -585,13 +585,13 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
         #
         # list of input files
         real_input_file_names = set()
-        for f in get_strings_in_nested_sequence(i):
+        for f in get_strings_in_flattened_sequence(i):
             real_input_file_names.add(os.path.realpath(f))
 
         #
         #   touch files only
         #
-        for f in get_strings_in_nested_sequence(o):
+        for f in get_strings_in_flattened_sequence(o):
 
             if os.path.realpath(f) in real_input_file_names:
                 continue
@@ -614,7 +614,7 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
     #
     # register strings in output file for cleanup
     #
-    for f in get_strings_in_nested_sequence(o):
+    for f in get_strings_in_flattened_sequence(o):
         register_cleanup(f, "file")
 
 
@@ -657,7 +657,7 @@ def job_wrapper_mkdir(param, user_defined_work_func, register_cleanup, touch_fil
         raise Exception("No arguments in mkdir check %s" % (param,))
 
     # get all file names in flat list
-    dirs = get_strings_in_nested_sequence(dirs)
+    dirs = get_strings_in_flattened_sequence(dirs)
 
     for d in dirs:
         try:
@@ -5384,7 +5384,7 @@ def pipeline_run(target_tasks=[],
                     #
                     # N.B. output parameters are not necessary all strings
                     #
-                    for o_f_n in get_strings_in_nested_sequence(output_file_name):
+                    for o_f_n in get_strings_in_flattened_sequence(output_file_name):
                         #
                         # use paths relative to working directory
                         #
@@ -5438,12 +5438,10 @@ def pipeline_run(target_tasks=[],
                     # completion time, or on the other end of the spectrum,
                     # we could save a checksum of the function that generated
                     # this file, something akin to:
-                    # chksum = md5.md5(marshal.dumps(t.user_defined_work_func.
-                    #                                func_code.co_code))
+                    # chksum = md5.md5(marshal.dumps(t.user_defined_work_func.func_code.co_code))
                     # we could even checksum the arguments to the function that
                     # generated this file:
-                    # chksum2 = md5.md5(marshal.dumps(t.user_defined_work_func.
-                    #                                 func_defaults) +
+                    # chksum2 = md5.md5(marshal.dumps(t.user_defined_work_func.func_defaults) +
                     #                   marshal.dumps(t.args))
 
                     if len(job_result.params) > 1:  # some jobs have no outputs
@@ -5457,7 +5455,7 @@ def pipeline_run(target_tasks=[],
                         #   even though the task apparently completed properly!
                         # Remember to expand globs
                         #
-                        for possible_glob_str in get_strings_in_nested_sequence(output_file_name):
+                        for possible_glob_str in get_strings_in_flattened_sequence(output_file_name):
                             for o_f_n in glob.glob(possible_glob_str):
                                 #
                                 # use paths relative to working directory
@@ -5468,20 +5466,17 @@ def pipeline_run(target_tasks=[],
                                     mtime = os.path.getmtime(o_f_n)
                                     #
                                     #   use probably higher resolution
-                                    #       time.time() over mtime which might
-                                    #       have 1 or 2s resolutions, unless
-                                    #       there is clock skew and the
-                                    #       filesystem time > system time
-                                    #       (e.g. for networks)
+                                    #       time.time() over mtime which might have 1 or 2s
+                                    #       resolutions, unless there is clock skew and the
+                                    #       filesystem time > system time (e.g. for networks)
                                     #
                                     epoch_seconds = time.time()
-                                    # Aargh. go back to insert one second
-                                    # between jobs
+                                    # Aargh. go back to insert one second between jobs
                                     if epoch_seconds < mtime:
                                         if one_second_per_job is None and \
                                                 not runtime_data["ONE_SECOND_PER_JOB"]:
                                             log_at_level(logger, 10, verbose,
-                                                         "   Switch to one second per job")
+                                                         "   Switch to 1s per job")
                                             runtime_data["ONE_SECOND_PER_JOB"] = True
                                     elif epoch_seconds - mtime < 1.1:
                                         mtime = epoch_seconds

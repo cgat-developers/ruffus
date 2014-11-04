@@ -97,8 +97,8 @@ class Test_get_nested_tasks_or_globs(unittest.TestCase):
         # test task function
         #
         self.check_equal(is_glob, (set([is_glob]), set([]), set()))
-        self.check_equal([is_glob, [1, "this", ["that*", 5]], [(get_strings_in_nested_sequence,)]], (
-                        set([is_glob, get_strings_in_nested_sequence]), set(["that*"]), set()))
+        self.check_equal([is_glob, [1, "this", ["that*", 5]], [(get_strings_in_flattened_sequence,)]], (
+                        set([is_glob, get_strings_in_flattened_sequence]), set(["that*"]), set()))
         #
         # test wrapper
         #
@@ -122,7 +122,7 @@ class Test_replace_func_names_with_tasks(unittest.TestCase):
         self.assertEqual(replace_func_names_with_tasks(a, d), b)
 
     def test_replace_func_names_with_tasks(self):
-        func_or_name_to_task = {is_glob: "FF is_glob", "what" : "FF what", get_strings_in_nested_sequence: "FF get_strings_in_nested_sequence"}
+        func_or_name_to_task = {is_glob: "FF is_glob", "what" : "FF what", get_strings_in_flattened_sequence: "FF get_strings_in_flattened_sequence"}
 
 
         #
@@ -145,8 +145,8 @@ class Test_replace_func_names_with_tasks(unittest.TestCase):
         # test task function
         #
         self.check_equal(is_glob, "FF is_glob", func_or_name_to_task)
-        self.check_equal([is_glob, [1, "this", ["that*", 5]], [(get_strings_in_nested_sequence,)]],
-                        ["FF is_glob", [1, "this", ["that*", 5]], [("FF get_strings_in_nested_sequence",)]],
+        self.check_equal([is_glob, [1, "this", ["that*", 5]], [(get_strings_in_flattened_sequence,)]],
+                        ["FF is_glob", [1, "this", ["that*", 5]], [("FF get_strings_in_flattened_sequence",)]],
                         func_or_name_to_task)
         #
         # test wrapper
@@ -201,14 +201,14 @@ class Test_non_str_sequence(unittest.TestCase):
 
 #_________________________________________________________________________________________
 
-#   get_strings_in_nested_sequence
+#   get_strings_in_flattened_sequence
 
 #_________________________________________________________________________________________
-class Test_get_strings_in_nested_sequence(unittest.TestCase):
+class Test_get_strings_in_flattened_sequence(unittest.TestCase):
 
-    def test_get_strings_in_nested_sequence (self):
+    def test_get_strings_in_flattened_sequence (self):
         """
-            get_strings_in_nested_sequence()
+            get_strings_in_flattened_sequence()
         """
         class inherited_str (str):
             #
@@ -222,12 +222,12 @@ class Test_get_strings_in_nested_sequence(unittest.TestCase):
             def __init__ (self, *param):
                 list.__init__(self, *param)
 
-        self.assertEqual(get_strings_in_nested_sequence("one"), ["one"])
-        self.assertEqual(get_strings_in_nested_sequence(["one", "two"]), ["one", "two"])
-        self.assertEqual(get_strings_in_nested_sequence(["one", 1, "two"]), ["one", "two"])
-        self.assertEqual(get_strings_in_nested_sequence(["one", [1, ["two"]]]), ["one", "two"])
-        self.assertEqual(get_strings_in_nested_sequence([inherited_str("one"), [1, ["two"]]]), [inherited_str("one"), "two"])
-        self.assertEqual(get_strings_in_nested_sequence(inherited_list([inherited_str("one"), [1, ["two"]]])),
+        self.assertEqual(get_strings_in_flattened_sequence("one"), ["one"])
+        self.assertEqual(get_strings_in_flattened_sequence(["one", "two"]), ["one", "two"])
+        self.assertEqual(get_strings_in_flattened_sequence(["one", 1, "two"]), ["one", "two"])
+        self.assertEqual(get_strings_in_flattened_sequence(["one", [1, ["two"]]]), ["one", "two"])
+        self.assertEqual(get_strings_in_flattened_sequence([inherited_str("one"), [1, ["two"]]]), [inherited_str("one"), "two"])
+        self.assertEqual(get_strings_in_flattened_sequence(inherited_list([inherited_str("one"), [1, ["two"]]])),
                                                     inherited_list([inherited_str("one"), "two"]))
 
 
@@ -254,19 +254,19 @@ class Test_get_first_strings_in_nested_sequence(unittest.TestCase):
             def __init__ (self, *param):
                 list.__init__(self, *param)
 
-        self.assertEqual(get_strings_in_nested_sequence("one", True), ["one"])
-        self.assertEqual(get_strings_in_nested_sequence(["one", "two"], True), ["one", "two"])
-        self.assertEqual(get_strings_in_nested_sequence(["one", 1, "two"], True), ["one", "two"])
-        self.assertEqual(get_strings_in_nested_sequence(["one", [1, ["two"]]], True), ["one", "two"])
-        self.assertEqual(get_strings_in_nested_sequence([inherited_str("one"), [1, ["two"]]], True), [inherited_str("one"), "two"])
-        self.assertEqual(get_strings_in_nested_sequence(inherited_list([inherited_str("one"), [1, ["two"]]]), True),
+        self.assertEqual(get_strings_in_flattened_sequence("one"), ["one"])
+        self.assertEqual(get_strings_in_flattened_sequence(["one", "two"]), ["one", "two"])
+        self.assertEqual(get_strings_in_flattened_sequence(["one", 1, "two"]), ["one", "two"])
+        self.assertEqual(get_strings_in_flattened_sequence(["one", [1, ["two"]]]), ["one", "two"])
+        self.assertEqual(get_strings_in_flattened_sequence([inherited_str("one"), [1, ["two"]]]), [inherited_str("one"), "two"])
+        self.assertEqual(get_strings_in_flattened_sequence(inherited_list([inherited_str("one"), [1, ["two"]]])),
                                                           inherited_list([inherited_str("one"), "two"]))
-        self.assertEqual(get_strings_in_nested_sequence(["one", [1, ["two"], "three"]], True), ["one", "two"])
+        self.assertEqual(get_strings_in_flattened_sequence(["one", [1, ["two"], "three"]]), ["one", "two", "three"])
         d = {"four" :4}
-        self.assertEqual(get_strings_in_nested_sequence(["one", [1, [d, "two"], "three"]], True), ["one", "two"])
-        self.assertEqual(get_strings_in_nested_sequence(None, True), [])
-        self.assertEqual(get_strings_in_nested_sequence([], True), [])
-        self.assertEqual(get_strings_in_nested_sequence([1,2,3, d], True), [])
+        self.assertEqual(get_strings_in_flattened_sequence(["one", [1, [d, "two"], "three"]]), ["one", "two", "three"])
+        self.assertEqual(get_strings_in_flattened_sequence(None), [])
+        self.assertEqual(get_strings_in_flattened_sequence([]), [])
+        self.assertEqual(get_strings_in_flattened_sequence([1,2,3, d]), [])
 
 
 #_________________________________________________________________________________________
@@ -415,14 +415,14 @@ class Test_expand_nested_tasks_or_globs(unittest.TestCase):
     def check_equal (self, a,b):
 
         tasks, globs, runtime_data_names = get_nested_tasks_or_globs(a)
-        func_or_name_to_task = dict(list(zip((non_str_sequence, get_strings_in_nested_sequence, "what"), self.tasks)))
+        func_or_name_to_task = dict(list(zip((non_str_sequence, get_strings_in_flattened_sequence, "what"), self.tasks)))
 
         task_or_glob_to_files = dict()
         #for f in func_or_name_to_task:
         #    print f, task_or_glob_to_files[func_or_name_to_task[f]]
 
         task_or_glob_to_files[self.tasks[0]  ] = ["t1a", "t1b"]       # non_str_sequence
-        task_or_glob_to_files[self.tasks[1]  ] = ["t2"]               # get_strings_in_nested_sequence
+        task_or_glob_to_files[self.tasks[1]  ] = ["t2"]               # get_strings_in_flattened_sequence
         task_or_glob_to_files[self.tasks[2]  ] = ["t3"]               # "what"
         task_or_glob_to_files["that*"  ] = ["that1", "that2"]
         task_or_glob_to_files["test*1" ] = ["test11","test21"]
@@ -464,9 +464,9 @@ class Test_expand_nested_tasks_or_globs(unittest.TestCase):
         # test task function
         #
         self.check_equal(non_str_sequence, ["t1a", "t1b"])
-        self.check_equal(get_strings_in_nested_sequence, ["t2"])
-        self.check_equal([get_strings_in_nested_sequence, non_str_sequence], ["t2", "t1a", "t1b"])
-        self.check_equal([non_str_sequence, [1, "this", ["that*", 5]], [(get_strings_in_nested_sequence,)]],
+        self.check_equal(get_strings_in_flattened_sequence, ["t2"])
+        self.check_equal([get_strings_in_flattened_sequence, non_str_sequence], ["t2", "t1a", "t1b"])
+        self.check_equal([non_str_sequence, [1, "this", ["that*", 5]], [(get_strings_in_flattened_sequence,)]],
                          ['t1a', 't1b', [1, 'this', ['that1', 'that2', 5]], [('t2',)]])
         #
         # test wrapper

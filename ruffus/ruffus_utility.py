@@ -851,12 +851,12 @@ def non_str_sequence (arg):
 
 #_________________________________________________________________________________________
 
-#   get_strings_in_nested_sequence_aux
+#   get_strings_in_flattened_sequence_aux
 
 #       helper function for next function
 
 #_________________________________________________________________________________________
-def get_strings_in_nested_sequence_aux(p, l = None):
+def get_strings_in_flattened_sequence_aux(p, l = None):
     """
     Unravels arbitrarily nested sequence and returns lists of strings
     """
@@ -866,7 +866,7 @@ def get_strings_in_nested_sequence_aux(p, l = None):
         l.append(p)
     elif non_str_sequence (p):
         for pp in p:
-            get_strings_in_nested_sequence_aux(pp, l)
+            get_strings_in_flattened_sequence_aux(pp, l)
     return l
 
 
@@ -875,7 +875,7 @@ def get_strings_in_nested_sequence_aux(p, l = None):
 #   non_str_sequence
 
 #_________________________________________________________________________________________
-def get_strings_in_nested_sequence (p):
+def get_strings_in_flattened_sequence (p):
     """
     Traverses nested sequence and for each element, returns first string encountered
     """
@@ -891,7 +891,7 @@ def get_strings_in_nested_sequence (p):
     #
     #  Get all strings flattened into list
     #
-    return get_strings_in_nested_sequence_aux(p)
+    return get_strings_in_flattened_sequence_aux(p)
 
 
 #_________________________________________________________________________________________
@@ -900,25 +900,9 @@ def get_strings_in_nested_sequence (p):
 
 #_________________________________________________________________________________________
 def get_first_string_in_nested_sequence (p):
-    if p is None:
-        return None
-
-    #
-    #  string is returned as list of single string
-    #
-    if isinstance(p, path_str_type):
-        return p
-
-    #
-    #  Get all first string in each element
-    #
-    elif non_str_sequence (p):
-        filenames = []
-        for pp in p:
-            l = get_strings_in_nested_sequence_aux(pp)
-            if len(l):
-                return l[0]
-
+    strings = get_strings_in_flattened_sequence (p)
+    if len(strings):
+        return strings[0]
     return None
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -1355,7 +1339,7 @@ def check_files_io_parameters (enclosing_task, params, error_object):
             if len(job_param) < 2:
                 raise error_object(enclosing_task, "Missing output files for job " +
                                                     ignore_unknown_encoder(job_param))
-            #if len(get_strings_in_nested_sequence(job_param[0:2])) == 0:
+            #if len(get_strings_in_flattened_sequence(job_param[0:2])) == 0:
             #    raise error_object(enclosing_task, "Input or output file parameters should "
             #                                        "contain at least one or more file names strings. "
             #                                        "Consider using @parallel if you are not using files. " +

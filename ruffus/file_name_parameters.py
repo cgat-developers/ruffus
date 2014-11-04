@@ -338,7 +338,7 @@ def needs_update_check_directory_missing (*params, **kwargs):
         raise Exception("Wrong number of arguments in mkdir check %s" % (params,))
 
     missing_directories = []
-    for d in get_strings_in_nested_sequence(dirs):
+    for d in get_strings_in_flattened_sequence(dirs):
         #print >>sys.stderr, "check directory missing %d " % os.path.exists(d) # DEBUG
         if not os.path.exists(d):
             missing_directories.append(d)
@@ -369,7 +369,7 @@ def check_input_files_exist (*params):
     """
     if len(params):
         input_files = params[0]
-        for f in get_strings_in_nested_sequence(input_files):
+        for f in get_strings_in_flattened_sequence(input_files):
             if not os.path.exists(f):
                 if os.path.lexists(f):
                     raise MissingInputFileError("No way to run job: "+
@@ -405,8 +405,8 @@ def needs_update_check_exist (*params, **kwargs):
 
 
     i, o = params[0:2]
-    i = get_strings_in_nested_sequence(i)
-    o = get_strings_in_nested_sequence(o)
+    i = get_strings_in_flattened_sequence(i)
+    o = get_strings_in_flattened_sequence(o)
 
     #
     # build: missing output file
@@ -489,8 +489,8 @@ def needs_update_check_modify_time (*params, **kwargs):
         return True, ""
 
     i, o = params[0:2]
-    i = get_strings_in_nested_sequence(i)
-    o = get_strings_in_nested_sequence(o)
+    i = get_strings_in_flattened_sequence(i)
+    o = get_strings_in_flattened_sequence(o)
 
     #
     # build: missing output file
@@ -988,7 +988,7 @@ def input_param_to_file_name_list (input_params):
                 ==> generator of flat list of strings (file_names)
     """
     for per_job_input_param in input_params:
-        flattened_list_of_file_names = get_strings_in_nested_sequence(per_job_input_param)
+        flattened_list_of_file_names = get_strings_in_flattened_sequence(per_job_input_param)
         yield per_job_input_param, flattened_list_of_file_names
 
 
@@ -1006,7 +1006,7 @@ def list_input_param_to_file_name_list (input_params):
                 ==> generator of flat list of strings (file_names)
     """
     for per_job_input_param_list in input_params:
-        list_of_flattened_list_of_file_names = [ get_strings_in_nested_sequence(ii) for ii in per_job_input_param_list]
+        list_of_flattened_list_of_file_names = [ get_strings_in_flattened_sequence(ii) for ii in per_job_input_param_list]
         yield per_job_input_param_list, list_of_flattened_list_of_file_names
 
 
