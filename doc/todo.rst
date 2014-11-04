@@ -17,20 +17,39 @@ Future Changes to Ruffus
     If you have suggestions or contributions, please either write to me ( ruffus_lib at llew.org.uk) or
     send a pull request via the `git site  <https://github.com/bunbun/ruffus>`__.
 
+
+****************************************************************************************
+On github: Named parameters in decorators for clarity
+****************************************************************************************
+
+****************************************************************************************
+On github: Non-decorator / Function interface
+****************************************************************************************
+
 ****************************************************************************************
 Todo: either_or: Prevent failed jobs from propagating further
 ****************************************************************************************
 
+    Motivating example:
+
+    .. <<Python_
+
+    .. code-block:: Python
+
+        @transform(prevtask, suffix(".txt"),  either_or(".failed", ".succeed"))
+        def task(input_file, output_files):
+            succeed_file_name, failed_file_name = output_files
+            if not run_operation(input_file, succeed_file_name):
+                # touch failed file
+                with open(failed_file_name, "w") as faile_file:
+                    pass
+
+    ..
+        Python_
+
+
 ****************************************************************************************
 Todo: decorator docs should pointer to manual
-****************************************************************************************
-
-****************************************************************************************
-Todo: Named parameters in decorators for clarity
-****************************************************************************************
-
-****************************************************************************************
-Todo: Non-decorator / Function interface
 ****************************************************************************************
 
 ****************************************************************************************

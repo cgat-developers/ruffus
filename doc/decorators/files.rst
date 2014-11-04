@@ -146,8 +146,8 @@
     **Checking if jobs are up to date:**
         #. Strings in ``input`` and ``output`` (including in nested sequences) are interpreted as file names and
            used to check if jobs are up-to-date.
-        #. In the absence of input files (e.g. ``input == None``), the job will run if any output file is missing.
-        #. In the absence of output files (e.g. ``output == None``), the job will always run.
+        #. In the absence of input files (e.g. ``input is None``), the job will run if any output file is missing.
+        #. In the absence of output files (e.g. ``output is None``), the job will always run.
         #. If any of the output files is missing, the job will run.
         #. If any of the input files is missing when the job is run, a
            ``MissingInputFileError`` exception will be raised.
