@@ -81,14 +81,14 @@ class Test_cmdline(unittest.TestCase):
         setattr(options, "verbose", None)
         handle_verbose(options)
         self.assertTrue(options.verbose==None)
-        self.assertTrue(options.verbose_abbreviated_path == None)
+        self.assertTrue(options.verbose_abbreviated_path is None)
 
         # options.verbose defined by user to be 0
         options = t_options()
         setattr(options, "verbose", 0)
         handle_verbose(options)
         self.assertTrue(options.verbose==0)
-        self.assertTrue(options.verbose_abbreviated_path == None)
+        self.assertTrue(options.verbose_abbreviated_path is None)
 
         # options.verbose defined by user to be "6"
         options = t_options()

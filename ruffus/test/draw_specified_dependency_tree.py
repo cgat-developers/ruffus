@@ -180,7 +180,7 @@ if __name__ == '__main__':
     (options, remaining_args) = parser.parse_args()
     # mandatory options
     for parameter in mandatory_parameters:
-        if options.__dict__[parameter] == None:
+        if options.__dict__[parameter] is None:
             die_error("Please specify a file in --%s.\n\n" % parameter + helpstr)
 
 

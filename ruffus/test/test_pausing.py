@@ -140,7 +140,7 @@ def test_job_io(infiles, outfiles, extra_params):
 
     if isinstance(infiles, str):
         infiles = [infiles]
-    elif infiles == None:
+    elif infiles is None:
         infiles = []
     if isinstance(outfiles, str):
         outfiles = [outfiles]

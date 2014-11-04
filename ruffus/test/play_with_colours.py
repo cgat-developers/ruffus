@@ -210,7 +210,7 @@ custom_flow_chart_colour_scheme["colour_scheme_index"] = options.colour_scheme_i
 #
 #   Overriding colours
 #
-if options.colour_scheme_index == None:
+if options.colour_scheme_index is None:
     custom_flow_chart_colour_scheme["Vicious cycle"]["linecolor"]                        = '"#FF3232"'
     custom_flow_chart_colour_scheme["Pipeline"]["fontcolor"]                             = '"#FF3232"'
     custom_flow_chart_colour_scheme["Key"]["fontcolor"]                                  = "black"
