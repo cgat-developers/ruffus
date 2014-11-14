@@ -263,9 +263,9 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
         # code 24: drmaa: Job finished but resource usage information and/or termination status could not be provided.":
         if not msg.startswith("code 24"): raise
         if logger:
-            logger.log(MESSAGE, "Warning %s\n"
-                                   "The original command was:\n%s\njobid=jobid\n"
-                                     (msg.message, cmd_str,jobid) )
+            logger.info("Warning %s\n"
+                        "The original command was:\n%s\njobid=jobid\n"
+                        (msg.message, cmd_str,jobid) )
         job_info = None
 
 
