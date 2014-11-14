@@ -4994,19 +4994,17 @@ def pipeline_run(target_tasks=[],
     :param logger: Where progress will be logged. Defaults to stderr output.
     :type logger: `logging <http://docs.python.org/library/logging.html>`_
                   objects
-    :param verbose: level 0 : nothing
-                    level 1 : Out-of-date Task names
-                    level 2 : All Tasks (including any task function
-                              docstrings)
-                    level 3 : Out-of-date Jobs in Out-of-date Tasks, no
-                              explanation
-                    level 4 : Out-of-date Jobs in Out-of-date Tasks, with
-                              explanations and warnings
-                    level 5 : All Jobs in Out-of-date Tasks,  (include only
-                              list of up-to-date tasks)
-                    level 6 : All jobs in All Tasks whether out of date or not
-                    level 10: logs messages useful only for debugging ruffus
-                              pipeline code
+    :param verbose:
+
+                    * level 0 : nothing
+                    * level 1 : Out-of-date Task names
+                    * level 2 : All Tasks (including any task function docstrings)
+                    * level 3 : Out-of-date Jobs in Out-of-date Tasks, no explanation
+                    * level 4 : Out-of-date Jobs in Out-of-date Tasks, with explanations and warnings
+                    * level 5 : All Jobs in Out-of-date Tasks,  (include only list of up-to-date
+                      tasks)
+                    * level 6 : All jobs in All Tasks whether out of date or not
+                    * level 10: logs messages useful only for debugging ruffus pipeline code
     :param touch_files_only: Create or update input/output files only to
                              simulate running the pipeline. Do not run jobs.
                              If set to CHECKSUM_REGENERATE, will regenerate
@@ -5019,15 +5017,14 @@ def pipeline_run(target_tasks=[],
     :param log_exceptions: Print exceptions to logger as soon as they occur.
     :param checksum_level: Several options for checking up-to-dateness are
                            available: Default is level 1.
-                           level 0 : Use only file timestamps
-                           level 1 : above, plus timestamp of successful
-                                     job completion
-                           level 2 : above, plus a checksum of the pipeline
-                                     function body
-                           level 3 : above, plus a checksum of the pipeline
-                                     function default arguments and the
-                                     additional arguments passed in by task
-                                     decorators
+
+                           * level 0 : Use only file timestamps
+                           * level 1 : above, plus timestamp of successful job completion
+                           * level 2 : above, plus a checksum of the pipeline function body
+                           * level 3 : above, plus a checksum of the pipeline
+                             function default arguments and the
+                             additional arguments passed in by task
+                             decorators
     :param one_second_per_job: To work around poor file timepstamp resolution
                                for some file systems. Defaults to True if
                                checksum_level is 0 forcing Tasks to take a
@@ -5039,16 +5036,17 @@ def pipeline_run(target_tasks=[],
                                           ``True``. Use with caution.
     :param history_file: Database file storing checksums and file timestamps
                          for input/output files.
-    :param verbose_abbreviated_path: whether input and output paths are
-                                     abbreviated.
-        level 0: The full (expanded, abspath) input or output path
-        level > 1: The number of subdirectories to include.
-                   Abbreviated paths are prefixed with ``[,,,]/``
-        level < 0: level < 0: Input / Output parameters are truncated to
-                   ``MMM`` letters where ``verbose_abbreviated_path ==-MMM``.
-                   Subdirectories are first removed to see if this allows the
-                   paths to fit in the specified limit. Otherwise abbreviated
-                   paths are prefixed by ``<???>``
+    :param verbose_abbreviated_path: whether input and output paths are abbreviated.
+
+                                     * level 0: The full (expanded, abspath) input or output path
+                                     * level > 1: The number of subdirectories to include.
+                                       Abbreviated paths are prefixed with ``[,,,]/``
+                                     * level < 0: Input / Output parameters are truncated
+                                       to ``MMM`` letters where ``verbose_abbreviated_path
+                                       ==-MMM``. Subdirectories are first removed to see
+                                       if this allows the paths to fit in the specified
+                                       limit. Otherwise abbreviated paths are prefixed by
+                                       ``<???>``
     """
 
     #
