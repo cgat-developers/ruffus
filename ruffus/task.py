@@ -458,51 +458,51 @@ class touch_file(object):
 #           main use in error logging
 
 # 88888888888888888888888888888888888888888888888888888888888888888888888888888
-def generic_job_descriptor(param, verbose_abbreviated_path, runtime_data):
-    if param in ([], None):
+def generic_job_descriptor(unglobbed_params, verbose_abbreviated_path, runtime_data):
+    if unglobbed_params in ([], None):
         m = "Job"
     else:
-        m = "Job  = %s" % ignore_unknown_encoder(param)
+        m = "Job  = %s" % ignore_unknown_encoder(unglobbed_params)
     return m, [m]
 
 
-def io_files_job_descriptor(param, verbose_abbreviated_path, runtime_data):
-    extra_param = ", " + shorten_filenames_encoder(param[2:], verbose_abbreviated_path)[1:-1] \
-        if len(param) > 2 else ""
-    out_param = shorten_filenames_encoder(param[1], verbose_abbreviated_path) \
-        if len(param) > 1 else "??"
-    in_param = shorten_filenames_encoder(param[0], verbose_abbreviated_path) \
-        if len(param) > 0 else "??"
+def io_files_job_descriptor(unglobbed_params, verbose_abbreviated_path, runtime_data):
+    extra_param = ", " + shorten_filenames_encoder(unglobbed_params[2:], verbose_abbreviated_path)[1:-1] \
+        if len(unglobbed_params) > 2 else ""
+    out_param = shorten_filenames_encoder(unglobbed_params[1], verbose_abbreviated_path) \
+        if len(unglobbed_params) > 1 else "??"
+    in_param = shorten_filenames_encoder(unglobbed_params[0], verbose_abbreviated_path) \
+        if len(unglobbed_params) > 0 else "??"
 
     return ("Job  = [%s -> %s%s]" % (in_param, out_param, extra_param),
             ["Job  = [%s" % in_param, "-> " + out_param + extra_param + "]"])
 
 
-def io_files_one_to_many_job_descriptor(param, verbose_abbreviated_path, runtime_data):
+def io_files_one_to_many_job_descriptor(unglobbed_params, verbose_abbreviated_path, runtime_data):
 
-    extra_param = ", " + shorten_filenames_encoder(param[2:], verbose_abbreviated_path)[1:-1] \
-        if len(param) > 2 else ""
-    out_param = shorten_filenames_encoder(param[1], verbose_abbreviated_path) \
-        if len(param) > 1 else "??"
-    in_param = shorten_filenames_encoder(param[0], verbose_abbreviated_path) \
-        if len(param) > 0 else "??"
+    extra_param = ", " + shorten_filenames_encoder(unglobbed_params[2:], verbose_abbreviated_path)[1:-1] \
+        if len(unglobbed_params) > 2 else ""
+    out_param = shorten_filenames_encoder(unglobbed_params[1], verbose_abbreviated_path) \
+        if len(unglobbed_params) > 1 else "??"
+    in_param = shorten_filenames_encoder(unglobbed_params[0], verbose_abbreviated_path) \
+        if len(unglobbed_params) > 0 else "??"
 
     # start with input parameter
     ret_params = ["Job  = [%s" % in_param]
 
     # add output parameter to list,
     #   processing one by one if multiple output parameters
-    if len(param) > 1:
-        if isinstance(param[1], (list, tuple)):
+    if len(unglobbed_params) > 1:
+        if isinstance(unglobbed_params[1], (list, tuple)):
             ret_params.extend(
-                "-> " + shorten_filenames_encoder(p, verbose_abbreviated_path) for p in param[1])
+                "-> " + shorten_filenames_encoder(p, verbose_abbreviated_path) for p in unglobbed_params[1])
         else:
             ret_params.append("-> " + out_param)
 
     # add extra
-    if len(param) > 2:
+    if len(unglobbed_params) > 2:
         ret_params.append(
-            " , " + shorten_filenames_encoder(param[2:], verbose_abbreviated_path)[1:-1])
+            " , " + shorten_filenames_encoder(unglobbed_params[2:], verbose_abbreviated_path)[1:-1])
 
     # add closing bracket
     ret_params[-1] += "]"
@@ -510,12 +510,12 @@ def io_files_one_to_many_job_descriptor(param, verbose_abbreviated_path, runtime
     return ("Job  = [%s -> %s%s]" % (in_param, out_param, extra_param), ret_params)
 
 
-def mkdir_job_descriptor(param, verbose_abbreviated_path, runtime_data):
+def mkdir_job_descriptor(unglobbed_params, verbose_abbreviated_path, runtime_data):
     # input, output and parameters
-    if len(param) == 1:
-        m = "Make directories %s" % (shorten_filenames_encoder(param[0], verbose_abbreviated_path))
-    elif len(param) == 2:
-        m = "Make directories %s" % (shorten_filenames_encoder(param[1], verbose_abbreviated_path))
+    if len(unglobbed_params) == 1:
+        m = "Make directories %s" % (shorten_filenames_encoder(unglobbed_params[0], verbose_abbreviated_path))
+    elif len(unglobbed_params) == 2:
+        m = "Make directories %s" % (shorten_filenames_encoder(unglobbed_params[1], verbose_abbreviated_path))
     else:
         return [], []
     return m, [m]
@@ -532,12 +532,12 @@ def mkdir_job_descriptor(param, verbose_abbreviated_path, runtime_data):
 #   generic job wrapper
 
 # _____________________________________________________________________________
-def job_wrapper_generic(param, user_defined_work_func, register_cleanup, touch_files_only):
+def job_wrapper_generic(params, user_defined_work_func, register_cleanup, touch_files_only):
     """
     run func
     """
     assert(user_defined_work_func)
-    return user_defined_work_func(*param)
+    return user_defined_work_func(*params)
 
 # _____________________________________________________________________________
 
@@ -546,23 +546,23 @@ def job_wrapper_generic(param, user_defined_work_func, register_cleanup, touch_f
 # _____________________________________________________________________________
 
 
-def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_files_only,
+def job_wrapper_io_files(params, user_defined_work_func, register_cleanup, touch_files_only,
                          output_files_only=False):
     """
     run func on any i/o if not up to date
     """
     assert(user_defined_work_func)
 
-    i, o = param[0:2]
+    i, o = params[0:2]
 
     if touch_files_only == 0:
         # @originate only uses output files
         if output_files_only:
-            ret_val = user_defined_work_func(*(param[1:]))
+            ret_val = user_defined_work_func(*(params[1:]))
         # all other decorators
         else:
             try:
-                ret_val = user_defined_work_func(*param)
+                ret_val = user_defined_work_func(*params)
                 # EXTRA pipeline_run DEBUGGING
                 if EXTRA_PIPELINERUN_DEBUGGING:
                     sys.stderr.write("w" * 36 + "[[ task() done ]]" + "w" * 27 + "\n")
@@ -574,7 +574,7 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
                                      "E" * 9 + "\n")
                 raise Ruffus_Keyboard_Interrupt_Exception("KeyboardInterrupt")
             except:
-                # sys.stderr.write("?? %s ??" % (tuple(param),))
+                # sys.stderr.write("?? %s ??" % (tuple(params),))
                 raise
     elif touch_files_only == 1:
         # job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
@@ -623,11 +623,11 @@ def job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_
 #   job wrapper for all that only deals with output files
 
 # _____________________________________________________________________________
-def job_wrapper_output_files(param, user_defined_work_func, register_cleanup, touch_files_only):
+def job_wrapper_output_files(params, user_defined_work_func, register_cleanup, touch_files_only):
     """
     run func on any output file if not up to date
     """
-    job_wrapper_io_files(param, user_defined_work_func, register_cleanup, touch_files_only,
+    job_wrapper_io_files(params, user_defined_work_func, register_cleanup, touch_files_only,
                          output_files_only=True)
 
 
@@ -636,7 +636,7 @@ def job_wrapper_output_files(param, user_defined_work_func, register_cleanup, to
 #   job wrapper for mkdir
 
 # _____________________________________________________________________________
-def job_wrapper_mkdir(param, user_defined_work_func, register_cleanup, touch_files_only):
+def job_wrapper_mkdir(params, user_defined_work_func, register_cleanup, touch_files_only):
     """
     Make missing directories including any intermediate directories on the specified path(s)
     """
@@ -646,15 +646,15 @@ def job_wrapper_mkdir(param, user_defined_work_func, register_cleanup, touch_fil
     #   Should not be necessary because of "sorted" in task_mkdir
     #
     #
-    if len(param) == 1:
-        dirs = param[0]
+    if len(params) == 1:
+        dirs = params[0]
 
     # if there are two parameters, they are i/o, and the directories to be
     # created are the output
-    elif len(param) >= 2:
-        dirs = param[1]
+    elif len(params) >= 2:
+        dirs = params[1]
     else:
-        raise Exception("No arguments in mkdir check %s" % (param,))
+        raise Exception("No arguments in mkdir check %s" % (params,))
 
     # get all file names in flat list
     dirs = get_strings_in_flattened_sequence(dirs)
@@ -708,7 +708,8 @@ t_job_result = namedtuple('t_job_result',
                           'job_name '
                           'return_value '
                           'exception '
-                          'params',
+                          'params '
+                          'unglobbed_params ',
                           verbose=0)
 
 
@@ -726,11 +727,11 @@ def run_pooled_job_without_exceptions(process_parameters):
         See RethrownJobError /  run_all_jobs_in_task
     """
     # signal.signal(signal.SIGINT, signal.SIG_IGN)
-    (param, task_name, node_index, job_name, job_wrapper, user_defined_work_func,
+    (params, unglobbed_params, task_name, node_index, job_name, job_wrapper, user_defined_work_func,
      job_limit_semaphore, death_event, touch_files_only) = process_parameters
 
     # #job_history = dbdict.open(RUFFUS_HISTORY_FILE, picklevalues=True)
-    #  outfile = param[1] if len(param) > 1 else None   # mkdir has no output
+    #  outfile = params[1] if len(params) > 1 else None   # mkdir has no output
     #  if not isinstance(outfile, list):
     # #    outfile = [outfile]
     #  for o in outfile:
@@ -744,7 +745,7 @@ def run_pooled_job_without_exceptions(process_parameters):
             # EXTRA pipeline_run DEBUGGING
             if EXTRA_PIPELINERUN_DEBUGGING:
                 sys.stderr.write(">" * 36 + "[[ job_wrapper ]]" + ">" * 27 + "\n")
-            return_value = job_wrapper(param, user_defined_work_func,
+            return_value = job_wrapper(params, user_defined_work_func,
                                        register_cleanup, touch_files_only)
 
             #
@@ -756,7 +757,7 @@ def run_pooled_job_without_exceptions(process_parameters):
             if EXTRA_PIPELINERUN_DEBUGGING:
                 sys.stderr.write("<" * 36 + "[[ job_wrapper done ]]" + "<" * 22 + "\n")
             return t_job_result(task_name, node_index, JOB_COMPLETED, job_name, return_value, None,
-                                param)
+                                params, unglobbed_params)
     except KeyboardInterrupt as e:
         # Reraise KeyboardInterrupt as a normal Exception.
         #   Should never be necessary here
@@ -792,7 +793,7 @@ def run_pooled_job_without_exceptions(process_parameters):
                              job_name,
                              exception_name,
                              exception_value,
-                             exception_stack], param)
+                             exception_stack], params, unglobbed_params)
 
 
 # 88888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -1977,8 +1978,8 @@ class Task (node):
 
         """
 
-        def _get_job_names(param, indent_str):
-            job_names = self.job_descriptor(param, verbose_abbreviated_path, runtime_data)[1]
+        def _get_job_names(unglobbed_params, indent_str):
+            job_names = self.job_descriptor(unglobbed_params, verbose_abbreviated_path, runtime_data)[1]
             if len(job_names) > 1:
                 job_names = ([indent_str + job_names[0]] +
                              [indent_str + "      " + jn for jn in job_names[1:]])
@@ -2081,7 +2082,7 @@ class Task (node):
             #       whether up to date or not
             #
             cnt_jobs = 0
-            for param, descriptive_param in self.param_generator_func(runtime_data):
+            for params, unglobbed_params in self.param_generator_func(runtime_data):
                 cnt_jobs += 1
 
                 #
@@ -2089,20 +2090,20 @@ class Task (node):
                 #
                 if not self.needs_update_func:
                     if verbose >= 5:
-                        messages.extend(_get_job_names(descriptive_param, indent_str))
+                        messages.extend(_get_job_names(unglobbed_params, indent_str))
                         messages.append(indent_str + "  Jobs needs update: No "
                                         "function to check if up-to-date or not")
                     continue
 
                 if self.needs_update_func == needs_update_check_modify_time:
                     needs_update, msg = self.needs_update_func(
-                        *param, task=self, job_history=job_history,
+                        *params, task=self, job_history=job_history,
                         verbose_abbreviated_path=verbose_abbreviated_path)
                 else:
-                    needs_update, msg = self.needs_update_func(*param)
+                    needs_update, msg = self.needs_update_func(*params)
 
                 if needs_update:
-                    messages.extend(_get_job_names(descriptive_param, indent_str))
+                    messages.extend(_get_job_names(unglobbed_params, indent_str))
                     if verbose >= 4:
                         per_job_messages = [(indent_str + s)
                                             for s in ("  Job needs update: %s" % msg).split("\n")]
@@ -2114,7 +2115,7 @@ class Task (node):
                 else:
                     # LOGGER
                     if (task_is_out_of_date and verbose >= 5) or verbose >= 6:
-                        messages.extend(_get_job_names(descriptive_param, indent_str))
+                        messages.extend(_get_job_names(unglobbed_params, indent_str))
                         #
                         #   Get rid of up-to-date messages:
                         #       Superfluous for parts of the pipeline which are up-to-date
@@ -2199,16 +2200,16 @@ class Task (node):
                 #
                 #   return not up to date if ANY jobs needs update
                 #
-                for param, descriptive_param in self.param_generator_func(runtime_data):
+                for params, unglobbed_params in self.param_generator_func(runtime_data):
                     if self.needs_update_func == needs_update_check_modify_time:
                         needs_update, msg = self.needs_update_func(
-                            *param, task=self, job_history=job_history,
+                            *params, task=self, job_history=job_history,
                             verbose_abbreviated_path=verbose_abbreviated_path)
                     else:
-                        needs_update, msg = self.needs_update_func(*param)
+                        needs_update, msg = self.needs_update_func(*params)
                     if needs_update:
                         log_at_level(logger, 10, verbose, "    Needing update:\n      %s"
-                                     % self._get_job_name(descriptive_param,
+                                     % self._get_job_name(unglobbed_params,
                                                           verbose_abbreviated_path, runtime_data))
                         return False
 
@@ -2294,19 +2295,19 @@ class Task (node):
             if self.param_generator_func is not None:
 
                 cnt_jobs = 0
-                for param, descriptive_param in self.param_generator_func(runtime_data):
+                for params, unglobbed_params in self.param_generator_func(runtime_data):
                     cnt_jobs += 1
                     # skip tasks which don't have output parameters
-                    if len(param) >= 2:
+                    if len(params) >= 2:
                         # make sure each @split or @subdivide or @originate
                         #   returns a list of jobs
                         #   i.e. each @split or @subdivide or @originate is
                         #       always a ->many operation
                         #       even if len(many) can be 1 (or zero)
-                        if self.indeterminate_output and not non_str_sequence(param[1]):
-                            self.output_filenames.append([param[1]])
+                        if self.indeterminate_output and not non_str_sequence(params[1]):
+                            self.output_filenames.append([params[1]])
                         else:
-                            self.output_filenames.append(param[1])
+                            self.output_filenames.append(params[1])
 
                 if self._is_single_job_single_output == self._single_job_single_output:
                     if cnt_jobs > 1:
@@ -4498,7 +4499,7 @@ def get_semaphore(t, _job_limit_semaphores, syncmanager):
 
 #       Helper function for make_job_parameter_generator
 # _____________________________________________________________________________
-def job_needs_to_run(task, param, force_rerun, logger, verbose, job_name,
+def job_needs_to_run(task, params, force_rerun, logger, verbose, job_name,
                      job_history, verbose_abbreviated_path):
     """
     Check if job parameters out of date / needs to rerun
@@ -4524,10 +4525,10 @@ def job_needs_to_run(task, param, force_rerun, logger, verbose, job_name,
     # arg changes
     if task.needs_update_func == needs_update_check_modify_time:
         needs_update, msg = task.needs_update_func(
-            *param, task=task, job_history=job_history,
+            *params, task=task, job_history=job_history,
             verbose_abbreviated_path=verbose_abbreviated_path)
     else:
-        needs_update, msg = task.needs_update_func(*param)
+        needs_update, msg = task.needs_update_func(*params)
 
     if not needs_update:
         # LOGGER: All Jobs in Out-of-date Tasks
@@ -4547,7 +4548,7 @@ def job_needs_to_run(task, param, force_rerun, logger, verbose, job_name,
     #       before job is called for better error messages
     #
     if task.needs_update_func == needs_update_check_modify_time:
-        check_input_files_exist(*param)
+        check_input_files_exist(*params)
 
     return True
 
@@ -4696,27 +4697,29 @@ def make_job_parameter_generator(incomplete_tasks, task_parents, logger,
                     #   If no parameters: just call task function (empty list)
                     #
                     if t.param_generator_func is None:
-                        parameters = ([[], []],)
+                        task_parameters = ([[], []],)
                     else:
-                        parameters = t.param_generator_func(runtime_data)
+                        task_parameters = t.param_generator_func(runtime_data)
 
                     #
                     #   iterate through jobs
                     #
                     cnt_jobs_created = 0
-                    for param, descriptive_param in parameters:
+                    for params, unglobbed_params in task_parameters:
 
                         #
                         #   save output even if uptodate
                         #
-                        if len(param) >= 2:
-                            t.output_filenames.append(param[1])
+                        if len(params) >= 2:
+                            # To do: In the case of split subdivide, we should be doing this after
+                            #       The job finishes
+                            t.output_filenames.append(params[1])
 
-                        job_name = t._get_job_name(descriptive_param,
+                        job_name = t._get_job_name(unglobbed_params,
                                                    verbose_abbreviated_path,
                                                    runtime_data)
 
-                        if not job_needs_to_run(t, param, force_rerun, logger, verbose, job_name,
+                        if not job_needs_to_run(t, params, force_rerun, logger, verbose, job_name,
                                                 job_history, verbose_abbreviated_path):
                             continue
 
@@ -4736,7 +4739,9 @@ def make_job_parameter_generator(incomplete_tasks, task_parents, logger,
                         count_remaining_jobs[t] += 1
                         cnt_jobs_created += 1
                         cnt_jobs_created_for_all_tasks += 1
-                        yield (param,
+
+                        yield (params,
+                               unglobbed_params,
                                t._name,
                                t._node_index,
                                job_name,
@@ -4832,17 +4837,17 @@ def feed_job_params_to_process_pool_factory(parameter_q, death_event, logger,
     Use factory function to save parameter_queue
     """
     def feed_job_params_to_process_pool():
-        log_at_level(logger, 10, verbose, "   Send param to Pooled Process START")
+        log_at_level(logger, 10, verbose, "   Send params to Pooled Process START")
         while 1:
             log_at_level(logger, 10, verbose,
                          "   Get next parameter size = %d" % parameter_q.qsize())
             if not parameter_q.qsize():
                 time.sleep(0.1)
-            param = parameter_q.get()
+            params = parameter_q.get()
             log_at_level(logger, 10, verbose, "   Get next parameter done")
 
             # all tasks done
-            if isinstance(param, all_tasks_complete):
+            if isinstance(params, all_tasks_complete):
                 break
 
             if death_event.is_set():
@@ -4850,10 +4855,10 @@ def feed_job_params_to_process_pool_factory(parameter_q, death_event, logger,
                 break
 
             log_at_level(logger, 10, verbose,
-                         "   Send param to Pooled Process=>" + str(param[0]))
-            yield param
+                         "   Send params to Pooled Process=>" + str(params[0]))
+            yield params
 
-        log_at_level(logger, 10, verbose, "   Send param to Pooled Process END")
+        log_at_level(logger, 10, verbose, "   Send params to Pooled Process END")
 
     # return generator
     return feed_job_params_to_process_pool
@@ -4871,20 +4876,20 @@ def fill_queue_with_job_parameters(job_parameters, parameter_q, POOL_SIZE,
     Ensures queue filled with number of parameters > jobs / slots (POOL_SIZE)
     """
     log_at_level(logger, 10, verbose, "    fill_queue_with_job_parameters START")
-    for param in job_parameters:
+    for params in job_parameters:
 
         # stop if no more jobs available
-        if isinstance(param, waiting_for_more_tasks_to_complete):
+        if isinstance(params, waiting_for_more_tasks_to_complete):
             log_at_level(logger, 10, verbose,
                          "    fill_queue_with_job_parameters WAITING for task to complete")
             break
 
-        if not isinstance(param, all_tasks_complete):
+        if not isinstance(params, all_tasks_complete):
             log_at_level(logger, 10, verbose, "    fill_queue_with_job_parameters=>" +
-                         str(param[0]))
+                         str(params[0]))
 
         # put into queue
-        parameter_q.put(param)
+        parameter_q.put(params)
 
         # queue size needs to be at least 2 so that the parameter queue never
         #   consists of a singlewaiting_for_task_to_complete entry which will
@@ -4943,7 +4948,7 @@ def pipeline_get_task_names(pipeline=None):
 #               does not get updated half way through
 #               causing race conditions
 #
-#               parameter_q.put(param)
+#               parameter_q.put(params)
 #               until waiting_for_more_tasks_to_complete
 #               until queue is full (check *after*)
 #
@@ -5373,9 +5378,9 @@ def pipeline_run(target_tasks=[],
 
             # remove failed jobs from history-- their output is bogus now!
             if job_result.state in (JOB_ERROR, JOB_SIGNALLED_BREAK):
-
-                if len(job_result.params) > 1:  # some jobs have no outputs
-                    output_file_name = job_result.params[1]
+                log_at_level(logger, 10, verbose, "   JOB ERROR / JOB_SIGNALLED_BREAK: " + job_result.job_name)
+                if len(job_result.unglobbed_params) > 1:  # some jobs have no outputs
+                    output_file_name = job_result.unglobbed_params[1]
                     # some have multiple outputs from one job
                     if not isinstance(output_file_name, list):
                         output_file_name = [output_file_name]
@@ -5442,8 +5447,8 @@ def pipeline_run(target_tasks=[],
                     # chksum2 = md5.md5(marshal.dumps(t.user_defined_work_func.func_defaults) +
                     #                   marshal.dumps(t.args))
 
-                    if len(job_result.params) > 1:  # some jobs have no outputs
-                        output_file_name = job_result.params[1]
+                    if len(job_result.unglobbed_params) > 1:  # some jobs have no outputs
+                        output_file_name = job_result.unglobbed_params[1]
                         # some have multiple outputs from one job
                         if not isinstance(output_file_name, list):
                             output_file_name = [output_file_name]
@@ -5451,7 +5456,8 @@ def pipeline_run(target_tasks=[],
                         # N.B. output parameters are not necessary all strings
                         #   and not all files have been successfully created,
                         #   even though the task apparently completed properly!
-                        # Remember to expand globs
+                        # Remember to re-expand globs (from unglobbed paramters)
+                        #   after the job has run successfully
                         #
                         for possible_glob_str in get_strings_in_flattened_sequence(output_file_name):
                             for o_f_n in glob.glob(possible_glob_str):
@@ -5479,8 +5485,9 @@ def pipeline_run(target_tasks=[],
                                     elif epoch_seconds - mtime < 1.1:
                                         mtime = epoch_seconds
                                     chksum = JobHistoryChecksum(o_f_n, mtime,
-                                                                job_result.params[2:], t)
+                                                                job_result.unglobbed_params[2:], t)
                                     job_history[o_f_n] = chksum
+                                    log_at_level(logger, 10, verbose, "   Job History Saved: " + o_f_n)
                                 except:
                                     pass
 

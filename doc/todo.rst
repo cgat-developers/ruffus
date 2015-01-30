@@ -3,6 +3,34 @@
 .. _todo:
 
 ##########################################
+Where I see Ruffus going
+##########################################
+
+    These are the future enhancements I would like to see in Ruffus:
+
+    * Better support for Computational clusters / larger scale pipelines
+        * Running jobs out of sequence
+        * Long running pipeline where input can be added later
+        * Restarting failed jobs robustly
+        * Finding out why jobs fail
+        * Does Ruffus scale to thousands of parallel jobs. What are the bottlenecks?
+
+    * Better displays of progress
+        * Query which tasks / jobs are being run
+        * GUI displays
+
+    * Dynamic control during pipeline progress
+        * Turn tasks on and off
+        * Pause pipelines
+        * Pause jobs
+        * Change priorities
+
+    * Better handling of data
+        * Can we read and write from databases instead of files?
+        * Can we cleanup files but preserve history?
+
+
+##########################################
 Future Changes to Ruffus
 ##########################################
 
@@ -18,13 +46,113 @@ Future Changes to Ruffus
     send a pull request via the `git site  <https://github.com/bunbun/ruffus>`__.
 
 
+
 ****************************************************************************************
 On github: Named parameters in decorators for clarity
 ****************************************************************************************
+    Motivating example:
+
+
+    .. <<Python_
+
+    .. code-block:: python
+        :emphasize-lines: 1
+
+        # Named parameters
+        @combinations_with_replacement( input      = generate_initial_files1,
+                                        filter     = formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
+                                        tuple_size = 2,
+                                        output     = "{path[0][0]}/{FILE_PART[0][0]}.{basename[1][0]}.tmp2",
+                                        extras     = ["{basename[0][0][0]}{basename[1][0][0]}",       # extra: prefices
+                                                      "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
+                                                      "{subdir[0][0][0]}"])
+        def task_func( infiles, outfile, prefices, subpath, subdir):
+            pass
+
+    ..
+        Python_
+
+
+
+
 
 ****************************************************************************************
 On github: Non-decorator / Function interface
 ****************************************************************************************
+
+    Motivating example:
+
+    .. <<Python_
+
+    .. code-block:: python
+
+        #
+        #   OLD SCHOOL
+        #
+        @originate(output = [workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"])
+        def generate_initial_files1(out_name):
+            pass
+
+        @permutations(  generate_initial_files1,
+                        formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
+                        2,
+                        "{path[0][0]}/{FILE_PART[0][0]}.{basename[1][0]}.tmp2",
+                        "{basename[0][0][0]}{basename[1][0][0]}",       # extra: prefices
+                        "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
+                        "{subdir[0][0][0]}")
+        def test_permutations2_task( infiles, outfile, prefices, subpath, subdir):
+            pass
+
+        @merge(test_permutations2_task, workdir +  "/merged.results")
+        def test_permutations2_merged_task( infiles, outfile):
+            pass
+
+    ..
+        Python_
+
+
+    .. <<Python_
+
+    .. code-block:: python
+        :emphasize-lines: 17,27
+
+        #
+        #   NEW FANGLED
+        #
+        def test_permutations2_task( infiles, outfile, prefices, subpath, subdir):
+            pass
+
+        def test_permutations2_merged_task( infiles, outfile):
+            pass
+
+        # create pipeline1
+        test_pipeline1 = Pipeline("test1")
+        # add task
+        gen_task1 = test_pipeline1.originate(task_func = generate_initial_files1,
+                                             name      = "WOWWWEEE",
+                                             output    = [workdir +  "/" + prefix + "_name.tmp1"
+                                                            for prefix in "abcd"])
+        # add dependency by name 'WOWWWEEE'
+        test_pipeline1.permutations(test_permutations2_task,
+                                    #gen_task1,
+                                    output_from("WOWWWEEE"),
+                                    formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
+                                    2,
+                                    "{path[0][0]}/{FILE_PART[0][0]}.{basename[1][0]}.tmp2",
+                                    "{basename[0][0][0]}{basename[1][0][0]}",       # extra: prefices
+                                    "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
+                                    "{subdir[0][0][0]}")
+        # add dependency by function name 'test_permutations2_merged_task'
+        test_pipeline2.merge(test_permutations2_merged_task,
+                             test_permutations2_task,
+                             workdir +  "/merged.results")
+
+
+
+    ..
+        Python_
+
+
 
 ****************************************************************************************
 Todo: document ``output_from()``
@@ -38,7 +166,7 @@ Todo: either_or: Prevent failed jobs from propagating further
 
     .. <<Python_
 
-    .. code-block:: Python
+    .. code-block:: python
 
         @transform(prevtask, suffix(".txt"),  either_or(".failed", ".succeed"))
         def task(input_file, output_files):
@@ -384,6 +512,7 @@ Planned: Running python code (task functions) transparently on remote cluster no
          *  exception
 
     #) Full version use libpythongrid?
+       * http://zguide.zeromq.org/page:all
        * Christian Widmer <ckwidmer@gmail.com>
        * Cheng Soon Ong <chengsoon.ong@unimelb.edu.au>
        * https://code.google.com/p/pythongrid/source/browse/#git%2Fpythongrid

@@ -1171,7 +1171,11 @@ def graph_printout (stream,
 
 
     if output_format == "svg":
+        # result str is a binary string. I.e. could be .jpg
+        # must turn it into string before we can replace, and then turn it back into binary
+        result_str = result_str.decode()
         result_str = result_str.replace("0.12", "0.0px")
+        result_str = result_str.encode()
     stream.write(result_str)
 
 

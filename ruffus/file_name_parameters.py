@@ -1123,10 +1123,10 @@ def yield_io_params_per_job (input_params,
                 #       before glob matching
                 #
                 output_pattern_transformed = output_pattern.file_names_transformed (filenames, file_names_transform)
-                output_param        = file_names_from_tasks_globs(output_pattern_transformed, runtime_data)
-                output_param_logging= file_names_from_tasks_globs(output_pattern_transformed.unexpanded_globs(), runtime_data)
-                yield ( (input_param, output_param          ) + extra_params,
-                        (input_param, output_param_logging  ) + extra_params)
+                output_param          = file_names_from_tasks_globs(output_pattern_transformed, runtime_data)
+                output_param_unglobbed= file_names_from_tasks_globs(output_pattern_transformed.unexpanded_globs(), runtime_data)
+                yield ( (input_param, output_param            ) + extra_params,
+                        (input_param, output_param_unglobbed  ) + extra_params)
             else:
 
                 # output

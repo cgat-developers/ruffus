@@ -779,7 +779,7 @@ def run (options, **extra_options):
 
     elif options.flowchart:
         appropriate_options = get_extra_options_appropriate_for_command (extra_pipeline_printout_graph_options, extra_options)
-        task.pipeline_printout_graph (   open(options.flowchart, "w"),
+        task.pipeline_printout_graph (   open(options.flowchart, "wb"),
                                         options.flowchart_format,
                                         options.target_tasks,
                                         options.forced_tasks,
