@@ -11,17 +11,15 @@ except ImportError:
     import simplejson
     json = simplejson
 import unittest, os,sys
-if __name__ != '__main__':
-    raise Exception ("This is not a callable module [%s]"  % __main__)
 
 
 exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
 sys.path.insert(0, os.path.abspath(os.path.join(exe_path,"..", "..")))
 from ruffus import *
 
-        
-        
-   
+
+
+
 class Test_needs_update_check_directory_missing(unittest.TestCase):
 
     def setUp (self):
@@ -36,26 +34,27 @@ class Test_needs_update_check_directory_missing(unittest.TestCase):
         fh, self.tempfile = tempfile.mkstemp(suffix='.dot')
         os.fdopen(fh, "w").close()
         self.directory = tempfile.mkdtemp(prefix='testing_tmp')
-        
+
     def tearDown (self):
         """
         delete files
         """
         os.unlink(self.tempfile)
-        os.removedirs(self.directory)        
-        
+        os.removedirs(self.directory)
+
     def test_up_to_date (self):
         #
         #   lists of files
-        # 
-        
+        #
+
         self.assertTrue(not task.needs_update_check_directory_missing ([self.directory])[0])
         self.assertTrue(    task.needs_update_check_directory_missing (["missing directory"])[0])
         self.assertRaises(task.error_not_a_directory,
                             task.needs_update_check_directory_missing, [self.tempfile])
 
-        
-       
-                       
-unittest.main()
+
+
+
+if __name__ == '__main__':
+    unittest.main()
 

@@ -37,64 +37,6 @@ else:
 
 
 
-parser = OptionParser(version="%prog 1.0")
-parser.add_option("-D", "--debug", dest="debug",
-                    action="store_true", default=False,
-                    help="Make sure output is correct and clean up.")
-parser.add_option("-t", "--target_tasks", dest="target_tasks",
-                  action="append",
-                  default = list(),
-                  metavar="JOBNAME",
-                  type="string",
-                  help="Target task(s) of pipeline.")
-parser.add_option("-f", "--forced_tasks", dest="forced_tasks",
-                  action="append",
-                  default = list(),
-                  metavar="JOBNAME",
-                  type="string",
-                  help="Pipeline task(s) which will be included even if they are up to date.")
-parser.add_option("-j", "--jobs", dest="jobs",
-                  default=1,
-                  metavar="jobs",
-                  type="int",
-                  help="Specifies  the number of jobs (commands) to run simultaneously.")
-parser.add_option("-v", "--verbose", dest = "verbose",
-                  action="count", default=0,
-                  help="Do not echo to shell but only print to log.")
-parser.add_option("-d", "--dependency", dest="dependency_file",
-                  #default="simple.svg",
-                  metavar="FILE",
-                  type="string",
-                  help="Print a dependency graph of the pipeline that would be executed "
-                        "to FILE, but do not execute it.")
-parser.add_option("-F", "--dependency_graph_format", dest="dependency_graph_format",
-                  metavar="FORMAT",
-                  type="string",
-                  default = 'svg',
-                  help="format of dependency graph file. Can be 'ps' (PostScript), "+
-                  "'svg' 'svgz' (Structured Vector Graphics), " +
-                  "'png' 'gif' (bitmap  graphics) etc ")
-parser.add_option("-n", "--just_print", dest="just_print",
-                    action="store_true", default=False,
-                    help="Print a description of the jobs that would be executed, "
-                        "but do not execute them.")
-parser.add_option("-M", "--minimal_rebuild_mode", dest="minimal_rebuild_mode",
-                    action="store_true", default=False,
-                    help="Rebuild a minimum of tasks necessary for the target. "
-                    "Ignore upstream out of date tasks if intervening tasks are fine.")
-parser.add_option("-K", "--no_key_legend_in_graph", dest="no_key_legend_in_graph",
-                    action="store_true", default=False,
-                    help="Do not print out legend and key for dependency graph.")
-parser.add_option("-H", "--draw_graph_horizontally", dest="draw_horizontally",
-                    action="store_true", default=False,
-                    help="Draw horizontal dependency graph.")
-
-parameters = [
-                ]
-
-
-
-
 
 
 
@@ -132,11 +74,6 @@ except ImportError:
 
 
 
-# get help string
-f =io.StringIO()
-parser.print_help(f)
-helpstr = f.getvalue()
-(options, remaining_args) = parser.parse_args()
 
 species_list = defaultdict(list)
 species_list["mammals"].append("cow"       )
@@ -160,8 +97,15 @@ tempdir = "temp_filesre_combine/"
 #
 #    task1
 #
+
+def do_write(file_name, what):
+    with open(file_name, "a") as oo:
+        oo.write(what)
+test_file = tempdir + "task.done"
+
+
 @follows(mkdir(tempdir, tempdir + "test"))
-@posttask(lambda: open(tempdir + "task.done", "a").write("Task 1 Done\n"))
+@posttask(lambda: do_write(tempdir + "task.done", "Task 1 Done\n"))
 @split(None, tempdir + '*.animal')
 def prepare_files (no_inputs, outputs):
     # cleanup previous
@@ -171,23 +115,27 @@ def prepare_files (no_inputs, outputs):
     for grouping in species_list:
         for species_name in species_list[grouping]:
             filename = tempdir + "%s.%s.animal" % (species_name, grouping)
-            open(filename, "w").write(species_name + "\n")
+            with open(filename, "w") as oo:
+                oo.write(species_name + "\n")
 
 
 #
 #    task2
 #
 @collate(prepare_files, regex(r'(.*/).*\.(.*)\.animal'), r'\1\2.results')
-@posttask(lambda: open(tempdir + "task.done", "a").write("Task 2 Done\n"))
+@posttask(lambda: do_write(tempdir + "task.done", "Task 2 Done\n"))
 def summarise_by_grouping(infiles, outfile):
     """
     Summarise by each species group, e.g. mammals, reptiles, fish
     """
-    open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([infiles, outfile]))
-    o = open(outfile, "w")
-    for i in infiles:
-        o.write(open(i).read())
-    open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfile]))
+    with open(tempdir + "jobs.start",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfile]))
+    with open(outfile, "w") as oo:
+        for i in infiles:
+            with open(i) as ii:
+                oo.write(ii.read())
+    with open(tempdir + "jobs.finish",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfile]))
 
 
 
@@ -211,47 +159,39 @@ def check_species_correct():
     #    -> fish.results
     """
     for grouping in species_list:
-        assert(open(tempdir + grouping + ".results").read() ==
-                "".join(s + "\n" for s in sorted(species_list[grouping])))
+        with open(tempdir + grouping + ".results") as oo:
+            assert(oo.read() == "".join(s + "\n" for s in sorted(species_list[grouping])))
 
 
 
 
 
-#
-#   Necessary to protect the "entry point" of the program under windows.
-#       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
-#
-if __name__ == '__main__':
-    if options.just_print:
-        pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
-                            long_winded=True,
-                            gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode)
 
-    elif options.dependency_file:
-        pipeline_printout_graph (     open(options.dependency_file, "w"),
-                             options.dependency_graph_format,
-                             options.target_tasks,
-                             options.forced_tasks,
-                             draw_vertically = not options.draw_horizontally,
-                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                             no_key_legend  = options.no_key_legend_in_graph)
-    elif options.debug:
-        import os
-        os.system("rm -rf %s" % tempdir)
-        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
-                            logger = stderr_logger if options.verbose else black_hole_logger,
-                            gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                            verbose = options.verbose > 1)
+import unittest, shutil
+try:
+    from StringIO import StringIO
+except:
+    from io import StringIO
 
+class Test_ruffus(unittest.TestCase):
+    def setUp(self):
+        try:
+            shutil.rmtree(tempdir)
+        except:
+            pass
 
+    def tearDown(self):
+        try:
+            shutil.rmtree(tempdir)
+        except:
+            pass
+
+    def test_ruffus (self):
+        pipeline_run(multiprocess = 10, verbose = 0)
         check_species_correct()
-        os.system("rm -rf %s" % tempdir)
-        print("OK")
-    else:
-        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
-                            logger = stderr_logger if options.verbose else black_hole_logger,
-                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                            verbose = options.verbose > 1)
 
+
+
+if __name__ == '__main__':
+    unittest.main()
 

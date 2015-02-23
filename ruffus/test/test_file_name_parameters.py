@@ -1605,14 +1605,5 @@ class Test_product_param_factory(unittest.TestCase):
 
 
 
-#
-#   debug parameter ignored if called as a module
-#
-if sys.argv.count("--debug"):
-    sys.argv.remove("--debug")
-#sys.argv.append("Test_files_param_factory")
-#sys.argv.append("Test_merge_param_factory")
-#sys.argv.append("Test_transform_param_factory")
-#sys.argv.append("Test_files_param_factory")
 if __name__ == '__main__':
     unittest.main()

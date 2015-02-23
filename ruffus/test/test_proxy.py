@@ -49,6 +49,8 @@ import multiprocessing.managers
 # list of executed tasks
 manager = multiprocessing.managers.SyncManager()
 manager.start()
+executed_tasks_proxy = manager.dict()
+mutex_proxy = manager.Lock()
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Tasks
@@ -59,33 +61,40 @@ manager.start()
 #
 #   First task
 #
-@originate(["a.1", "b.1"])
-def start_task(output_file_name):
+@originate(["a.1", "b.1"], executed_tasks_proxy, mutex_proxy)
+def start_task(output_file_name, executed_tasks_proxy, mutex_proxy):
     with open(output_file_name,  "w") as f:
         pass
+    with mutex_proxy:
+        executed_tasks_proxy["start_task"] = 1
 
 #
 #   Forwards file names, is always as up to date as its input files...
 #
-@transform(start_task, suffix(".1"), ".1")
-def same_file_name_task(input_file_name, output_file_name):
-    pass
+@transform(start_task, suffix(".1"), ".1", executed_tasks_proxy, mutex_proxy)
+def same_file_name_task(input_file_name, output_file_name, executed_tasks_proxy, mutex_proxy):
+    with mutex_proxy:
+        executed_tasks_proxy["same_file_name_task"] = executed_tasks_proxy.get("same_file_name_task", 0) + 1
 
 #
 #   Links file names, is always as up to date if links are not missing
 #
-@transform(start_task, suffix(".1"), ".linked.1")
-def linked_file_name_task(input_file_name, output_file_name):
+@transform(start_task, suffix(".1"), ".linked.1", executed_tasks_proxy, mutex_proxy)
+def linked_file_name_task(input_file_name, output_file_name, executed_tasks_proxy, mutex_proxy):
     os.symlink(input_file_name, output_file_name)
+    with mutex_proxy:
+        executed_tasks_proxy["linked_file_name_task"] = executed_tasks_proxy.get("linked_file_name_task", 0) + 1
 
 
 #
 #   Final task linking everything
 #
-@transform([linked_file_name_task, same_file_name_task], suffix(".1"), ".3")
-def final_task (input_file_name, output_file_name):
+@transform([linked_file_name_task, same_file_name_task], suffix(".1"), ".3", executed_tasks_proxy, mutex_proxy)
+def final_task (input_file_name, output_file_name, executed_tasks_proxy, mutex_proxy):
     with open(output_file_name,  "w") as f:
         pass
+    with mutex_proxy:
+        executed_tasks_proxy["final_task"] = executed_tasks_proxy.get("final_task", 0) + 1
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -117,7 +126,38 @@ class Test_ruffus(unittest.TestCase):
                 raise Exception("Expected %s missing" % f)
 
     def test_ruffus (self):
+        #
+        #   Run task 1 only
+        #
+        #print("  Run start_task only", file=sys.stderr)
         pipeline_run(log_exceptions = True, verbose = 0)
+
+
+        #
+        #   Run task 3 only
+        #
+        #print("  Run final_task: linked_file_name_task should run as well", file=sys.stderr)
+        pipeline_run(log_exceptions = True, verbose = 0)
+
+
+        #
+        #   Run task 3 again:
+        #
+        #       All jobs should be up to date
+        #
+        #print("Run final_task again: All jobs should be up to date", file=sys.stderr)
+        pipeline_run(log_exceptions = True, verbose = 0)
+
+        #
+        #   Make sure right number of jobs / tasks ran
+        #
+        for task_name, jobs_count in ({'start_task': 1, 'final_task': 4, 'linked_file_name_task': 2}).items():
+            if task_name not in executed_tasks_proxy:
+                raise Exception("Error: %s did not run!!" % task_name)
+            if executed_tasks_proxy[task_name] != jobs_count:
+                raise Exception("Error: %s did not have %d jobs!!" % (task_name, jobs_count))
+        if "same_file_name_task" in executed_tasks_proxy:
+            raise Exception("Error: %s should not have run!!" % "same_file_name_task")
 
 
 

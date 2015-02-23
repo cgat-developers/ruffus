@@ -170,7 +170,8 @@ def task1(outfile):
     """
     output_text  = ""
     output_text += "    -> " + json.dumps(outfile) + "\n"
-    open(outfile, "w").write(output_text)
+    with open(outfile, "w") as oo:
+        oo.write(output_text)
 
 
 
@@ -182,9 +183,14 @@ def task2(infile, outfile):
     """
     Second task
     """
-    output_text  = open(infile).read() if infile else ""
+    if infile:
+        with open(infile) as ii:
+            output_text  = ii.read()
+    else:
+        output_text = ""
     output_text += json.dumps(infile) + " -> " + json.dumps(outfile) + "\n"
-    open(outfile, "w").write(output_text)
+    with open(outfile, "w") as oo:
+        oo.write(output_text)
 
 
 
@@ -196,9 +202,14 @@ def task3(infile, outfile):
     """
     Third task
     """
-    output_text  = open(infile).read() if infile else ""
+    if infile:
+        with open(infile) as ii:
+            output_text  = ii.read()
+    else:
+        output_text = ""
     output_text += json.dumps(infile) + " -> " + json.dumps(outfile) + "\n"
-    open(outfile, "w").write(output_text)
+    with open(outfile, "w") as oo:
+        oo.write(output_text)
 
 
 
@@ -211,43 +222,46 @@ def task4(infile, outfile):
     """
     Fourth task
     """
-    output_text  = open(infile).read() if infile else ""
+    if infile:
+        with open(infile) as ii:
+            output_text  = ii.read()
+    else:
+        output_text = ""
     output_text += json.dumps(infile) + " -> " + json.dumps(outfile) + "\n"
-    open(outfile, "w").write(output_text)
+    with open(outfile, "w") as oo:
+        oo.write(output_text)
 
-#
-#   Necessary to protect the "entry point" of the program under windows.
-#       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
-#
+
+
+
+
+
+
+import unittest, shutil
+try:
+    from StringIO import StringIO
+except:
+    from io import StringIO
+
+class Test_ruffus(unittest.TestCase):
+    def setUp(self):
+        for f in ["a.1", "a.2","a.3","a.4"]:
+            if os.path.exists(f):
+                os.unlink(f)
+
+    def tearDown(self):
+        for f in ["a.1", "a.2","a.3","a.4"]:
+            if os.path.exists(f):
+                os.unlink(f)
+            else:
+                raise Exception("%s is missing" % f)
+
+
+    def test_ruffus (self):
+        pipeline_run(verbose = 0, runtime_data = {"a": options.runtime_files})
+
+
+
 if __name__ == '__main__':
-        if options.just_print:
-            pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
-                                gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode,
-                            verbose = options.verbose, runtime_data = {"a": options.runtime_files})
+    unittest.main()
 
-        elif options.dependency_file:
-            pipeline_printout_graph (     open(options.dependency_file, "w"),
-                                 options.dependency_graph_format,
-                                 options.target_tasks,
-                                 options.forced_tasks,
-                                 draw_vertically = not options.draw_horizontally,
-                                 gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                                 no_key_legend  = options.no_key_legend_in_graph)
-        elif options.debug:
-            import os
-            for f in ["a.1", "a.2","a.3","a.4"]:
-                if os.path.exists(f):
-                    os.unlink(f)
-            pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
-                            gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                            verbose = options.verbose, runtime_data = {"a": options.runtime_files})
-            for f in ["a.1", "a.2","a.3","a.4"]:
-                if os.path.exists(f):
-                    os.unlink(f)
-                else:
-                    raise Exception("%s is missing" % f)
-            print("OK")
-        else:
-            pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
-                            gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                            verbose = options.verbose, runtime_data = {"a": options.runtime_files})

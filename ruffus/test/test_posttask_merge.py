@@ -162,13 +162,9 @@ helpstr = f.getvalue()
 
 
 tempdir = "temp_filesre_split_and_combine/"
+test_file = tempdir  + "test_output"
 
 
-
-if options.verbose:
-    verbose_output = sys.stderr
-else:
-    verbose_output =open("/dev/null", "w")
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Tasks
@@ -178,7 +174,15 @@ else:
 #
 #    split_fasta_file
 #
-@posttask(lambda: verbose_output.write("Split into %d files\n" % options.jobs_per_task))
+
+def do_write(file_name, what):
+    with open(file_name, "a") as oo:
+        oo.write(what)
+test_file = tempdir + "task.done"
+
+
+
+@posttask(lambda: do_write(test_file, "Split into %d files\n" % options.jobs_per_task))
 @split(tempdir  + "original.fa", [tempdir  + "files.split.success", tempdir + "files.split.*.fa"])
 def split_fasta_file (input_file, outputs):
 
@@ -194,19 +198,22 @@ def split_fasta_file (input_file, outputs):
     # create as many files as we are simulating in jobs_per_task
     #
     for i in range(options.jobs_per_task):
-        open(tempdir + "files.split.%03d.fa" % i, "w")
+        with open(tempdir + "files.split.%03d.fa" % i, "w") as oo:
+            pass
 
-    open(success_flag,  "w")
+    with open(success_flag,  "w") as oo:
+        pass
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 #
 #    align_sequences
 #
-@posttask(lambda: verbose_output.write("Sequences aligned\n"))
+@posttask(lambda: do_write(test_file, "Sequences aligned\n"))
 @transform(split_fasta_file, suffix(".fa"), ".aln")                     # fa -> aln
 def align_sequences (input_file, output_filename):
-    open(output_filename, "w").write("%s\n" % output_filename)
+    with open(output_filename, "w") as oo:
+        oo.write("%s\n" % output_filename)
 
 
 
@@ -214,15 +221,17 @@ def align_sequences (input_file, output_filename):
 #
 #    percentage_identity
 #
-@posttask(lambda: verbose_output.write("%Identity calculated\n"))
+@posttask(lambda: do_write(test_file, "%Identity calculated\n"))
 @transform(align_sequences,             # find all results from align_sequences
             suffix(".aln"),             # replace suffix with:
             [r".pcid",                  #   .pcid suffix for the result
              r".pcid_success"])         #   .pcid_success to indicate job completed
 def percentage_identity (input_file, output_files):
     (output_filename, success_flag_filename) = output_files
-    open(output_filename, "w").write("%s\n" % output_filename)
-    open(success_flag_filename, "w")
+    with open(output_filename, "w") as oo:
+        oo.write("%s\n" % output_filename)
+    with open(success_flag_filename, "w") as oo:
+        pass
 
 
 
@@ -230,16 +239,17 @@ def percentage_identity (input_file, output_files):
 #
 #    combine_results
 #
-@posttask(lambda: verbose_output.write("Results recombined\n"))
+@posttask(lambda: do_write(test_file, "Results recombined\n"))
 @merge(percentage_identity, tempdir + "all.combine_results")
 def combine_results (input_files, output_files):
     """
     Combine all
     """
     (output_filename) = output_files
-    out = open(output_filename, "w")
-    for inp, flag in input_files:
-        out.write(open(inp).read())
+    with open(output_filename, "w") as oo:
+        for inp, flag in input_files:
+            with open(inp) as ii:
+                oo.write(ii.read())
 
 
 
@@ -248,52 +258,53 @@ def post_merge_check (input_filename, output_filename):
     """
     check that merge sends just one file, not a list to me
     """
-    open(output_filename, "w").write(open(input_filename).read())
+    with open(output_filename, "w") as oo, open(input_filename) as ii:
+        oo.write(ii.read())
 
 @files(post_merge_check, os.path.join(tempdir, "check_all_is.weller"))
 def post_post_merge_check (input_filename, output_filename):
     """
     check that @files forwards a single file on when given a single file
     """
-    open(output_filename, "w").write(open(input_filename).read())
+    with open(output_filename, "w") as oo, open(input_filename) as ii:
+        oo.write(ii.read())
 
-def start_pipeline_afresh ():
-    """
-    Recreate directory and starting file
-    """
-    print("Start again", file=verbose_output)
-    import os
-    os.system("rm -rf %s" % tempdir)
-    os.makedirs(tempdir)
-    open(tempdir + "original.fa", "w").close()
+
+
+import unittest, shutil
+try:
+    from StringIO import StringIO
+except:
+    from io import StringIO
+
+class Test_ruffus(unittest.TestCase):
+    def setUp(self):
+        try:
+            shutil.rmtree(tempdir)
+        except:
+            pass
+        os.makedirs(tempdir)
+        open(tempdir + "original.fa", "w").close()
+
+    def tearDown(self):
+        try:
+            shutil.rmtree(tempdir)
+        except:
+            pass
+
+    def test_ruffus (self):
+        pipeline_run(multiprocess = 50, verbose = 0)
+        expected_text = """Split into 3 files
+Sequences aligned
+%Identity calculated
+Results recombined
+"""
+        with open(test_file) as ii:
+            post_task_text =  ii.read()
+        self.assertEqual(post_task_text, expected_text)
+
+
 
 if __name__ == '__main__':
-    if options.start_again:
-        start_pipeline_afresh()
-    if options.just_print:
-        pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
-                            verbose = options.verbose,
-                            gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode)
-
-    elif options.dependency_file:
-        pipeline_printout_graph (     open(options.dependency_file, "w"),
-                             options.dependency_graph_format,
-                             options.target_tasks,
-                             options.forced_tasks,
-                             draw_vertically = not options.draw_horizontally,
-                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                             no_key_legend  = options.no_key_legend_in_graph)
-    elif options.debug:
-        start_pipeline_afresh()
-        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
-                            logger = stderr_logger if options.verbose else black_hole_logger,
-                            gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                            verbose = options.verbose)
-        os.system("rm -rf %s" % tempdir)
-        print("OK")
-    else:
-        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
-                            logger = stderr_logger if options.verbose else black_hole_logger,
-                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                            verbose = options.verbose)
+    unittest.main()
 

@@ -241,16 +241,16 @@ def setup_simulation_data ():
     create simulation files
     """
     for i in range(CNT_GENE_GWAS_FILES):
-        open(os.path.join(options.gene_data_dir, "%03d.gene" % i), "w")
-        open(os.path.join(options.gene_data_dir, "%03d.gwas" % i), "w")
+        open(os.path.join(options.gene_data_dir, "%03d.gene" % i), "w").close()
+        open(os.path.join(options.gene_data_dir, "%03d.gwas" % i), "w").close()
 
     # gene files without corresponding gwas and vice versa
-    open(os.path.join(options.gene_data_dir, "orphan1.gene"), "w")
-    open(os.path.join(options.gene_data_dir, "orphan2.gwas"), "w")
-    open(os.path.join(options.gene_data_dir, "orphan3.gwas"), "w")
+    open(os.path.join(options.gene_data_dir, "orphan1.gene"), "w").close()
+    open(os.path.join(options.gene_data_dir, "orphan2.gwas"), "w").close()
+    open(os.path.join(options.gene_data_dir, "orphan3.gwas"), "w").close()
 
     for i in range(CNT_SIMULATION_FILES):
-        open(os.path.join(options.simulation_data_dir, "%03d.simulation" % i), "w")
+        open(os.path.join(options.simulation_data_dir, "%03d.simulation" % i), "w").close()
 
 
 
@@ -335,6 +335,7 @@ def generate_simulation_params ():
 #
 # mkdir: makes sure output directories exist before task
 #
+@follows(setup_simulation_data)
 @follows(mkdir(options.working_dir, os.path.join(working_dir, "simulation_results")))
 @files(generate_simulation_params)
 def gwas_simulation(input_files, result_file_path, gene_file_root, sim_file_root, result_file):
@@ -348,6 +349,7 @@ def gwas_simulation(input_files, result_file_path, gene_file_root, sim_file_root
 
     simulation_res_file = open(result_file_path, "w")
     simulation_res_file.write("%s + %s -> %s\n" % (gene_file_root, sim_file_root, result_file))
+    simulation_res_file.close()
 
 
 #_________________________________________________________________________________________
@@ -372,54 +374,46 @@ def statistical_summary (result_files, summary_file):
 
     summary_file = open(summary_file, "w")
     for f in result_files:
-        summary_file.write(open(f).read())
+        with open(f) as ii:
+            summary_file.write(ii.read())
+    summary_file.close()
 
 
 
 
 
+import unittest, shutil
+try:
+    from StringIO import StringIO
+except:
+    from io import StringIO
 
+# mock for command line options
+class t_options(object):
+    pass
+class Test_ruffus(unittest.TestCase):
 
-
-
-#888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-#
-#   print pipeline or run pipeline
-#
-
-#
-#   Necessary to protect the "entry point" of the program under windows.
-#       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
-#
-if __name__ == '__main__':
-    try:
-        if options.debug:
-            if not len(options.target_tasks):
-                options.target_tasks.append([statistical_summary])
-            pipeline_run([setup_simulation_data], [setup_simulation_data], multiprocess = options.jobs, verbose = 0)
-        else:
-            if (not len(get_gene_gwas_file_pairs(  )[0]) or
-                not len (get_simulation_files(  )[0])):
-                print("Warning!!\n\n\tNo *.gene / *.gwas or *.simulation: Run --debug to create simulation files first\n\n")
-                sys.exit(1)
-
-
-        if options.just_print:
-            pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks, verbose=options.verbose)
-
-        elif options.dependency_file:
-            graph_printout (     open(options.dependency_file, "w"),
-                                 options.dependency_graph_format,
-                                 options.target_tasks,
-                                 options.forced_tasks)
-        else:
-            pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, verbose = options.verbose)
-
-
-        if options.debug and not options.keep:
+    def tearDown(self):
+        try:
             cleanup_simulation_data ()
+            pass
+        except:
+            pass
 
-    except Exception as e:
-        print(e.args)
-        raise
+    def test_ruffus (self):
+        options = t_options()
+        setattr(options, "verbose", 0)
+        options.gene_data_dir ="%s/temp_gene_data_for_intermediate_example" % exe_path
+        options.simulation_data_dir =  "%s/temp_simulation_data_for_intermediate_example" % exe_path
+        options.working_dir =  "%s/working_dir_for_intermediate_example" % exe_path
+        pipeline_run(multiprocess = 50, verbose = 0)
+        for oo in "000.mean", "001.mean":
+            results_file_name = os.path.join(options.working_dir, oo)
+            if not os.path.exists(results_file_name):
+                raise Exception("Missing %s" % results_file_name)
+
+
+
+if __name__ == '__main__':
+    unittest.main()
 

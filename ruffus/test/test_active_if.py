@@ -36,13 +36,13 @@ else:
 
 from ruffus import *
 
-parser = cmdline.get_argparse(   description='Test @active_if')
-
-
-options = parser.parse_args()
-
-#  optional logger which can be passed to ruffus tasks
-logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
+#parser = cmdline.get_argparse(   description='Test @active_if')
+#
+#
+#options = parser.parse_args()
+#
+##  optional logger which can be passed to ruffus tasks
+#logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
 
 
 
@@ -93,15 +93,17 @@ def helper (infiles, outfiles):
     preamble_len = 0
     for infile in infiles:
         if infile:
-            for line in open(infile):
-                output_text  += line
-                preamble_len = max(preamble_len, len(line) - len(line.lstrip()))
+            with open(infile) as ii:
+                for line in ii:
+                    output_text  += line
+                    preamble_len = max(preamble_len, len(line) - len(line.lstrip()))
 
     preamble = " " * (preamble_len + 4) if len(output_text) else ""
 
     for outfile in outfiles:
         file_output_text = preamble + json.dumps(infile) + " -> " + json.dumps(outfile) + "\n"
-        open(outfile, "w").write(output_text + file_output_text)
+        with open(outfile, "w") as oo:
+            oo.write(output_text + file_output_text)
 
 
 
@@ -122,7 +124,7 @@ def task1(outfile, extra):
     """
     First task
     """
-    sys.stderr.write("originate works with outfile '%s'" % outfile + " and " + extra + "\n")
+    # N.B. originate works with an extra parameter
     helper (None, outfile)
 
 
@@ -194,25 +196,53 @@ null -> "test_active_if/b.1"
             "test_active_if/b.4" -> "test_active_if/summary.5"
 """
 
-#
-#   Necessary to protect the "entry point" of the program under windows.
-#       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
-#
+
+
+
+import unittest, shutil
+try:
+    from StringIO import StringIO
+except:
+    from io import StringIO
+
+tempdir = "test_active_if"
+class Test_ruffus(unittest.TestCase):
+    def setUp(self):
+        try:
+            shutil.rmtree(tempdir)
+        except:
+            pass
+        os.makedirs(tempdir)
+
+    def tearDown(self):
+        try:
+            shutil.rmtree(tempdir)
+            pass
+        except:
+            pass
+
+    def test_active_if_true (self):
+        global pipeline_active_if
+        pipeline_active_if = True
+        pipeline_run(multiprocess = 50, verbose = 0)
+
+        with open("test_active_if/summary.5") as ii:
+            active_text = ii.read()
+        if active_text != expected_active_text:
+            raise Exception("Error:\n\tExpected\n%s\nInstead\n%s\n"  % (active_text, expected_active_text))
+
+    def test_active_if_false (self):
+        global pipeline_active_if
+        pipeline_active_if = False
+        pipeline_run(multiprocess = 50, verbose = 0)
+        with open("test_active_if/summary.5") as ii:
+            inactive_text = ii.read()
+        if inactive_text != expected_inactive_text:
+            raise Exception("Error:\n\tExpected\n%s\nInstead\n%s\n"  % (inactive_text, expected_inactive_text))
+            shutil.rmtree("test_active_if")
+
+
+
 if __name__ == '__main__':
-
-    # active run
-    cmdline.run (options)
-    active_text = open("test_active_if/summary.5").read()
-    if active_text != expected_active_text:
-        raise Exception("Error:\n\tExpected\n%s\nInstead\n%s\n"  % (active_text, expected_active_text))
-    os.system("rm -rf test_active_if")
-
-
-    # inactive run
-    pipeline_active_if = False
-    cmdline.run (options)
-    inactive_text = open("test_active_if/summary.5").read()
-    if inactive_text != expected_inactive_text:
-        raise Exception("Error:\n\tExpected\n%s\nInstead\n%s\n"  % (inactive_text, expected_inactive_text))
-    os.system("rm -rf test_active_if")
+    unittest.main()
 

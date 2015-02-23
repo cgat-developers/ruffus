@@ -36,8 +36,6 @@ except ImportError:
     import simplejson
     json = simplejson
 import unittest, os,sys
-if __name__ != '__main__':
-    raise Exception ("This is not a callable module [%s]"  % __main__)
 
 
 exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
@@ -145,5 +143,6 @@ class Test_needs_update_check_modify_time(unittest.TestCase):
 
 
 
-unittest.main()
+if __name__ == '__main__':
+    unittest.main()
 

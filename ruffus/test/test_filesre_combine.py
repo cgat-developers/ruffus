@@ -25,19 +25,6 @@ from ruffus import *
 import ruffus.cmdline as cmdline
 
 
-parser = cmdline.get_argparse(description='Tests legacy @files_re with combine()', version="%prog 1.0")
-
-parser.add_argument("-D", "--debug",
-                    action="store_true",
-                    help="Make sure output is correct and clean up.")
-options = parser.parse_args()
-
-#  standard python logger which can be synchronised across concurrent Ruffus tasks
-logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
-
-
-
-
 
 
 
@@ -85,6 +72,10 @@ species_list["fish"   ].append("pufferfish")
 
 
 tempdir = "temp_filesre_combine/"
+def do_write(file_name, what):
+    with open(file_name, "a") as oo:
+        oo.write(what)
+test_file = tempdir + "task.done"
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -97,12 +88,13 @@ tempdir = "temp_filesre_combine/"
 #    task1
 #
 @follows(mkdir(tempdir, tempdir + "test"))
-@posttask(lambda: open(tempdir + "task.done", "a").write("Task 1 Done\n"))
+@posttask(lambda: do_write(test_file, "Task 1 Done\n"))
 def prepare_files ():
     for grouping in species_list.keys():
         for species_name in species_list[grouping]:
             filename = tempdir + "%s.%s.animal" % (species_name, grouping)
-            open(filename, "w").write(species_name + "\n")
+            with open(filename, "w") as oo:
+                oo.write(species_name + "\n")
 
 
 #
@@ -110,16 +102,19 @@ def prepare_files ():
 #
 @files_re(tempdir + '*.animal', r'(.*/)(.*)\.(.*)\.animal', combine(r'\1\2.\3.animal'), r'\1\3.results')
 @follows(prepare_files)
-@posttask(lambda: open(tempdir + "task.done", "a").write("Task 2 Done\n"))
+@posttask(lambda: do_write(test_file, "Task 2 Done\n"))
 def summarise_by_grouping(infiles, outfile):
     """
     Summarise by each species group, e.g. mammals, reptiles, fish
     """
-    open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([infiles, outfile]))
-    o = open(outfile, "w")
-    for i in infiles:
-        o.write(open(i).read())
-    open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfile]))
+    with open(tempdir + "jobs.start",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfile]))
+    with open(outfile, "w") as oo:
+        for i in infiles:
+            with open(i) as ii:
+                oo.write(ii.read())
+    with open(tempdir + "jobs.finish",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfile]))
 
 
 
@@ -143,28 +138,34 @@ def check_species_correct():
     #    -> fish.results
     """
     for grouping in species_list:
-        assert(open(tempdir + grouping + ".results").read() ==
-                "".join(s + "\n" for s in sorted(species_list[grouping])))
+        with open(tempdir + grouping + ".results") as ii:
+            assert(ii.read() ==
+                    "".join(s + "\n" for s in sorted(species_list[grouping])))
 
 
 
 
 
-#
-#   Necessary to protect the "entry point" of the program under windows.
-#       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
-#
-if __name__ == '__main__':
+import unittest, shutil
+class Test_ruffus(unittest.TestCase):
 
+    def tearDown(self):
+        try:
+            shutil.rmtree(tempdir)
+        except:
+            pass
+    def setUp(self):
+        try:
+            shutil.rmtree(tempdir)
+        except:
+            pass
 
-    if options.debug:
-        import os
-        os.system("rm -rf %s" % tempdir)
-        options=cmdline.handle_verbose (options)
-        pipeline_run(target_tasks = options.target_tasks, forcedtorun_tasks  = options.forced_tasks, multiprocess = options.jobs, verbose = options.verbose)
+    def test_ruffus (self):
+        ""
+        pipeline_run(multiprocess = 10, verbose = 0)
         check_species_correct()
-        #os.system("rm -rf %s" % tempdir)
-        print("OK")
-    else:
-        cmdline.run (options)
+
+
+if __name__ == '__main__':
+    unittest.main()
 

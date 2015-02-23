@@ -3,15 +3,15 @@ from __future__ import print_function
 """
 
     test_transform_with_no_re_matches.py
-    
+
         test messages with no regular expression matches
-        
+
 """
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   options        
+#   options
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -42,18 +42,18 @@ parser = OptionParser(version="%%prog v1.0, ruffus v%s" % ruffus.ruffus_version.
 parser.add_option("-t", "--target_tasks", dest="target_tasks",
                   action="append",
                   default = list(),
-                  metavar="JOBNAME", 
+                  metavar="JOBNAME",
                   type="string",
                   help="Target task(s) of pipeline.")
 parser.add_option("-f", "--forced_tasks", dest="forced_tasks",
                   action="append",
                   default = list(),
-                  metavar="JOBNAME", 
+                  metavar="JOBNAME",
                   type="string",
                   help="Pipeline task(s) which will be included even if they are up to date.")
 parser.add_option("-j", "--jobs", dest="jobs",
                   default=1,
-                  metavar="jobs", 
+                  metavar="jobs",
                   type="int",
                   help="Specifies  the number of jobs (commands) to run simultaneously.")
 parser.add_option("-v", "--verbose", dest = "verbose",
@@ -61,12 +61,12 @@ parser.add_option("-v", "--verbose", dest = "verbose",
                   help="Print more verbose messages for each additional verbose level.")
 parser.add_option("-d", "--dependency", dest="dependency_file",
                   #default="simple.svg",
-                  metavar="FILE", 
+                  metavar="FILE",
                   type="string",
                   help="Print a dependency graph of the pipeline that would be executed "
                         "to FILE, but do not execute it.")
 parser.add_option("-F", "--dependency_graph_format", dest="dependency_graph_format",
-                  metavar="FORMAT", 
+                  metavar="FORMAT",
                   type="string",
                   default = 'svg',
                   help="format of dependency graph file. Can be 'ps' (PostScript), "+
@@ -87,7 +87,7 @@ parser.add_option("-H", "--draw_graph_horizontally", dest="draw_horizontally",
                     action="store_true", default=False,
                     help="Draw horizontal dependency graph.")
 
-parameters = [  
+parameters = [
                 ]
 
 
@@ -98,7 +98,7 @@ parameters = [
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   imports        
+#   imports
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -134,7 +134,7 @@ except ImportError:
 f =io.StringIO()
 parser.print_help(f)
 helpstr = f.getvalue()
-(options, remaining_args) = parser.parse_args()
+#(options, remaining_args) = parser.parse_args()
 
 def touch (filename):
     with open(filename, "w"):
@@ -150,22 +150,22 @@ def touch (filename):
 tempdir = "tempdir/"
 @follows(mkdir(tempdir))
 @files([[None, tempdir+ "a.1"], [None, tempdir+ "b.1"]])
-def task1(i, o): 
+def task1(i, o):
     touch(o)
 
 
 @follows(mkdir(tempdir))
 @files([[None, tempdir+ "c.1"], [None, tempdir+ "d.1"]])
-def task2(i, o): 
+def task2(i, o):
     touch(o)
 
-    
-@transform(input = task1, filter = regex(r"(.*)"), add_inputs = add_inputs(task2, "test_transform_inputs.*"), output = r"\1.output")
+
+@transform(input = task1, filter = regex(r"(.*)"), add_inputs = add_inputs(task2, "test_transform_inputs.*y"), output = r"\1.output")
 def task3_add_inputs(i, o):
     names = ",".join(sorted(i))
     with open(o, "w") as oo:
         oo.write(names)
-    
+
 @merge((task3_add_inputs), tempdir + "final.output")
 def task4(i, o):
     with open(o, "w") as o_file:
@@ -173,22 +173,22 @@ def task4(i, o):
             with open(f) as ii:
                 o_file.write(f +":" + ii.read() + ";")
 
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import unittest
 
 class Test_task(unittest.TestCase):
@@ -203,30 +203,14 @@ class Test_task(unittest.TestCase):
 
 
     def test_task (self):
-        pipeline_run([task4], options.forced_tasks, multiprocess = options.jobs,
-                            verbose = options.verbose)
-        
+        pipeline_run(multiprocess = 10, verbose = 0)
+
         correct_output = "tempdir/a.1.output:tempdir/a.1,tempdir/c.1,tempdir/d.1,test_transform_inputs.py;tempdir/b.1.output:tempdir/b.1,tempdir/c.1,tempdir/d.1,test_transform_inputs.py;"
         with open(tempdir + "final.output") as real_output:
             real_output_str = real_output.read()
-        self.assertTrue(correct_output == real_output_str)
-        
+        self.assertEqual(correct_output, real_output_str)
+
 
 if __name__ == '__main__':
-    if options.just_print:
-        pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
-                            verbose = options.verbose,
-                            gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode)
-
-    elif options.dependency_file:
-        pipeline_printout_graph (     open(options.dependency_file, "w"),
-                             options.dependency_graph_format,
-                             options.target_tasks,
-                             options.forced_tasks,
-                             draw_vertically = not options.draw_horizontally,
-                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                             no_key_legend  = options.no_key_legend_in_graph)
-    else:
-        sys.argv= sys.argv[0:1]
-        unittest.main()        
+    unittest.main()
 

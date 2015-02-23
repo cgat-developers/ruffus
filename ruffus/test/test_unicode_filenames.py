@@ -3,20 +3,20 @@ from __future__ import print_function
 """
 
     test_follows_mkdir.py
-    
+
         test make directory dependencies
-        
+
         use :
             -j N / --jobs N       to speify multitasking
             -v                    to see the jobs in action
-            -n / --just_print     to see what jobs would run               
+            -n / --just_print     to see what jobs would run
 
 """
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   options        
+#   options
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -42,59 +42,6 @@ else:
 
 
 import ruffus
-print(ruffus.__version__)
-parser = OptionParser(version="%%prog v1.0, ruffus v%s" % ruffus.ruffus_version.__version)
-parser.add_option("-t", "--target_tasks", dest="target_tasks",
-                  action="append",
-                  default = list(),
-                  metavar="JOBNAME", 
-                  type="string",
-                  help="Target task(s) of pipeline.")
-parser.add_option("-f", "--forced_tasks", dest="forced_tasks",
-                  action="append",
-                  default = list(),
-                  metavar="JOBNAME", 
-                  type="string",
-                  help="Pipeline task(s) which will be included even if they are up to date.")
-parser.add_option("-j", "--jobs", dest="jobs",
-                  default=1,
-                  metavar="jobs", 
-                  type="int",
-                  help="Specifies  the number of jobs (commands) to run simultaneously.")
-parser.add_option("-v", "--verbose", dest = "verbose",
-                  action="count", default=0,
-                  help="Print more verbose messages for each additional verbose level.")
-parser.add_option("-d", "--dependency", dest="dependency_file",
-                  #default="simple.svg",
-                  metavar="FILE", 
-                  type="string",
-                  help="Print a dependency graph of the pipeline that would be executed "
-                        "to FILE, but do not execute it.")
-parser.add_option("-F", "--dependency_graph_format", dest="dependency_graph_format",
-                  metavar="FORMAT", 
-                  type="string",
-                  default = 'svg',
-                  help="format of dependency graph file. Can be 'ps' (PostScript), "+
-                  "'svg' 'svgz' (Structured Vector Graphics), " +
-                  "'png' 'gif' (bitmap  graphics) etc ")
-parser.add_option("-n", "--just_print", dest="just_print",
-                    action="store_true", default=False,
-                    help="Print a description of the jobs that would be executed, "
-                        "but do not execute them.")
-parser.add_option("-M", "--minimal_rebuild_mode", dest="minimal_rebuild_mode",
-                    action="store_true", default=False,
-                    help="Rebuild a minimum of tasks necessary for the target. "
-                    "Ignore upstream out of date tasks if intervening tasks are fine.")
-parser.add_option("-K", "--no_key_legend_in_graph", dest="no_key_legend_in_graph",
-                    action="store_true", default=False,
-                    help="Do not print out legend and key for dependency graph.")
-parser.add_option("-H", "--draw_graph_horizontally", dest="draw_horizontally",
-                    action="store_true", default=False,
-                    help="Draw horizontal dependency graph.")
-
-parameters = [  
-                ]
-
 
 
 
@@ -103,7 +50,7 @@ parameters = [
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   imports        
+#   imports
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -135,11 +82,6 @@ except ImportError:
 
 
 
-# get help string
-f =io.StringIO()
-parser.print_help(f)
-helpstr = f.getvalue()
-(options, remaining_args) = parser.parse_args()
 
 def touch (filename):
     with open(filename, "w"):
@@ -154,7 +96,7 @@ if sys.hexversion >= 0x03000000:
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-directories = [os.path.abspath(unicode("a")), unicode("b")]    
+directories = [os.path.abspath(unicode("a")), unicode("b")]
 @follows(mkdir(directories), mkdir(unicode("c")), mkdir(unicode("d"), unicode("e")), mkdir(unicode("e")))
 @posttask(touch_file(unicode("f")))
 def task_which_makes_directories ():
@@ -173,7 +115,7 @@ class Test_task_mkdir(unittest.TestCase):
         """
         """
         pass
-        
+
     def tearDown (self):
         """
         delete directories
@@ -187,31 +129,15 @@ class Test_task_mkdir(unittest.TestCase):
 
 
     def test_mkdir (self):
-        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
-                            logger = stderr_logger if options.verbose else black_hole_logger,
-                            gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                            verbose = options.verbose)
-        
+        pipeline_run(multiprocess = 10, verbose = 0)
+
         for d in 'abcdefgh':
             fullpath = os.path.join(exe_path, d)
             self.assertTrue(os.path.exists(fullpath))
 
 
 if __name__ == '__main__':
-    if options.just_print:
-        pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
-                            verbose = options.verbose,
-                            gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode)
+    unittest.main()
 
-    elif options.dependency_file:
-        pipeline_printout_graph (     open(options.dependency_file, "w"),
-                             options.dependency_graph_format,
-                             options.target_tasks,
-                             options.forced_tasks,
-                             draw_vertically = not options.draw_horizontally,
-                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                             no_key_legend  = options.no_key_legend_in_graph)
-    else:
-        sys.argv= sys.argv[0:1]
-        unittest.main()        
+
 

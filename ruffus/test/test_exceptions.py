@@ -28,13 +28,7 @@ sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
 
 
 from ruffus import *
-
-parser = cmdline.get_argparse(   description='Test exceptions?')
-options = parser.parse_args()
-
-#  optional logger which can be passed to ruffus tasks
-logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
-
+import ruffus
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -46,14 +40,28 @@ logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, option
 
 @parallel([['A', 1], ['B',3], ['C',3], ['D',4], ['E',4], ['F',4]])
 def parallel_task(name, param1):
-    if options.verbose:
-        sys.stderr.write("    Parallel task %s: \n\n" % name)
+    sys.stderr.write("    Parallel task %s: \n" % name)
     #raise task.JobSignalledBreak("Oops! I did it again!")
     raise Exception("new")
 
+
+import unittest, shutil
 try:
-    cmdline.run (options, logger = logger, log_exceptions = True)
+    from StringIO import StringIO
 except:
-    pass
+    from io import StringIO
+
+class Test_ruffus(unittest.TestCase):
+    def test_ruffus (self):
+        try:
+            pipeline_run(multiprocess = 50, verbose = 0)
+        except ruffus.ruffus_exceptions.RethrownJobError:
+            return
+        raise Exception("Missing exception")
+
+
+
+if __name__ == '__main__':
+    unittest.main()
 
 

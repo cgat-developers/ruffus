@@ -37,8 +37,6 @@ except ImportError:
     import simplejson
     json = simplejson
 import unittest, os,sys
-if __name__ != '__main__':
-    raise Exception ("This is not a callable module [%s]"  % __main__)
 
 
 exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
@@ -953,14 +951,9 @@ class Test_shorten_filenames_encoder (unittest.TestCase):
                         '[[.../ruffus/ruffus/test/something.py, .../ruffus/ruffus/test/something.py], '
                          '[.../ruffus/ruffus/test/something.py, .../ruffus/ruffus/test/something.py], 6]')
 
-#
-#
-#   debug parameter ignored if called as a module
-#
-if sys.argv.count("--debug"):
-    sys.argv.remove("--debug")
-#sys.argv.append("Test_regex_replace")
-unittest.main()
+
+if __name__ == '__main__':
+    unittest.main()
 
 
 

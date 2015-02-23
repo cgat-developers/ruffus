@@ -146,7 +146,8 @@ def test_job_io(infiles, outfiles, extra_params):
         outfiles = [outfiles]
     output_text = list()
     for f in infiles:
-        output_text.append(open(f).read())
+        with open(f) as ii:
+            output_text.append(ii.read())
     output_text = "".join(sorted(output_text))
     output_text += json.dumps(infiles) + " -> " + json.dumps(outfiles) + "\n"
     for f in outfiles:
@@ -189,34 +190,42 @@ helpstr = f.getvalue()
 #
 
 tempdir = "test_pausing_dir/"
+def do_write(file_name, what):
+    with open(file_name, "a") as oo:
+        oo.write(what)
+test_file = tempdir + "task.done"
 #
 #    task1
 #
 @files(None, [tempdir + d for d in ('a.1', 'b.1', 'c.1')])
 @follows(mkdir(tempdir))
-@posttask(lambda: open(tempdir + "task.done", "a").write("Task 1 Done\n"))
+@posttask(lambda: do_write(test_file, "Task 1 Done\n"))
 def task1(infiles, outfiles, *extra_params):
     """
     First task
     """
-    open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.start",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
     test_job_io(infiles, outfiles, extra_params)
-    open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.finish",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
 
 #
 #    task2
 #
-@posttask(lambda: open(tempdir + "task.done", "a").write("Task 2 Done\n"))
+@posttask(lambda: do_write(test_file, "Task 2 Done\n"))
 @follows(task1)
 @transform(tempdir + "*.1", suffix(".1"), ".2")
 def task2(infiles, outfiles, *extra_params):
     """
     Second task
     """
-    open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.start",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
     test_job_io(infiles, outfiles, extra_params)
-    open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.finish",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
 
 
@@ -224,14 +233,16 @@ def task2(infiles, outfiles, *extra_params):
 #    task3
 #
 @transform(task2, regex('(.*).2'), inputs([r"\1.2", tempdir + "a.1"]), r'\1.3')
-@posttask(lambda: open(tempdir + "task.done", "a").write("Task 3 Done\n"))
+@posttask(lambda: do_write(test_file, "Task 3 Done\n"))
 def task3(infiles, outfiles, *extra_params):
     """
     Third task
     """
-    open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.start",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
     test_job_io(infiles, outfiles, extra_params)
-    open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.finish",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
 
 
@@ -240,28 +251,32 @@ def task3(infiles, outfiles, *extra_params):
 #
 @transform(tempdir + "*.1", suffix(".1"), ".4")
 @follows(task1)
-@posttask(lambda: open(tempdir + "task.done", "a").write("Task 4 Done\n"))
+@posttask(lambda: do_write(test_file, "Task 4 Done\n"))
 def task4(infiles, outfiles, *extra_params):
     """
     Fourth task
     """
-    open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.start",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
     test_job_io(infiles, outfiles, extra_params)
-    open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.finish",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
 #
 #    task5
 #
 @files(None, tempdir + 'a.5')
 @follows(mkdir(tempdir))
-@posttask(lambda: open(tempdir + "task.done", "a").write("Task 5 Done\n"))
+@posttask(lambda: do_write(test_file, "Task 5 Done\n"))
 def task5(infiles, outfiles, *extra_params):
     """
     Fifth task is extra slow
     """
-    open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.start",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
     test_job_io(infiles, outfiles, extra_params)
-    open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.finish",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
 #
 #    task6
@@ -269,14 +284,16 @@ def task5(infiles, outfiles, *extra_params):
 #@files([[[tempdir + d for d in 'a.3', 'b.3', 'c.3', 'a.4', 'b.4', 'c.4', 'a.5'], tempdir + 'final.6']])
 @merge([task3, task4, task5], tempdir + "final.6")
 @follows(task3, task4, task5, )
-@posttask(lambda: open(tempdir + "task.done", "a").write("Task 6 Done\n"))
+@posttask(lambda: do_write(test_file, "Task 6 Done\n"))
 def task6(infiles, outfiles, *extra_params):
     """
     final task
     """
-    open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.start",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
     test_job_io(infiles, outfiles, extra_params)
-    open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.finish",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
 
 
@@ -298,11 +315,12 @@ def check_job_order_correct(filename):
 
     index_re = re.compile(r'.*\.([0-9])["\]\n]*$')
     job_indices = defaultdict(list)
-    for linenum, l in enumerate(open(filename)):
-        m = index_re.search(l)
-        if not m:
-            raise "Non-matching line in [%s]" % filename
-        job_indices[int(m.group(1))].append(linenum)
+    with open(filename) as ii:
+        for linenum, l in enumerate(ii):
+            m = index_re.search(l)
+            if not m:
+                raise "Non-matching line in [%s]" % filename
+            job_indices[int(m.group(1))].append(linenum)
 
     for job_index in job_indices:
         job_indices[job_index].sort()
@@ -339,7 +357,8 @@ def check_final_output_correct():
         [] -> ["DIR/a.1", "DIR/b.1", "DIR/c.1"]
         [] -> ["DIR/a.5"]"""
     expected_output = expected_output.replace("        ", "").replace("DIR/", tempdir).split("\n")
-    final_6_contents = sorted([l.rstrip() for l in open(tempdir + "final.6", "r").readlines()])
+    with open(tempdir + "final.6", "r") as ii:
+        final_6_contents = sorted([l.rstrip() for l in ii.readlines()])
     if final_6_contents != expected_output:
         for i, (l1, l2) in enumerate(zip(final_6_contents, expected_output)):
             if l1 != l2:
@@ -347,40 +366,34 @@ def check_final_output_correct():
         raise Exception ("Final.6 output is not as expected\n")
 
 
-#
-#   Necessary to protect the "entry point" of the program under windows.
-#       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
-#
-if __name__ == '__main__':
-    if options.just_print:
-        pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
-                            long_winded=True,
-                            gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode)
 
-    elif options.dependency_file:
-        pipeline_printout_graph (     open(options.dependency_file, "w"),
-                             options.dependency_graph_format,
-                             options.target_tasks,
-                             options.forced_tasks,
-                             draw_vertically = not options.draw_horizontally,
-                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                             no_key_legend  = options.no_key_legend_in_graph)
-    elif options.debug:
-        import os
-        os.system("rm -rf %s" % tempdir)
-        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
-                            logger = stderr_logger if options.verbose else black_hole_logger,
-                            gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                            verbose = options.verbose)
+import unittest, shutil, os
+try:
+    from StringIO import StringIO
+except:
+    from io import StringIO
 
+class Test_ruffus(unittest.TestCase):
+    def setUp(self):
+        try:
+            shutil.rmtree(tempdir)
+        except:
+            pass
 
+    def tearDown(self):
+        try:
+            shutil.rmtree(tempdir)
+        except:
+            pass
+
+    def test_ruffus (self):
+        pipeline_run(multiprocess = 50, verbose = 0)
         check_final_output_correct()
         check_job_order_correct(tempdir + "jobs.start")
         check_job_order_correct(tempdir + "jobs.finish")
-        os.system("rm -rf %s" % tempdir)
-        print("OK")
-    else:
-        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
-                            logger = stderr_logger if options.verbose else black_hole_logger,
-                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                            verbose = options.verbose)
+
+
+
+if __name__ == '__main__':
+    unittest.main()
+

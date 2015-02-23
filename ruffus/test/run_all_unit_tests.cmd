@@ -1,53 +1,59 @@
-echo Running test_ruffus_utility.py                                                 && \
-python  ./test_ruffus_utility.py                                                    && \
 echo Running test_file_name_parameters.py                                           && \
-python  ./test_file_name_parameters.py                                              && \
-echo Running test_filesre_combine.py                                                && \
-python  ./test_filesre_combine.py -D -j 10                                          && \
-echo Running test_filesre_split_and_combine.py                                      && \
-python  ./test_filesre_split_and_combine.py -D -j 100                               && \
-echo Running test_branching_dependencies.py                                         && \
-python  ./test_branching_dependencies.py -D -j 10                                   && \
-echo Running test_branching_dependencies.py --touch_files_only                      && \
-python  ./test_branching_dependencies.py -D -j 10 --touch_files_only                && \
+python  -m unittest test_file_name_parameters                                       && \
 echo Running test_exceptions.py                                                     && \
-python  ./test_exceptions.py                                                        && \
+python  -m unittest test_exceptions                                                 && \
 echo Running test_task_file_dependencies.py                                         && \
-python  ./test_task_file_dependencies.py                                            && \
+python  -m unittest test_task_file_dependencies                                     && \
 echo Running test_task_misc.py                                                      && \
-python  ./test_task_misc.py                                                         && \
+python  -m unittest test_task_misc                                                  && \
 echo Running test_follows_mkdir.py                                                  && \
-python  ./test_follows_mkdir.py                                                     && \
-echo Running test_N_x_M_and_collate.py                                              && \
-python  ./test_N_x_M_and_collate.py --debug -j 50                                   && \
-echo Running test_collate.py                                                        && \
-python  ./test_collate.py --debug                                                   && \
-echo Running test_split_and_combine.py                                              && \
-python  ./test_split_and_combine.py -D -j 50                                        && \
-echo Running simpler_at_runtime.py                                                  && \
-python  ./simpler_at_runtime.py --debug                                             && \
-echo Running test_unicode_filenames.py                                              && \
-python  ./test_unicode_filenames.py -j 10                                           && \
+python  -m unittest test_follows_mkdir                                              && \
 echo Running test_inputs_with_multiple_args_raising_exception.py                    && \
-python  ./test_inputs_with_multiple_args_raising_exception.py                       && \
-echo Running test_pausing.py                                                        && \
-python  ./test_pausing.py --debug -j 10                                             && \
-echo Running test_transform_with_no_re_matches.py                                   && \
-python  ./test_transform_with_no_re_matches.py                                      && \
+python  -m unittest test_inputs_with_multiple_args_raising_exception                && \
+echo Running test_collate.py                                                        && \
+python  -m unittest test_collate                                                    && \
 echo Running test_empty_files_decorator.py                                          && \
-python  ./test_empty_files_decorator.py                                             && \
+python  -m unittest test_empty_files_decorator                                      && \
+echo Running test_transform_with_no_re_matches.py                                   && \
+python  -m unittest test_transform_with_no_re_matches                               && \
 echo Running test_transform_inputs.py                                               && \
-python  ./test_transform_inputs.py                                                  && \
+python  -m unittest test_transform_inputs                                           && \
 echo Running test_files_decorator.py                                                && \
-python  ./test_files_decorator.py                                                   && \
+python  -m unittest test_files_decorator                                            && \
+echo Running test_verbosity.py                                                      && \
+python  -m unittest test_verbosity                                                  && \
+echo Running test_transform_add_inputs.py                                           && \
+python  -m unittest test_transform_add_inputs                                       && \
+echo Running test_split_regex_and_collate.py                                        && \
+python  -m unittest test_split_regex_and_collate                                    && \
+echo Running test_tutorial7.py                                                      && \
+python  -m unittest test_tutorial7                                                  && \
+echo Running test_ruffus_utility.py                                                 && \
+python  -m unittest test_ruffus_utility                                             && \
+echo Running test_filesre_combine.py                                                && \
+python  -m unittest test_filesre_combine                                            && \
+echo Running test_filesre_split_and_combine.py                                      && \
+python  -m unittest test_filesre_split_and_combine                                  && \
+echo Running test_branching_dependencies.py                                         && \
+python  -m unittest test_branching_dependencies                                     && \
+echo Running test_N_x_M_and_collate.py                                              && \
+python  -m unittest test_N_x_M_and_collate                                          && \
+echo Running test_split_and_combine.py                                              && \
+python  -m unittest test_split_and_combine                                          && \
+echo Running test_runtime_data.py                                                   && \
+python  -m unittest test_runtime_data                                               && \
+echo Running test_unicode_filenames.py                                              && \
+python  -m unittest test_unicode_filenames                                          && \
+echo Running test_pausing.py                                                        && \
+python  -m unittest test_pausing                                                    && \
 echo Running test_active_if.py                                                      && \
-python  ./test_active_if.py -j2 -v                                                  && \
+python  -m test_active_if                                                           && \
 echo Running test_softlink_uptodate.py                                              && \
-python  ./test_softlink_uptodate.py -j2 -v                                          && \
+python  -m unittest test_softlink_uptodate                                          && \
+echo Running test_proxy.py                                                          && \
+python  -m unittest test_proxy                                                      && \
 echo Running test_job_completion_checksums.py                                       && \
 python  -m unittest test_job_completion_checksums                                   && \
-echo Running test_transform_add_inputs.py                                           && \
-python  test_transform_add_inputs.py                                                && \
 echo Running test_combinatorics.py                                                  && \
 python  -m unittest test_combinatorics                                              && \
 echo Running test_job_history_with_exceptions.py                                    && \
@@ -56,19 +62,13 @@ echo Running test_mkdir.py                                                      
 python  -m unittest test_mkdir                                                      && \
 echo Running test_regex_error_messages.py                                           && \
 python  -m unittest test_regex_error_messages                                       && \
-echo test_split_regex_and_collate.py                                                && \
-python  test_split_regex_and_collate.py                                             && \
-echo test_tutorial7.py                                                              && \
-python  test_tutorial7.py                                                           && \
-echo test_files_post_merge.py                                                       && \
-python  test_files_post_merge.py --debug                                            && \
-echo test_verbosity.py                                                              && \
-python  test_verbosity.py                                                           && \
-echo test_cmdline.py                                                                && \
+echo Running test_posttask_merge.py                                                 && \
+python  -m unittest test_posttask_merge                                             && \
+echo Running test_cmdline.py                                                        && \
 python  -m unittest test_cmdline                                                    && \
-echo test_graphviz.py                                                               && \
+echo Running test_graphviz.py                                                       && \
 python  -m unittest test_graphviz                                                   && \
-echo test_ruffus_utility_parse_task_arguments.py                                    && \
+echo Running test_ruffus_utility_parse_task_arguments.py                            && \
 python  -m unittest test_ruffus_utility_parse_task_arguments                        && \
 echo DONE!!!                                                                        
 

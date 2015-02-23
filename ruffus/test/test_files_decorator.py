@@ -132,7 +132,7 @@ except ImportError:
 f =io.StringIO()
 parser.print_help(f)
 helpstr = f.getvalue()
-(options, remaining_args) = parser.parse_args()
+#(options, remaining_args) = parser.parse_args()
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -254,24 +254,9 @@ class Test_task(unittest.TestCase):
 
 
     def test_task (self):
-        pipeline_run([task5], options.forced_tasks, multiprocess = options.jobs,
-                            verbose = options.verbose)
+        pipeline_run(multiprocess = 10, verbose = 0)
 
 
 if __name__ == '__main__':
-    if options.just_print:
-        pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
-                            verbose = options.verbose)
-
-    elif options.dependency_file:
-        with open(options.dependency_file, "w") as graph_file:
-            pipeline_printout_graph (graph_file,
-                                 options.dependency_graph_format,
-                                 options.target_tasks,
-                                 options.forced_tasks,
-                                 draw_vertically = not options.draw_horizontally,
-                                 no_key_legend  = options.no_key_legend_in_graph)
-    else:
-        sys.argv= sys.argv[0:1]
-        unittest.main()
+    unittest.main()
 

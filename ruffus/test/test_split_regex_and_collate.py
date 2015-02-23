@@ -213,6 +213,5 @@ class Test_split_regex_and_collate(unittest.TestCase):
 #       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 #
 if __name__ == '__main__':
-#    pipeline_printout(sys.stdout, [combine_results], verbose = 5)
     unittest.main()
 

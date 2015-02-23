@@ -161,8 +161,6 @@ helpstr = f.getvalue()
 
 tempdir = "temp_filesre_split_and_combine/"
 
-def sleep_a_while ():
-    time.sleep(0.1)
 
 
 if options.verbose:
@@ -178,7 +176,6 @@ else:
 #
 #    split_fasta_file
 #
-@posttask(sleep_a_while)
 @posttask(lambda: verbose_output.write("Split into %d files\n" % options.jobs_per_task))
 @files(tempdir  + "original.fa", tempdir  + "files.split.success")
 def split_fasta_file (input_file, success_flag):
@@ -194,22 +191,24 @@ def split_fasta_file (input_file, success_flag):
     import random
     random.seed()
     for i in range(options.jobs_per_task):
-        open(tempdir + "files.split.%03d.fa" % i, "w")
+        with open(tempdir + "files.split.%03d.fa" % i, "w") as oo:
+            pass
 
-    open(success_flag,  "w")
+    with open(success_flag,  "w") as oo:
+        pass
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 #
 #    align_sequences
 #
-@posttask(sleep_a_while)
 @posttask(lambda: verbose_output.write("Sequences aligned\n"))
 @follows(split_fasta_file)
 @files_re(tempdir  + "files.split.*.fa",       # find all .fa files
             ".fa$", ".aln")                     # fa -> aln
 def align_sequences (input_file, output_filename):
-    open(output_filename, "w").write("%s\n" % output_filename)
+    with open(output_filename, "w") as oo:
+        oo.write("%s\n" % output_filename)
 
 
 
@@ -217,7 +216,6 @@ def align_sequences (input_file, output_filename):
 #
 #    percentage_identity
 #
-@posttask(sleep_a_while)
 @posttask(lambda: verbose_output.write("%Identity calculated\n"))
 @files_re(align_sequences,                     # find all results from align_sequences
             r"(.*\.)(.+).aln$",                # match file name root and substitute
@@ -227,8 +225,10 @@ def align_sequences (input_file, output_filename):
             r"\2")                             #   extra parameter to remember the file index
 def percentage_identity (input_file, output_files, split_index):
     (output_filename, success_flag_filename) = output_files
-    open(output_filename, "w").write("%s\n" % split_index)
-    open(success_flag_filename, "w")
+    with open(output_filename, "w") as oo:
+        oo.write("%s\n" % split_index)
+    with open(success_flag_filename, "w") as oo:
+        pass
 
 
 
@@ -237,7 +237,6 @@ def percentage_identity (input_file, output_files, split_index):
 #    combine_results
 #
 @posttask(lambda: verbose_output.write("Results recombined\n"))
-@posttask(sleep_a_while)
 @files_re(percentage_identity, combine(r".*.pcid$"),
                                       [tempdir + "all.combine_results",
                                        tempdir + "all.combine_results_success"])
@@ -248,49 +247,38 @@ def combine_results (input_files, output_files):
     (output_filename, success_flag_filename) = output_files
     out = open(output_filename, "w")
     for inp, flag in input_files:
-        out.write(open(inp).read())
-    open(success_flag_filename, "w")
+        with open(inp) as ii:
+            out.write(ii.read())
+    out.close()
+    with open(success_flag_filename, "w") as oo:
+        pass
 
 
 
-def start_pipeline_afresh ():
-    """
-    Recreate directory and starting file
-    """
-    print("Start again", file=verbose_output)
-    import os
-    os.system("rm -rf %s" % tempdir)
-    os.makedirs(tempdir)
-    open(tempdir + "original.fa", "w").close()
-    sleep_a_while ()
+
+
+
+import unittest, shutil
+class Test_ruffus(unittest.TestCase):
+
+    def tearDown(self):
+        try:
+            shutil.rmtree(tempdir)
+        except:
+            pass
+    def setUp(self):
+        try:
+            shutil.rmtree(tempdir)
+        except:
+            pass
+        os.makedirs(tempdir)
+        with open(tempdir + "original.fa", "w") as oo:
+            pass
+
+    def test_ruffus (self):
+        pipeline_run(multiprocess = 100, verbose = 0)
+
 
 if __name__ == '__main__':
-    if options.start_again:
-        start_pipeline_afresh()
-    if options.just_print:
-        pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
-                            verbose = options.verbose,
-                            gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode)
-
-    elif options.dependency_file:
-        pipeline_printout_graph (     open(options.dependency_file, "w"),
-                             options.dependency_graph_format,
-                             options.target_tasks,
-                             options.forced_tasks,
-                             draw_vertically = not options.draw_horizontally,
-                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                             no_key_legend  = options.no_key_legend_in_graph)
-    elif options.debug:
-        start_pipeline_afresh()
-        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
-                            logger = stderr_logger if options.verbose else black_hole_logger,
-                            gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                            verbose = options.verbose)
-        os.system("rm -rf %s" % tempdir)
-        print("OK")
-    else:
-        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
-                            logger = stderr_logger if options.verbose else black_hole_logger,
-                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                            verbose = options.verbose)
+    unittest.main()
 

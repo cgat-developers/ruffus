@@ -31,8 +31,8 @@ from ruffus.ruffus_utility import (RUFFUS_HISTORY_FILE,
 
 
 parser = cmdline.get_argparse(description='WHAT DOES THIS PIPELINE DO?')
-options = parser.parse_args()
-logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
+#options = parser.parse_args()
+#logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
 
 
 #---------------------------------------------------------------

@@ -3,15 +3,15 @@ from __future__ import print_function
 """
 
     test_transform_with_no_re_matches.py
-    
+
         test messages with no regular expression matches
-        
+
 """
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   options        
+#   options
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -39,59 +39,6 @@ else:
 
 import ruffus
 print("\tRuffus Version = ", ruffus.__version__)
-parser = OptionParser(version="%%prog v1.0, ruffus v%s" % ruffus.ruffus_version.__version)
-parser.add_option("-t", "--target_tasks", dest="target_tasks",
-                  action="append",
-                  default = list(),
-                  metavar="JOBNAME", 
-                  type="string",
-                  help="Target task(s) of pipeline.")
-parser.add_option("-f", "--forced_tasks", dest="forced_tasks",
-                  action="append",
-                  default = list(),
-                  metavar="JOBNAME", 
-                  type="string",
-                  help="Pipeline task(s) which will be included even if they are up to date.")
-parser.add_option("-j", "--jobs", dest="jobs",
-                  default=1,
-                  metavar="jobs", 
-                  type="int",
-                  help="Specifies  the number of jobs (commands) to run simultaneously.")
-parser.add_option("-v", "--verbose", dest = "verbose",
-                  action="count", default=0,
-                  help="Print more verbose messages for each additional verbose level.")
-parser.add_option("-d", "--dependency", dest="dependency_file",
-                  #default="simple.svg",
-                  metavar="FILE", 
-                  type="string",
-                  help="Print a dependency graph of the pipeline that would be executed "
-                        "to FILE, but do not execute it.")
-parser.add_option("-F", "--dependency_graph_format", dest="dependency_graph_format",
-                  metavar="FORMAT", 
-                  type="string",
-                  default = 'svg',
-                  help="format of dependency graph file. Can be 'ps' (PostScript), "+
-                  "'svg' 'svgz' (Structured Vector Graphics), " +
-                  "'png' 'gif' (bitmap  graphics) etc ")
-parser.add_option("-n", "--just_print", dest="just_print",
-                    action="store_true", default=False,
-                    help="Print a description of the jobs that would be executed, "
-                        "but do not execute them.")
-parser.add_option("-M", "--minimal_rebuild_mode", dest="minimal_rebuild_mode",
-                    action="store_true", default=False,
-                    help="Rebuild a minimum of tasks necessary for the target. "
-                    "Ignore upstream out of date tasks if intervening tasks are fine.")
-parser.add_option("-K", "--no_key_legend_in_graph", dest="no_key_legend_in_graph",
-                    action="store_true", default=False,
-                    help="Do not print out legend and key for dependency graph.")
-parser.add_option("-H", "--draw_graph_horizontally", dest="draw_horizontally",
-                    action="store_true", default=False,
-                    help="Draw horizontal dependency graph.")
-
-parameters = [  
-                ]
-
-
 
 
 
@@ -99,7 +46,7 @@ parameters = [
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#   imports        
+#   imports
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -131,11 +78,6 @@ except ImportError:
 
 
 
-# get help string
-f =io.StringIO()
-parser.print_help(f)
-helpstr = f.getvalue()
-(options, remaining_args) = parser.parse_args()
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -164,7 +106,7 @@ class Test_task_mkdir(unittest.TestCase):
         """
         """
         pass
-        
+
     def tearDown (self):
         """
         """
@@ -190,31 +132,12 @@ class Test_task_mkdir(unittest.TestCase):
                 self.debug_str += message
 
         save_to_str_logger = t_save_to_str_logger()
-        pipeline_run([task_2], options.forced_tasks, multiprocess = options.jobs,
-                            logger = save_to_str_logger,
-                            gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                            verbose = 1)
+        pipeline_run(multiprocess = 10, logger = save_to_str_logger, verbose = 1)
 
         self.assertTrue("no files names matched" in save_to_str_logger.warning_str)
         print("\n    Warning printed out correctly", file=sys.stderr)
-        
+
 
 if __name__ == '__main__':
-    if options.just_print:
-        pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
-                            verbose = options.verbose,
-                            gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode)
-
-    elif options.dependency_file:
-        with open(options.dependency_file, "w") as graph_file:
-            pipeline_printout_graph (     graph_file,
-                                 options.dependency_graph_format,
-                                 options.target_tasks,
-                                 options.forced_tasks,
-                                 draw_vertically = not options.draw_horizontally,
-                                 gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                                 no_key_legend  = options.no_key_legend_in_graph)
-    else:
-        sys.argv= sys.argv[0:1]
-        unittest.main()        
+    unittest.main()
 

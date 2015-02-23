@@ -39,66 +39,6 @@ else:
 
 
 
-parser = OptionParser(version="%prog 1.0")
-parser.add_option("-D", "--debug", dest="debug",
-                    action="store_true", default=False,
-                    help="Make sure output is correct and clean up.")
-parser.add_option("-t", "--target_tasks", dest="target_tasks",
-                  action="append",
-                  default = list(),
-                  metavar="JOBNAME",
-                  type="string",
-                  help="Target task(s) of pipeline.")
-parser.add_option("-f", "--forced_tasks", dest="forced_tasks",
-                  action="append",
-                  default = list(),
-                  metavar="JOBNAME",
-                  type="string",
-                  help="Pipeline task(s) which will be included even if they are up to date.")
-parser.add_option("-j", "--jobs", dest="jobs",
-                  default=1,
-                  metavar="jobs",
-                  type="int",
-                  help="Specifies  the number of jobs (commands) to run simultaneously.")
-parser.add_option("-v", "--verbose", dest = "verbose",
-                  action="count", default=0,
-                  help="Do not echo to shell but only print to log.")
-parser.add_option("--touch_files_only", dest = "touch_files_only",
-                  action="store_true", default=False,
-                  help="Do not run pipeline. Only touch.")
-parser.add_option("-d", "--dependency", dest="dependency_file",
-                  #default="simple.svg",
-                  metavar="FILE",
-                  type="string",
-                  help="Print a dependency graph of the pipeline that would be executed "
-                        "to FILE, but do not execute it.")
-parser.add_option("-F", "--dependency_graph_format", dest="dependency_graph_format",
-                  metavar="FORMAT",
-                  type="string",
-                  default = 'svg',
-                  help="format of dependency graph file. Can be 'ps' (PostScript), "+
-                  "'svg' 'svgz' (Structured Vector Graphics), " +
-                  "'png' 'gif' (bitmap  graphics) etc ")
-parser.add_option("-n", "--just_print", dest="just_print",
-                    action="store_true", default=False,
-                    help="Print a description of the jobs that would be executed, "
-                        "but do not execute them.")
-parser.add_option("-M", "--minimal_rebuild_mode", dest="minimal_rebuild_mode",
-                    action="store_true", default=False,
-                    help="Rebuild a minimum of tasks necessary for the target. "
-                    "Ignore upstream out of date tasks if intervening tasks are fine.")
-parser.add_option("-K", "--no_key_legend_in_graph", dest="no_key_legend_in_graph",
-                    action="store_true", default=False,
-                    help="Do not print out legend and key for dependency graph.")
-parser.add_option("-H", "--draw_graph_horizontally", dest="draw_horizontally",
-                    action="store_true", default=False,
-                    help="Draw horizontal dependency graph.")
-
-parameters = [
-                ]
-
-
-
 
 
 
@@ -150,11 +90,13 @@ def test_job_io(infiles, outfiles, extra_params):
         outfiles = [outfiles]
     output_text = list()
     for f in infiles:
-        output_text.append(open(f).read())
+        with open(f) as ii:
+            output_text.append(ii.read())
     output_text = "".join(sorted(output_text))
     output_text += json.dumps(infiles) + " -> " + json.dumps(outfiles) + "\n"
     for f in outfiles:
-        open(f, "w").write(output_text)
+        with open(f, "w") as oo:
+            oo.write(output_text)
 
 
 
@@ -169,11 +111,6 @@ def test_job_io(infiles, outfiles, extra_params):
 
 
 
-# get help string
-f =io.StringIO()
-parser.print_help(f)
-helpstr = f.getvalue()
-(options, remaining_args) = parser.parse_args()
 
 
 
@@ -190,35 +127,43 @@ helpstr = f.getvalue()
 #       ->  4           ->
 #                   5   ->    6
 #
-
 tempdir = "temp_branching_dir/"
+
+def do_write(file_name, what):
+    with open(file_name, "a") as oo:
+        oo.write(what)
+test_file = tempdir + "task.done"
 #
 #    task1
 #
 @originate([tempdir + d for d in ('a.1', 'b.1', 'c.1')])
 @follows(mkdir(tempdir))
-@posttask(lambda: open(tempdir + "task.done", "a").write("Task 1 Done\n"))
+@posttask(lambda: do_write(test_file, "Task 1 Done\n"))
 def task1(outfile, *extra_params):
     """
     First task
     """
-    open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([None, outfile]))
+    with open(tempdir + "jobs.start",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([None, outfile]))
     test_job_io(None, outfile, extra_params)
-    open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([None, outfile]))
+    with open(tempdir + "jobs.finish",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([None, outfile]))
 
 
 #
 #    task2
 #
-@posttask(lambda: open(tempdir + "task.done", "a").write("Task 2 Done\n"))
+@posttask(lambda: do_write(test_file, "Task 2 Done\n"))
 @transform(task1, suffix(".1"), ".2")
 def task2(infiles, outfiles, *extra_params):
     """
     Second task
     """
-    open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.start",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
     test_job_io(infiles, outfiles, extra_params)
-    open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.finish",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
 
 
@@ -226,14 +171,16 @@ def task2(infiles, outfiles, *extra_params):
 #    task3
 #
 @transform(task2, regex('(.*).2'), inputs([r"\1.2", tempdir + "a.1"]), r'\1.3')
-@posttask(lambda: open(tempdir + "task.done", "a").write("Task 3 Done\n"))
+@posttask(lambda: do_write(test_file, "Task 3 Done\n"))
 def task3(infiles, outfiles, *extra_params):
     """
     Third task
     """
-    open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.start",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
     test_job_io(infiles, outfiles, extra_params)
-    open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.finish",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
 
 
@@ -243,30 +190,34 @@ def task3(infiles, outfiles, *extra_params):
 @jobs_limit(1)
 @transform(tempdir + "*.1", suffix(".1"), ".4")
 @follows(task1)
-@posttask(lambda: open(tempdir + "task.done", "a").write("Task 4 Done\n"))
+@posttask(lambda: do_write(test_file, "Task 4 Done\n"))
 def task4(infiles, outfiles, *extra_params):
     """
     Fourth task is extra slow
     """
-    open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.start",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
     time.sleep(0.1)
     test_job_io(infiles, outfiles, extra_params)
-    open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.finish",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
 #
 #    task5
 #
 @files(None, tempdir + 'a.5')
 @follows(mkdir(tempdir))
-@posttask(lambda: open(tempdir + "task.done", "a").write("Task 5 Done\n"))
+@posttask(lambda: do_write(test_file, "Task 5 Done\n"))
 def task5(infiles, outfiles, *extra_params):
     """
     Fifth task is extra slow
     """
-    open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.start",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
     time.sleep(1)
     test_job_io(infiles, outfiles, extra_params)
-    open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.finish",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
 #
 #    task6
@@ -274,14 +225,16 @@ def task5(infiles, outfiles, *extra_params):
 #@files([[[tempdir + d for d in 'a.3', 'b.3', 'c.3', 'a.4', 'b.4', 'c.4', 'a.5'], tempdir + 'final.6']])
 @merge([task3, task4, task5], tempdir + "final.6")
 @follows(task3, task4, task5, )
-@posttask(lambda: open(tempdir + "task.done", "a").write("Task 6 Done\n"))
+@posttask(lambda: do_write(test_file, "Task 6 Done\n"))
 def task6(infiles, outfiles, *extra_params):
     """
     final task
     """
-    open(tempdir + "jobs.start",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.start",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
     test_job_io(infiles, outfiles, extra_params)
-    open(tempdir + "jobs.finish",  "a").write('job = %s\n' % json.dumps([infiles, outfiles]))
+    with open(tempdir + "jobs.finish",  "a") as oo:
+        oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
 
 
@@ -303,11 +256,12 @@ def check_job_order_correct(filename):
 
     index_re = re.compile(r'.*\.([0-9])["\]\n]*$')
     job_indices = defaultdict(list)
-    for linenum, l in enumerate(open(filename)):
-        m = index_re.search(l)
-        if not m:
-            raise "Non-matching line in [%s]" % filename
-        job_indices[int(m.group(1))].append(linenum)
+    with open(filename) as ii:
+        for linenum, l in enumerate(ii):
+            m = index_re.search(l)
+            if not m:
+                raise "Non-matching line in [%s]" % filename
+            job_indices[int(m.group(1))].append(linenum)
 
     for job_index in job_indices:
         job_indices[job_index].sort()
@@ -354,7 +308,8 @@ def check_final_output_correct(after_touch_files = False):
     orig_expected_output = expected_output
     if after_touch_files:
         expected_output.pop(-3)
-    final_6_contents = sorted([l.rstrip() for l in open(tempdir + "final.6", "r").readlines()])
+    with open(tempdir + "final.6", "r") as ii:
+        final_6_contents = sorted([l.rstrip() for l in ii.readlines()])
     if final_6_contents != expected_output:
         print("Actual:", file=sys.stderr)
         for ll in final_6_contents:
@@ -370,83 +325,64 @@ def check_final_output_correct(after_touch_files = False):
         raise Exception ("Final.6 output is not as expected\n")
 
 
-#
-#   Necessary to protect the "entry point" of the program under windows.
-#       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
-#
-if __name__ == '__main__':
-    print("Python version %s" % sys.version, file=sys.stderr)
-    print("Ruffus version %s" % ruffus.__version__, file=sys.stderr)
-    if options.just_print:
-        pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
-                            verbose=options.verbose)
 
-    elif options.dependency_file:
-        pipeline_printout_graph (     open(options.dependency_file, "w"),
-                             options.dependency_graph_format,
-                             options.target_tasks,
-                             options.forced_tasks,
-                             draw_vertically = not options.draw_horizontally,
-                             no_key_legend  = options.no_key_legend_in_graph)
+import unittest, shutil
+try:
+    from StringIO import StringIO
+except:
+    from io import StringIO
 
-    elif options.debug:
-        import os
-        os.system("rm -rf %s" % tempdir)
-        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
-                            logger = stderr_logger if options.verbose else black_hole_logger,
-                            verbose = options.verbose)
+class Test_ruffus(unittest.TestCase):
 
+    def tearDown(self):
+        try:
+            shutil.rmtree(tempdir)
+        except:
+            pass
+    def setUp(self):
+        try:
+            shutil.rmtree(tempdir)
+        except:
+            pass
+        os.makedirs(tempdir)
 
+    def test_ruffus (self):
+        print("     Python version %s" % sys.version, file=sys.stderr)
+        print("     Ruffus version %s" % ruffus.__version__, file=sys.stderr)
+        print("\n\n     Run pipeline normally...")
+        pipeline_run(multiprocess = 10, verbose=0)
         check_final_output_correct()
+        check_job_order_correct(tempdir + "jobs.start")
+        check_job_order_correct(tempdir + "jobs.finish")
+        print("     OK")
+
+        print("\n\n     Touch task2 only:")
+        os.unlink(os.path.join(tempdir, "jobs.start")  )
+        os.unlink(os.path.join(tempdir, "jobs.finish") )
+        print("       First delete b.1 for task2...")
+        os.unlink(os.path.join(tempdir, "b.1"))
+        print("       Then run with touch_file_only...")
+        pipeline_run([task2], multiprocess = 10, touch_files_only=True, verbose = 0)
+
+        # check touching has made task2 up to date
+        s = StringIO()
+        pipeline_printout(s, [task2], verbose=4, wrap_width = 10000)
+        output_str = s.getvalue()
+        #print (">>>\n", output_str, "<<<\n", file=sys.stderr)
+        if "b.1" in output_str:
+            raise Exception("Expected b.1 created by touching...")
+        if "b.2" in output_str:
+            raise Exception("Expected b.2 created by touching...")
+        print("     Touching has made task2 up to date...\n")
+
+        print("     Then run normally again...")
+        pipeline_run(multiprocess = 10, verbose=0)
+        check_final_output_correct(True)
         check_job_order_correct(tempdir + "jobs.start")
         check_job_order_correct(tempdir + "jobs.finish")
 
 
-        #
-        # check touch file works, running the pipeline leaving an empty file where b.1
-        #   would be
-        #
-        if options.touch_files_only:
-            #
-            # remove these because the precedence for the two runs must not be mixed together
-            #
-            os.unlink(os.path.join(tempdir, "jobs.start")  )
-            os.unlink(os.path.join(tempdir, "jobs.finish") )
-
-            #
-            #   remove b.1 and touch
-            #
-            if options.verbose:
-                print("\n\nNow just delete b.1 for task2...\n")
-            os.unlink(os.path.join(tempdir, "b.1"))
-            pipeline_run([task2], options.forced_tasks, multiprocess = options.jobs,
-                                logger = stderr_logger if options.verbose else black_hole_logger,
-                                gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                                verbose = options.verbose,
-                                touch_files_only = options.touch_files_only)
+if __name__ == '__main__':
+    unittest.main()
 
 
-            #
-            #   Now wait for the empty b.1 to show up in the output
-            #
-            if options.verbose:
-                print("\n\nRun normally...\n")
-            pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
-                                logger = stderr_logger if options.verbose else black_hole_logger,
-                                gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                                verbose = options.verbose)
-            check_final_output_correct(options.touch_files_only)
-            check_job_order_correct(tempdir + "jobs.start")
-            check_job_order_correct(tempdir + "jobs.finish")
-
-
-
-            print("OK")
-        import  shutil
-        shutil.rmtree(tempdir)
-    else:
-        pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
-                            logger = stderr_logger if options.verbose else black_hole_logger,
-                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                            verbose = options.verbose, touch_files_only = options.touch_files_only)
-        print("OK")
