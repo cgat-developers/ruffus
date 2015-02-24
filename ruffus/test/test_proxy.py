@@ -26,7 +26,6 @@ exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
 sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
 
 
-
 from ruffus import *
 
 #parser = cmdline.get_argparse(   description='Test soft link up to date?', version = "%(prog)s v.2.23")
@@ -46,11 +45,7 @@ from ruffus import *
 import multiprocessing.managers
 
 
-# list of executed tasks
-manager = multiprocessing.managers.SyncManager()
-manager.start()
-executed_tasks_proxy = manager.dict()
-mutex_proxy = manager.Lock()
+
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Tasks
@@ -61,7 +56,6 @@ mutex_proxy = manager.Lock()
 #
 #   First task
 #
-@originate(["a.1", "b.1"], executed_tasks_proxy, mutex_proxy)
 def start_task(output_file_name, executed_tasks_proxy, mutex_proxy):
     with open(output_file_name,  "w") as f:
         pass
@@ -71,7 +65,6 @@ def start_task(output_file_name, executed_tasks_proxy, mutex_proxy):
 #
 #   Forwards file names, is always as up to date as its input files...
 #
-@transform(start_task, suffix(".1"), ".1", executed_tasks_proxy, mutex_proxy)
 def same_file_name_task(input_file_name, output_file_name, executed_tasks_proxy, mutex_proxy):
     with mutex_proxy:
         executed_tasks_proxy["same_file_name_task"] = executed_tasks_proxy.get("same_file_name_task", 0) + 1
@@ -79,7 +72,6 @@ def same_file_name_task(input_file_name, output_file_name, executed_tasks_proxy,
 #
 #   Links file names, is always as up to date if links are not missing
 #
-@transform(start_task, suffix(".1"), ".linked.1", executed_tasks_proxy, mutex_proxy)
 def linked_file_name_task(input_file_name, output_file_name, executed_tasks_proxy, mutex_proxy):
     os.symlink(input_file_name, output_file_name)
     with mutex_proxy:
@@ -89,7 +81,6 @@ def linked_file_name_task(input_file_name, output_file_name, executed_tasks_prox
 #
 #   Final task linking everything
 #
-@transform([linked_file_name_task, same_file_name_task], suffix(".1"), ".3", executed_tasks_proxy, mutex_proxy)
 def final_task (input_file_name, output_file_name, executed_tasks_proxy, mutex_proxy):
     with open(output_file_name,  "w") as f:
         pass
@@ -112,6 +103,35 @@ except:
 
 class Test_ruffus(unittest.TestCase):
     def setUp(self):
+
+        # list of executed tasks
+        manager = multiprocessing.managers.SyncManager()
+        manager.start()
+        global mutex_proxy
+        global executed_tasks_proxy
+        mutex_proxy = manager.Lock()
+        executed_tasks_proxy = manager.dict()
+
+        pipeline = Pipeline.pipelines["main"]
+        pipeline.originate(task_func = start_task,
+                            output = ["a.1", "b.1"],
+                            extras = [executed_tasks_proxy, mutex_proxy])
+        pipeline.transform(task_func = same_file_name_task,
+                            input = start_task,
+                            filter = suffix(".1"),
+                            output = ".1",
+                            extras = [executed_tasks_proxy, mutex_proxy])
+        pipeline.transform( task_func = linked_file_name_task,
+                            input = start_task,
+                            filter = suffix(".1"),
+                            output = ".linked.1",
+                            extras = [executed_tasks_proxy, mutex_proxy])
+        pipeline.transform(task_func = final_task,
+                            input = [linked_file_name_task, same_file_name_task],
+                            filter = suffix(".1"),
+                            output = ".3",
+                            extras = [executed_tasks_proxy, mutex_proxy])
+
         for f in ["a.1", "b.1", "a.linked.1", "b.linked.1", "a.3", "b.3", "a.linked.3", "b.linked.3"]:
             try:
                 os.unlink(f)
