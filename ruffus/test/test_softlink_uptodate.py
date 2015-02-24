@@ -43,12 +43,6 @@ from ruffus import *
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 
-import multiprocessing.managers
-
-
-# list of executed tasks
-manager = multiprocessing.managers.SyncManager()
-manager.start()
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Tasks
@@ -123,4 +117,5 @@ class Test_ruffus(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
 
