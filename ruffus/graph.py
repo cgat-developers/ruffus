@@ -1152,7 +1152,7 @@ def graph_printout (stream,
     result_str, error_str = proc.communicate()
     retcode = proc.returncode
     if retcode:
-        raise subprocess.CalledProcessError(retcode, cmd + "\n" + "\n".join([result_str, error_str]))
+        raise subprocess.CalledProcessError(retcode, cmd + "\n" + "\n".join([str(result_str), str(error_str)]))
 
 
 

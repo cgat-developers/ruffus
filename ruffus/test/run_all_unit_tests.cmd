@@ -70,5 +70,11 @@ echo Running test_graphviz.py                                                   
 python  -m unittest test_graphviz                                                   && \
 echo Running test_ruffus_utility_parse_task_arguments.py                            && \
 python  -m unittest test_ruffus_utility_parse_task_arguments                        && \
+echo Running test_split_subdivide_checkpointing.py                                  && \
+python  -m unittest test_split_subdivide_checkpointing                              && \
+echo Running test_newstyle_combinatorics.py                                         && \
+python  -m unittest test_newstyle_combinatorics                                     && \
+echo Running test_pipeline_printout_graph.py                                        && \
+python  -m unittest test_pipeline_printout_graph                                    && \
 echo DONE!!!                                                                        
 

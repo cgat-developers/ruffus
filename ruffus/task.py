@@ -4011,7 +4011,6 @@ def lookup_pipeline(pipeline):
 
     raise error_not_a_pipeline("%s does not name a pipeline." % pipeline)
 
-
 # _____________________________________________________________________________
 
 #   pipeline_printout_in_dot_format
@@ -4170,30 +4169,37 @@ def pipeline_printout_graph(stream,
         target_tasks = topological_sorted[-1:]
 
     # open file if (unicode?) string
+    close_stream = False
     if isinstance(stream, path_str_type):
         stream = open(stream, "wb")
+        close_stream = True
 
     # derive format automatically from name
     if output_format is None:
         output_format = os.path.splitext(stream.name)[1].lstrip(".")
 
-    graph_printout(stream,
-                   output_format,
-                   target_tasks,
-                   forcedtorun_tasks,
-                   draw_vertically,
-                   ignore_upstream_of_target,
-                   skip_uptodate_tasks,
-                   gnu_make_maximal_rebuild_mode,
-                   test_all_task_for_update,
-                   no_key_legend,
-                   minimal_key_legend,
-                   user_colour_scheme,
-                   pipeline_name,
-                   size,
-                   dpi,
-                   extra_data_for_signal=[t_verbose_logger(0, 0, None, runtime_data), job_history],
-                   signal_callback=is_node_up_to_date)
+    try:
+        graph_printout(stream,
+                       output_format,
+                       target_tasks,
+                       forcedtorun_tasks,
+                       draw_vertically,
+                       ignore_upstream_of_target,
+                       skip_uptodate_tasks,
+                       gnu_make_maximal_rebuild_mode,
+                       test_all_task_for_update,
+                       no_key_legend,
+                       minimal_key_legend,
+                       user_colour_scheme,
+                       pipeline_name,
+                       size,
+                       dpi,
+                       extra_data_for_signal=[t_verbose_logger(0, 0, None, runtime_data), job_history],
+                       signal_callback=is_node_up_to_date)
+    finally:
+        # if this is a stream we opened, we have to close it ourselves
+        if close_stream:
+            stream.close()
 
 
 # _____________________________________________________________________________
