@@ -258,8 +258,9 @@ def post_merge_check (input_filename, output_filename):
     """
     check that merge sends just one file, not a list to me
     """
-    with open(output_filename, "w") as oo, open(input_filename) as ii:
-        oo.write(ii.read())
+    with open(output_filename, "w") as oo:
+        with open(input_filename) as ii:
+            oo.write(ii.read())
 
 @files(post_merge_check, os.path.join(tempdir, "check_all_is.weller"))
 def post_post_merge_check (input_filename, output_filename):
