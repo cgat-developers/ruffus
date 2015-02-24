@@ -3,6 +3,17 @@ Implementation Tips
 ##########################################
 
 ******************************************************************************
+Items remaining for current release
+******************************************************************************
+
+    * Unit tests for @split and @subdivide
+    * Unit tests for svg graph_printout under python3
+    * Unit tests for drmaa under python3
+    * Unit tests for new interface under python3
+    * New docs for new interface
+
+
+******************************************************************************
 Release
 ******************************************************************************
 
