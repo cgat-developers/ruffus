@@ -267,8 +267,9 @@ def post_post_merge_check (input_filename, output_filename):
     """
     check that @files forwards a single file on when given a single file
     """
-    with open(output_filename, "w") as oo, open(input_filename) as ii:
-        oo.write(ii.read())
+    with open(output_filename, "w") as oo:
+        with open(input_filename) as ii:
+            oo.write(ii.read())
 
 
 
