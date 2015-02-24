@@ -78,7 +78,7 @@ class error_drmaa_job(Exception):
 
 #_________________________________________________________________________________________
 def read_stdout_stderr_from_files( stdout_path, stderr_path, logger = None, cmd_str = "", tries=5):
-    '''
+    """
     Reads the contents of two specified paths and returns the strings
 
     Thanks to paranoia approach contributed by Andreas Heger:
@@ -91,7 +91,7 @@ def read_stdout_stderr_from_files( stdout_path, stderr_path, logger = None, cmd_
 
         Returns tuple of stdout and stderr.
 
-    '''
+    """
     #
     #   delay up to 10 seconds until files are ready
     #
@@ -298,14 +298,14 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
     #
     if job_info:
         job_info_str += "Resources used: %s " % (job_info.resourceUsage)
-        if job_info.hasExited:
+        if job_info.wasAborted:
+            raise error_drmaa_job( "The drmaa command was never ran but used %s:\n%s"
+                                   % (job_info.exitStatus, job_info_str + stderr_stdout_to_str (stderr, stdout)))
+        elif job_info.hasSignal:
+            raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n%s"
+                                   % (job_info.exitStatus, job_info_str + stderr_stdout_to_str (stderr, stdout)))
+        elif job_info.hasExited:
             if job_info.exitStatus:
-                raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n%s"
-                                         % (job_info.exitStatus, job_info_str + stderr_stdout_to_str (stderr, stdout)))
-            elif job_info.wasAborted:
-                raise error_drmaa_job( "The drmaa command was never ran but used %s:\n%s"
-                                         % (job_info.exitStatus, job_info_str + stderr_stdout_to_str (stderr, stdout)))
-            elif job_info.hasSignal:
                 raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n%s"
                                          % (job_info.exitStatus, job_info_str + stderr_stdout_to_str (stderr, stdout)))
             #
