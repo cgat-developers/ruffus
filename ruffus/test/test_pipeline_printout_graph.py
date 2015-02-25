@@ -35,7 +35,7 @@ try:
 except:
     import io as io
 import re
-from subprocess import CalledProcessError, check_output, STDOUT
+from subprocess import *
 
 # add self to search path for testing
 exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
@@ -149,7 +149,11 @@ class Test_ruffus(unittest.TestCase):
         #   check graphviz exists for turning dot files into jpg, svg etc
         #
         try:
-            check_output("echo what | dot", stderr=STDOUT, shell = True)
+            process = Popen("echo what | dot", stdout=PIPE, stderr=STDOUT, shell = True)
+            output, unused_err = process.communicate()
+            retcode = process.poll()
+            if retcode:
+                raise CalledProcessError(retcode, "echo what | dot", output=output)
         except CalledProcessError as err:
             output_str = str(err.output)
             if "No such file or directory" in output_str or "not found" in output_str or "Unable to access jarfile"  in output_str:
