@@ -131,32 +131,30 @@ class Test_ruffus(unittest.TestCase):
                             filter = suffix(".1"),
                             output = ".3",
                             extras = [executed_tasks_proxy, mutex_proxy])
+        self.cleanUp()
 
-        for f in ["a.1", "b.1", "a.linked.1", "b.linked.1", "a.3", "b.3", "a.linked.3", "b.linked.3"]:
-            try:
-                os.unlink(f)
-            except:
-                pass
-
-    def tearDown(self):
+    def cleanUp(self, check_expected = False):
         for f in ["a.1", "b.1", "a.linked.1", "b.linked.1", "a.3", "b.3", "a.linked.3", "b.linked.3"]:
             if os.path.lexists(f):
                 os.unlink(f)
-            else:
-                raise Exception("Expected %s missing" % f)
+            elif check_expected:
+                    raise Exception("Expected %s missing" % f)
+
+    def tearDown(self):
+        self.cleanUp(True)
 
     def test_ruffus (self):
         #
         #   Run task 1 only
         #
-        #print("  Run start_task only", file=sys.stderr)
+        print("    Run start_task only", file=sys.stderr)
         pipeline_run(log_exceptions = True, verbose = 0)
 
 
         #
         #   Run task 3 only
         #
-        #print("  Run final_task: linked_file_name_task should run as well", file=sys.stderr)
+        print("    Run final_task: linked_file_name_task should run as well", file=sys.stderr)
         pipeline_run(log_exceptions = True, verbose = 0)
 
 
@@ -165,7 +163,7 @@ class Test_ruffus(unittest.TestCase):
         #
         #       All jobs should be up to date
         #
-        #print("Run final_task again: All jobs should be up to date", file=sys.stderr)
+        print("    Run final_task again: All jobs should be up to date", file=sys.stderr)
         pipeline_run(log_exceptions = True, verbose = 0)
 
         #
