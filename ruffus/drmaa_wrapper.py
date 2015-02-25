@@ -215,7 +215,7 @@ def write_job_script_to_temp_file( cmd_str, job_script_directory, job_name, job_
 #   run_job_using_drmaa
 
 #_________________________________________________________________________________________
-def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_script_directory = None, job_environment = None, working_directory = None, retain_job_scripts = False, logger = None, drmaa_session = None, verbose = False):
+def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_script_directory = None, job_environment = None, working_directory = None, retain_job_scripts = False, logger = None, drmaa_session = None, verbose = 0):
 
     """
     Runs specified command remotely using drmaa,
@@ -453,7 +453,7 @@ def touch_output_files (cmd_str, output_files, logger = None):
 def run_job(cmd_str, job_name = None, job_other_options = None, job_script_directory = None,
             job_environment = None, working_directory = None, logger = None,
             drmaa_session = None, retain_job_scripts = False,
-            run_locally = False, output_files = None, touch_only = False, verbose = False):
+            run_locally = False, output_files = None, touch_only = False, verbose = 0):
     """
     Runs specified command either using drmaa, or locally or only in simulation (touch the output files only)
     """
@@ -464,6 +464,5 @@ def run_job(cmd_str, job_name = None, job_other_options = None, job_script_direc
 
     if run_locally:
         return run_job_locally (cmd_str, logger)
-
 
     return run_job_using_drmaa (cmd_str, job_name, job_other_options, job_script_directory, job_environment, working_directory, retain_job_scripts, logger, drmaa_session, verbose)
