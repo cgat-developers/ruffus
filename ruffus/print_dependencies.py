@@ -383,7 +383,7 @@ def write_flowchart_in_dot_format(  jobs_to_run,
                                     up_to_date_jobs,
                                     dag_violating_edges,
                                     dag_violating_nodes,
-                                    stream,
+                                    byte_stream,
                                     target_jobs,
                                     forced_to_run_jobs      = [],
                                     all_jobs                = None,
@@ -462,7 +462,7 @@ def write_flowchart_in_dot_format(  jobs_to_run,
     #
     dag_violating_dependencies = set(dag_violating_edges)
 
-
+    stream = StringIO()
 
     stream.write( 'digraph "%s"\n{\n' % pipeline_name)
     stream.write( 'size="8,11";\n')
@@ -626,4 +626,8 @@ def write_flowchart_in_dot_format(  jobs_to_run,
         write_legend_key (stream, used_task_types, minimal_key_legend, colour_scheme)
     stream.write("}\n")
 
+    ss = stream.getvalue().encode()
+    byte_stream.write(ss)
 
+    
+    stream.close()

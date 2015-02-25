@@ -165,6 +165,7 @@ class Test_ruffus(unittest.TestCase):
 
         print("     Run pipeline normally...")
         if self.graph_viz_present:
+            pipeline_printout_graph(tempdir + "flowchart.dot")
             pipeline_printout_graph(tempdir + "flowchart.jpg",
                                         target_tasks =[subdivide_start],
                                         forcedtorun_tasks = [split_start],
