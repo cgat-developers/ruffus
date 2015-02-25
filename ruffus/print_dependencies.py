@@ -38,6 +38,10 @@ CNT_COLOUR_SCHEMES = 8
 
 
 import types
+try:
+    from StringIO import StringIO
+except:
+    from io import StringIO
 from .adjacent_pairs_iterate import adjacent_pairs_iterate
 from collections import defaultdict
 def _get_name (node):
@@ -378,7 +382,7 @@ def write_flowchart_in_dot_format(  jobs_to_run,
                                     up_to_date_jobs,
                                     dag_violating_edges,
                                     dag_violating_nodes,
-                                    stream,
+                                    byte_stream,
                                     target_jobs,
                                     forced_to_run_jobs      = [],
                                     all_jobs                = None,
@@ -433,6 +437,8 @@ def write_flowchart_in_dot_format(  jobs_to_run,
                                        "fillcolor"
                                        Specifies legend colours
     """
+    stream = StringIO()
+
     if user_colour_scheme is None:
         colour_scheme = get_default_colour_scheme()
     else:
@@ -620,4 +626,7 @@ def write_flowchart_in_dot_format(  jobs_to_run,
         write_legend_key (stream, used_task_types, minimal_key_legend, colour_scheme)
     stream.write("}\n")
 
+    #byte_stream.write(bytes(stream.getvalue(), 'UTF-8'))
+    byte_stream.write(stream.getvalue())
+    stream.close()
 
