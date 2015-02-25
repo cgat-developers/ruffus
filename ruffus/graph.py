@@ -992,7 +992,11 @@ def graph_colour_demo_printout (stream,
     # print to dot file
     #temp_dot_file = tempfile.NamedTemporaryFile(suffix='.dot', delete=False)
     fh, temp_dot_file_name = tempfile.mkstemp(suffix='.dot')
-    temp_dot_file = os.fdopen(fh, "w")
+    if sys.hexversion >= 0x03000000:
+        # everything is unicode in python3
+        temp_dot_file = os.fdopen(fh, "wt")
+    else:
+        temp_dot_file = os.fdopen(fh, "w")
 
     write_colour_scheme_demo_in_dot_format(temp_dot_file)
     temp_dot_file.close()
@@ -1116,7 +1120,11 @@ def graph_printout (stream,
     # print to dot file
     #temp_dot_file = tempfile.NamedTemporaryFile(suffix='.dot', delete=False)
     fh, temp_dot_file_name = tempfile.mkstemp(suffix='.dot')
-    temp_dot_file = os.fdopen(fh, "w")
+    if sys.hexversion >= 0x03000000:
+        # everything is unicode in python3
+        temp_dot_file = os.fdopen(fh, "wt")
+    else:
+        temp_dot_file = os.fdopen(fh, "w")
 
     graph_printout_in_dot_format (  temp_dot_file,
                                     to_leaves,
