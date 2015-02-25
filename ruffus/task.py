@@ -4937,6 +4937,53 @@ def pipeline_get_task_names(pipeline=None):
     return [n._name for n in node._all_nodes]
 
 
+# _____________________________________________________________________________
+
+#   get_job_result_output_file_names
+
+# _____________________________________________________________________________
+def get_job_result_output_file_names(job_result):
+    """
+    Excludes input file names being passed through
+    """
+    if len(job_result.unglobbed_params) <= 1:  # some jobs have no outputs
+        return
+
+    unglobbed_input_params  = job_result.unglobbed_params[0]
+    unglobbed_output_params = job_result.unglobbed_params[1]
+
+    # some have multiple outputs from one job
+    if not isinstance(unglobbed_output_params, list):
+        unglobbed_output_params = [unglobbed_output_params]
+
+    # canonical path of input files, retaining any symbolic links:
+    #   symbolic links have their own checksumming
+    input_file_names = set()
+    for i_f_n in get_strings_in_flattened_sequence([unglobbed_input_params]):
+        input_file_names.add(os.path.abspath(i_f_n))
+
+    #
+    # N.B. output parameters are not necessary all strings
+    #   and not all files have been successfully created,
+    #   even though the task apparently completed properly!
+    # Remember to re-expand globs (from unglobbed paramters)
+    #   after the job has run successfully
+    #
+    for possible_glob_str in get_strings_in_flattened_sequence(unglobbed_output_params):
+        for o_f_n in glob.glob(possible_glob_str):
+            #
+            # Exclude output files if they are input files "passed through"
+            #
+            if os.path.abspath(o_f_n) in input_file_names:
+                continue
+
+            #
+            # use paths relative to working directory
+            #
+            yield os.path.relpath(o_f_n)
+
+    return
+
 #
 #   How the job queue works:
 #
@@ -5385,21 +5432,9 @@ def pipeline_run(target_tasks=[],
             # remove failed jobs from history-- their output is bogus now!
             if job_result.state in (JOB_ERROR, JOB_SIGNALLED_BREAK):
                 log_at_level(logger, 10, verbose, "   JOB ERROR / JOB_SIGNALLED_BREAK: " + job_result.job_name)
-                if len(job_result.unglobbed_params) > 1:  # some jobs have no outputs
-                    output_file_name = job_result.unglobbed_params[1]
-                    # some have multiple outputs from one job
-                    if not isinstance(output_file_name, list):
-                        output_file_name = [output_file_name]
-                    #
-                    # N.B. output parameters are not necessary all strings
-                    #
-                    for o_f_n in get_strings_in_flattened_sequence(output_file_name):
-                        #
-                        # use paths relative to working directory
-                        #
-                        o_f_n = os.path.relpath(o_f_n)
-                        # remove outfile from history if it exists
-                        job_history.pop(o_f_n, None)
+                # remove outfile from history if it exists
+                for o_f_n in get_job_result_output_file_names(job_result):
+                    job_history.pop(o_f_n, None)
 
             # only save poolsize number of errors
             if job_result.state == JOB_ERROR:
@@ -5453,59 +5488,32 @@ def pipeline_run(target_tasks=[],
                     # chksum2 = md5.md5(marshal.dumps(t.user_defined_work_func.func_defaults) +
                     #                   marshal.dumps(t.args))
 
-                    if len(job_result.unglobbed_params) > 1:  # some jobs have no outputs
-                        output_file_name = job_result.unglobbed_params[1]
-                        # some have multiple outputs from one job
-                        if not isinstance(output_file_name, list):
-                            output_file_name = [output_file_name]
-                        #
-                        # N.B. output parameters are not necessary all strings
-                        #   and not all files have been successfully created,
-                        #   even though the task apparently completed properly!
-                        # Remember to re-expand globs (from unglobbed paramters)
-                        #   after the job has run successfully
-                        #
-                        for possible_glob_str in get_strings_in_flattened_sequence(output_file_name):
-                            for o_f_n in glob.glob(possible_glob_str):
-                                #
-                                # use paths relative to working directory
-                                #
-                                o_f_n = os.path.relpath(o_f_n)
-                                try:
-                                    log_at_level(logger, 10, verbose, "   Job History : " + o_f_n)
-                                    mtime = os.path.getmtime(o_f_n)
-                                    #
-                                    #   use probably higher resolution
-                                    #       time.time() over mtime which might have 1 or 2s
-                                    #       resolutions, unless there is clock skew and the
-                                    #       filesystem time > system time (e.g. for networks)
-                                    #
-                                    epoch_seconds = time.time()
-                                    # Aargh. go back to insert one second between jobs
-                                    if epoch_seconds < mtime:
-                                        if one_second_per_job is None and \
-                                                not runtime_data["ONE_SECOND_PER_JOB"]:
-                                            log_at_level(logger, 10, verbose,
-                                                         "   Switch to 1s per job")
-                                            runtime_data["ONE_SECOND_PER_JOB"] = True
-                                    elif epoch_seconds - mtime < 1.1:
-                                        mtime = epoch_seconds
-                                    chksum = JobHistoryChecksum(o_f_n, mtime,
-                                                                job_result.unglobbed_params[2:], t)
-                                    job_history[o_f_n] = chksum
-                                    log_at_level(logger, 10, verbose, "   Job History Saved: " + o_f_n)
-                                except:
-                                    pass
-
-                    # for output_file_name in t.output_filenames:
-                    # could use current time instead...
-                    # # if not isinstance(output_file_name, list):
-                    # #        output_file_name = [output_file_name]
-                    # # for o_f_n in output_file_name:
-                    # #        mtime = os.path.getmtime(o_f_n)
-                    # #        chksum = JobHistoryChecksum(o_f_n, mtime,
-                    #               job_result.params[2:], t)
-                    # #        job_history[o_f_n] = chksum
+                    for o_f_n in get_job_result_output_file_names(job_result):
+                        try:
+                            log_at_level(logger, 10, verbose, "   Job History : " + o_f_n)
+                            mtime = os.path.getmtime(o_f_n)
+                            #
+                            #   use probably higher resolution
+                            #       time.time() over mtime which might have 1 or 2s
+                            #       resolutions, unless there is clock skew and the
+                            #       filesystem time > system time (e.g. for networks)
+                            #
+                            epoch_seconds = time.time()
+                            # Aargh. go back to insert one second between jobs
+                            if epoch_seconds < mtime:
+                                if one_second_per_job is None and \
+                                        not runtime_data["ONE_SECOND_PER_JOB"]:
+                                    log_at_level(logger, 10, verbose,
+                                                 "   Switch to 1s per job")
+                                    runtime_data["ONE_SECOND_PER_JOB"] = True
+                            elif epoch_seconds - mtime < 1.1:
+                                mtime = epoch_seconds
+                            chksum = JobHistoryChecksum(o_f_n, mtime,
+                                                        job_result.unglobbed_params[2:], t)
+                            job_history[o_f_n] = chksum
+                            log_at_level(logger, 10, verbose, "   Job History Saved: " + o_f_n)
+                        except:
+                            pass
 
             log_at_level(logger, 10, verbose, "   _is_up_to_date completed task & checksum...")
             #
@@ -5536,9 +5544,8 @@ def pipeline_run(target_tasks=[],
         exception_stack = traceback.format_exc()
         # save exception to rethrow later
         job_errors.append((None, None, exception_name, exception_value, exception_stack))
-        log_at_level(logger, 10, verbose, "       Exception caught %s" % (exception_value))
-        log_at_level(logger, 10, verbose, "       Exception caught %s" % (exception_name))
-        log_at_level(logger, 10, verbose, "       Exception caught %s" % (exception_stack))
+        for ee in exception_value, exception_name, exception_stack:
+            log_at_level(logger, 10, verbose, "       Exception caught %s" % (ee,))
         log_at_level(logger, 10, verbose, "   Get next parameter size = %d" % parameter_q.qsize())
         log_at_level(logger, 10, verbose, "   Task with completed "
                      "jobs size = %d" % task_with_completed_job_q.qsize())
