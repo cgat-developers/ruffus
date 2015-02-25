@@ -175,7 +175,7 @@ def Downstream_task2_ignored(infile, outfile):
 try:
     from StringIO import StringIO
 except:
-    from io import StringIO
+    from io import StringIO, BytesIO
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -204,14 +204,20 @@ class Test_graphviz(unittest.TestCase):
         """Make sure annotations from graphviz appear in dot
         """
 
-        s = StringIO()
+        if sys.hexversion >= 0x03000000:
+            # everything is unicode in python3
+            s = BytesIO()
+        else:
+            s = StringIO()
+
+        
         pipeline_printout_graph (
                                         s,
                                         # use flowchart file name extension to decide flowchart format
                                         #   e.g. svg, jpg etc.
                                         "dot",
                                         [Final_target, Up_to_date_final_target])
-        self.assertTrue('[URL="http://cnn.com", color="#FF0000", fillcolor="#FFCCCC", fontcolor="#4B6000", height=1.5, label=<What is this?<BR/> What <FONT COLOR="red">is</FONT>this???>, pencolor="#FF0000", peripheries=5, shape=component, style=dashed]' in s.getvalue())
+        self.assertTrue('[URL="http://cnn.com", color="#FF0000", fillcolor="#FFCCCC", fontcolor="#4B6000", height=1.5, label=<What is this?<BR/> What <FONT COLOR="red">is</FONT>this???>, pencolor="#FF0000", peripheries=5, shape=component, style=dashed]' in s.getvalue().decode())
 
 
 
