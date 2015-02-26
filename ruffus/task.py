@@ -902,15 +902,15 @@ class Pipeline(dict):
     #   _complete_task_setup
 
     # _________________________________________________________________________
-    def _complete_task_setup(self):
+    def _complete_task_setup(self, processed_tasks):
         """
         Finishes initialising all tasks
         Make sure all tasks in dependency list are linked to real functions
         """
 
+
         processed_pipelines = set([self.name])
         unprocessed_tasks = deque(self.tasks)
-        processed_tasks = set()
         while len(unprocessed_tasks):
             task = unprocessed_tasks.popleft()
             for ancestral_task in task.setup_task_func():
@@ -926,6 +926,11 @@ class Pipeline(dict):
             if isinstance(task._is_single_job_single_output, Task):
                 task._is_single_job_single_output = \
                     task._is_single_job_single_output._is_single_job_single_output
+
+
+        for pipeline_name in list(processed_pipelines):
+            if pipeline_name != self.name:
+                processed_pipelines |= self.pipelines[pipeline_name]._complete_task_setup(processed_tasks)
 
         return processed_pipelines
 
@@ -1814,6 +1819,7 @@ class Task (node):
             for inputN in range(cnt_expected_input):
                 input_name = "input%d" % (inputN + 1)
                 if input_name in args:
+                    print (input_name, file = sys.stderr)
                     self.parsed_args["input"][inputN] = args[input_name]
                     del args[input_name]
 
@@ -4097,7 +4103,8 @@ def pipeline_printout_graph(stream,
     #
     #   Make sure all tasks in dependency list are linked to real functions
     #
-    completed_pipeline_names = pipeline._complete_task_setup()
+    processed_tasks = set()
+    completed_pipeline_names = pipeline._complete_task_setup(processed_tasks)
 
     update_checksum_level_on_tasks(checksum_level)
 
@@ -4158,7 +4165,7 @@ def pipeline_printout_graph(stream,
         if pipeline_name in completed_pipeline_names:
             continue
         completed_pipeline_names = completed_pipeline_names.union(
-            pipeline.pipelines[pipeline_name]._complete_task_setup())
+            pipeline.pipelines[pipeline_name]._complete_task_setup(processed_tasks))
 
     (topological_sorted, ignore_param1, ignore_param2, ignore_param3) = \
         topologically_sorted_nodes(target_tasks, forcedtorun_tasks,
@@ -4370,7 +4377,8 @@ def pipeline_printout(output_stream=None,
     #
     #   Make sure all tasks in dependency list are linked to real functions
     #
-    completed_pipeline_names = pipeline._complete_task_setup()
+    processed_tasks = set()
+    completed_pipeline_names = pipeline._complete_task_setup(processed_tasks)
 
     update_checksum_level_on_tasks(checksum_level)
 
@@ -4402,7 +4410,7 @@ def pipeline_printout(output_stream=None,
         if pipeline_name in completed_pipeline_names:
             continue
         completed_pipeline_names = completed_pipeline_names.union(
-            pipeline.pipelines[pipeline_name]._complete_task_setup())
+            pipeline.pipelines[pipeline_name]._complete_task_setup(processed_tasks))
 
     logging_strm = t_verbose_logger(verbose, verbose_abbreviated_path,
                                     t_stream_logger(output_stream), runtime_data)
@@ -4929,7 +4937,8 @@ def pipeline_get_task_names(pipeline=None):
     #
     #   Make sure all tasks in dependency list are linked to real functions
     #
-    completed_pipeline_names = pipeline._complete_task_setup()
+    processed_tasks = set()
+    completed_pipeline_names = pipeline._complete_task_setup(processed_tasks)
 
     #
     #   Return task names for all nodes willy nilly
@@ -5194,7 +5203,8 @@ def pipeline_run(target_tasks=[],
     #
     #   Make sure all tasks in dependency list are linked to real functions
     #
-    completed_pipeline_names = pipeline._complete_task_setup()
+    processed_tasks = set()
+    completed_pipeline_names = pipeline._complete_task_setup(processed_tasks)
 
     # link_task_names_to_functions ()
     update_checksum_level_on_tasks(checksum_level)
@@ -5239,7 +5249,7 @@ def pipeline_run(target_tasks=[],
         if pipeline_name in completed_pipeline_names:
             continue
         completed_pipeline_names = completed_pipeline_names.union(
-            pipeline.pipelines[pipeline_name]._complete_task_setup())
+            pipeline.pipelines[pipeline_name]._complete_task_setup(processed_tasks))
 
     #
     #   To update the checksum file, we force all tasks to rerun
