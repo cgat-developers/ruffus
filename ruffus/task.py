@@ -957,7 +957,7 @@ class Pipeline(dict):
     # _________________________________________________________________________
     def set_head_tasks(self, head_tasks):
         """
-        Return tasks at the head of the pipeline,
+        Specifies tasks at the head of the pipeline,
             i.e. with only descendants/dependants
         """
         self.head_tasks = head_tasks
@@ -986,7 +986,7 @@ class Pipeline(dict):
     # _________________________________________________________________________
     def set_tail_tasks(self, tail_tasks):
         """
-        Return tasks at the tail of the pipeline,
+        Specifies tasks at the tail of the pipeline,
             i.e. with only descendants/dependants
         """
         self.tail_tasks = tail_tasks
@@ -999,6 +999,9 @@ class Pipeline(dict):
 
     # _________________________________________________________________________
     def set_input(self, **args):
+        """
+        Change the input parameter(s) of the designated "head" tasks of the pipeline
+        """
         if not len(self.get_head_tasks()):
             raise error_no_head_tasks("pipeline %s has no head tasks defined." % self.name)
         for tt in self.get_head_tasks():
@@ -1010,6 +1013,9 @@ class Pipeline(dict):
 
     # _________________________________________________________________________
     def clone(self, name, *arg, **kw):
+        """
+        Make a deep copy of the pipeline
+        """
 
         # setup new pipeline
         new_pipeline = Pipeline(name, *arg, **kw)
@@ -1126,6 +1132,51 @@ class Pipeline(dict):
         raise error_ambiguous_task("%s is ambiguous. Which do you mean? (%s)."
                                    % (task_name, task_names))
 
+    # _________________________________________________________________________
+
+    #   follows
+
+    # _________________________________________________________________________
+    def follows(self, task_func, *unnamed_args, **named_args):
+        """
+        Transforms each incoming input to a corresponding output
+        This is a One to One operation
+        """
+        task = self._do_create_task_by_OOP(task_func, named_args, "pipeline.follows")
+        task._do_follows(task.description_with_args_placeholder, False,
+                         *unnamed_args, **named_args)
+        return task
+    # _________________________________________________________________________
+
+    #   check_if_uptodate
+
+    # _________________________________________________________________________
+    def check_if_uptodate(self, task_func, func, **named_args):
+        """
+        Specifies how a task is to be checked if it needs to be rerun (i.e. is
+        up-to-date).
+        func returns true if input / output files are up to date
+        func takes as many arguments as the task function
+        """
+        task = self._do_create_task_by_OOP(task_func, named_args, "check_if_uptodate")
+        return task.check_if_uptodate(func)
+
+    # _________________________________________________________________________
+
+    #   graphviz
+
+    # _________________________________________________________________________
+    def graphviz(self, task_func, *unnamed_args, **named_args):
+        """
+        Transforms each incoming input to a corresponding output
+        This is a One to One operation
+        """
+        task = self._do_create_task_by_OOP(task_func, named_args, "pipeline.graphviz")
+        task.graphviz_attributes = named_args
+        if len(unnamed_args):
+            raise TypeError("Only named arguments expected in :" +
+                            task.description_with_args_placeholder % unnamed_args)
+        return task
     # _________________________________________________________________________
 
     #   transform
@@ -1799,6 +1850,9 @@ class Task (node):
 
     # _________________________________________________________________________
     def set_input(self, **args):
+        """
+        Changes the input parameter(s) of the task
+        """
         #
         #   For product: filter parameter is a list of formatter()
         #
@@ -3020,13 +3074,13 @@ class Task (node):
     # _________________________________________________________________________
     def mkdir(self, *unnamed_args, **named_args):
         """
-        Make missing directories including any intermediate directories before
-            this task
+        Make missing directories, including intermediates, before this task
         """
         syntax = "Task(name = %s).mkdir" % self._name
         description_with_args_placeholder = "%s(%%s)" % (self.syntax)
         self._prepare_preceding_mkdir(unnamed_args, named_args, syntax,
                                       description_with_args_placeholder)
+        return self
 
     # _________________________________________________________________________
 
@@ -3568,8 +3622,13 @@ class Task (node):
     # ========================================================================
     def follows(self, *unnamed_args, **named_args):
         """
-        unnamed_args can be string or function or Task
-        For strings, if lookup fails, will defer.
+        Specifies a preceding task / action which this task will follow.
+        The preceding task can be specified as a string or function or Task
+        object.
+        A task can also follow the making of one or more directories:
+
+        task.follows(mkdir("my_dir"))
+
         """
         description_with_args_placeholder = (
             self.description_with_args_placeholder % "...") + ".follows(%r)"
@@ -3728,6 +3787,8 @@ class Task (node):
     # ========================================================================
     def check_if_uptodate(self, func):
         """
+        Specifies how a task is to be checked if it needs to be rerun (i.e. is
+        up-to-date).
         func returns true if input / output files are up to date
         func takes as many arguments as the task function
         """
@@ -3901,6 +3962,9 @@ class Task (node):
 
     # ========================================================================
     def graphviz(self, *unnamed_args, **named_args):
+        """
+        Sets graphviz (e.g. `dot`) attributes used to draw this Task
+        """
         self.graphviz_attributes = named_args
         if len(unnamed_args):
             raise TypeError("Only named arguments expected in :" +
