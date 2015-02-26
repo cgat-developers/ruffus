@@ -3012,7 +3012,7 @@ class Task (node):
     #   mkdir
 
     # _________________________________________________________________________
-    def mkdir(self, unnamed_args, **named_args):
+    def mkdir(self, *unnamed_args, **named_args):
         """
         Make missing directories including any intermediate directories before
             this task
