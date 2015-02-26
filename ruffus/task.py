@@ -3189,7 +3189,7 @@ class Task (node):
             #    where unnamed_args = (a,b,c)
             # i.e. one job whose solitory argument is a tuple/list of directory
             # names
-            self.param_generator_func = args_param_factory([[sorted(self.parsed_args["output"])]])
+            self.param_generator_func = args_param_factory([[sorted(self.parsed_args["output"], key = lambda x: str(x))]])
 
             # print ("mkdir %s" % (self.func_description), file = sys.stderr)
 
