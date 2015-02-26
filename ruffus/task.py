@@ -1527,7 +1527,7 @@ def lookup_tasks_from_user_specified_names(task_description, task_names,
 
         if isinstance(task_name, collections.Callable):
             # blows up if ambiguous
-            task = lookup_unique_task_from_func(task_name)
+            task = lookup_unique_task_from_func(task_name, default_pipeline_name)
             # blow up for unwrapped function
             if not task:
                 raise error_function_is_not_a_task(
@@ -1639,7 +1639,7 @@ class Task (node):
             decorators do not have to be specified in order, and we don't
             know ahead of time.
         """
-        if not pipeline:
+        if pipeline is None:
             pipeline = main_pipeline
         self.pipeline = pipeline
         self.func_module_name = str(func.__module__)
@@ -1649,6 +1649,7 @@ class Task (node):
 
         if not task_name:
             task_name = self.func_module_name + "." + self.func_name
+
 
         node.__init__(self, task_name)
         self._action_type = Task._action_task
