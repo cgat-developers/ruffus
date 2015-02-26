@@ -251,14 +251,14 @@ def cleanup_tmpdir():
 
 test_pipeline1 = Pipeline("test1")
 test_pipeline2 = Pipeline("test2")
-gen_task1 = test_pipeline1.originate(task_func  = generate_initial_files1, 
-                                     name       = "WOWWWEEE", 
+gen_task1 = test_pipeline1.originate(task_func  = generate_initial_files1,
+                                     name       = "WOWWWEEE",
                                      output     = [workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"])
-test_pipeline1.originate(            task_func  = generate_initial_files2, 
+test_pipeline1.originate(            task_func  = generate_initial_files2,
                                      output     = [workdir +  "/e_name.tmp1", workdir +  "/f_name.tmp1"])
-test_pipeline1.originate(            task_func  = generate_initial_files3, 
+test_pipeline1.originate(            task_func  = generate_initial_files3,
                                      output     = [workdir +  "/g_name.tmp1", workdir +  "/h_name.tmp1"])
-test_pipeline1.product(              task_func  = test_product_task, 
+test_pipeline1.product(              task_func  = test_product_task,
                                      input      = [workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"],
                                      filter     = formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
                                      input2     = generate_initial_files2,
@@ -269,15 +269,15 @@ test_pipeline1.product(              task_func  = test_product_task,
                                      extras     = [ "{basename[0][0][0]}{basename[1][0][0]}{basename[2][0][0]}",       # extra: prefices only (abcd etc)
                                                     "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
                                                     "{subdir[0][0][0]}"]).follows("WOWWWEEE").follows(gen_task1).follows(generate_initial_files1).follows("generate_initial_files1")
-test_pipeline1.merge(               task_func   = test_product_merged_task, 
-                                    input       = test_product_task, 
+test_pipeline1.merge(               task_func   = test_product_merged_task,
+                                    input       = test_product_task,
                                     output      = workdir +  "/merged.results")
 test_pipeline1.product(             task_func   = test_product_misspelt_capture_error_task,
                                     input       = gen_task1,
                                     filter      = formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
                                     output      = "{path[0][0]}/{FILEPART[0][0]}.tmp2")
 test_pipeline1.product(             task_func   = test_product_out_of_range_formatter_ref_error_task,
-                                    input       = generate_initial_files1,  # 
+                                    input       = generate_initial_files1,  #
                                     filter      = formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
                                     output      = "{path[2][0]}/{basename[0][0]}.tmp2",
                                     extras      = ["{FILE_PART[0][0]}"])
@@ -287,15 +287,15 @@ test_pipeline1.product(             task_func   = test_product_formatter_ref_ind
                                     output      = "{path[0][0][1000]}/{basename[0][0]}.tmp2",
                                     extras      = ["{FILE_PART[0][0]}"])
 test_pipeline1.combinations(task_func   = test_combinations2_task,
-                            input       = generate_initial_files1,      # gen_task1 
+                            input       = generate_initial_files1,      # gen_task1
                             filter      = formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
                             tuple_size  = 2,
                             output      = "{path[0][0]}/{FILE_PART[0][0]}.{basename[1][0]}.tmp2",
                             extras      = ["{basename[0][0][0]}{basename[1][0][0]}",       # extra: prefices
                                            "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
                                            "{subdir[0][0][0]}"])
-test_pipeline1.merge(task_func  = test_combinations2_merged_task, 
-                     input      = test_combinations2_task, 
+test_pipeline1.merge(task_func  = test_combinations2_merged_task,
+                     input      = test_combinations2_task,
                      output     = workdir +  "/merged.results")
 test_pipeline1.combinations(    task_func   = test_combinations3_task,
                                 input       = output_from("WOWWWEEE"),
@@ -575,8 +575,7 @@ class TestCombinatorics(unittest.TestCase):
     #   cleanup
     #___________________________________________________________________________
     def tearDown(self):
-        pass
-        #shutil.rmtree(workdir)
+        shutil.rmtree(workdir)
 
 
 

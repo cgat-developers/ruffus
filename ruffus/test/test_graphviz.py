@@ -210,7 +210,7 @@ class Test_graphviz(unittest.TestCase):
         else:
             s = StringIO()
 
-        
+
         pipeline_printout_graph (
                                         s,
                                         # use flowchart file name extension to decide flowchart format
@@ -220,16 +220,52 @@ class Test_graphviz(unittest.TestCase):
         self.assertTrue('[URL="http://cnn.com", color="#FF0000", fillcolor="#FFCCCC", fontcolor="#4B6000", height=1.5, label=<What is this?<BR/> What <FONT COLOR="red">is</FONT>this???>, pencolor="#FF0000", peripheries=5, shape=component, style=dashed]' in s.getvalue().decode())
 
 
+    def test_newstyle_graphviz_dot(self):
+        test_pipeline = Pipeline("test")
+        test_pipeline.check_if_uptodate (Up_to_date_task1, lambda : (False, ""))
+        test_pipeline.follows(Up_to_date_task2, Up_to_date_task1)\
+            .check_if_uptodate (lambda : (False, ""))\
+            .graphviz(URL='"http://cnn.com"', fillcolor = '"#FFCCCC"',
+                            color = '"#FF0000"', pencolor='"#FF0000"', fontcolor='"#4B6000"',
+                            label_suffix = "???", label_prefix = "What is this?<BR/> ",
+                            label = "<What <FONT COLOR=\"red\">is</FONT>this>",
+                            shape= "component", height = 1.5, peripheries = 5,
+                            style="dashed")
+        test_pipeline.follows(Up_to_date_task3, Up_to_date_task2)\
+            .check_if_uptodate (lambda : (False, ""))
+        test_pipeline.follows(Up_to_date_final_target, Up_to_date_task3)\
+            .check_if_uptodate (lambda : (False, ""))
+        test_pipeline.follows(Explicitly_specified_task, Up_to_date_task1)\
+            .check_if_uptodate (lambda : (False, ""))
+        test_pipeline.follows(Task_to_run1, Explicitly_specified_task)
+        test_pipeline.follows(Task_to_run2, Task_to_run1)
+        test_pipeline.follows(Task_to_run3, Task_to_run2)
+        test_pipeline.follows(Up_to_date_task_forced_to_rerun, Task_to_run2)\
+            .check_if_uptodate (lambda : (False, ""))
+        test_pipeline.follows(Final_target, Up_to_date_task_forced_to_rerun, Task_to_run3)
+        test_pipeline.follows(Downstream_task1_ignored, Final_target)
+        test_pipeline.follows(Downstream_task2_ignored, Final_target)
 
+        if sys.hexversion >= 0x03000000:
+            # everything is unicode in python3
+            s = BytesIO()
+        else:
+            s = StringIO()
+
+
+        test_pipeline.printout_graph (
+                                        s,
+                                        # use flowchart file name extension to decide flowchart format
+                                        #   e.g. svg, jpg etc.
+                                        "dot",
+                                        [Final_target, Up_to_date_final_target])
+        self.assertTrue('[URL="http://cnn.com", color="#FF0000", fillcolor="#FFCCCC", fontcolor="#4B6000", height=1.5, label=<What is this?<BR/> What <FONT COLOR="red">is</FONT>this???>, pencolor="#FF0000", peripheries=5, shape=component, style=dashed]' in s.getvalue().decode())
 
 #
 #   Necessary to protect the "entry point" of the program under windows.
 #       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 #
 if __name__ == '__main__':
-    #pipeline_printout(sys.stdout, [test_product_task], verbose = 5)
-    #pipeline_printout_graph( "test.png", "png", [Final_target, Up_to_date_final_target])
-    #pipeline_printout_graph( "test.dot", "dot", [Final_target, Up_to_date_final_target])
     unittest.main()
 
 

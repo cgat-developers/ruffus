@@ -137,14 +137,18 @@ class Test_task_mkdir(unittest.TestCase):
 
 
     def test_newstyle_mkdir (self):
-        pipeline = Pipeline.pipelines["main"]
+        test_pipeline = Pipeline("test")
 
-        pipeline.follows(task_which_makes_directories,
-                         mkdir(directories), mkdir(unicode("c")), mkdir(unicode("d"), unicode("e")), mkdir(unicode("e")))\
+        test_pipeline.follows(task_which_makes_directories,
+                         mkdir(directories),
+                         mkdir(unicode("c")),
+                         mkdir(unicode("d"),
+                               unicode("e")),
+                         mkdir(unicode("e")))\
             .posttask(touch_file(unicode("f")))
 
-        pipeline.files(task_which_makes_files, None, ["g", "h"])
-        pipeline.run(multiprocess = 10, verbose = 0)
+        test_pipeline.files(task_which_makes_files, None, ["g", "h"])
+        test_pipeline.run(multiprocess = 10, verbose = 0)
 
         for d in 'abcdefgh':
             fullpath = os.path.join(exe_path, d)

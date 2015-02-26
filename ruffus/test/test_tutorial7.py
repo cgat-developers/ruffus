@@ -145,7 +145,7 @@ class Test_ruffus(unittest.TestCase):
         except:
             pass
 
-    def test_ruffus (self):
+    def atest_ruffus (self):
         pipeline_run(multiprocess = 50, verbose = 0)
         output_file = os.path.join(working_dir, "variance.result")
         if not os.path.exists (output_file):
@@ -153,27 +153,27 @@ class Test_ruffus(unittest.TestCase):
 
 
     def test_newstyle_ruffus (self):
-        pipeline = Pipeline.pipelines["main"]
+        test_pipeline = Pipeline("test")
 
-        pipeline.files(create_random_numbers, None, working_dir + "random_numbers.list")\
+        test_pipeline.files(create_random_numbers, None, working_dir + "random_numbers.list")\
             .follows(mkdir(working_dir))
 
 
-        pipeline.split(task_func = step_4_split_numbers_into_chunks,
+        test_pipeline.split(task_func = step_4_split_numbers_into_chunks,
                        input = working_dir + "random_numbers.list",
                        output = working_dir + "*.chunks")\
             .follows(create_random_numbers)
 
-        pipeline.transform(task_func = step_5_calculate_sum_of_squares,
+        test_pipeline.transform(task_func = step_5_calculate_sum_of_squares,
                            input = step_4_split_numbers_into_chunks,
                            filter = suffix(".chunks"),
                            output = ".sums")
 
-        pipeline.merge(task_func = step_6_calculate_variance, input = step_5_calculate_sum_of_squares, output = os.path.join(working_dir, "variance.result"))\
+        test_pipeline.merge(task_func = step_6_calculate_variance, input = step_5_calculate_sum_of_squares, output = os.path.join(working_dir, "variance.result"))\
             .posttask(lambda: sys.stdout.write("     hooray\n"))\
             .posttask(print_hooray_again, print_whoppee_again, touch_file(os.path.join(working_dir, "done")))
 
-        pipeline.run(multiprocess = 50, verbose = 0)
+        test_pipeline.run(multiprocess = 50, verbose = 0)
         output_file = os.path.join(working_dir, "variance.result")
         if not os.path.exists (output_file):
             raise Exception("Missing %s" % output_file)

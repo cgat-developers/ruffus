@@ -102,23 +102,23 @@ class TestJobCompletion(unittest.TestCase):
         test_pipeline = Pipeline("test %d" % count_pipelines)
 
         test_pipeline.transform(task_func   = transform1,
-                                input       = input_file, 
-                                filter      = suffix('.txt'), 
-                                output      = '.output', 
+                                input       = input_file,
+                                filter      = suffix('.txt'),
+                                output      = '.output',
                                 extras      = [runtime_data])
 
         test_pipeline.transform(task_func   = transform_raise_error,
-                                input       = input_file, 
-                                filter      = suffix('.txt'), 
-                                output      = '.output', 
+                                input       = input_file,
+                                filter      = suffix('.txt'),
+                                output      = '.output',
                                 extras      = [runtime_data])
 
-        test_pipeline.split(    task_func   = split1, 
-                                input       = input_file, 
+        test_pipeline.split(    task_func   = split1,
+                                input       = input_file,
                                 output      = split1_outputs)
 
         test_pipeline.merge(    task_func   = merge2,
-                                input       = split1, 
+                                input       = split1,
                                 output      = merge2_output)
         return test_pipeline
 
@@ -638,10 +638,12 @@ class TestJobCompletion(unittest.TestCase):
             self.assertNotIn('left over from a failed run?', s.getvalue())
 
     def tearDown(self):
-        #shutil.rmtree(workdir)
+        shutil.rmtree(workdir)
         pass
 
-#if __name__ == '__main__':
+if __name__ == '__main__':
+    unittest.main()
+
 #        try:
 #            os.mkdir(workdir)
 #        except OSError:

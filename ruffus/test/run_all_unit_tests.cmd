@@ -6,8 +6,6 @@ echo Running test_task_file_dependencies.py                                     
 python  -m unittest test_task_file_dependencies                                     && \
 echo Running test_task_misc.py                                                      && \
 python  -m unittest test_task_misc                                                  && \
-echo Running test_follows_mkdir.py                                                  && \
-python  -m unittest test_follows_mkdir                                              && \
 echo Running test_inputs_with_multiple_args_raising_exception.py                    && \
 python  -m unittest test_inputs_with_multiple_args_raising_exception                && \
 echo Running test_collate.py                                                        && \
@@ -36,22 +34,18 @@ echo Running test_filesre_split_and_combine.py                                  
 python  -m unittest test_filesre_split_and_combine                                  && \
 echo Running test_branching_dependencies.py                                         && \
 python  -m unittest test_branching_dependencies                                     && \
-echo Running test_N_x_M_and_collate.py                                              && \
-python  -m unittest test_N_x_M_and_collate                                          && \
 echo Running test_split_and_combine.py                                              && \
 python  -m unittest test_split_and_combine                                          && \
 echo Running test_runtime_data.py                                                   && \
 python  -m unittest test_runtime_data                                               && \
-echo Running test_unicode_filenames.py                                              && \
-python  -m unittest test_unicode_filenames                                          && \
 echo Running test_pausing.py                                                        && \
 python  -m unittest test_pausing                                                    && \
 echo Running test_active_if.py                                                      && \
-python  -m test_active_if                                                           && \
+python  -m unittest test_active_if                                                  && \
 echo Running test_softlink_uptodate.py                                              && \
 python  -m unittest test_softlink_uptodate                                          && \
-echo Running test_proxy.py                                                          && \
-python  -m unittest test_proxy                                                      && \
+echo Running test_newstyle_proxy.py                                                 && \
+python  -m unittest test_newstyle_proxy                                             && \
 echo Running test_job_completion_checksums.py                                       && \
 python  -m unittest test_job_completion_checksums                                   && \
 echo Running test_combinatorics.py                                                  && \
@@ -72,9 +66,17 @@ echo Running test_ruffus_utility_parse_task_arguments.py                        
 python  -m unittest test_ruffus_utility_parse_task_arguments                        && \
 echo Running test_split_subdivide_checkpointing.py                                  && \
 python  -m unittest test_split_subdivide_checkpointing                              && \
-echo Running test_newstyle_combinatorics.py                                         && \
-python  -m unittest test_newstyle_combinatorics                                     && \
 echo Running test_pipeline_printout_graph.py                                        && \
 python  -m unittest test_pipeline_printout_graph                                    && \
+echo Running test_newstyle_regex_error_messages.py                                  && \
+python  -m unittest test_newstyle_regex_error_messages                              && \
+echo Running test_newstyle_combinatorics.py                                         && \
+python  -m unittest test_newstyle_combinatorics                                     && \
+echo Running test_follows_mkdir.py                                                  && \
+python  -m unittest test_follows_mkdir                                              && \
+echo Running test_N_x_M_and_collate.py                                              && \
+python  -m unittest test_N_x_M_and_collate                                          && \
+echo Running test_unicode_filenames.py                                              && \
+python  -m unittest test_unicode_filenames                                          && \
 echo DONE!!!                                                                        
 

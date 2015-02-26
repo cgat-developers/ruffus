@@ -134,8 +134,7 @@ class Test_ruffus(unittest.TestCase):
     def tearDown(self):
         # only tear down if not throw exception so we can debug?
         try:
-            #shutil.rmtree(tempdir)
-            pass
+            shutil.rmtree(tempdir)
         except:
             pass
 

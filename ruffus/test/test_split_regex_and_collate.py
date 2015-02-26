@@ -173,7 +173,7 @@ def combine_results (input_files, output_files):
 
 
 
-class Test_split_regex_and_collate(unittest.TestCase):
+class Test_ruffus(unittest.TestCase):
     def setUp(self):
         import os
         try:
@@ -214,7 +214,7 @@ class Test_split_regex_and_collate(unittest.TestCase):
 
         test_pipeline.originate(task_func   = generate_initial_files,
                                 output      = original_files)\
-            .mkdir(tempdir)
+            .mkdir(tempdir, tempdir+"/test")
 
 
         test_pipeline.subdivide(    task_func   = split_fasta_file,
@@ -227,8 +227,8 @@ class Test_split_regex_and_collate(unittest.TestCase):
 
 
         test_pipeline.transform(task_func   = align_sequences,
-                                input       = split_fasta_file, 
-                                filter      = suffix(".fa"), 
+                                input       = split_fasta_file,
+                                filter      = suffix(".fa"),
                                 output      = ".aln")  \
             .posttask(lambda: sys.stderr.write("\tSequences aligned\n"))
 
@@ -242,7 +242,7 @@ class Test_split_regex_and_collate(unittest.TestCase):
 
 
         test_pipeline.collate(task_func   = combine_results,
-                              input       = percentage_identity, 
+                              input       = percentage_identity,
                               filter      = regex(r".*files.split\.(\d+)\.\d+.pcid"),
                               output      = [tempdir + r"/\1.all.combine_results",
                                              tempdir + r"/\1.all.combine_results_success"])\

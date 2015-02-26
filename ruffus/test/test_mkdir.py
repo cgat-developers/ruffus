@@ -97,6 +97,30 @@ class Testmkdir(unittest.TestCase):
         pipeline_run([test_transform, test_transform2], verbose=0, multiprocess = 2)
 
 
+    def test_newstyle_mkdir_run(self):
+        test_pipeline = Pipeline("test")
+
+        test_pipeline.split(task_func = generate_initial_files1,
+                            input = 1,
+                            output = [workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"])
+
+        test_pipeline.transform( task_func = test_transform,
+                                 input     = generate_initial_files1,
+                                 filter    = formatter(),
+                                 output    = "{path[0]}/{basename[0]}.dir/{basename[0]}.tmp2")\
+            .mkdir(workdir + "/test1")\
+            .mkdir(workdir + "/test2")\
+            .mkdir(generate_initial_files1, formatter(),
+                        ["{path[0]}/{basename[0]}.dir", 3, "{path[0]}/{basename[0]}.dir2"])
+
+        test_pipeline.mkdir(test_transform2, workdir + "/test3")\
+            .mkdir(generate_initial_files1, formatter(),
+                    "{path[0]}/{basename[0]}.dir2")
+        cleanup_tmpdir()
+        pipeline_run([test_transform, test_transform2], verbose=0, multiprocess = 2)
+
+
+
 
     #___________________________________________________________________________
     #

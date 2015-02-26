@@ -557,7 +557,6 @@ class TestCombinatorics(unittest.TestCase):
     #   cleanup
     #___________________________________________________________________________
     def tearDown(self):
-        pass
         shutil.rmtree(workdir)
 
 

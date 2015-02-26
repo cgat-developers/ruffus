@@ -120,7 +120,7 @@ class Test_task_mkdir(unittest.TestCase):
             fullpath = os.path.join(exe_path, d)
             self.assertTrue(os.path.exists(fullpath))
 
-    def test_mkdir (self):
+    def test_newstyle_mkdir (self):
         test_pipeline = Pipeline("test")
         test_pipeline.follows(task_which_makes_directories, mkdir(directories), mkdir('c'), mkdir('d', 'e'), mkdir('e'))
         test_pipeline.run(multiprocess = 10, verbose = 0)
