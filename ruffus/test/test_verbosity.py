@@ -59,6 +59,15 @@ def first_task(input_files, output_file):
 def second_task(input_files, output_file):
     with open(output_file, "w"): pass
 
+test_pipeline = Pipeline("test")
+test_pipeline.originate(output = [   ['/data/scratch/lg/what/one/two/three/job1.a.start', 'job1.b.start'],
+                   ['/data/scratch/lg/what/one/two/three/job2.a.start', 'job2.b.start'],
+                   ['/data/scratch/lg/what/one/two/three/job3.a.start', 'job3.b.start']    ],
+                   task_func = create_initial_file_pairs)
+test_pipeline.transform(task_func = first_task, input = create_initial_file_pairs, filter = suffix(".start"), output = ".output.1")
+test_pipeline.transform(input = first_task, filter = suffix(".output.1"), output = ".output.2", task_func= second_task)
+
+
 class Test_verbosity(unittest.TestCase):
     #___________________________________________________________________________
     #
@@ -125,6 +134,74 @@ class Test_verbosity(unittest.TestCase):
         """Input file exists, output doesn't exist"""
         s = StringIO()
         pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = -60)
+        ret = s.getvalue()
+        self.assertTrue('[<???> ratch/lg/what/one/two/three/job2.a.start, job2.b.start]' in ret)
+
+    #___________________________________________________________________________
+    #
+    #   test_newstyleprintout_abbreviated_path1
+    #___________________________________________________________________________
+    def test_newstyleprintout_abbreviated_path1(self):
+        """Input file exists, output doesn't exist"""
+        s = StringIO()
+        test_pipeline.printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 1)
+        self.assertTrue(re.search('Job needs update: Missing files\n\s+'
+                      '\[\.\.\./job2\.a\.start, job2\.b\.start, \.\.\./job2.a.output.1\]', s.getvalue()))
+
+    #___________________________________________________________________________
+    #
+    #   test_newstyleprintout_abbreviated_path2
+    #___________________________________________________________________________
+    def test_newstyleprintout_abbreviated_path2(self):
+        """Input file exists, output doesn't exist"""
+        s = StringIO()
+        test_pipeline.printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 2)
+        self.assertTrue('[.../three/job1.a.start, job1.b.start, .../three/job1.a.output.1]' in s.getvalue())
+
+
+    #___________________________________________________________________________
+    #
+    #   test_newstyleprintout_abbreviated_path2
+    #___________________________________________________________________________
+    def test_newstyleprintout_abbreviated_path3(self):
+        """Input file exists, output doesn't exist"""
+        s = StringIO()
+        test_pipeline.printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 3)
+        self.assertTrue('[.../two/three/job1.a.start, job1.b.start, .../two/three/job1.a.output.1]' in s.getvalue())
+
+    #___________________________________________________________________________
+    #
+    #   test_newstyleprintout_abbreviated_path9
+    #___________________________________________________________________________
+    def test_newstyleprintout_abbreviated_path9(self):
+        """Input file exists, output doesn't exist"""
+        s = StringIO()
+        test_pipeline.printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 9)
+        ret = s.getvalue()
+        self.assertTrue('[/data/scratch/lg/what/one/two/three/job2.a.start, job2.b.start,' in ret)
+
+
+    #___________________________________________________________________________
+    #
+    #   test_newstyleprintout_abbreviated_path0
+    #___________________________________________________________________________
+    def test_newstyleprintout_abbreviated_path0(self):
+        """Input file exists, output doesn't exist"""
+        s = StringIO()
+        test_pipeline.printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 0)
+        ret = s.getvalue()
+        self.assertTrue('[[/data/scratch/lg/what/one/two/three/job2.a.start,' in ret)
+        self.assertTrue('/ruffus/test/job2.b.start]' in ret)
+
+
+    #___________________________________________________________________________
+    #
+    #   test_newstyleprintout_abbreviated_path_minus_60
+    #___________________________________________________________________________
+    def test_newstyleprintout_abbreviated_path_minus_60(self):
+        """Input file exists, output doesn't exist"""
+        s = StringIO()
+        test_pipeline.printout(s, [second_task], verbose = 5, verbose_abbreviated_path = -60)
         ret = s.getvalue()
         self.assertTrue('[<???> ratch/lg/what/one/two/three/job2.a.start, job2.b.start]' in ret)
 

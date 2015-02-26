@@ -240,6 +240,42 @@ def task6(infiles, outfiles, *extra_params):
 
 
 
+#
+#   Use equivalent but new sytle syntax
+#
+test_pipeline = Pipeline("test")
+
+test_pipeline.originate(task_func = task1, 
+                   output    = [tempdir + d for d in ('a.1', 'b.1', 'c.1')])\
+    .follows(mkdir(tempdir))\
+    .posttask(lambda: do_write(test_file, "Task 1 Done\n"))
+
+test_pipeline.transform(task_func = task2, 
+                   input     = task1, 
+                   filter    = suffix(".1"), 
+                   output    = ".2") \
+    .posttask(lambda: do_write(test_file, "Task 2 Done\n"))
+
+test_pipeline.transform(task3, task2, regex('(.*).2'), inputs([r"\1.2", tempdir + "a.1"]), r'\1.3')\
+    .posttask(lambda: do_write(test_file, "Task 3 Done\n"))
+
+
+test_pipeline.transform(task4, tempdir + "*.1", suffix(".1"), ".4")\
+    .follows(task1)\
+    .posttask(lambda: do_write(test_file, "Task 4 Done\n"))\
+    .jobs_limit(1)
+
+test_pipeline.files(task5, None, tempdir + 'a.5')\
+    .follows(mkdir(tempdir))\
+    .posttask(lambda: do_write(test_file, "Task 5 Done\n"))
+
+test_pipeline.merge(task_func = task6, 
+               input     = [task3, task4, task5], 
+               output    = tempdir + "final.6")\
+    .follows(task3, task4, task5, ) \
+    .posttask(lambda: do_write(test_file, "Task 6 Done\n"))
+
+
 def check_job_order_correct(filename):
     """
        1   ->  2   ->  3   ->
@@ -347,8 +383,6 @@ class Test_ruffus(unittest.TestCase):
         os.makedirs(tempdir)
 
     def test_ruffus (self):
-        print("     Python version %s" % sys.version, file=sys.stderr)
-        print("     Ruffus version %s" % ruffus.__version__, file=sys.stderr)
         print("\n\n     Run pipeline normally...")
         pipeline_run(multiprocess = 10, verbose=0)
         check_final_output_correct()
@@ -381,6 +415,39 @@ class Test_ruffus(unittest.TestCase):
         check_job_order_correct(tempdir + "jobs.start")
         check_job_order_correct(tempdir + "jobs.finish")
 
+
+    def test_ruffus_new_syntax (self):
+        print("\n\n     Run pipeline normally...")
+        test_pipeline.run(multiprocess = 10, verbose=0)
+        check_final_output_correct()
+        check_job_order_correct(tempdir + "jobs.start")
+        check_job_order_correct(tempdir + "jobs.finish")
+        print("     OK")
+
+        print("\n\n     Touch task2 only:")
+        os.unlink(os.path.join(tempdir, "jobs.start")  )
+        os.unlink(os.path.join(tempdir, "jobs.finish") )
+        print("       First delete b.1 for task2...")
+        os.unlink(os.path.join(tempdir, "b.1"))
+        print("       Then run with touch_file_only...")
+        test_pipeline.run([task2], multiprocess = 10, touch_files_only=True, verbose = 0)
+
+        # check touching has made task2 up to date
+        s = StringIO()
+        test_pipeline.printout(s, [task2], verbose=4, wrap_width = 10000)
+        output_str = s.getvalue()
+        #print (">>>\n", output_str, "<<<\n", file=sys.stderr)
+        if "b.1" in output_str:
+            raise Exception("Expected b.1 created by touching...")
+        if "b.2" in output_str:
+            raise Exception("Expected b.2 created by touching...")
+        print("     Touching has made task2 up to date...\n")
+
+        print("     Then run normally again...")
+        test_pipeline.run(multiprocess = 10, verbose=0)
+        check_final_output_correct(True)
+        check_job_order_correct(tempdir + "jobs.start")
+        check_job_order_correct(tempdir + "jobs.finish")
 
 if __name__ == '__main__':
     unittest.main()

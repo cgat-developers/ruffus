@@ -53,6 +53,7 @@ from ruffus import split
 from ruffus import transform
 from ruffus import subdivide
 from ruffus import formatter
+from ruffus import Pipeline
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -184,6 +185,37 @@ class Test_ruffus(unittest.TestCase):
                                         target_tasks =[subdivide_start],
                                         forcedtorun_tasks = [split_start],
                                         no_key_legend = True)
+
+    def test_newstyle_ruffus (self):
+
+        print("     Run pipeline normally...")
+        test_pipeline = Pipeline("test")
+        test_pipeline.originate(make_start, [tempdir + 'start'])
+
+        test_pipeline.split(split_start, make_start, tempdir + '*.split')
+
+        test_pipeline.subdivide(subdivide_start, split_start, formatter(), tempdir + '{basename[0]}_*.subdivided', tempdir + '{basename[0]}')
+        if self.graph_viz_present:
+            test_pipeline.printout_graph(tempdir + "flowchart.dot")
+            test_pipeline.printout_graph(tempdir + "flowchart.jpg",
+                                        target_tasks =[subdivide_start],
+                                        forcedtorun_tasks = [split_start],
+                                        no_key_legend = True)
+            test_pipeline.printout_graph(tempdir + "flowchart.svg", no_key_legend = False)
+            # Unknown format
+            try:
+                test_pipeline.printout_graph(tempdir + "flowchart.unknown", no_key_legend = False)
+                raise Exception("Failed to throw exception for test_pipeline.printout_graph unknown extension ")
+            except CalledProcessError as err:
+                pass
+            test_pipeline.printout_graph(tempdir + "flowchart.unknown", "svg", no_key_legend = False)
+
+        else:
+            test_pipeline.printout_graph(tempdir + "flowchart.dot",
+                                        target_tasks =[subdivide_start],
+                                        forcedtorun_tasks = [split_start],
+                                        no_key_legend = True)
+
 
 
 if __name__ == '__main__':

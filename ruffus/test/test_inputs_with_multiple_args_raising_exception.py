@@ -90,11 +90,13 @@ try:
         for f in o:
             open(f, 'w')
 except ruffus.ruffus_exceptions.error_task_transform_inputs_multiple_args:
-    print("\tExpected exception thrown")
-    sys.exit(0)
+    print("\tExpected exception thrown 1")
 except ruffus.ruffus_exceptions.error_inputs_multiple_args:
-    print("\tExpected exception thrown")
+    print("\tExpected exception thrown 2")
 
+def task_2 (i, o):
+    for f in o:
+        open(f, 'w')
 
 import unittest
 
@@ -117,6 +119,25 @@ class Test_task_mkdir(unittest.TestCase):
         except:
             return
         raise Exception("Inputs(...) with multiple arguments should have thrown an exception")
+
+    def test_newstyle_no_re_match (self):
+        try:
+            test_pipeline = Pipeline("test")
+            test_pipeline.transform(task_func = task_2, 
+                                    input = None, 
+                                    filter = regex("b"), 
+                                    replace_inputs = inputs("a", "b"), 
+                                    output = "task_1.output")
+            test_pipeline.run(multiprocess = 10, verbose = 0)
+        except ruffus.ruffus_exceptions.error_task_transform_inputs_multiple_args:
+            print("\tExpected exception thrown 1")
+            return
+        except ruffus.ruffus_exceptions.error_inputs_multiple_args:
+            print("\tExpected exception thrown 2")
+            return
+        raise Exception("Inputs(...) with multiple arguments should have thrown an exception")
+
+
 
 
 if __name__ == '__main__':

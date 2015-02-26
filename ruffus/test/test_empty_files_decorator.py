@@ -100,27 +100,39 @@ def task1():
 
 import unittest
 
+class t_save_to_str_logger:
+    """
+    Everything to stderr
+    """
+    def __init__ (self):
+        self.info_str = ""
+        self.warning_str = ""
+        self.debug_str = ""
+    def info (self, message):
+        self.info_str += message
+    def warning (self, message):
+        self.warning_str += message
+    def debug (self, message):
+        self.debug_str += message
+
 class Test_task(unittest.TestCase):
 
-
     def test_task (self):
-        class t_save_to_str_logger:
-            """
-            Everything to stderr
-            """
-            def __init__ (self):
-                self.info_str = ""
-                self.warning_str = ""
-                self.debug_str = ""
-            def info (self, message):
-                self.info_str += message
-            def warning (self, message):
-                self.warning_str += message
-            def debug (self, message):
-                self.debug_str += message
 
         save_to_str_logger = t_save_to_str_logger()
         pipeline_run(multiprocess = 10,
+                            logger = save_to_str_logger,
+                            verbose = 1)
+        self.assertTrue("@files() was empty" in save_to_str_logger.warning_str)
+        print("\n    Warning printed out correctly", file=sys.stderr)
+
+
+    def test_newstyle_task (self):
+        test_pipeline = Pipeline("test")
+        test_pipeline.files(task1, a)
+
+        save_to_str_logger = t_save_to_str_logger()
+        test_pipeline.run(multiprocess = 10,
                             logger = save_to_str_logger,
                             verbose = 1)
         self.assertTrue("@files() was empty" in save_to_str_logger.warning_str)

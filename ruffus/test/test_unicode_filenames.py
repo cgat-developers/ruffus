@@ -136,6 +136,24 @@ class Test_task_mkdir(unittest.TestCase):
             self.assertTrue(os.path.exists(fullpath))
 
 
+    def test_newstyle_mkdir (self):
+        pipeline = Pipeline.pipelines["main"]
+
+        pipeline.follows(task_which_makes_directories,
+                         mkdir(directories), mkdir(unicode("c")), mkdir(unicode("d"), unicode("e")), mkdir(unicode("e")))\
+            .posttask(touch_file(unicode("f")))
+
+        pipeline.files(task_which_makes_files, None, ["g", "h"])
+        pipeline.run(multiprocess = 10, verbose = 0)
+
+        for d in 'abcdefgh':
+            fullpath = os.path.join(exe_path, d)
+            self.assertTrue(os.path.exists(fullpath))
+
+
+
+
+
 if __name__ == '__main__':
     unittest.main()
 

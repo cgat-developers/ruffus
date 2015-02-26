@@ -52,6 +52,7 @@ from ruffus import split
 from ruffus import transform
 from ruffus import subdivide
 from ruffus import formatter
+from ruffus import Pipeline
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -154,6 +155,53 @@ class Test_ruffus(unittest.TestCase):
             if os.path.exists(tempdir + ne):
                 raise Exception("Unexpected file %s" % (tempdir + ne ))
 
+    def test_newstyle_ruffus (self):
+
+        test_pipeline = Pipeline("test")
+        test_pipeline.originate(task_func = make_start, output = [tempdir + 'start'])
+        test_pipeline.split(task_func = split_start, input = make_start, output = tempdir + '*.split')
+        test_pipeline.subdivide(task_func = subdivide_start, input = split_start, filter = formatter(), output = tempdir + '{basename[0]}_*.subdivided', extras = [tempdir + '{basename[0]}'])
+
+        expected_files_after_1_runs = ["start", "0.split", "0_0.subdivided"]
+        expected_files_after_2_runs = ["1.split", "0_1.subdivided", "1_0.subdivided"]
+        expected_files_after_3_runs = ["2.split", "0_2.subdivided", "1_1.subdivided", "2_0.subdivided"]
+        expected_files_after_4_runs = ["3.split", "0_3.subdivided", "1_2.subdivided", "2_1.subdivided", "3_0.subdivided"]
+
+        print("     Run pipeline normally...")
+        test_pipeline.run(multiprocess = 10, verbose=0)
+        self.check_file_exists_or_not_as_expected(expected_files_after_1_runs,
+                                                 expected_files_after_2_runs)
+
+        print("     Check that running again does nothing. (All up to date).")
+        test_pipeline.run(multiprocess = 10, verbose=0)
+        self.check_file_exists_or_not_as_expected(expected_files_after_1_runs,
+                                                 expected_files_after_2_runs)
+
+        print("     Running again with forced tasks to generate more files...")
+        test_pipeline.run(forcedtorun_tasks = ["test::make_start"], multiprocess = 10, verbose=0)
+        self.check_file_exists_or_not_as_expected(expected_files_after_1_runs
+                                                 + expected_files_after_2_runs,
+                                                 expected_files_after_3_runs)
+
+        print("     Check that running again does nothing. (All up to date).")
+        test_pipeline.run(multiprocess = 10, verbose=0)
+        self.check_file_exists_or_not_as_expected(expected_files_after_1_runs
+                                                 + expected_files_after_2_runs,
+                                                 expected_files_after_3_runs)
+
+
+        print("     Running again with forced tasks to generate even more files...")
+        test_pipeline.run(forcedtorun_tasks = make_start, multiprocess = 10, verbose=0)
+        self.check_file_exists_or_not_as_expected(expected_files_after_1_runs
+                                                 + expected_files_after_2_runs
+                                                 + expected_files_after_3_runs,
+                                                 expected_files_after_4_runs)
+        print("     Check that running again does nothing. (All up to date).")
+        test_pipeline.run(multiprocess = 10, verbose=0)
+        self.check_file_exists_or_not_as_expected(expected_files_after_1_runs
+                                                 + expected_files_after_2_runs
+                                                 + expected_files_after_3_runs,
+                                                 expected_files_after_4_runs)
 
 
     def test_ruffus (self):

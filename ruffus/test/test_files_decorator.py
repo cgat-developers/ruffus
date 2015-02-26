@@ -256,6 +256,23 @@ class Test_task(unittest.TestCase):
     def test_task (self):
         pipeline_run(multiprocess = 10, verbose = 0)
 
+    def test_newstyle_task (self):
+        """
+        Same as above but construct a new pipeline on the fly without decorators
+        """
+        test_pipeline = Pipeline("test")
+        test_pipeline.files(task1, None, tempdir + 'a.1')\
+            .follows(mkdir(tempdir))
+        test_pipeline.transform(task_func   = task2, 
+                                input       = task1, 
+                                filter      = regex(r".*"), 
+                                output      = tempdir + 'b.1')
+        test_pipeline.files(task3, task2, tempdir + 'c.1')
+        test_pipeline.files(task4, [[None, tempdir + 'd.1'], [None, tempdir + 'e.1']])\
+            .follows(task3)
+        test_pipeline.files(task5, task4, tempdir + "f.1")
+        test_pipeline.run(multiprocess = 10, verbose = 0)
+
 
 if __name__ == '__main__':
     unittest.main()

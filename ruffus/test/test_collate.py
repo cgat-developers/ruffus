@@ -190,6 +190,23 @@ class Test_ruffus(unittest.TestCase):
         pipeline_run(multiprocess = 10, verbose = 0)
         check_species_correct()
 
+    def test_newstyle_ruffus (self):
+        test_pipeline = Pipeline("test")
+        test_pipeline.split(task_func = prepare_files,
+                            input     = None, 
+                            output    = tempdir + '*.animal')\
+                .follows(mkdir(tempdir, tempdir + "test"))\
+                .posttask(lambda: do_write(tempdir + "task.done", "Task 1 Done\n"))
+
+        test_pipeline.collate(task_func = summarise_by_grouping,
+                              input     = prepare_files, 
+                              filter    = regex(r'(.*/).*\.(.*)\.animal'), 
+                              output    = r'\1\2.results')\
+                .posttask(lambda: do_write(tempdir + "task.done", "Task 2 Done\n"))
+
+        test_pipeline.run(multiprocess = 10, verbose = 0)
+        check_species_correct()
+
 
 
 if __name__ == '__main__':

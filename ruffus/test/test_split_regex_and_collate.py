@@ -201,6 +201,62 @@ class Test_split_regex_and_collate(unittest.TestCase):
 
         pipeline_run([combine_results], verbose=0)
 
+
+    def test_newstyle_collate (self):
+        """
+        As above but create pipeline on the fly using object orientated syntax rather than decorators
+        """
+
+        #
+        # Create pipeline on the fly, joining up tasks
+        #
+        test_pipeline = Pipeline("test")
+
+        test_pipeline.originate(task_func   = generate_initial_files,
+                                output      = original_files)\
+            .mkdir(tempdir)
+
+
+        test_pipeline.subdivide(    task_func   = split_fasta_file,
+                                    input       = generate_initial_files,
+                                    filter      = regex(r".*\/original_(\d+).fa"),       # match original files
+                                    output      = [tempdir + r"/files.split.\1.success", # flag file for each original file
+                                                   tempdir + r"/files.split.\1.*.fa"],   # glob pattern
+                                    extras      = [r"\1"])\
+            .posttask(lambda: sys.stderr.write("\tSplit into %d files each\n" % JOBS_PER_TASK))
+
+
+        test_pipeline.transform(task_func   = align_sequences,
+                                input       = split_fasta_file, 
+                                filter      = suffix(".fa"), 
+                                output      = ".aln")  \
+            .posttask(lambda: sys.stderr.write("\tSequences aligned\n"))
+
+        test_pipeline.transform(task_func   = percentage_identity,
+                                input       = align_sequences,             # find all results from align_sequences
+                                filter      = suffix(".aln"),             # replace suffix with:
+                                output      = [r".pcid",                  #   .pcid suffix for the result
+                                               r".pcid_success"]         #   .pcid_success to indicate job completed
+                                )\
+            .posttask(lambda: sys.stderr.write("\t%Identity calculated\n"))
+
+
+        test_pipeline.collate(task_func   = combine_results,
+                              input       = percentage_identity, 
+                              filter      = regex(r".*files.split\.(\d+)\.\d+.pcid"),
+                              output      = [tempdir + r"/\1.all.combine_results",
+                                             tempdir + r"/\1.all.combine_results_success"])\
+            .posttask(lambda: sys.stderr.write("\tResults recombined\n"))
+
+        #
+        # Cleanup, printout and run
+        #
+        self.cleanup_tmpdir()
+        s = StringIO()
+        test_pipeline.printout(s, [combine_results], verbose=5, wrap_width = 10000)
+        self.assertTrue('Job needs update: Missing files\n' in s.getvalue())
+        test_pipeline.run(verbose=0)
+
     #___________________________________________________________________________
     #
     #   cleanup

@@ -261,6 +261,24 @@ class Test_ruffus(unittest.TestCase):
         pipeline_run(verbose = 0, runtime_data = {"a": options.runtime_files})
 
 
+    def test_newstyle_ruffus (self):
+
+
+        test_pipeline = Pipeline("test")
+        test_pipeline.originate(task_func = task1, 
+                                output = ['a.1'] + options.runtime_files)
+        test_pipeline.transform(task2, task1, suffix(".1"), ".2")
+        test_pipeline.transform(task_func = task3, 
+                                   input = task2, 
+                                   filter = suffix(".2"), 
+                                   output = ".3")
+        test_pipeline.transform(task_func = task4, 
+                                input = runtime_parameter("a"), 
+                                filter = suffix(".3"), 
+                                output = ".4").follows(task3)
+        test_pipeline.run(verbose = 0, runtime_data = {"a": options.runtime_files})
+
+
 
 if __name__ == '__main__':
     unittest.main()

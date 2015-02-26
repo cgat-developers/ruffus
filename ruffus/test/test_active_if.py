@@ -206,6 +206,16 @@ except:
     from io import StringIO
 
 tempdir = "test_active_if"
+
+# alternative syntax
+test_pipeline = Pipeline("test")
+test_pipeline.originate(task1, ['test_active_if/a.1', 'test_active_if/b.1'], "an extra_parameter")\
+    .follows(mkdir("test_active_if"))
+test_pipeline.transform(task2, task1, suffix(".1"), ".2")
+test_pipeline.transform(task3, task1, suffix(".1"), ".3").active_if(lambda:pipeline_active_if)
+test_pipeline.collate(task4, [task2, task3], regex(r"(.+)\.[23]"), r"\1.4")
+test_pipeline.merge(task5, task4, "test_active_if/summary.5")
+
 class Test_ruffus(unittest.TestCase):
     def setUp(self):
         try:
@@ -213,6 +223,8 @@ class Test_ruffus(unittest.TestCase):
         except:
             pass
         os.makedirs(tempdir)
+
+
 
     def tearDown(self):
         try:
@@ -240,6 +252,29 @@ class Test_ruffus(unittest.TestCase):
         if inactive_text != expected_inactive_text:
             raise Exception("Error:\n\tExpected\n%s\nInstead\n%s\n"  % (inactive_text, expected_inactive_text))
             shutil.rmtree("test_active_if")
+
+    def test_newstyle_active_if_true (self):
+        global pipeline_active_if
+        pipeline_active_if = True
+        test_pipeline.run(multiprocess = 50, verbose = 0)
+
+        with open("test_active_if/summary.5") as ii:
+            active_text = ii.read()
+        if active_text != expected_active_text:
+            raise Exception("Error:\n\tExpected\n%s\nInstead\n%s\n"  % (active_text, expected_active_text))
+
+    def test_newstyle_active_if_false (self):
+        global pipeline_active_if
+        pipeline_active_if = False
+        test_pipeline.run(multiprocess = 50, verbose = 0)
+        with open("test_active_if/summary.5") as ii:
+            inactive_text = ii.read()
+        if inactive_text != expected_inactive_text:
+            raise Exception("Error:\n\tExpected\n%s\nInstead\n%s\n"  % (inactive_text, expected_inactive_text))
+            shutil.rmtree("test_active_if")
+
+
+
 
 
 

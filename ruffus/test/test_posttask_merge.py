@@ -287,6 +287,12 @@ class Test_ruffus(unittest.TestCase):
             pass
         os.makedirs(tempdir)
         open(tempdir + "original.fa", "w").close()
+        self.expected_text = """Split into 3 files
+Sequences aligned
+%Identity calculated
+Results recombined
+"""
+
 
     def tearDown(self):
         try:
@@ -296,14 +302,54 @@ class Test_ruffus(unittest.TestCase):
 
     def test_ruffus (self):
         pipeline_run(multiprocess = 50, verbose = 0)
-        expected_text = """Split into 3 files
-Sequences aligned
-%Identity calculated
-Results recombined
-"""
         with open(test_file) as ii:
             post_task_text =  ii.read()
-        self.assertEqual(post_task_text, expected_text)
+        self.assertEqual(post_task_text, self.expected_text)
+
+
+
+    def test_newstyle_ruffus (self):
+
+        test_pipeline = Pipeline("test")
+
+
+        test_pipeline.split(    task_func   = split_fasta_file,
+                                input       = tempdir  + "original.fa", 
+                                output      = [tempdir  + "files.split.success", 
+                                               tempdir + "files.split.*.fa"])\
+            .posttask(lambda: do_write(test_file, "Split into %d files\n" % options.jobs_per_task))
+
+
+        test_pipeline.transform(task_func   = align_sequences,
+                                input       = split_fasta_file, 
+                                filter      = suffix(".fa"), 
+                                output      = ".aln"                     # fa -> aln
+                                )\
+            .posttask(lambda: do_write(test_file, "Sequences aligned\n"))
+
+
+        test_pipeline.transform(task_func   = percentage_identity,
+                                input       = align_sequences,             # find all results from align_sequences
+                                filter      = suffix(".aln"),             # replace suffix with:
+                                output      = [r".pcid",                  #   .pcid suffix for the result
+                                               r".pcid_success"]          #   .pcid_success to indicate job completed
+                                )\
+            .posttask(lambda: do_write(test_file, "%Identity calculated\n"))
+
+
+        test_pipeline.merge(task_func   = combine_results, 
+                            input       = percentage_identity, 
+                            output      = tempdir + "all.combine_results")\
+            .posttask(lambda: do_write(test_file, "Results recombined\n"))
+
+        test_pipeline.files(post_merge_check, combine_results, os.path.join(tempdir, "check_all_is.well"))
+
+        test_pipeline.files(post_post_merge_check, post_merge_check, os.path.join(tempdir, "check_all_is.weller"))
+
+        test_pipeline.run(multiprocess = 50, verbose = 0)
+        with open(test_file) as ii:
+            post_task_text =  ii.read()
+        self.assertEqual(post_task_text, self.expected_text)
 
 
 

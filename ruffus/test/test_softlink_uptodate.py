@@ -113,6 +113,14 @@ class Test_ruffus(unittest.TestCase):
     def test_ruffus (self):
         pipeline_run(log_exceptions = True, verbose = 0)
 
+    def test_newstyle_ruffus (self):
+        test_pipeline = Pipeline("test")
+        test_pipeline.originate(start_task, ["a.1", "b.1"])
+        test_pipeline.transform(same_file_name_task, start_task, suffix(".1"), ".1")
+        test_pipeline.transform(linked_file_name_task, start_task, suffix(".1"), ".linked.1")
+        test_pipeline.transform(final_task, [linked_file_name_task, same_file_name_task], suffix(".1"), ".3")
+        test_pipeline.run(log_exceptions = True, verbose = 0)
+
 
 
 if __name__ == '__main__':

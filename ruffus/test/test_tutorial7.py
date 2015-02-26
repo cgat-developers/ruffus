@@ -152,6 +152,33 @@ class Test_ruffus(unittest.TestCase):
             raise Exception("Missing %s" % output_file)
 
 
+    def test_newstyle_ruffus (self):
+        pipeline = Pipeline.pipelines["main"]
+
+        pipeline.files(create_random_numbers, None, working_dir + "random_numbers.list")\
+            .follows(mkdir(working_dir))
+
+
+        pipeline.split(task_func = step_4_split_numbers_into_chunks,
+                       input = working_dir + "random_numbers.list",
+                       output = working_dir + "*.chunks")\
+            .follows(create_random_numbers)
+
+        pipeline.transform(task_func = step_5_calculate_sum_of_squares,
+                           input = step_4_split_numbers_into_chunks,
+                           filter = suffix(".chunks"),
+                           output = ".sums")
+
+        pipeline.merge(task_func = step_6_calculate_variance, input = step_5_calculate_sum_of_squares, output = os.path.join(working_dir, "variance.result"))\
+            .posttask(lambda: sys.stdout.write("     hooray\n"))\
+            .posttask(print_hooray_again, print_whoppee_again, touch_file(os.path.join(working_dir, "done")))
+
+        pipeline.run(multiprocess = 50, verbose = 0)
+        output_file = os.path.join(working_dir, "variance.result")
+        if not os.path.exists (output_file):
+            raise Exception("Missing %s" % output_file)
+
+
 
 if __name__ == '__main__':
     unittest.main()

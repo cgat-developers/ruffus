@@ -393,6 +393,43 @@ class Test_ruffus(unittest.TestCase):
         check_job_order_correct(tempdir + "jobs.finish")
 
 
+    def test_newstyle_ruffus (self):
+        test_pipeline = Pipeline("test")
+
+        test_pipeline.files(task1,
+                            None, 
+                            [tempdir + d for d in ('a.1', 'b.1', 'c.1')])\
+            .follows(mkdir(tempdir))\
+            .posttask(lambda: do_write(test_file, "Task 1 Done\n"))
+
+        test_pipeline.transform(task2, tempdir + "*.1", suffix(".1"), ".2")\
+            .posttask(lambda: do_write(test_file, "Task 2 Done\n"))\
+            .follows(task1)
+
+        test_pipeline.transform(task3, task2, regex('(.*).2'), inputs([r"\1.2", tempdir + "a.1"]), r'\1.3')\
+            .posttask(lambda: do_write(test_file, "Task 3 Done\n"))
+
+        test_pipeline.transform(task_func = task4, 
+                                input     = tempdir + "*.1", 
+                                filter    = suffix(".1"), 
+                                output    = ".4")\
+            .follows(task1)\
+            .posttask(lambda: do_write(test_file, "Task 4 Done\n"))
+
+        test_pipeline.files(task5, None, tempdir + 'a.5')\
+            .follows(mkdir(tempdir))\
+            .posttask(lambda: do_write(test_file, "Task 5 Done\n"))
+
+        test_pipeline.merge(task_func = task6,
+                            input     = [task3, task4, task5], 
+                            output    = tempdir + "final.6")\
+            .follows(task3, task4, task5, )\
+            .posttask(lambda: do_write(test_file, "Task 6 Done\n"))
+
+        test_pipeline.run(multiprocess = 50, verbose = 0)
+        check_final_output_correct()
+        check_job_order_correct(tempdir + "jobs.start")
+        check_job_order_correct(tempdir + "jobs.finish")
 
 if __name__ == '__main__':
     unittest.main()

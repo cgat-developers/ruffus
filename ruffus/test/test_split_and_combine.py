@@ -199,6 +199,44 @@ class Test_ruffus(unittest.TestCase):
         if not os.path.exists(tempdir + "all.combine_results"):
             raise Exception("Missing %s" % (tempdir + "all.combine_results"))
 
+    def test_newstyle_ruffus (self):
+
+        test_pipeline = Pipeline("test")
+
+
+        test_pipeline.split(task_func   = split_fasta_file,
+                            input       = tempdir  + "original.fa", 
+                            output      = [tempdir  + "files.split.success", 
+                                           tempdir + "files.split.*.fa"])\
+            .posttask(lambda: verbose_output.write("    Split into %d files\n" % 10))
+
+
+        test_pipeline.transform(task_func   = align_sequences,
+                                input       = split_fasta_file, 
+                                filter      = suffix(".fa"), 
+                                output      = ".aln"                     # fa -> aln
+                                )\
+            .posttask(lambda: verbose_output.write("    Sequences aligned\n"))
+
+        test_pipeline.transform(task_func   = percentage_identity,  
+                                input       = align_sequences,      # find all results from align_sequences
+                                filter      = suffix(".aln"),       # replace suffix with:
+                                output      = [r".pcid",            #   .pcid suffix for the result
+                                               r".pcid_success"]    #   .pcid_success to indicate job completed
+                                )\
+            .posttask(lambda: verbose_output.write("    %Identity calculated\n"))
+
+
+        test_pipeline.merge(task_func   = combine_results, 
+                            input       = percentage_identity, 
+                            output      = [tempdir + "all.combine_results",
+                                           tempdir + "all.combine_results_success"])\
+            .posttask(lambda: verbose_output.write("    Results recombined\n"))
+
+        test_pipeline.run(multiprocess = 50, verbose = 0)
+        if not os.path.exists(tempdir + "all.combine_results"):
+            raise Exception("Missing %s" % (tempdir + "all.combine_results"))
+
 
 
 if __name__ == '__main__':

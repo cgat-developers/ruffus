@@ -131,6 +131,31 @@ class Test_task(unittest.TestCase):
             real_output = ff.read()
         self.assertEqual(correct_output, real_output)
 
+    def test_newstyle_task (self):
+        test_pipeline = Pipeline("test")
+
+
+        test_pipeline.files(task1, [[None, tempdir+ "a.1"], [None, tempdir+ "b.1"]])\
+            .follows(mkdir(tempdir))
+
+
+        test_pipeline.files(task2, [[None, tempdir+ "c.1"], [None, tempdir+ "d.1"]])\
+            .follows(mkdir(tempdir))
+
+        test_pipeline.transform(task_func = task3, 
+                                input = task1, 
+                                filter = regex(r"(.*)"), 
+                                replace_inputs = inputs(((r"\1"), task2, "test_transform_inputs.*y")), 
+                                output   = r"\1.output")
+        test_pipeline.merge(task4, (task3), tempdir + "final.output")
+
+        test_pipeline.run([task4], multiprocess = 10, verbose = 0)
+
+        correct_output = "tempdir/a.1.output:tempdir/a.1,tempdir/c.1,tempdir/d.1,test_transform_inputs.py;tempdir/b.1.output:tempdir/b.1,tempdir/c.1,tempdir/d.1,test_transform_inputs.py;"
+        with open(tempdir + "final.output") as ff:
+            real_output = ff.read()
+        self.assertEqual(correct_output, real_output)
+
 
 if __name__ == '__main__':
         unittest.main()

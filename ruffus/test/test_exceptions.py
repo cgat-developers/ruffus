@@ -59,6 +59,16 @@ class Test_ruffus(unittest.TestCase):
             return
         raise Exception("Missing exception")
 
+    def test_newstyle_ruffus (self):
+        test_pipeline = Pipeline("test")
+        test_pipeline.parallel(parallel_task, [['A', 1], ['B',3], ['C',3], ['D',4], ['E',4], ['F',4]])
+        try:
+            test_pipeline.run(multiprocess = 50, verbose = 0)
+        except ruffus.ruffus_exceptions.RethrownJobError:
+            return
+        raise Exception("Missing exception")
+
+
 
 
 if __name__ == '__main__':

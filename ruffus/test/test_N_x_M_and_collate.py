@@ -56,78 +56,9 @@ from ruffus import *
 import random
 
 
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   options
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-from optparse import OptionParser
-parser = OptionParser(version="%prog 1.0")
-parser.add_option("-D", "--debug", dest = "debug",
-                  action="store_true", default=False,
-                  help="Run as unit test with default values.")
-parser.add_option("-k", "--keep", dest = "keep",
-                  action="store_true", default=False,
-                  help="Do not cleanup after unit test runs.")
-parser.add_option("-t", "--target_tasks", dest="target_tasks",
-                  action="append",
-                  default = ["statistical_summary"],
-                  metavar="JOBNAME",
-                  type="string",
-                  help="Target task(s) of pipeline.")
-parser.add_option("-f", "--forced_tasks", dest="forced_tasks",
-                  action="append",
-                  default = list(),
-                  metavar="JOBNAME",
-                  type="string",
-                  help="Pipeline task(s) which will be included even if they are up to date.")
-parser.add_option("-j", "--jobs", dest="jobs",
-                  default=5,
-                  metavar="jobs",
-                  type="int",
-                  help="Specifies the number of jobs (commands) to run simultaneously.")
-
-parser.add_option("-g", "--gene_data_dir", dest="gene_data_dir",
-                  default="%s/temp_gene_data_for_intermediate_example" % exe_path,
-                  metavar="PATH",
-                  type="string",
-                  help="Directory with gene data [*.genes / *.gwas].")
-parser.add_option("-s", "--simulation_data_dir", dest="simulation_data_dir",
-                  default="%s/temp_simulation_data_for_intermediate_example" % exe_path,
-                  metavar="PATH",
-                  type="string",
-                  help="Directory with simulation data [*.simulation].")
-parser.add_option("-w", "--working_dir", dest="working_dir",
-                  default="%s/working_dir_for_intermediate_example" % exe_path,
-                  metavar="PATH",
-                  type="string",
-                  help="Working directory.")
-
-
-parser.add_option("-v", "--verbose", dest = "verbose",
-                  action="count", default=0,
-                  help="Print more verbose messages for each additional verbose level.")
-parser.add_option("-d", "--dependency", dest="dependency_file",
-                  metavar="FILE",
-                  type="string",
-                  help="Print a dependency graph of the pipeline that would be executed "
-                        "to FILE, but do not execute it.")
-parser.add_option("-F", "--dependency_graph_format", dest="dependency_graph_format",
-                  metavar="FORMAT",
-                  type="string",
-                  default = 'svg',
-                  help="format of dependency graph file. Can be 'ps' (PostScript), "+
-                  "'svg' 'svgz' (Structured Vector Graphics), " +
-                  "'png' 'gif' (bitmap  graphics) etc ")
-parser.add_option("-n", "--just_print", dest="just_print",
-                    action="store_true", default=False,
-                    help="Print a description of the jobs that would be executed, "
-                        "but do not execute them.")
-
-
+gene_data_dir ="%s/temp_gene_data_for_intermediate_example" % exe_path
+simulation_data_dir =  "%s/temp_simulation_data_for_intermediate_example" % exe_path
+working_dir =  "%s/working_dir_for_intermediate_example" % exe_path
 
 
 
@@ -171,14 +102,14 @@ def get_gene_gwas_file_pairs(  ):
     """
 
 
-    gene_files = glob.glob(os.path.join(options.gene_data_dir, "*.gene"))
-    gwas_files = glob.glob(os.path.join(options.gene_data_dir, "*.gwas"))
+    gene_files = glob.glob(os.path.join(gene_data_dir, "*.gene"))
+    gwas_files = glob.glob(os.path.join(gene_data_dir, "*.gwas"))
 
     common_roots = set([os.path.splitext(os.path.split(x)[1])[0] for x in gene_files])
     common_roots &=set([os.path.splitext(os.path.split(x)[1])[0] for x in gwas_files])
     common_roots = list(common_roots)
 
-    p = os.path; g_dir = options.gene_data_dir
+    p = os.path; g_dir = gene_data_dir
 
     file_pairs = [[p.join(g_dir, x + ".gene"), p.join(g_dir, x + ".gwas")] for x in common_roots]
 
@@ -197,7 +128,7 @@ def get_simulation_files(  ):
             file with .simulation extensions,
             corresponding roots (no extension) of each file
     """
-    simulation_files = glob.glob(os.path.join(options.simulation_data_dir, "*.simulation"))
+    simulation_files = glob.glob(os.path.join(simulation_data_dir, "*.simulation"))
     simulation_roots =[os.path.splitext(os.path.split(x)[1])[0] for x in simulation_files]
     return simulation_files, simulation_roots
 
@@ -214,14 +145,6 @@ def get_simulation_files(  ):
 
 
 
-# get help string
-f =io.StringIO()
-parser.print_help(f)
-helpstr = f.getvalue()
-(options, remaining_args) = parser.parse_args()
-
-
-working_dir = options.working_dir
 
 
 
@@ -235,22 +158,22 @@ working_dir = options.working_dir
 #
 # mkdir: makes sure output directories exist before task
 #
-@follows(mkdir(options.gene_data_dir, options.simulation_data_dir))
+@follows(mkdir(gene_data_dir, simulation_data_dir))
 def setup_simulation_data ():
     """
     create simulation files
     """
     for i in range(CNT_GENE_GWAS_FILES):
-        open(os.path.join(options.gene_data_dir, "%03d.gene" % i), "w").close()
-        open(os.path.join(options.gene_data_dir, "%03d.gwas" % i), "w").close()
+        open(os.path.join(gene_data_dir, "%03d.gene" % i), "w").close()
+        open(os.path.join(gene_data_dir, "%03d.gwas" % i), "w").close()
 
     # gene files without corresponding gwas and vice versa
-    open(os.path.join(options.gene_data_dir, "orphan1.gene"), "w").close()
-    open(os.path.join(options.gene_data_dir, "orphan2.gwas"), "w").close()
-    open(os.path.join(options.gene_data_dir, "orphan3.gwas"), "w").close()
+    open(os.path.join(gene_data_dir, "orphan1.gene"), "w").close()
+    open(os.path.join(gene_data_dir, "orphan2.gwas"), "w").close()
+    open(os.path.join(gene_data_dir, "orphan3.gwas"), "w").close()
 
     for i in range(CNT_SIMULATION_FILES):
-        open(os.path.join(options.simulation_data_dir, "%03d.simulation" % i), "w").close()
+        open(os.path.join(simulation_data_dir, "%03d.simulation" % i), "w").close()
 
 
 
@@ -271,24 +194,22 @@ def cleanup_simulation_data ():
     """
     cleanup files
     """
-    if options.verbose:
-        sys.stderr.write("Cleanup working directory and simulation files.\n")
 
     #
     #   cleanup gene and gwas files
     #
-    for f in glob.glob(os.path.join(options.gene_data_dir, "*.gene")):
+    for f in glob.glob(os.path.join(gene_data_dir, "*.gene")):
         os.unlink(f)
-    for f in glob.glob(os.path.join(options.gene_data_dir, "*.gwas")):
+    for f in glob.glob(os.path.join(gene_data_dir, "*.gwas")):
         os.unlink(f)
-    try_rmdir(options.gene_data_dir)
+    try_rmdir(gene_data_dir)
 
     #
     #   cleanup simulation
     #
-    for f in glob.glob(os.path.join(options.simulation_data_dir, "*.simulation")):
+    for f in glob.glob(os.path.join(simulation_data_dir, "*.simulation")):
         os.unlink(f)
-    try_rmdir(options.simulation_data_dir)
+    try_rmdir(simulation_data_dir)
 
 
     #
@@ -336,7 +257,7 @@ def generate_simulation_params ():
 # mkdir: makes sure output directories exist before task
 #
 @follows(setup_simulation_data)
-@follows(mkdir(options.working_dir, os.path.join(working_dir, "simulation_results")))
+@follows(mkdir(working_dir, os.path.join(working_dir, "simulation_results")))
 @files(generate_simulation_params)
 def gwas_simulation(input_files, result_file_path, gene_file_root, sim_file_root, result_file):
     """
@@ -388,9 +309,6 @@ try:
 except:
     from io import StringIO
 
-# mock for command line options
-class t_options(object):
-    pass
 class Test_ruffus(unittest.TestCase):
 
     def tearDown(self):
@@ -401,18 +319,30 @@ class Test_ruffus(unittest.TestCase):
             pass
 
     def test_ruffus (self):
-        options = t_options()
-        setattr(options, "verbose", 0)
-        options.gene_data_dir ="%s/temp_gene_data_for_intermediate_example" % exe_path
-        options.simulation_data_dir =  "%s/temp_simulation_data_for_intermediate_example" % exe_path
-        options.working_dir =  "%s/working_dir_for_intermediate_example" % exe_path
         pipeline_run(multiprocess = 50, verbose = 0)
         for oo in "000.mean", "001.mean":
-            results_file_name = os.path.join(options.working_dir, oo)
+            results_file_name = os.path.join(working_dir, oo)
             if not os.path.exists(results_file_name):
                 raise Exception("Missing %s" % results_file_name)
 
+    def test_newstyle_ruffus (self):
 
+        test_pipeline = Pipeline("test")
+
+        test_pipeline.follows(setup_simulation_data, mkdir(gene_data_dir, simulation_data_dir))
+
+        test_pipeline.files(gwas_simulation, generate_simulation_params)\
+            .follows(setup_simulation_data)\
+            .follows(mkdir(working_dir, os.path.join(working_dir, "simulation_results")))
+
+        test_pipeline.collate(statistical_summary, gwas_simulation, regex(r"simulation_results/(\d+).\d+.simulation_res"), r"\1.mean")\
+            .posttask(lambda : sys.stdout.write("\nOK\n"))
+
+        test_pipeline.run(multiprocess = 50, verbose = 0)
+        for oo in "000.mean", "001.mean":
+            results_file_name = os.path.join(working_dir, oo)
+            if not os.path.exists(results_file_name):
+                raise Exception("Missing %s" % results_file_name)
 
 if __name__ == '__main__':
     unittest.main()
