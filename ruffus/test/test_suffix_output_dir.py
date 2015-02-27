@@ -100,6 +100,7 @@ def helper (infiles, outfiles):
 #
 #    task1
 #
+root_dir  = "test_suffix_output_dir"
 data_dir  = "test_suffix_output_dir/data"
 work_dir  = "test_suffix_output_dir/work"
 @mkdir(data_dir, work_dir)
@@ -117,7 +118,7 @@ def task1(outfile):
 #    task2
 #
 @mkdir( task1,
-        suffix(".1"), 
+        suffix(".1"),
         ".dir",
         output_dir = work_dir)
 @transform(task1, suffix(".1"), ".1", "extra.tst", 4, r"orig_dir=\1", output_dir = work_dir)
@@ -211,7 +212,7 @@ except:
 
 class Test_ruffus(unittest.TestCase):
     def setUp(self):
-        for tempdir in data_dir, work_dir:
+        for tempdir in root_dir,:
             try:
                 shutil.rmtree(tempdir)
             except:
@@ -221,7 +222,7 @@ class Test_ruffus(unittest.TestCase):
 
 
     def tearDown(self):
-        for tempdir in data_dir, work_dir:
+        for tempdir in root_dir,:
             try:
                 shutil.rmtree(tempdir)
             except:
@@ -241,16 +242,16 @@ class Test_ruffus(unittest.TestCase):
 
 
         test_pipeline.mkdir(data_dir, work_dir)
-        test_pipeline.originate(task_func   = task1, 
+        test_pipeline.originate(task_func   = task1,
                                 output      = [os.path.join(data_dir, "%s.1" % aa) for aa in "abcd"])
 
-        test_pipeline.mkdir(filter      = suffix(".1"), 
+        test_pipeline.mkdir(filter      = suffix(".1"),
                             output      = ".dir",
                             output_dir = work_dir)
 
         test_pipeline.transform(task_func   = task2,
                                 input       = task1,
-                                filter      = suffix(".1"), 
+                                filter      = suffix(".1"),
                                 output      = ".1",
                                 extras      = ["extra.tst", 4, r"orig_dir=\1"],
                                 output_dir  = work_dir)
