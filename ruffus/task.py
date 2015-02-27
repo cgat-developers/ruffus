@@ -2530,7 +2530,7 @@ class Task (node):
         if (suffix in valid_tags):
             valid_tag_names.append("suffix()")
             if isinstance(file_name_transform_tag, suffix):
-                output_dir = parsed_args["output_dir"] if "output_dir" in parsed_args else None
+                output_dir = parsed_args["output_dir"] if "output_dir" in parsed_args else []
                 return t_suffix_file_names_transform(self,
                                                      file_name_transform_tag,
                                                      self.error_type,

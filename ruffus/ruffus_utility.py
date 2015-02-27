@@ -1454,6 +1454,13 @@ def parse_task_arguments ( orig_unnamed_arguments, orig_named_arguments, expecte
                     or ([add_inputs=add_inputs(...)|replace_inputs=inputs(...)])
         Special handling for variable number of arguments at the end of the argument list
             which all become "extras"
+
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    #
+    #   N.B. Missing non-mandatory arguments are returned as an empty list
+    #
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
                 """
     results = {}
     unnamed_arguments   = list(orig_unnamed_arguments)
@@ -1572,6 +1579,12 @@ def parse_task_arguments ( orig_unnamed_arguments, orig_named_arguments, expecte
                                                                 named_result_strs))
                 #print (err_msg, file=sys.stderr)
                 raise error_missing_args(err_msg)
+
+            #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            #
+            #   N.B. Missing non-mandatory arguments are returned as an empty list
+            #
+            #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             else:
                 results[arg_name] = []
 
