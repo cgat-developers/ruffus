@@ -2509,12 +2509,13 @@ class Task (node):
     #   _choose_file_names_transform
 
     # _________________________________________________________________________
-    def _choose_file_names_transform(self, file_name_transform_tag,
+    def _choose_file_names_transform(self, parsed_args,
                                      valid_tags=(regex, suffix, formatter)):
         """
         shared code for subdivide, transform, product etc for choosing method
         for transform input file to output files
         """
+        file_name_transform_tag = parsed_args["filter"]
         valid_tag_names = []
         # regular expression match
         if (regex in valid_tags):
@@ -2529,11 +2530,12 @@ class Task (node):
         if (suffix in valid_tags):
             valid_tag_names.append("suffix()")
             if isinstance(file_name_transform_tag, suffix):
+                output_dir = parsed_args["output_dir"] if "output_dir" in parsed_args else None
                 return t_suffix_file_names_transform(self,
                                                      file_name_transform_tag,
                                                      self.error_type,
-                                                     self.syntax)
-
+                                                     self.syntax,
+                                                     output_dir)
         # new style string.format()
         if (formatter in valid_tags):
             valid_tag_names.append("formatter()")
@@ -2681,7 +2683,7 @@ class Task (node):
         #
         self.parsed_args = parse_task_arguments(unnamed_args, named_args,
                                                 ["input", "filter", "modify_inputs",
-                                                 "output", "extras"],
+                                                 "output", "extras", "output_dir"],
                                                 self.description_with_args_placeholder)
 
     # _________________________________________________________________________
@@ -2721,7 +2723,7 @@ class Task (node):
         # _____________________________________________________________________
 
         # how to transform input to output file name
-        file_names_transform = self._choose_file_names_transform(self.parsed_args["filter"])
+        file_names_transform = self._choose_file_names_transform(self.parsed_args)
 
         modify_inputs = self.parsed_args["modify_inputs"]
         if modify_inputs is not None:
@@ -2802,7 +2804,7 @@ class Task (node):
         ancestral_tasks = set(input_files_task_globs.tasks)
 
         # how to transform input to output file name
-        file_names_transform = self._choose_file_names_transform(self.parsed_args["filter"])
+        file_names_transform = self._choose_file_names_transform(self.parsed_args)
 
         modify_inputs = self.parsed_args["modify_inputs"]
         if modify_inputs is not None:
@@ -3031,7 +3033,7 @@ class Task (node):
         ancestral_tasks = set(input_files_task_globs.tasks)
 
         # how to transform input to output file name
-        file_names_transform = self._choose_file_names_transform(self.parsed_args["filter"],
+        file_names_transform = self._choose_file_names_transform(self.parsed_args,
                                                                  (regex, formatter))
 
         modify_inputs = self.parsed_args["modify_inputs"]
@@ -3149,7 +3151,7 @@ class Task (node):
             #
             self.parsed_args = parse_task_arguments(unnamed_args, named_args,
                                                     ["input", "filter", "modify_inputs",
-                                                     "output", "extras"], task_description)
+                                                     "output", "output_dir", "extras"], task_description)
 
         #
         # simple behaviour: just make directories in list of strings

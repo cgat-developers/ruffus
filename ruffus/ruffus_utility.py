@@ -1524,6 +1524,7 @@ def parse_task_arguments ( orig_unnamed_arguments, orig_named_arguments, expecte
         """
         All missing, non-mandatory are empty list
         """
+
         # ignore if not on list
         if not arg_name in expected_arguments:
             return
@@ -1583,6 +1584,12 @@ def parse_task_arguments ( orig_unnamed_arguments, orig_named_arguments, expecte
     #   filter is mandatory if expected
     #
     parse_argument ('filter', expected_arguments, unnamed_arguments, named_arguments, results, task_description, mandatory = True, argument_types = (formatter, regex, suffix))
+
+    if "filter" in results:
+        if isinstance(results["filter"], suffix):
+            parse_argument ("output_dir", expected_arguments, [], named_arguments, results, task_description, mandatory = False)
+
+
 
     #
     #   inputN

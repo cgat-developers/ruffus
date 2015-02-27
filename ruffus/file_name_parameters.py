@@ -169,15 +169,21 @@ class t_suffix_file_names_transform(t_file_names_transform):
     Does the work for generating output / "extra input" / "extra" filenames
         replacing a specified suffix
     """
-    def __init__ (self, enclosing_task, suffix_object, error_type, descriptor_string):
+    def __init__ (self, enclosing_task, suffix_object, error_type, descriptor_string, output_dir = None):
         self.matching_regex = compile_suffix(enclosing_task, suffix_object, error_type, descriptor_string)
         self.matching_regex_str = suffix_object.args[0]
+        self.output_dir = output_dir
 
     def substitute (self, starting_file_names, pattern):
         return regex_replace(starting_file_names[0], self.matching_regex_str, self.matching_regex, pattern)
 
     def substitute_output_files (self, starting_file_names, pattern):
-        return regex_replace(starting_file_names[0], self.matching_regex_str, self.matching_regex, pattern, SUFFIX_SUBSTITUTE)
+        res = regex_replace(starting_file_names[0], self.matching_regex_str, self.matching_regex, pattern, SUFFIX_SUBSTITUTE)
+        if self.output_dir is None:
+            return res
+        # N.B. Does not do output directory substitution for extra parameters
+        else:
+            return os.path.join(self.output_dir, os.path.split(res)[1])
 
 
 class t_regex_file_names_transform(t_file_names_transform):
