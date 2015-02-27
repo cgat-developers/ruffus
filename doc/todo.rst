@@ -8,6 +8,12 @@ Where I see Ruffus going
 
     These are the future enhancements I would like to see in Ruffus:
 
+    * Simpler syntax
+        * Extremely pared down syntax where strings are interpreted as commands (like gmake)
+          but with full Ruffus support / string interpolation etc.
+        * More powerful non-decorator OOP syntax
+        * More customisation points for your own syntax / database use
+
     * Better support for Computational clusters / larger scale pipelines
         * Running jobs out of sequence
         * Long running pipeline where input can be added later
@@ -29,26 +35,27 @@ Where I see Ruffus going
         * Can we read and write from databases instead of files?
         * Can we cleanup files but preserve history?
 
-
 ##########################################
-Future Changes to Ruffus
+In up coming release:
 ##########################################
 
-    I would appreciated feedback and help on all these issues and where next to take *ruffus*.
 
 
-    **Future Changes** are features where we more or less know where we are going and how to get there.
+********************************************************************************************************
+Checked into github: @transform(..., suffix(), output_dir = "")
+********************************************************************************************************
 
-    **Planned Improvements** describes features we would like in Ruffus but where the implementation
-    or syntax has not yet been (fully) worked out.
+    Allow the directory of the output parameters (not the extras) to be changed with
+    ``@transform`` or ``pipeline.transform`` by specifying an optional (named) ``output_dir`` parameter
 
-    If you have suggestions or contributions, please either write to me ( ruffus_lib at llew.org.uk) or
-    send a pull request via the `git site  <https://github.com/bunbun/ruffus>`__.
-
+    * ``output_dir`` only goes with ``@transform`` and ``@mkdir``
+    * ``@subdivide`` can use ``suffix()`` (!!) but treats it like an ``extras`` parameters, so no ``output_dir`` substitution
+      is possible.
+    See example ``test\test_suffix_output_dir.py``
 
 
 ****************************************************************************************
-On github: Named parameters in decorators for clarity
+Checked into github: Named parameters in decorators for clarity
 ****************************************************************************************
     Motivating example:
 
@@ -77,7 +84,7 @@ On github: Named parameters in decorators for clarity
 
 
 ****************************************************************************************
-On github: Non-decorator / Function interface
+Checked into github: Non-decorator / Function interface
 ****************************************************************************************
 
     Motivating example:
@@ -159,6 +166,36 @@ Todo: document ``output_from()``
 ****************************************************************************************
 
 ****************************************************************************************
+Todo: decorator docs should point to manual
+****************************************************************************************
+
+
+##########################################
+Future Changes to Ruffus
+##########################################
+
+    I would appreciated feedback and help on all these issues and where next to take *ruffus*.
+
+
+    **Future Changes** are features where we more or less know where we are going and how to get there.
+
+    **Planned Improvements** describes features we would like in Ruffus but where the implementation
+    or syntax has not yet been (fully) worked out.
+
+    If you have suggestions or contributions, please either write to me ( ruffus_lib at llew.org.uk) or
+    send a pull request via the `git site  <https://github.com/bunbun/ruffus>`__.
+
+
+****************************************************************************************
+Todo: Log the progress through the pipeline in a machine parsable format
+****************************************************************************************
+
+    Standard parsable format for reporting the state of the pipeline  enhancement
+
+    * Timestamped text file
+    * Timestamped Database
+
+****************************************************************************************
 Todo: either_or: Prevent failed jobs from propagating further
 ****************************************************************************************
 
@@ -178,11 +215,6 @@ Todo: either_or: Prevent failed jobs from propagating further
 
     ..
         Python_
-
-
-****************************************************************************************
-Todo: decorator docs should point to manual
-****************************************************************************************
 
 ****************************************************************************************
 Todo: Replacements for formatter(), suffix(), regex()

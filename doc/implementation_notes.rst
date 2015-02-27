@@ -5,12 +5,37 @@ Implementation Tips
 ******************************************************************************
 Items remaining for current release
 ******************************************************************************
-
-    * Unit tests for @split and @subdivide
-    * Unit tests for svg graph_printout under python3
-    * Unit tests for drmaa under python3
-    * Unit tests for new interface under python3
+======================================================================================================
+Docs
+======================================================================================================
     * New docs for new interface
+    * List named parameters at least
+    * How to write new pipeline functions
+    * How decorators / OOP code is shared
+    * How functions parameters are checked early
+    * Parameter order
+
+======================================================================================================
+Unit tests
+======================================================================================================
+    #. ``Pipeline.get_head_tasks(self)`` (including tasks with mkdir())
+    #. ``Pipeline.get_tail_tasks(self)``
+    #. ``Pipeline._complete_task_setup()`` which follows chain of dependencies for each task in a pipeline
+    #.  Sub pipeline
+    #. whether setup occurs ``pipeline_run()`` where ``target_tasks`` and ``forcedtorun_tasks `` are in different linked or unlinked pipelines
+    #. name lookup
+    #. Task (dependency) parsing inside @transform, pipeline.transform(input = , add_inputs, replace_inputs =), pipeline.split(..., output=)
+    #. ``mkdir()`` should not be allowed inside input parameters apart from @follows
+    #. Cannot dependency cannot be self
+    #. ``Pipeline.clone()``
+    #. ``Task.set_input()``
+    #. ``@product`` ``set_input`` should take (``input``, ``input2``...)
+
+======================================================================================================
+Unit tests
+======================================================================================================
+    # suffix() with dir parameter
+
 
 
 ******************************************************************************
@@ -716,23 +741,6 @@ Parameter handling
 ******************************************************************************
  Add Object Orientated interface
 ******************************************************************************
-======================================================================================================
-Todo
-======================================================================================================
-Need unit tests
-    #. ``Pipeline.get_head_tasks(self)`` (including tasks with mkdir())
-    #. ``Pipeline.get_tail_tasks(self)``
-    #. ``Pipeline._complete_task_setup()`` which follows chain of dependencies for each task in a pipeline
-    #. whether setup occurs ``pipeline_run()`` where ``target_tasks`` and ``forcedtorun_tasks `` are in different linked or unlinked pipelines
-    #. name lookup
-    #. ``Pipeline.xxx()``
-    #. ``Task`` chaining
-    #. Task (dependency) parsing inside @transform, pipeline.transform(input = , add_inputs, replace_inputs =), pipeline.split(..., output=)
-    #. ``mkdir()`` should not be allowed inside input parameters apart from @follows
-    #. Cannot dependency cannot be self
-    #. ``Pipeline.clone()``
-    #. ``Task.set_input()``
-    #. ``@product`` ``set_input`` should take (``input``, ``input2``...)
 
 
 ======================================================================================================
@@ -760,8 +768,8 @@ Passed Unit tests
         * use  ``_node_index`` from ``graph.py`` so we have always a unique identifier for each ``Task``
     #. Parse arguments using ruffus_utility.parse_task_arguments
         * Reveals full hackiness and inconsistency between ``add_inputs`` and ``inputs``. The latter only takes a single argument. Each of the elements of the former gets added along side the existing inputs.
-    #. Add ``pipeline`` class
-       * Create global called ``"main"``
+    #. Add ``Pipeline`` class
+       * Create global called ``"main"`` (accessed by Pipeline.pipelines["main"])
     #. Task name lookup
         * Task names are unique (Otherwise Ruffus will complain at Task creation)
         * Can also lookup by fully qualified or unqualified function name but these can be ambiguous
