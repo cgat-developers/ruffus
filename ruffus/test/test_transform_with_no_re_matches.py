@@ -16,29 +16,26 @@ from __future__ import print_function
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-from optparse import OptionParser
-import sys, os
-import os.path
-try:
-    import StringIO as io
-except:
-    import io as io
 
-import re,time
+import os
+import sys
 
-# add self to search path for testing
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
-if __name__ == '__main__':
-    module_name = os.path.split(sys.argv[0])[1]
-    module_name = os.path.splitext(module_name)[0];
-else:
-    module_name = __name__
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
+
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = __import__ (ruffus_name)
+for attr in "files", "transform", "regex", "pipeline_run", "Pipeline":
+    globals()[attr] = getattr (ruffus, attr)
 
-import ruffus
-print("\tRuffus Version = ", ruffus.__version__)
+print("    Ruffus Version = ", ruffus.__version__)
 
 
 
@@ -50,32 +47,6 @@ print("\tRuffus Version = ", ruffus.__version__)
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-import re
-import operator
-import sys,os
-from collections import defaultdict
-import random
-
-sys.path.append(os.path.abspath(os.path.join(exe_path,"..", "..")))
-from ruffus import *
-
-# use simplejson in place of json for python < 2.6
-try:
-    import json
-except ImportError:
-    import simplejson
-    json = simplejson
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   Main logic
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-
-
 
 
 
@@ -127,7 +98,7 @@ class Test_task_mkdir(unittest.TestCase):
         """
         """
         for d in ['a']:
-            fullpath = os.path.join(exe_path, d)
+            fullpath = os.path.join(os.path.dirname(__file__), d)
             os.unlink(fullpath)
 
 

@@ -4,35 +4,32 @@ from __future__ import print_function
 
     test_softlink_uptodate.py
 
-        use :
-            --debug               to test automatically
-            -j N / --jobs N       to specify multitasking
-            -v                    to see the jobs in action
-            -n / --just_print     to see what jobs would run
-
 """
 
+import os
+import sys
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
 
-#   options
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-import sys, os
-
-# add self to search path for testing
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-from ruffus import *
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = __import__ (ruffus_name)
+try:
+    attrlist = ruffus.__all__
+except AttributeError:
+    attrlist = dir (ruffus)
+for attr in attrlist:
+    if attr[0:2] != "__":
+        globals()[attr] = getattr (ruffus, attr)
 
-#parser = cmdline.get_argparse(   description='Test soft link up to date?', version = "%(prog)s v.2.23")
-#options = parser.parse_args()
 
-#  optional logger which can be passed to ruffus tasks
-#logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 

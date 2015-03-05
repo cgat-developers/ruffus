@@ -6,114 +6,34 @@ from __future__ import print_function
 
         bug where @files follows merge and extra parenthesis inserted
 
-        use :
-            --debug               to test automatically
-            --start_again         the first time you run the file
-            --jobs_per_task N     to simulate tasks with N numbers of files per task
-
-            -j N / --jobs N       to speify multitasking
-            -v                    to see the jobs in action
-            -n / --just_print     to see what jobs would run
-
 """
+tempdir = "temp_filesre_split_and_combine/"
+test_file = tempdir  + "test_output"
+jobs_per_task = 50
+
+import os
+import sys
+
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
+
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = __import__ (ruffus_name)
 
-#   options
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-from optparse import OptionParser
-import sys, os
-import os.path
 try:
-    import StringIO as io
-except:
-    import io as io
-
-import re,time
-
-# add self to search path for testing
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
-if __name__ == '__main__':
-    module_name = os.path.split(sys.argv[0])[1]
-    module_name = os.path.splitext(module_name)[0];
-else:
-    module_name = __name__
-
-
-
-import ruffus
-parser = OptionParser(version="%%prog v1.0, ruffus v%s" % ruffus.ruffus_version.__version)
-parser.add_option("-D", "--debug", dest="debug",
-                    action="store_true", default=False,
-                    help="Make sure output is correct and clean up.")
-parser.add_option("-s", "--start_again", dest="start_again",
-                    action="store_true", default=False,
-                    help="Make a new 'original.fa' file to simulate having to restart "
-                            "pipeline from scratch.")
-parser.add_option("--jobs_per_task", dest="jobs_per_task",
-                      default=3,
-                      metavar="N",
-                      type="int",
-                      help="Simulates tasks with N numbers of files per task.")
-
-
-parser.add_option("-t", "--target_tasks", dest="target_tasks",
-                  action="append",
-                  default = list(),
-                  metavar="JOBNAME",
-                  type="string",
-                  help="Target task(s) of pipeline.")
-parser.add_option("-f", "--forced_tasks", dest="forced_tasks",
-                  action="append",
-                  default = list(),
-                  metavar="JOBNAME",
-                  type="string",
-                  help="Pipeline task(s) which will be included even if they are up to date.")
-parser.add_option("-j", "--jobs", dest="jobs",
-                  default=1,
-                  metavar="jobs",
-                  type="int",
-                  help="Specifies  the number of jobs (commands) to run simultaneously.")
-parser.add_option("-v", "--verbose", dest = "verbose",
-                  action="count", default=0,
-                  help="Print more verbose messages for each additional verbose level.")
-parser.add_option("-d", "--dependency", dest="dependency_file",
-                  #default="simple.svg",
-                  metavar="FILE",
-                  type="string",
-                  help="Print a dependency graph of the pipeline that would be executed "
-                        "to FILE, but do not execute it.")
-parser.add_option("-F", "--dependency_graph_format", dest="dependency_graph_format",
-                  metavar="FORMAT",
-                  type="string",
-                  default = 'svg',
-                  help="format of dependency graph file. Can be 'ps' (PostScript), "+
-                  "'svg' 'svgz' (Structured Vector Graphics), " +
-                  "'png' 'gif' (bitmap  graphics) etc ")
-parser.add_option("-n", "--just_print", dest="just_print",
-                    action="store_true", default=False,
-                    help="Print a description of the jobs that would be executed, "
-                        "but do not execute them.")
-parser.add_option("-M", "--minimal_rebuild_mode", dest="minimal_rebuild_mode",
-                    action="store_true", default=False,
-                    help="Rebuild a minimum of tasks necessary for the target. "
-                    "Ignore upstream out of date tasks if intervening tasks are fine.")
-parser.add_option("-K", "--no_key_legend_in_graph", dest="no_key_legend_in_graph",
-                    action="store_true", default=False,
-                    help="Do not print out legend and key for dependency graph.")
-parser.add_option("-H", "--draw_graph_horizontally", dest="draw_horizontally",
-                    action="store_true", default=False,
-                    help="Draw horizontal dependency graph.")
-
-parameters = [
-                ]
-
-
+    attrlist = ruffus.__all__
+except AttributeError:
+    attrlist = dir (ruffus)
+for attr in attrlist:
+    if attr[0:2] != "__":
+        globals()[attr] = getattr (ruffus, attr)
 
 
 
@@ -127,42 +47,8 @@ parameters = [
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 
-import re
-import operator
-import sys,os
-from collections import defaultdict
-import random
-
-sys.path.append(os.path.abspath(os.path.join(exe_path,"..", "..")))
-from ruffus import *
-
-# use simplejson in place of json for python < 2.6
-try:
-    import json
-except ImportError:
-    import simplejson
-    json = simplejson
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   Main logic
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-
-
-
-
-# get help string
-f =io.StringIO()
-parser.print_help(f)
-helpstr = f.getvalue()
-(options, remaining_args) = parser.parse_args()
-
-
-tempdir = "temp_filesre_split_and_combine/"
-test_file = tempdir  + "test_output"
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -182,7 +68,7 @@ test_file = tempdir + "task.done"
 
 
 
-@posttask(lambda: do_write(test_file, "Split into %d files\n" % options.jobs_per_task))
+@posttask(lambda: do_write(test_file, "Split into %d files\n" % jobs_per_task))
 @split(tempdir  + "original.fa", [tempdir  + "files.split.success", tempdir + "files.split.*.fa"])
 def split_fasta_file (input_file, outputs):
 
@@ -197,7 +83,7 @@ def split_fasta_file (input_file, outputs):
     #
     # create as many files as we are simulating in jobs_per_task
     #
-    for i in range(options.jobs_per_task):
+    for i in range(jobs_per_task):
         with open(tempdir + "files.split.%03d.fa" % i, "w") as oo:
             pass
 
@@ -287,11 +173,11 @@ class Test_ruffus(unittest.TestCase):
             pass
         os.makedirs(tempdir)
         open(tempdir + "original.fa", "w").close()
-        self.expected_text = """Split into 3 files
+        self.expected_text = """Split into %d files
 Sequences aligned
-%Identity calculated
+%%Identity calculated
 Results recombined
-"""
+""" % jobs_per_task
 
 
     def tearDown(self):
@@ -314,15 +200,15 @@ Results recombined
 
 
         test_pipeline.split(    task_func   = split_fasta_file,
-                                input       = tempdir  + "original.fa", 
-                                output      = [tempdir  + "files.split.success", 
+                                input       = tempdir  + "original.fa",
+                                output      = [tempdir  + "files.split.success",
                                                tempdir + "files.split.*.fa"])\
-            .posttask(lambda: do_write(test_file, "Split into %d files\n" % options.jobs_per_task))
+            .posttask(lambda: do_write(test_file, "Split into %d files\n" % jobs_per_task))
 
 
         test_pipeline.transform(task_func   = align_sequences,
-                                input       = split_fasta_file, 
-                                filter      = suffix(".fa"), 
+                                input       = split_fasta_file,
+                                filter      = suffix(".fa"),
                                 output      = ".aln"                     # fa -> aln
                                 )\
             .posttask(lambda: do_write(test_file, "Sequences aligned\n"))
@@ -337,8 +223,8 @@ Results recombined
             .posttask(lambda: do_write(test_file, "%Identity calculated\n"))
 
 
-        test_pipeline.merge(task_func   = combine_results, 
-                            input       = percentage_identity, 
+        test_pipeline.merge(task_func   = combine_results,
+                            input       = percentage_identity,
                             output      = tempdir + "all.combine_results")\
             .posttask(lambda: do_write(test_file, "Results recombined\n"))
 

@@ -46,19 +46,36 @@ CNT_SIMULATION_FILES    = 3
 
 
 
-import os, sys
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0, os.path.abspath(os.path.join(exe_path,"..", "..")))
+import os
+import sys
+
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
+
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = __import__ (ruffus_name)
 
-from ruffus import *
+try:
+    attrlist = ruffus.__all__
+except AttributeError:
+    attrlist = dir (ruffus)
+for attr in attrlist:
+    if attr[0:2] != "__":
+        globals()[attr] = getattr (ruffus, attr)
+
 import random
 
-
-gene_data_dir ="%s/temp_gene_data_for_intermediate_example" % exe_path
-simulation_data_dir =  "%s/temp_simulation_data_for_intermediate_example" % exe_path
-working_dir =  "%s/working_dir_for_intermediate_example" % exe_path
+script_path = os.path.dirname(os.path.abspath(__file__))
+gene_data_dir ="%s/temp_gene_data_for_intermediate_example" % script_path
+simulation_data_dir =  "%s/temp_simulation_data_for_intermediate_example" % script_path
+working_dir =  "%s/working_dir_for_intermediate_example" % script_path
 
 
 

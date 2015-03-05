@@ -4,50 +4,44 @@ from __future__ import print_function
 #
 #   test_ruffus_utility.py
 #
-#
-#   Copyright (c) 2009 Leo Goodstadt
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a copy
-#   of this software and associated documentation files (the "Software"), to deal
-#   in the Software without restriction, including without limitation the rights
-#   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#   copies of the Software, and to permit persons to whom the Software is
-#   furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-#   THE SOFTWARE.
 #################################################################################
-
 """
     test_ruffus_utility.py
 """
 
-# use simplejson in place of json for python < 2.6
+
+import os
+import sys
+
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
+
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
+
+
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = __import__ (ruffus_name)
 try:
-    import json
-except ImportError:
-    import simplejson
-    json = simplejson
-import unittest, os,sys
+    attrlist = ruffus.__all__
+except AttributeError:
+    attrlist = dir (ruffus)
+for attr in attrlist:
+    if attr[0:2] != "__":
+        globals()[attr] = getattr (ruffus, attr)
+try:
+    attrlist = ruffus.ruffus_utility.__all__
+except AttributeError:
+    attrlist = dir (ruffus.ruffus_utility)
+for attr in attrlist:
+    if attr[0:2] != "__":
+        globals()[attr] = getattr (ruffus.ruffus_utility, attr)
 
 
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0, os.path.abspath(os.path.join(exe_path,"..", "..")))
-from ruffus import *
-from ruffus.ruffus_utility import *
-
-
-os.chdir(exe_path)
-
-import unittest, time
+import unittest
 
 
 #_________________________________________________________________________________________

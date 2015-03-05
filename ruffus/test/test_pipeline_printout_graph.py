@@ -6,9 +6,25 @@ from __future__ import print_function
 
 
 """
+tempdir = "testing_dir/"
+
+import os
+import sys
+
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
+
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = __import__ (ruffus_name)
+for attr in "pipeline_run", "pipeline_printout_graph", "originate", "split", "transform", "subdivide", "formatter", "Pipeline":
+    globals()[attr] = getattr (ruffus, attr)
 
 
 
@@ -21,40 +37,13 @@ from __future__ import print_function
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import sys
-import os
-import os.path
-import re
-import operator
-from collections import defaultdict
-import random
-import json
 
-try:
-    import StringIO as io
-except:
-    import io as io
-import re
 from subprocess import *
 
-# add self to search path for testing
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
-if __name__ == '__main__':
-    module_name = os.path.split(sys.argv[0])[1]
-    module_name = os.path.splitext(module_name)[0];
-else:
-    module_name = __name__
 
 
-from ruffus import pipeline_run, pipeline_printout_graph
-from ruffus import originate
-from ruffus import split
-from ruffus import transform
-from ruffus import subdivide
-from ruffus import formatter
-from ruffus import Pipeline
-
+import unittest
+import shutil
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -65,7 +54,6 @@ from ruffus import Pipeline
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 
-tempdir = "./testing_dir/"
 
 
 @originate([tempdir + 'start'])
@@ -121,12 +109,6 @@ def subdivide_start(infile, outfiles, infile_basename):
     for i in range(    n_to_produce):
         open('{}_{}.subdivided'.format(infile_basename, i), 'a').close()
 
-
-import unittest, shutil
-try:
-    from StringIO import StringIO
-except:
-    from io import StringIO
 
 
 class Test_ruffus(unittest.TestCase):

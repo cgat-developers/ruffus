@@ -9,34 +9,52 @@ from __future__ import print_function
 """
 
 
-import unittest
+workdir = 'tmp_test_combinatorics'
+#sub-1s resolution in system?
+one_second_per_job = None
+
 import os
 import sys
+
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
+
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
+
+
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = __import__ (ruffus_name)
+try:
+    attrlist = ruffus.combinatorics.__all__
+except AttributeError:
+    attrlist = dir (ruffus.combinatorics)
+for attr in attrlist:
+    if attr[0:2] != "__":
+        globals()[attr] = getattr (ruffus.combinatorics, attr)
+
+for attr in "pipeline_run", "pipeline_printout", "suffix", "transform", "split", "merge", "dbdict", "follows", "Pipeline", "formatter", "output_from":
+    globals()[attr] = getattr (ruffus, attr)
+RethrownJobError = ruffus.ruffus_exceptions.RethrownJobError
+RUFFUS_HISTORY_FILE      = ruffus.ruffus_utility.RUFFUS_HISTORY_FILE
+CHECKSUM_FILE_TIMESTAMPS = ruffus.ruffus_utility.CHECKSUM_FILE_TIMESTAMPS
+
+
+import unittest
 import shutil
 try:
     from StringIO import StringIO
 except:
     from io import StringIO
-import time
 import re
 
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0, os.path.abspath(os.path.join(exe_path,"..", "..")))
-from ruffus import *
-from ruffus import (pipeline_run, pipeline_printout, suffix, transform, split,
-                    merge, dbdict, follows)
-from ruffus.combinatorics import *
-from ruffus.ruffus_exceptions import RethrownJobError
-from ruffus.ruffus_utility import (RUFFUS_HISTORY_FILE,
-                                   CHECKSUM_FILE_TIMESTAMPS)
-
-workdir = 'tmp_test_combinatorics'
-#sub-1s resolution in system?
-one_second_per_job = None
 
 
-def touch (filename):
-    with open(filename, "w"):
+def touch (outfile):
+    with open(outfile, "w"):
         pass
 
 
@@ -44,25 +62,22 @@ def touch (filename):
 #
 #   generate_initial_files1
 #___________________________________________________________________________
-def generate_initial_files1(out_name):
-    with open(out_name, 'w') as outfile:
-        pass
+def generate_initial_files1(outfile):
+    touch(outfile)
 
 #___________________________________________________________________________
 #
 #   generate_initial_files2
 #___________________________________________________________________________
-def generate_initial_files2(out_name):
-    with open(out_name, 'w') as outfile:
-        pass
+def generate_initial_files2(outfile):
+    touch(outfile)
 
 #___________________________________________________________________________
 #
 #   generate_initial_files3
 #___________________________________________________________________________
-def generate_initial_files3(out_name):
-    with open(out_name, 'w') as outfile:
-        pass
+def generate_initial_files3(outfile):
+    touch(outfile)
 
 #___________________________________________________________________________
 #
@@ -94,7 +109,7 @@ def test_product_misspelt_capture_error_task( infiles, outfile):
     """
     FILE_PART mispelt as FILE_PART
     """
-    with open(outfile, "w") as p: pass
+    touch(outfile)
 
 
 #___________________________________________________________________________
@@ -105,7 +120,7 @@ def test_product_out_of_range_formatter_ref_error_task( infiles, outfile, ignore
     """
     {path[2][0]} when len(path) == 1
     """
-    with open(outfile, "w") as p: pass
+    touch(outfile)
 
 #___________________________________________________________________________
 #
@@ -115,7 +130,7 @@ def test_product_formatter_ref_index_error_task( infiles, outfile, ignored_filte
     """
     {path[0][0][1000} when len of the path string len(path[0][0]) < 1000
     """
-    with open(outfile, "w") as p: pass
+    touch(outfile)
 
 #___________________________________________________________________________
 #

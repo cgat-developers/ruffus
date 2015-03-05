@@ -4,18 +4,28 @@ from __future__ import print_function
     test_task_misc.py
 """
 
-# use simplejson in place of json for python < 2.6
-try:
-    import json
-except ImportError:
-    import simplejson
-    json = simplejson
-import unittest, os,sys
+import os
+import sys
+
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
+
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0, os.path.abspath(os.path.join(exe_path,"..", "..")))
-from ruffus import *
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = __import__ (ruffus_name)
+
+for attr in "task",:
+    globals()[attr] = getattr (ruffus, attr)
+
+
+
+import unittest
 
 
 

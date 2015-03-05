@@ -8,31 +8,50 @@ from __future__ import print_function
 
 """
 
-
-import unittest
 import os
 import sys
+
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
+
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
+
+
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = __import__ (ruffus_name)
+for attr in "pipeline_run", "pipeline_printout", "suffix", "transform", "split", "merge", "dbdict", "Pipeline":
+    globals()[attr] = getattr (ruffus, attr)
+get_default_history_file_name =  ruffus.task.get_default_history_file_name
+RUFFUS_HISTORY_FILE           = ruffus.ruffus_utility.RUFFUS_HISTORY_FILE
+CHECKSUM_FILE_TIMESTAMPS      = ruffus.ruffus_utility.CHECKSUM_FILE_TIMESTAMPS
+CHECKSUM_HISTORY_TIMESTAMPS   = ruffus.ruffus_utility.CHECKSUM_HISTORY_TIMESTAMPS
+CHECKSUM_FUNCTIONS            = ruffus.ruffus_utility.CHECKSUM_FUNCTIONS
+CHECKSUM_FUNCTIONS_AND_PARAMS = ruffus.ruffus_utility.CHECKSUM_FUNCTIONS_AND_PARAMS
+RethrownJobError = ruffus.ruffus_exceptions.RethrownJobError
+
+
+
+
+#___________________________________________________________________________
+#
+#   imports
+#___________________________________________________________________________
+
+
+import unittest
 import shutil
 try:
     from StringIO import StringIO
 except:
     from io import StringIO
 import time
+import re
 
-import sys, re
 
-
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0, os.path.abspath(os.path.join(exe_path,"..", "..")))
-from ruffus import (pipeline_run, pipeline_printout, suffix, transform, split,
-                    merge, dbdict, Pipeline)
-from ruffus.task import get_default_history_file_name
-from ruffus.ruffus_utility import (RUFFUS_HISTORY_FILE,
-                                   CHECKSUM_FILE_TIMESTAMPS,
-                                   CHECKSUM_HISTORY_TIMESTAMPS,
-                                   CHECKSUM_FUNCTIONS,
-                                   CHECKSUM_FUNCTIONS_AND_PARAMS)
-from ruffus.ruffus_exceptions import RethrownJobError
 
 possible_chksms = list(range(CHECKSUM_FUNCTIONS_AND_PARAMS + 1))
 workdir = 'tmp_test_job_completion/'

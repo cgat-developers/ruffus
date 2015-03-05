@@ -8,22 +8,41 @@ from __future__ import print_function
 
 """
 
+import os
+import sys
+
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
+
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
+
+
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = __import__ (ruffus_name)
+
+try:
+    attrlist = ruffus.__all__
+except AttributeError:
+    attrlist = dir (ruffus)
+for attr in attrlist:
+    if attr[0:2] != "__":
+        globals()[attr] = getattr (ruffus, attr)
+
+handle_verbose =  ruffus.cmdline.handle_verbose
+cmdline=  ruffus.cmdline
 
 import unittest
-import os, re
-import sys
+import re
 import shutil
-try:
-    from StringIO import StringIO
-except:
-    from io import StringIO
-import time
 
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0, os.path.abspath(os.path.join(exe_path,"..", "..")))
 
-from ruffus.cmdline import handle_verbose
-import ruffus.cmdline as cmdline
+
+
+
 
 # mock for command line options
 class t_options(object):

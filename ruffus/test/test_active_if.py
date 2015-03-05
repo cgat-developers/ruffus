@@ -7,42 +7,33 @@ from __future__ import print_function
 """
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   options
+tempdir = "test_active_if"
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+import os
+import sys
 
-from optparse import OptionParser
-import sys, os
-import os.path
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
+
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
+
+
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = __import__ (ruffus_name)
+
 try:
-    import StringIO as io
-except:
-    import io as io
+    attrlist = ruffus.__all__
+except AttributeError:
+    attrlist = dir (ruffus)
+for attr in attrlist:
+    if attr[0:2] != "__":
+        globals()[attr] = getattr (ruffus, attr)
 
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-# add self to search path for testing
-sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
-if __name__ == '__main__':
-    module_name = os.path.split(sys.argv[0])[1]
-    module_name = os.path.splitext(module_name)[0];
-else:
-    module_name = __name__
-
-
-
-
-from ruffus import *
-
-#parser = cmdline.get_argparse(   description='Test @active_if')
-#
-#
-#options = parser.parse_args()
-#
-##  optional logger which can be passed to ruffus tasks
-#logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
 
 
 
@@ -57,19 +48,11 @@ from ruffus import *
 
 import re
 import operator
-import sys,os
 from collections import defaultdict
+import unittest, shutil
 
 
 import json
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   Functions
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -199,13 +182,6 @@ null -> "test_active_if/b.1"
 
 
 
-import unittest, shutil
-try:
-    from StringIO import StringIO
-except:
-    from io import StringIO
-
-tempdir = "test_active_if"
 
 # alternative syntax
 test_pipeline = Pipeline("test")

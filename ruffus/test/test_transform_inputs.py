@@ -8,35 +8,25 @@ from __future__ import print_function
 
 """
 
+import os
+import sys
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
 
-#   options
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-from optparse import OptionParser
-import sys, os
-import os.path
-try:
-    import StringIO as io
-except:
-    import io as io
-import re,time
-
-# add self to search path for testing
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
-if __name__ == '__main__':
-    module_name = os.path.split(sys.argv[0])[1]
-    module_name = os.path.splitext(module_name)[0];
-else:
-    module_name = __name__
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
 
-import ruffus
+ruffus = __import__ (ruffus_name)
+
+for attr in "follows", "mkdir", "transform", "regex", "merge", "Pipeline", "pipeline_run":
+    globals()[attr] = getattr (ruffus, attr)
 
 
 
@@ -46,33 +36,11 @@ import ruffus
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-import re
-import operator
-import sys,os
-from collections import defaultdict
-import random
-
-sys.path.append(os.path.abspath(os.path.join(exe_path,"..", "..")))
-from ruffus import *
-
-# use simplejson in place of json for python < 2.6
-try:
-    import json
-except ImportError:
-    import simplejson
-    json = simplejson
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   Main logic
+import shutil
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-
-def touch (filename):
-    with open(filename, "w"):
+def touch (outfile):
+    with open(outfile, "w"):
         pass
 
 
@@ -85,18 +53,18 @@ def touch (filename):
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 tempdir = "tempdir/"
 @follows(mkdir(tempdir))
-@files([[None, tempdir+ "a.1"], [None, tempdir+ "b.1"]])
+@ruffus.files([[None, tempdir+ "a.1"], [None, tempdir+ "b.1"]])
 def task1(i, o):
     touch(o)
 
 
 @follows(mkdir(tempdir))
-@files([[None, tempdir+ "c.1"], [None, tempdir+ "d.1"]])
+@ruffus.files([[None, tempdir+ "c.1"], [None, tempdir+ "d.1"]])
 def task2(i, o):
     touch(o)
 
 
-@transform(task1, regex(r"(.*)"), inputs(((r"\1"), task2, "test_transform_inputs.*y")), r"\1.output")
+@transform(task1, regex(r"(.*)"), ruffus.inputs(((r"\1"), task2, "test_transform_inputs.*y")), r"\1.output")
 def task3(i, o):
     names = ",".join(sorted(i))
     for f in o:
@@ -117,10 +85,10 @@ class Test_task(unittest.TestCase):
     def tearDown (self):
         """
         """
-        import glob
-        for f in glob.glob(tempdir + "*"):
-            os.unlink(f)
-        os.rmdir(tempdir)
+        try:
+            shutil.rmtree(tempdir)
+        except:
+            pass
 
 
     def test_task (self):
@@ -142,10 +110,10 @@ class Test_task(unittest.TestCase):
         test_pipeline.files(task2, [[None, tempdir+ "c.1"], [None, tempdir+ "d.1"]])\
             .follows(mkdir(tempdir))
 
-        test_pipeline.transform(task_func = task3, 
-                                input = task1, 
-                                filter = regex(r"(.*)"), 
-                                replace_inputs = inputs(((r"\1"), task2, "test_transform_inputs.*y")), 
+        test_pipeline.transform(task_func = task3,
+                                input = task1,
+                                filter = regex(r"(.*)"),
+                                replace_inputs = ruffus.inputs(((r"\1"), task2, "test_transform_inputs.*y")),
                                 output   = r"\1.output")
         test_pipeline.merge(task4, (task3), tempdir + "final.output")
 

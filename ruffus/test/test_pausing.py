@@ -8,93 +8,29 @@ from __future__ import print_function
 
 """
 
+import os
+import sys
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
 
-#   options
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = __import__ (ruffus_name)
 
-from optparse import OptionParser
-import sys, os
-import os.path
 try:
-    import StringIO as io
-except:
-    import io as io
-
-import re
-
-# add self to search path for testing
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
-if __name__ == '__main__':
-    module_name = os.path.split(sys.argv[0])[1]
-    module_name = os.path.splitext(module_name)[0];
-else:
-    module_name = __name__
-
-
-
-
-parser = OptionParser(version="%prog 1.0")
-parser.add_option("-D", "--debug", dest="debug",
-                    action="store_true", default=False,
-                    help="Make sure output is correct and clean up.")
-parser.add_option("-t", "--target_tasks", dest="target_tasks",
-                  action="append",
-                  default = list(),
-                  metavar="JOBNAME",
-                  type="string",
-                  help="Target task(s) of pipeline.")
-parser.add_option("-f", "--forced_tasks", dest="forced_tasks",
-                  action="append",
-                  default = list(),
-                  metavar="JOBNAME",
-                  type="string",
-                  help="Pipeline task(s) which will be included even if they are up to date.")
-parser.add_option("-j", "--jobs", dest="jobs",
-                  default=1,
-                  metavar="jobs",
-                  type="int",
-                  help="Specifies  the number of jobs (commands) to run simultaneously.")
-parser.add_option("-v", "--verbose", dest = "verbose",
-                  action="count", default=0,
-                  help="Do not echo to shell but only print to log.")
-parser.add_option("-d", "--dependency", dest="dependency_file",
-                  #default="simple.svg",
-                  metavar="FILE",
-                  type="string",
-                  help="Print a dependency graph of the pipeline that would be executed "
-                        "to FILE, but do not execute it.")
-parser.add_option("-F", "--dependency_graph_format", dest="dependency_graph_format",
-                  metavar="FORMAT",
-                  type="string",
-                  default = 'svg',
-                  help="format of dependency graph file. Can be 'ps' (PostScript), "+
-                  "'svg' 'svgz' (Structured Vector Graphics), " +
-                  "'png' 'gif' (bitmap  graphics) etc ")
-parser.add_option("-n", "--just_print", dest="just_print",
-                    action="store_true", default=False,
-                    help="Print a description of the jobs that would be executed, "
-                        "but do not execute them.")
-parser.add_option("-M", "--minimal_rebuild_mode", dest="minimal_rebuild_mode",
-                    action="store_true", default=False,
-                    help="Rebuild a minimum of tasks necessary for the target. "
-                    "Ignore upstream out of date tasks if intervening tasks are fine.")
-parser.add_option("-K", "--no_key_legend_in_graph", dest="no_key_legend_in_graph",
-                    action="store_true", default=False,
-                    help="Do not print out legend and key for dependency graph.")
-parser.add_option("-H", "--draw_graph_horizontally", dest="draw_horizontally",
-                    action="store_true", default=False,
-                    help="Draw horizontal dependency graph.")
-
-parameters = [
-                ]
-
-
-
+    attrlist = ruffus.__all__
+except AttributeError:
+    attrlist = dir (ruffus)
+for attr in attrlist:
+    if attr[0:2] != "__":
+        globals()[attr] = getattr (ruffus, attr)
 
 
 
@@ -112,15 +48,14 @@ import sys,os
 from collections import defaultdict
 import random
 
-sys.path.append(os.path.abspath(os.path.join(exe_path,"..", "..")))
-from ruffus import *
 
+import json
 # use simplejson in place of json for python < 2.6
-try:
-    import json
-except ImportError:
-    import simplejson
-    json = simplejson
+#try:
+#    import json
+#except ImportError:
+#    import simplejson
+#    json = simplejson
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -155,23 +90,6 @@ def test_job_io(infiles, outfiles, extra_params):
             ff.write(output_text)
 
 
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   Main logic
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-
-
-
-
-# get help string
-f =io.StringIO()
-parser.print_help(f)
-helpstr = f.getvalue()
-(options, remaining_args) = parser.parse_args()
 
 
 
@@ -397,7 +315,7 @@ class Test_ruffus(unittest.TestCase):
         test_pipeline = Pipeline("test")
 
         test_pipeline.files(task1,
-                            None, 
+                            None,
                             [tempdir + d for d in ('a.1', 'b.1', 'c.1')])\
             .follows(mkdir(tempdir))\
             .posttask(lambda: do_write(test_file, "Task 1 Done\n"))
@@ -409,9 +327,9 @@ class Test_ruffus(unittest.TestCase):
         test_pipeline.transform(task3, task2, regex('(.*).2'), inputs([r"\1.2", tempdir + "a.1"]), r'\1.3')\
             .posttask(lambda: do_write(test_file, "Task 3 Done\n"))
 
-        test_pipeline.transform(task_func = task4, 
-                                input     = tempdir + "*.1", 
-                                filter    = suffix(".1"), 
+        test_pipeline.transform(task_func = task4,
+                                input     = tempdir + "*.1",
+                                filter    = suffix(".1"),
                                 output    = ".4")\
             .follows(task1)\
             .posttask(lambda: do_write(test_file, "Task 4 Done\n"))
@@ -421,7 +339,7 @@ class Test_ruffus(unittest.TestCase):
             .posttask(lambda: do_write(test_file, "Task 5 Done\n"))
 
         test_pipeline.merge(task_func = task6,
-                            input     = [task3, task4, task5], 
+                            input     = [task3, task4, task5],
                             output    = tempdir + "final.6")\
             .follows(task3, task4, task5, )\
             .posttask(lambda: do_write(test_file, "Task 6 Done\n"))

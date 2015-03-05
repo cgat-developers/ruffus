@@ -8,21 +8,30 @@ from __future__ import print_function
 
 """
 
+import os
+import sys
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
 
-#   options
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = __import__ (ruffus_name)
 
-import sys, os
-import os.path
-# add self to search path for testing
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.append(os.path.abspath(os.path.join(exe_path,"..", "..")))
-from ruffus import *
-import ruffus.cmdline as cmdline
+try:
+    attrlist = ruffus.__all__
+except AttributeError:
+    attrlist = dir (ruffus)
+for attr in attrlist:
+    if attr[0:2] != "__":
+        globals()[attr] = getattr (ruffus, attr)
+
 
 
 
@@ -35,20 +44,15 @@ import ruffus.cmdline as cmdline
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-try:
-    import StringIO as io
-except:
-    import io as io
-import re
-import operator
 from collections import defaultdict
 
+import json
 # use simplejson in place of json for python < 2.6
-try:
-    import json
-except ImportError:
-    import simplejson
-    json = simplejson
+#try:
+#    import json
+#except ImportError:
+#    import simplejson
+#    json = simplejson
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 

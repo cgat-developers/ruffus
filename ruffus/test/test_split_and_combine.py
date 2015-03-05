@@ -2,47 +2,36 @@
 from __future__ import print_function
 """
 
-    branching.py
+    test_split_and_combine.py
 
         test branching dependencies
-
-        use :
-            --debug               to test automatically
-            --start_again         the first time you run the file
-            --jobs_per_task N     to simulate tasks with N numbers of files per task
-
-            -j N / --jobs N       to speify multitasking
-            -v                    to see the jobs in action
-            -n / --just_print     to see what jobs would run
 
 """
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+import sys
+tempdir = "temp_filesre_split_and_combine/"
+verbose_output = sys.stderr
 
-#   options
+import os
+import sys
+
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
+
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = __import__ (ruffus_name)
 
-from optparse import OptionParser
-import sys, os
-import os.path
-try:
-    import StringIO as io
-except:
-    import io as io
+for attr in "posttask", "split", "merge", "transform", "pipeline_printout", "pipeline_run", "Pipeline", "suffix":
+    globals()[attr] = getattr (ruffus, attr)
 
-import re,time
-
-# add self to search path for testing
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
-if __name__ == '__main__':
-    module_name = os.path.split(sys.argv[0])[1]
-    module_name = os.path.splitext(module_name)[0];
-else:
-    module_name = __name__
 
 
 
@@ -54,39 +43,10 @@ else:
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-import re
-import operator
-import sys,os
-from collections import defaultdict
-import random
-
-sys.path.append(os.path.abspath(os.path.join(exe_path,"..", "..")))
-from ruffus import *
-
-# use simplejson in place of json for python < 2.6
-try:
-    import json
-except ImportError:
-    import simplejson
-    json = simplejson
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   Main logic
+import unittest
+import shutil
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-
-
-
-
-tempdir = "temp_filesre_split_and_combine/"
-
-
-
-verbose_output = sys.stderr
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Tasks
@@ -172,11 +132,6 @@ def combine_results (input_files, output_files):
 
 
 
-import unittest, shutil
-try:
-    from StringIO import StringIO
-except:
-    from io import StringIO
 
 class Test_ruffus(unittest.TestCase):
     def setUp(self):
@@ -205,20 +160,20 @@ class Test_ruffus(unittest.TestCase):
 
 
         test_pipeline.split(task_func   = split_fasta_file,
-                            input       = tempdir  + "original.fa", 
-                            output      = [tempdir  + "files.split.success", 
+                            input       = tempdir  + "original.fa",
+                            output      = [tempdir  + "files.split.success",
                                            tempdir + "files.split.*.fa"])\
             .posttask(lambda: verbose_output.write("    Split into %d files\n" % 10))
 
 
         test_pipeline.transform(task_func   = align_sequences,
-                                input       = split_fasta_file, 
-                                filter      = suffix(".fa"), 
+                                input       = split_fasta_file,
+                                filter      = suffix(".fa"),
                                 output      = ".aln"                     # fa -> aln
                                 )\
             .posttask(lambda: verbose_output.write("    Sequences aligned\n"))
 
-        test_pipeline.transform(task_func   = percentage_identity,  
+        test_pipeline.transform(task_func   = percentage_identity,
                                 input       = align_sequences,      # find all results from align_sequences
                                 filter      = suffix(".aln"),       # replace suffix with:
                                 output      = [r".pcid",            #   .pcid suffix for the result
@@ -227,8 +182,8 @@ class Test_ruffus(unittest.TestCase):
             .posttask(lambda: verbose_output.write("    %Identity calculated\n"))
 
 
-        test_pipeline.merge(task_func   = combine_results, 
-                            input       = percentage_identity, 
+        test_pipeline.merge(task_func   = combine_results,
+                            input       = percentage_identity,
                             output      = [tempdir + "all.combine_results",
                                            tempdir + "all.combine_results_success"])\
             .posttask(lambda: verbose_output.write("    Results recombined\n"))

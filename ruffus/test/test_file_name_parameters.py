@@ -1,30 +1,5 @@
 #!/usr/bin/env python
 from __future__ import print_function
-################################################################################
-#
-#   test_file_name_parameters
-#
-#
-#   Copyright (c) 11/9/2009 Leo Goodstadt
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a copy
-#   of this software and associated documentation files (the "Software"), to deal
-#   in the Software without restriction, including without limitation the rights
-#   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#   copies of the Software, and to permit persons to whom the Software is
-#   furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-#   THE SOFTWARE.
-#################################################################################
 """
 
     test_file_name_parameters.py
@@ -32,17 +7,34 @@ from __future__ import print_function
 """
 
 
-import sys, os
-# add self to search path for testing
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+import os
+import sys
 
-#   Functions
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
+
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = list(map(__import__, [ruffus_name]))[0]
+task = ruffus.task
+combine = ruffus.combine
+non_str_sequence = ruffus.file_name_parameters.non_str_sequence
+needs_update_check_modify_time  = ruffus.file_name_parameters.needs_update_check_modify_time
+check_input_files_exist         = ruffus.file_name_parameters.check_input_files_exist
+args_param_factory              = ruffus.file_name_parameters.args_param_factory
+open_job_history                = ruffus.file_name_parameters.open_job_history
+
+#from ruffus.file_name_parameters import *
+
+
+
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -52,10 +44,6 @@ sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import sys
-import ruffus
-from ruffus import *
-from ruffus.file_name_parameters import *
 #print ruffus.__version__
 history_file = ':memory:'
 history_file = None

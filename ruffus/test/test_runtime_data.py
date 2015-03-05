@@ -6,94 +6,31 @@ from __future__ import print_function
 
 """
 
+runtime_files = ["a.3"]
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+import os
+import sys
 
-#   options
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
+
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = __import__ (ruffus_name)
 
-from optparse import OptionParser
-import sys, os
-import os.path
 try:
-    import StringIO as io
-except:
-    import io as io
-
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-# add self to search path for testing
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
-if __name__ == '__main__':
-    module_name = os.path.split(sys.argv[0])[1]
-    module_name = os.path.splitext(module_name)[0];
-else:
-    module_name = __name__
-
-
-
-
-parser = OptionParser(version="%prog 1.0")
-parser.add_option("-t", "--target_tasks", dest="target_tasks",
-                  action="append",
-                  default = list(),
-                  metavar="JOBNAME",
-                  type="string",
-                  help="Target task(s) of pipeline.")
-parser.add_option("-R", "--runtime_files", dest="runtime_files",
-                  action="append",
-                  default = ["a.3"],
-                  metavar="JOBNAME",
-                  type="string",
-                  help="Target task(s) of pipeline.")
-parser.add_option("-f", "--forced_tasks", dest="forced_tasks",
-                  action="append",
-                  default = list(),
-                  metavar="JOBNAME",
-                  type="string",
-                  help="Pipeline task(s) which will be included even if they are up to date.")
-parser.add_option("-j", "--jobs", dest="jobs",
-                  default=1,
-                  metavar="jobs",
-                  type="int",
-                  help="Specifies  the number of jobs (commands) to run simultaneously.")
-parser.add_option("-v", "--verbose", dest = "verbose",
-                  action="count", default=0,
-                  help="Print more verbose messages for each additional verbose level.")
-parser.add_option("-d", "--debug", dest = "debug",
-                  action="count", default=0,
-                  help="Cleanup afterwards.")
-parser.add_option("--dependency", dest="dependency_file",
-                  metavar="FILE",
-                  type="string",
-                  help="Print a dependency graph of the pipeline that would be executed "
-                        "to FILE, but do not execute it.")
-parser.add_option("-F", "--dependency_graph_format", dest="dependency_graph_format",
-                  metavar="FORMAT",
-                  type="string",
-                  default = 'svg',
-                  help="format of dependency graph file. Can be 'ps' (PostScript), "+
-                  "'svg' 'svgz' (Structured Vector Graphics), " +
-                  "'png' 'gif' (bitmap  graphics) etc ")
-parser.add_option("-n", "--just_print", dest="just_print",
-                    action="store_true", default=False,
-                    help="Print a description of the jobs that would be executed, "
-                        "but do not execute them.")
-parser.add_option("-M", "--minimal_rebuild_mode", dest="minimal_rebuild_mode",
-                    action="store_true", default=False,
-                    help="Rebuild a minimum of tasks necessary for the target. "
-                    "Ignore upstream out of date tasks if intervening tasks are fine.")
-parser.add_option("-K", "--no_key_legend_in_graph", dest="no_key_legend_in_graph",
-                    action="store_true", default=False,
-                    help="Do not print out legend and key for dependency graph.")
-parser.add_option("-H", "--draw_graph_horizontally", dest="draw_horizontally",
-                    action="store_true", default=False,
-                    help="Draw horizontal dependency graph.")
-
-parameters = [
-                ]
+    attrlist = ruffus.__all__
+except AttributeError:
+    attrlist = dir (ruffus)
+for attr in attrlist:
+    if attr[0:2] != "__":
+        globals()[attr] = getattr (ruffus, attr)
 
 
 
@@ -108,46 +45,16 @@ parameters = [
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import re
-import operator
-import sys,os
-from collections import defaultdict
+import unittest
+import shutil
 
-sys.path.append(os.path.abspath(os.path.join(exe_path,"..", "..")))
-from ruffus import *
-
+import json
 # use simplejson in place of json for python < 2.6
-try:
-    import json
-except ImportError:
-    import simplejson
-    json = simplejson
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   Functions
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   Main logic
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-
-
-
-
-# get help string
-f =io.StringIO()
-parser.print_help(f)
-helpstr = f.getvalue()
-(options, remaining_args) = parser.parse_args()
-
+#try:
+#    import json
+#except ImportError:
+#    import simplejson
+#    json = simplejson
 
 
 
@@ -163,7 +70,7 @@ helpstr = f.getvalue()
 #
 #    task1
 #
-@originate(['a.1'] + options.runtime_files)
+@originate(['a.1'] + runtime_files)
 def task1(outfile):
     """
     First task
@@ -237,11 +144,6 @@ def task4(infile, outfile):
 
 
 
-import unittest, shutil
-try:
-    from StringIO import StringIO
-except:
-    from io import StringIO
 
 class Test_ruffus(unittest.TestCase):
     def setUp(self):
@@ -258,25 +160,25 @@ class Test_ruffus(unittest.TestCase):
 
 
     def test_ruffus (self):
-        pipeline_run(verbose = 0, runtime_data = {"a": options.runtime_files})
+        pipeline_run(verbose = 0, runtime_data = {"a": runtime_files})
 
 
     def test_newstyle_ruffus (self):
 
 
         test_pipeline = Pipeline("test")
-        test_pipeline.originate(task_func = task1, 
-                                output = ['a.1'] + options.runtime_files)
+        test_pipeline.originate(task_func = task1,
+                                output = ['a.1'] + runtime_files)
         test_pipeline.transform(task2, task1, suffix(".1"), ".2")
-        test_pipeline.transform(task_func = task3, 
-                                   input = task2, 
-                                   filter = suffix(".2"), 
+        test_pipeline.transform(task_func = task3,
+                                   input = task2,
+                                   filter = suffix(".2"),
                                    output = ".3")
-        test_pipeline.transform(task_func = task4, 
-                                input = runtime_parameter("a"), 
-                                filter = suffix(".3"), 
+        test_pipeline.transform(task_func = task4,
+                                input = runtime_parameter("a"),
+                                filter = suffix(".3"),
                                 output = ".4").follows(task3)
-        test_pipeline.run(verbose = 0, runtime_data = {"a": options.runtime_files})
+        test_pipeline.run(verbose = 0, runtime_data = {"a": runtime_files})
 
 
 

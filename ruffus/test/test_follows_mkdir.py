@@ -1,84 +1,34 @@
 #!/usr/bin/env python
 from __future__ import print_function
 """
-
     test_follows_mkdir.py
-
-        test make directory dependencies
-
-        use :
-            -j N / --jobs N       to specify multitasking
-            -v                    to see the jobs in action
-            -n / --just_print     to see what jobs would run
-
 """
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+import os
+import sys
 
-#   options
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
+
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = __import__ (ruffus_name)
 
-from optparse import OptionParser
-import sys, os
-import os.path
 try:
-    import StringIO as io
-except:
-    import io as io
-import re,time
+    attrlist = ruffus.__all__
+except AttributeError:
+    attrlist = dir (ruffus)
+for attr in attrlist:
+    if attr[0:2] != "__":
+        globals()[attr] = getattr (ruffus, attr)
 
-# add self to search path for testing
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
-if __name__ == '__main__':
-    module_name = os.path.split(sys.argv[0])[1]
-    module_name = os.path.splitext(module_name)[0];
-else:
-    module_name = __name__
-
-
-
-import ruffus
-
-
-
-
-
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   imports
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-
-import re
-import operator
-import sys,os
-from collections import defaultdict
-import random
-
-sys.path.append(os.path.abspath(os.path.join(exe_path,"..", "..")))
-from ruffus import *
-
-# use simplejson in place of json for python < 2.6
-try:
-    import json
-except ImportError:
-    import simplejson
-    json = simplejson
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   Main logic
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 
 
@@ -109,7 +59,7 @@ class Test_task_mkdir(unittest.TestCase):
         delete directories
         """
         for d in 'abcde':
-            fullpath = os.path.join(exe_path, d)
+            fullpath = os.path.join(os.path.dirname(__file__), d)
             os.rmdir(fullpath)
 
 
@@ -117,7 +67,7 @@ class Test_task_mkdir(unittest.TestCase):
         pipeline_run(multiprocess = 10, verbose = 0)
 
         for d in 'abcde':
-            fullpath = os.path.join(exe_path, d)
+            fullpath = os.path.join(os.path.dirname(__file__), d)
             self.assertTrue(os.path.exists(fullpath))
 
     def test_newstyle_mkdir (self):
@@ -126,7 +76,7 @@ class Test_task_mkdir(unittest.TestCase):
         test_pipeline.run(multiprocess = 10, verbose = 0)
 
         for d in 'abcde':
-            fullpath = os.path.join(exe_path, d)
+            fullpath = os.path.join(os.path.dirname(__file__), d)
             self.assertTrue(os.path.exists(fullpath))
 
 

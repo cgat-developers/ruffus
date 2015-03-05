@@ -8,27 +8,45 @@ from __future__ import print_function
 
 """
 
-
-import unittest
 import os
 import sys
+
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
+
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
+
+
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = __import__ (ruffus_name)
+try:
+    attrlist = ruffus.combinatorics.__all__
+except AttributeError:
+    attrlist = dir (ruffus.combinatorics)
+for attr in attrlist:
+    if attr[0:2] != "__":
+        globals()[attr] = getattr (ruffus.combinatorics, attr)
+
+for attr in "pipeline_run", "pipeline_printout", "suffix", "transform", "split", "merge", "dbdict", "follows", "Pipeline", "formatter", "output_from", "originate":
+    globals()[attr] = getattr (ruffus, attr)
+RethrownJobError = ruffus.ruffus_exceptions.RethrownJobError
+RUFFUS_HISTORY_FILE      = ruffus.ruffus_utility.RUFFUS_HISTORY_FILE
+CHECKSUM_FILE_TIMESTAMPS = ruffus.ruffus_utility.CHECKSUM_FILE_TIMESTAMPS
+
+
+
+import unittest
 import shutil
 try:
     from StringIO import StringIO
 except:
     from io import StringIO
-import time
 import re
 
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0, os.path.abspath(os.path.join(exe_path,"..", "..")))
-from ruffus import *
-from ruffus import (pipeline_run, pipeline_printout, suffix, transform, split,
-                    merge, dbdict, follows)
-from ruffus.combinatorics import *
-from ruffus.ruffus_exceptions import RethrownJobError
-from ruffus.ruffus_utility import (RUFFUS_HISTORY_FILE,
-                                   CHECKSUM_FILE_TIMESTAMPS)
 
 workdir = 'tmp_test_combinatorics'
 #sub-1s resolution in system?

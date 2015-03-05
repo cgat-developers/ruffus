@@ -8,33 +8,52 @@ from __future__ import print_function
 
 """
 
+workdir = 'tmp_test_job_history_with_exceptions'
+#sub-1s resolution in system?
+one_second_per_job = None
+throw_exception = False
 
-import unittest
 import os
 import sys
+
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
+
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
+
+
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = __import__ (ruffus_name)
+for attr in "pipeline_run", "pipeline_printout", "suffix", "transform", "split", "merge", "dbdict", "follows", "originate", "collate", "formatter", "Pipeline":
+    globals()[attr] = getattr (ruffus, attr)
+RethrownJobError =  ruffus.ruffus_exceptions.RethrownJobError
+RUFFUS_HISTORY_FILE           = ruffus.ruffus_utility.RUFFUS_HISTORY_FILE
+CHECKSUM_FILE_TIMESTAMPS      = ruffus.ruffus_utility.CHECKSUM_FILE_TIMESTAMPS
+get_default_history_file_name = ruffus.ruffus_utility.get_default_history_file_name
+
+
+
+
+
+
+#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+#
+#   imports
+#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+
+import unittest
 import shutil
 try:
     from StringIO import StringIO
 except:
     from io import StringIO
-import time
 import re
 
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0, os.path.abspath(os.path.join(exe_path,"..", "..")))
-from ruffus import *
-from ruffus import (pipeline_run, pipeline_printout, suffix, transform, split,
-                    merge, dbdict, follows)
-#from ruffus.combinatorics import *
-from ruffus.ruffus_exceptions import RethrownJobError
-from ruffus.ruffus_utility import (RUFFUS_HISTORY_FILE,
-                                   CHECKSUM_FILE_TIMESTAMPS,
-                                    get_default_history_file_name)
 
-workdir = 'tmp_test_job_history_with_exceptions'
-#sub-1s resolution in system?
-one_second_per_job = None
-throw_exception = False
 #___________________________________________________________________________
 #
 #   generate_initial_files1
@@ -156,28 +175,28 @@ class Test_job_history_with_exceptions(unittest.TestCase):
         test_pipeline.originate(task_func   = generate_initial_files2,
                                 output      = [workdir +  "/e_name.tmp1", workdir +  "/f_name.tmp1"])
 
-        test_pipeline.originate(task_func   = generate_initial_files3, 
+        test_pipeline.originate(task_func   = generate_initial_files3,
                                 output      = [workdir +  "/g_name.tmp1", workdir +  "/h_name.tmp1"])
 
-        test_pipeline.originate(task_func   = generate_initial_files4, 
+        test_pipeline.originate(task_func   = generate_initial_files4,
                                 output      = workdir +  "/i_name.tmp1")
 
-        test_pipeline.collate(  task_func   = test_task2, 
-                                input       = [generate_initial_files1, 
-                                               generate_initial_files2, 
+        test_pipeline.collate(  task_func   = test_task2,
+                                input       = [generate_initial_files1,
+                                               generate_initial_files2,
                                                generate_initial_files3,
                                                generate_initial_files4],
                                 filter      = formatter(),
                                 output      = "{path[0]}/all.tmp2")
 
-        test_pipeline.transform(task_func   = test_task3, 
-                                input       = test_task2, 
-                                filter      = suffix(".tmp2"), 
+        test_pipeline.transform(task_func   = test_task3,
+                                input       = test_task2,
+                                filter      = suffix(".tmp2"),
                                 output      = ".tmp3")
 
-        test_pipeline.transform(task_func   = test_task4, 
-                                input       = test_task3, 
-                                filter      = suffix(".tmp3"), 
+        test_pipeline.transform(task_func   = test_task4,
+                                input       = test_task3,
+                                filter      = suffix(".tmp3"),
                                 output      = ".tmp4")
         return test_pipeline
 
@@ -239,7 +258,7 @@ class Test_job_history_with_exceptions(unittest.TestCase):
         #
         test_pipeline.run([test_task4],
                      checksum_level = CHECKSUM_FILE_TIMESTAMPS,
-                     history_file = ruffus_utility.get_default_history_file_name (),
+                     history_file = get_default_history_file_name (),
                      multithread = 1,
                      verbose = 0,
                      touch_files_only = 2,
@@ -314,7 +333,7 @@ class Test_job_history_with_exceptions(unittest.TestCase):
         #
         pipeline_run([test_task4],
                      checksum_level = CHECKSUM_FILE_TIMESTAMPS,
-                     history_file = ruffus_utility.get_default_history_file_name (),
+                     history_file = get_default_history_file_name (),
                      multithread = 1,
                      verbose = 0,
                      touch_files_only = 2,

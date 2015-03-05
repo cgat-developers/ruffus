@@ -27,30 +27,42 @@ from __future__ import print_function
         SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 """
+workdir = 'tmp_test_regex_error_messages'
+#sub-1s resolution in system?
+one_second_per_job = None
+parallelism = 2
 
-
-import unittest
-import os, re
+import os
 import sys
+
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
+
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
+
+
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = __import__ (ruffus_name)
+for attr in "pipeline_run", "pipeline_printout", "suffix", "transform", "split", "merge", "dbdict", "follows", "originate", "Pipeline", "regex":
+    globals()[attr] = getattr (ruffus, attr)
+RUFFUS_HISTORY_FILE = ruffus.ruffus_utility.RUFFUS_HISTORY_FILE
+fatal_error_input_file_does_not_match = ruffus.ruffus_exceptions.fatal_error_input_file_does_not_match
+RethrownJobError                      = ruffus.ruffus_exceptions.RethrownJobError
+
+
+import re
+import unittest
 import shutil
 try:
     from StringIO import StringIO
 except:
     from io import StringIO
-import time
 
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0, os.path.abspath(os.path.join(exe_path,"..", "..")))
-from ruffus import *
-from ruffus import (pipeline_run, pipeline_printout, suffix, transform, split,
-                    merge, dbdict, follows)
-from ruffus.ruffus_exceptions import *
-from ruffus.ruffus_utility import (RUFFUS_HISTORY_FILE)
 
-workdir = 'tmp_test_regex_error_messages'
-#sub-1s resolution in system?
-one_second_per_job = None
-parallelism = 2
 #___________________________________________________________________________
 #
 #   generate_initial_files1
@@ -436,9 +448,9 @@ if __name__ == '__main__':
     #pipeline_printout(sys.stdout, [test_product_task], verbose = 3)
     parallelism = 1
     suite = unittest.TestLoader().loadTestsFromTestCase(Test_regex_error_messages)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.TextTestRunner(verbosity=1).run(suite)
     parallelism = 2
     suite = unittest.TestLoader().loadTestsFromTestCase(Test_regex_error_messages)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.TextTestRunner(verbosity=1).run(suite)
     #unittest.main()
 

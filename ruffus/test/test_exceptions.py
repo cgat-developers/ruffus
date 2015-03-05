@@ -4,31 +4,27 @@ from __future__ import print_function
 
     test_exceptions.py
 
-        use :
-            --debug               to test automatically
-            -j N / --jobs N       to specify multitasking
-            -v                    to see the jobs in action
-            -n / --just_print     to see what jobs would run
-
 """
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+import os
+import sys
 
-#   options
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
 
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-import sys, os
-
-# add self to search path for testing
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
+# funky code to import by file name
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ruffus_name = os.path.basename(parent_dir)
+ruffus = __import__ (ruffus_name)
+for attr in "parallel", "pipeline_run", "Pipeline":
+    globals()[attr] = getattr (ruffus, attr)
 
-from ruffus import *
-import ruffus
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
