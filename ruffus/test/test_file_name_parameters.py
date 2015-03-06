@@ -1522,9 +1522,11 @@ class Test_product_param_factory(unittest.TestCase):
         #
         # simple 1 input, 1 output
         #
-        args = [[test_path + "/a.test1", test_path + "/b.test1"],                          task.formatter("(?P<ID>\w+)\.(.+)"),
-                                     [test_path + "/c.test2", test_path + "/d.test2", test_path + "/e.ignore"], task.formatter("(?P<ID>\w+)\.(test2)"),
-                                     r"{path[0][0]}/{ID[0][0]}.{1[1][0]}.output"]
+        args = [[test_path + "/a.test1", test_path + "/b.test1"],
+                 task.formatter("(?:.+/)?(?P<ID>\w+)\.(.+)"),
+                [test_path + "/c.test2", test_path + "/d.test2", test_path + "/e.ignore"],
+                task.formatter("(?:.+/)?(?P<ID>\w+)\.(test2)"),
+                r"{path[0][0]}/{ID[0][0]}.{1[1][0]}.output"]
         expected_result =  [
                             (('DIR/a.test1','DIR/c.test2'),'DIR/a.c.output'),
                             (('DIR/a.test1','DIR/d.test2'),'DIR/a.d.output'),
@@ -1559,8 +1561,8 @@ class Test_product_param_factory(unittest.TestCase):
         # (replace) inputs
         #
         #
-        paths = self.do_task_product([test_path + "/a.test1", test_path + "/b.test1"],                          task.formatter("(?P<ID>\w+)\.(.+)"),
-                                     [test_path + "/c.test2", test_path + "/d.test2", test_path + "/e.ignore"], task.formatter("(?P<ID>\w+)\.(test2)"),
+        paths = self.do_task_product([test_path + "/a.test1", test_path + "/b.test1"],                          task.formatter("(?:.+/)?(?P<ID>\w+)\.(.+)"),
+                                     [test_path + "/c.test2", test_path + "/d.test2", test_path + "/e.ignore"], task.formatter("(?:.+/)?(?P<ID>\w+)\.(test2)"),
                                      task.inputs(("{path[0][0]}/{basename[0][0]}.testwhat1", "{path[1][0]}/{basename[1][0]}.testwhat2") ),
                                      r"{path[0][0]}/{ID[0][0]}.{1[1][0]}.output")
         paths = recursive_replace(paths, test_path, "DIR")
@@ -1576,8 +1578,8 @@ class Test_product_param_factory(unittest.TestCase):
         # add inputs
         #
         #
-        paths = self.do_task_product([test_path + "/a.test1", test_path + "/b.test1"],                          task.formatter("(?P<ID>\w+)\.(.+)"),
-                                     [test_path + "/c.test2", test_path + "/d.test2", test_path + "/e.ignore"], task.formatter("(?P<ID>\w+)\.(test2)"),
+        paths = self.do_task_product([test_path + "/a.test1", test_path + "/b.test1"],                          task.formatter("(?:.+/)?(?P<ID>\w+)\.(.+)"),
+                                     [test_path + "/c.test2", test_path + "/d.test2", test_path + "/e.ignore"], task.formatter("(?:.+/)?(?P<ID>\w+)\.(test2)"),
                                      task.add_inputs("{path[0][0]}/{basename[0][0]}.testwhat1", "{path[1][0]}/{basename[1][0]}.testwhat2", ),
                                      r"{path[0][0]}/{ID[0][0]}.{1[1][0]}.output")
 
