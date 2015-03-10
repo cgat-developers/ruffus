@@ -202,6 +202,26 @@ class node (object):
 
     #_____________________________________________________________________________________
 
+    #   _remove_all_parents
+
+    #_____________________________________________________________________________________
+    def _remove_all_parents(self):
+        """
+        disconnect edges
+        """
+
+        # remove self from parent
+        for parent in self._inward:
+            if self in parent._outward:
+                parent._outward.remove(self)
+
+        # clear self
+        self._inward = []
+
+        return self
+
+    #_____________________________________________________________________________________
+
     #   _remove_parent
 
     #_____________________________________________________________________________________
