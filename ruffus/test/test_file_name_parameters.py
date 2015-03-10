@@ -228,7 +228,7 @@ class Test_files_re_param_factory(unittest.TestCase):
         next_task_id += 1
         fake_task = task.Task(list_generator_factory, "module.func_fake%d" % next_task_id)
         fake_task._decorator_files_re(*unnamed_args, **named_args)
-        fake_task.setup_task_func()
+        fake_task._complete_setup()
         return fake_task.param_generator_func, fake_task
 
     def files_re (self, *unnamed_args, **named_args):
@@ -444,7 +444,7 @@ class Test_split_param_factory(unittest.TestCase):
         # fake virgin task
         fake_task = task.Task(list_generator_factory, "module.func_fake%d" % randint(1, 1000000))
         fake_task._decorator_split(*unnamed_args, **named_args)
-        fake_task.setup_task_func()
+        fake_task._complete_setup()
         return fake_task.param_generator_func
 
 
@@ -580,7 +580,7 @@ class Test_merge_param_factory(unittest.TestCase):
         # fake virgin task
         fake_task = task.Task(list_generator_factory, "module.func_fake%d" % randint(1, 1000000))
         fake_task._decorator_merge(*unnamed_args, **named_args)
-        fake_task.setup_task_func()
+        fake_task._complete_setup()
         return fake_task.param_generator_func
 
     def do_task_merge (self, *unnamed_args, **named_args):
@@ -741,7 +741,7 @@ class Test_transform_param_factory(unittest.TestCase):
         # fake virgin task
         fake_task = task.Task(list_generator_factory, "module.func_fake%d" % randint(1, 1000000))
         fake_task._decorator_transform(*unnamed_args, **named_args)
-        fake_task.setup_task_func()
+        fake_task._complete_setup()
         return fake_task.param_generator_func
 
 
@@ -1007,7 +1007,7 @@ class Test_collate_param_factory(unittest.TestCase):
         # fake virgin task
         fake_task = task.Task(list_generator_factory, "module.func_fake%d" % randint(1, 1000000))
         fake_task._decorator_collate(*unnamed_args, **named_args)
-        fake_task.setup_task_func()
+        fake_task._complete_setup()
         return fake_task.param_generator_func
 
 
@@ -1277,7 +1277,7 @@ class Test_files_param_factory(unittest.TestCase):
         # fake virgin task
         fake_task = task.Task(list_generator_factory, "module.func_fake%d" % randint(1, 1000000))
         fake_task._decorator_files(*unnamed_args, **named_args)
-        fake_task.setup_task_func()
+        fake_task._complete_setup()
         return fake_task.param_generator_func
 
     def files (self, *unnamed_args, **named_args):
@@ -1502,7 +1502,7 @@ class Test_product_param_factory(unittest.TestCase):
         # fake virgin task
         fake_task = task.Task(list_generator_factory, "module.func_fake%d" % randint(1, 1000000))
         fake_task._decorator_product(*unnamed_args, **named_args)
-        fake_task.setup_task_func()
+        fake_task._complete_setup()
         return fake_task.param_generator_func
 
 
