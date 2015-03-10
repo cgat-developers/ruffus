@@ -39,152 +39,13 @@ Where I see Ruffus going
 In up coming release:
 ##########################################
 
-
-
-********************************************************************************************************
-Checked into github: @transform(..., suffix(), output_dir = "")
-********************************************************************************************************
-
-    Allow the directory of the output parameters (not the extras) to be changed with
-    ``@transform`` or ``pipeline.transform`` by specifying an optional (named) ``output_dir`` parameter
-
-    * ``output_dir`` only goes with ``@transform`` and ``@mkdir``
-    * ``@subdivide`` can use ``suffix()`` (!!) but treats it like an ``extras`` parameters, so no ``output_dir`` substitution
-      is possible.
-      See example ``test\test_suffix_output_dir.py``
-
-
-****************************************************************************************
-Checked into github: Named parameters in decorators for clarity
-****************************************************************************************
-    Motivating example:
-
-
-    .. <<Python_
-
-    .. code-block:: python
-        :emphasize-lines: 1
-
-        # Named parameters
-        @combinations_with_replacement( input      = generate_initial_files1,
-                                        filter     = formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
-                                        tuple_size = 2,
-                                        output     = "{path[0][0]}/{FILE_PART[0][0]}.{basename[1][0]}.tmp2",
-                                        extras     = ["{basename[0][0][0]}{basename[1][0][0]}",       # extra: prefices
-                                                      "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
-                                                      "{subdir[0][0][0]}"])
-        def task_func( infiles, outfile, prefices, subpath, subdir):
-            pass
-
-    ..
-        Python_
-
-
-
-
-
-****************************************************************************************
-Checked into github: Non-decorator / Function interface
-****************************************************************************************
-
-    Motivating example:
-
-    .. <<Python_
-
-    .. code-block:: python
-
-        #
-        #   OLD SCHOOL
-        #
-        @originate(output = [workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"])
-        def generate_initial_files1(out_name):
-            pass
-
-        @permutations(  generate_initial_files1,
-                        formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
-                        2,
-                        "{path[0][0]}/{FILE_PART[0][0]}.{basename[1][0]}.tmp2",
-                        "{basename[0][0][0]}{basename[1][0][0]}",       # extra: prefices
-                        "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
-                        "{subdir[0][0][0]}")
-        def test_permutations2_task( infiles, outfile, prefices, subpath, subdir):
-            pass
-
-        @merge(test_permutations2_task, workdir +  "/merged.results")
-        def test_permutations2_merged_task( infiles, outfile):
-            pass
-
-    ..
-        Python_
-
-
-    .. <<Python_
-
-    .. code-block:: python
-        :emphasize-lines: 17,27
-
-        #
-        #   NEW FANGLED
-        #
-        def test_permutations2_task( infiles, outfile, prefices, subpath, subdir):
-            pass
-
-        def test_permutations2_merged_task( infiles, outfile):
-            pass
-
-        # create pipeline1
-        test_pipeline1 = Pipeline("test1")
-        # add task
-        gen_task1 = test_pipeline1.originate(task_func = generate_initial_files1,
-                                             name      = "WOWWWEEE",
-                                             output    = [workdir +  "/" + prefix + "_name.tmp1"
-                                                            for prefix in "abcd"])
-        # add dependency by name 'WOWWWEEE'
-        test_pipeline1.permutations(test_permutations2_task,
-                                    #gen_task1,
-                                    output_from("WOWWWEEE"),
-                                    formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
-                                    2,
-                                    "{path[0][0]}/{FILE_PART[0][0]}.{basename[1][0]}.tmp2",
-                                    "{basename[0][0][0]}{basename[1][0][0]}",       # extra: prefices
-                                    "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
-                                    "{subdir[0][0][0]}")
-        # add dependency by function name 'test_permutations2_merged_task'
-        test_pipeline2.merge(test_permutations2_merged_task,
-                             test_permutations2_task,
-                             workdir +  "/merged.results")
-
-
-
-    ..
-        Python_
-
-
-
 ****************************************************************************************
 Todo: document ``output_from()``
 ****************************************************************************************
 
 ****************************************************************************************
-Todo: decorator docs should point to manual
+Todo: document new syntax
 ****************************************************************************************
-
-
-##########################################
-Future Changes to Ruffus
-##########################################
-
-    I would appreciated feedback and help on all these issues and where next to take *ruffus*.
-
-
-    **Future Changes** are features where we more or less know where we are going and how to get there.
-
-    **Planned Improvements** describes features we would like in Ruffus but where the implementation
-    or syntax has not yet been (fully) worked out.
-
-    If you have suggestions or contributions, please either write to me ( ruffus_lib at llew.org.uk) or
-    send a pull request via the `git site  <https://github.com/bunbun/ruffus>`__.
-
 
 ****************************************************************************************
 Todo: Log the progress through the pipeline in a machine parsable format
@@ -216,21 +77,11 @@ Todo: either_or: Prevent failed jobs from propagating further
     ..
         Python_
 
-****************************************************************************************
-Todo: Replacements for formatter(), suffix(), regex()
-****************************************************************************************
-
-    formatter etc. should be self contained objects derived from a single base class
-    with behaviour rather than empty tags used for dispatching to functions
-
-    The design is better fit by and should be switched over to an inheritance scheme
-
-
 
 .. _todo.inactive_tasks_in_pipeline_printout_graph:
 
 ********************************************************************************************************
-Todo: pipeline_printout_graph should print inactive tasks
+Todo: (bug fix) pipeline_printout_graph should print inactive tasks
 ********************************************************************************************************
 
 
@@ -265,6 +116,34 @@ Todo: Mark input strings as non-file names, and add support for dynamically retu
     Returning a list should be like wildcards and should not introduce an unnecessary level of indirection for output parameters, i.e. suffix(".txt") or formatter() / "{basename[0]}" should work.
 
     Check!
+
+
+
+##########################################
+Future Changes to Ruffus
+##########################################
+
+    I would appreciated feedback and help on all these issues and where next to take *ruffus*.
+
+
+    **Future Changes** are features where we more or less know where we are going and how to get there.
+
+    **Planned Improvements** describes features we would like in Ruffus but where the implementation
+    or syntax has not yet been (fully) worked out.
+
+    If you have suggestions or contributions, please either write to me ( ruffus_lib at llew.org.uk) or
+    send a pull request via the `git site  <https://github.com/bunbun/ruffus>`__.
+
+
+
+****************************************************************************************
+Todo: Replacements for formatter(), suffix(), regex()
+****************************************************************************************
+
+    formatter etc. should be self contained objects derived from a single base class
+    with behaviour rather than empty tags used for dispatching to functions
+
+    The design is better fit by and should be switched over to an inheritance scheme
 
 
 .. _todo.extra_parameters:

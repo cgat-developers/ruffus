@@ -14,13 +14,18 @@ Docs
     * How functions parameters are checked early
 
 ======================================================================================================
+Code
+======================================================================================================
+    #. Output dependencies
+    #. update_checksum_level_on_tasks(checksum_level) is non reentrant
+
+======================================================================================================
 Unit tests
 ======================================================================================================
-    #. output_dir for @transform and @mkdir
+    #. output_dir for @mkdir
     #. ``Pipeline.get_head_tasks(self)`` (including tasks with mkdir())
     #. ``Pipeline.get_tail_tasks(self)``
     #. ``Pipeline._complete_task_setup()`` which follows chain of dependencies for each task in a pipeline
-    #. Output dependencies
     #. When are things defined / linked up
     #. When can we join up Pipelines / tasks / set_input()?
     #.  Sub pipeline
@@ -33,10 +38,6 @@ Unit tests
     #. ``Task.set_input()``
     #. ``@product`` ``set_input`` should take (``input``, ``input2``...)
 
-======================================================================================================
-Unit tests
-======================================================================================================
-    # @transform() with output_dir parameter
 
 
 
@@ -471,8 +472,6 @@ Task completion monitoring
 
   Should be fast: a single db connection is created and used inside ``pipeline_run``,  ``pipeline_printout``,  ``pipeline_printout_graph``
 
-
-
 ===================================================
   Avoid pauses between tasks
 ===================================================
@@ -481,14 +480,11 @@ Task completion monitoring
 
         * If the local file time looks to be in sync with the underlying file system, saved system time is used instead of file timestamps
 
-
-
-
 ******************************************************************************************
 ``@mkdir(...),``
 ******************************************************************************************
 
-    * ``mkdir`` continues to work seamlessly inside ``@follows``) but also as its own decorator ``@mkdir`` due to the original happy orthogonal design
+    * ``mkdir`` continues to work seamlessly inside ``@follows`` but also as its own decorator ``@mkdir`` due to the original happy orthogonal design
     * fixed bug in checking so that Ruffus does't blow up if non strings are in the output (number...)
     * note: adding the decorator to a previously undecorated function might have unintended consequences. The undecorated function turns into a zombie.
     * fixed ugly bug in ``pipeline_printout`` for printing single line output
@@ -791,4 +787,65 @@ Passed Unit tests
        * Will blow up at any instance of ambiguity in any particular pipeline
        * Will blow up at any instance of ambiguity across pipelines (if not in current pipeline)
     #. @mkdir, @follows(mkdir)
+
+
+======================================================================================================
+Pipeline and Task creation
+======================================================================================================
+
+    * Share code as far as possible between decorator and OOP syntax
+    * Cannot use textbook OOP inheritance hierarchy easily because @decorators are not necessarily
+      given in order.
+
+        Pipeline.transform
+            _do_create_task_by_OOP()
+
+        @transform
+            Pipeline._create_task()
+            task._decorator_transform
+
+                task._prepare_transform()
+                    self.setup_task_func = self._transform_setup
+                    parse_task_arguments
+
+
+        Pipeline.run
+            pipeline._complete_task_setup()
+                # walk up ancestors of all task and call setup_task_func
+                unprocessed_tasks = Pipeline.tasks
+                while len(unprocessed_tasks):
+                    ancestral_tasks = setup_task_func()
+                    if not already processed:
+                        unprocessed_tasks.append(ancestral_tasks)
+
+                Call _complete_task_setup() for all the pipelines of each task
+
+
+
+======================================================================================================
+Connecting Task into a DAG
+======================================================================================================
+
+    .. <<python
+
+    ::
+
+        task._complete_setup()
+            task._remove_all_parents()
+            task._deferred_connect_parents()
+            task._setup_task_func()
+                task._handle_tasks_globs_in_inputs()
+                    task._connect_parents()
+                        # re-lookup task from names in current pipeline so that pipeline.clone() works
+
+    ..
+        python
+
+
+
+
+
+
+
+
 

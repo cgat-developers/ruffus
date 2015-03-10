@@ -65,6 +65,7 @@ version 2.6
         ..
             Python
 
+    See example ``test\test_suffix_output_dir.py``
 
 =====================================================================================================================
 2) Named parameters
@@ -136,8 +137,8 @@ version 2.6
     * :ref:`@product(...) <decorators.product>`, :ref:`@permutations(...) <decorators.permutations>`, :ref:`@combinations(...) <decorators.combinations>`, and :ref:`@combinations_with_replacement(...) <decorators.combinations_with_replacement>`
         * *input*
         * *filter*
-        * [*input2...NNN*\ ] (for ``product``)
-        * [*filter2...NNN*\ ] (for ``product``) where NNN is an incrementing number
+        * [*input2...NNN*\ ] (only for ``product``)
+        * [*filter2...NNN*\ ] (only for ``product``) where NNN is an incrementing number
         * *tuple_size* (except for ``product``)
         * [*replace_inputs* or *add_inputs*\ ]
         * *output*
