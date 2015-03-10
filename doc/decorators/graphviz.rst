@@ -5,6 +5,7 @@
 
 .. seealso::
 
+    * :ref:`@graphviz <new_manual.graphviz>` in the **Ruffus** Manual
     * :ref:`Decorators <decorators>` for more decorators
 
 ########################

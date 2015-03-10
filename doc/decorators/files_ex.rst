@@ -5,8 +5,8 @@
 
 .. seealso::
 
+    * :ref:`@files <new_manual.on_the_fly>` in the **Ruffus** Manual
     * :ref:`Decorators <decorators>` for more decorators
-
 
 .. |custom_function| replace:: `custom_function`
 .. _custom_function: `decorators.files.custom_function`_

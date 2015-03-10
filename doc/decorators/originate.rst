@@ -5,30 +5,28 @@
 
 .. seealso::
 
+    * :ref:`@originate <new_manual.originate>` in the **Ruffus** Manual
     * :ref:`Decorators <decorators>` for more decorators
 
-########################
-@originate
-########################
+################################################
+*@originate* ( |output|_, [|extras|_,...] )
+################################################
 
-.. |output_files| replace:: `output_files`
-.. _output_files: `decorators.originate.output_files`_
-.. |extra_parameters| replace:: `extra_parameters`
-.. _extra_parameters: `decorators.originate.extra_parameters`_
+.. |output| replace:: `output`
+.. _output: `decorators.originate.output`_
+.. |extras| replace:: `extras`
+.. _extras: `decorators.originate.extras`_
 
 
-***********************************************************************************************************************************************************
-*@originate* ( |output_files|_, [|extra_parameters|_,...] )
-***********************************************************************************************************************************************************
     **Purpose:**
         * Creates (originates) a set of starting file without dependencies from scratch  (*ex nihilo*!)
         * Only called to create files which do not exist.
-        * Invoked onces (a job created) per item in the ``output_files`` list.
+        * Invoked onces (a job created) per item in the |output|_ list.
 
         .. note::
 
-            The first argument for the task function is the *Output*. There is by definition no
-            *Input* for ``@originate``
+            The first argument for the task function is the |output|_. There is by definition no
+            *input* for ``@originate``
 
     **Example**:
 
@@ -65,15 +63,19 @@
     **Parameters:**
 
 
-.. _decorators.originate.output_files:
+.. _decorators.originate.output:
 
-    * *output_files*
+    * **output** = *output*
        * Can be a single file name or a list of files
-       * Each item in the list is treated as the *Output* of a separate job
+       * Each item in the list is treated as the |output|_ of a separate job
 
 
-.. _decorators.originate.extra_parameters:
+.. _decorators.originate.extras:
 
-    * *extra_parameters*
-        Any extra parameters are passed verbatim to the task function
+    * **extras** = *extras*
+       Any extra parameters are passed verbatim to the task function
+
+       If you are using named parameters, these can be passed as a list, i.e. ``extras= [...]``
+
+       Any extra parameters are consumed by the task function and not forwarded further down the pipeline.
 

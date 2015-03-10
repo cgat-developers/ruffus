@@ -9,20 +9,22 @@ Items remaining for current release
 Docs
 ======================================================================================================
     * New docs for new interface
-    * List named parameters at least
     * How to write new pipeline functions
     * How decorators / OOP code is shared
     * How functions parameters are checked early
-    * Parameter order
 
 ======================================================================================================
 Unit tests
 ======================================================================================================
+    #. output_dir for @transform and @mkdir
     #. ``Pipeline.get_head_tasks(self)`` (including tasks with mkdir())
     #. ``Pipeline.get_tail_tasks(self)``
     #. ``Pipeline._complete_task_setup()`` which follows chain of dependencies for each task in a pipeline
+    #. Output dependencies
+    #. When are things defined / linked up
+    #. When can we join up Pipelines / tasks / set_input()?
     #.  Sub pipeline
-    #. whether setup occurs ``pipeline_run()`` where ``target_tasks`` and ``forcedtorun_tasks `` are in different linked or unlinked pipelines
+    #.  Whether setup occurs ``pipeline_run()`` where ``target_tasks`` and ``forcedtorun_tasks`` are in different linked or unlinked pipelines
     #. name lookup
     #. Task (dependency) parsing inside @transform, pipeline.transform(input = , add_inputs, replace_inputs =), pipeline.split(..., output=)
     #. ``mkdir()`` should not be allowed inside input parameters apart from @follows
@@ -34,7 +36,7 @@ Unit tests
 ======================================================================================================
 Unit tests
 ======================================================================================================
-    # suffix() with dir parameter
+    # @transform() with output_dir parameter
 
 
 
@@ -627,6 +629,7 @@ Parameter handling
 
             These first call ``file_names_from_tasks_globs()`` to get the input parameters,
             then pass a flattened list of strings to ``yield_io_params_per_job()``
+
                 -> ``file_names_from_tasks_globs()``
                 -> ``yield_io_params_per_job(`` ``input_param_to_file_name_list()`` / ``list_input_param_to_file_name_list()`` ``)``
 

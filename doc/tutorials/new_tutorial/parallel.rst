@@ -17,6 +17,7 @@
    * :ref:`@parallel<decorators.parallel>` syntax in detail
 
 
+.. _new_manual.parallel:
 
 ***************************************
 **@parallel**

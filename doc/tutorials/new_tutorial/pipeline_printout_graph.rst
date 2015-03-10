@@ -110,6 +110,9 @@ Circular dependency errors in pipelines!
         .. image:: ../../images/simple_tutorial_complex_flowchart_error.png
            :scale: 70
 
+
+.. _new_manual.graphviz:
+
 ==========================================================================================
 ``@graphviz``: Customising the appearance of each task
 ==========================================================================================

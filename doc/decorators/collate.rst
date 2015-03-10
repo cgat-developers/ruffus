@@ -3,74 +3,89 @@
 .. index::
     pair: @collate; Syntax
 
+.. role:: raw-html(raw)
+   :format: html
+
+:raw-html:`<style> .red {color:red} </style>`
+
+.. role:: red
+
 .. seealso::
 
+    * :ref:`@collate <new_manual.collate>` in the **Ruffus** Manual
     * :ref:`Decorators <decorators>` for more decorators
 
-########################
-@collate
-########################
-
-.. |tasks_or_file_names| replace:: `tasks_or_file_names`
-.. _tasks_or_file_names: `decorators.collate.tasks_or_file_names`_
-.. |extra_parameters| replace:: `extra_parameters`
-.. _extra_parameters: `decorators.collate.extra_parameters`_
-.. |output_pattern| replace:: `output_pattern`
-.. _output_pattern: `decorators.collate.output_pattern`_
+.. |input| replace:: `input`
+.. _input: `decorators.collate.input`_
+.. |extras| replace:: `extras`
+.. _extras: `decorators.collate.extras`_
+.. |output| replace:: `output`
+.. _output: `decorators.collate.output`_
+.. |filter| replace:: `filter`
+.. _filter: `decorators.collate.filter`_
 .. |matching_regex| replace:: `matching_regex`
 .. _matching_regex: `decorators.collate.matching_regex`_
 .. |matching_formatter| replace:: `matching_formatter`
 .. _matching_formatter: `decorators.collate.matching_formatter`_
 
 
-********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
-*@collate* ( |tasks_or_file_names|_, :ref:`regex<decorators.regex>`\ *(*\ |matching_regex|_\ *)* |  :ref:`formatter<decorators.formatter>`\ *(*\ |matching_formatter|_\ *)*\, |output_pattern|_, [|extra_parameters|_,...] )
-********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+########################################################################
+@collate( |input|_, |filter|_, |output|_, [|extras|_,...] )
+########################################################################
+
+
+
     **Purpose:**
-        Groups / collates sets of input files, each into a separate summary.
 
-        Only out of date tasks (comparing input and output files) will be run
+        Use |filter|_ to identify common sets of |input|_\s which are to be grouped or collated together:
 
-        Output file names and strings in the extra parameters
-        are determined from |tasks_or_file_names|_, i.e. from the output
-        of up stream tasks, or a list of file names.
+        Each set of |input|_\ s which generate identical |output|_ and |extras|_ using the
+        :ref:`formatter<decorators.formatter>` or :ref:`regex<decorators.regex>` (regular expression)
+        filters are collated into one job.
 
-        String replacement occurs either through suffix matches via :ref:`suffix<decorators.suffix>` or
-        the :ref:`formatter<decorators.formatter>` or :ref:`regex<decorators.regex>` indicators.
+        This is a **many to fewer** operation.
 
-        ``@collate`` groups together all **Input** which result in identical **Output** and **extra**
-        parameters.
-
-        It is a **many to fewer** operation.
+        Only out of date jobs (comparing input and output files) will be re-run.
 
 
     **Example**:
-        ``regex(r".*(\..+)"), "\1.summary"`` creates a separate summary file for each suffix::
+        ``regex(r".+\.(.+)$")``, ``"\1.summary"`` creates a separate summary file for each suffix::
 
             animal_files = "a.fish", "b.fish", "c.mammals", "d.mammals"
             # summarise by file suffix:
-            @collate(animal_files, regex(r"\.(.+)$"),  r'\1.summary')
+            @collate(animal_files, regex(r".+\.(.+)$"),  r'\1.summary')
             def summarize(infiles, summary_file):
                 pass
+
+
+        #. |output|_ and optional |extras|_ parameters are passed to the functions after string
+           substitution. Non-string values are passed through unchanged.
+        #. Each collate job consists of |input|_ files which are aggregated by string substitution
+           to identical |output|_  and |extras|_
+        #. | The above example results in two jobs:
+           | ``["a.fish", "b.fish" -> "fish.summary"]``
+           | ``["c.mammals", "d.mammals" -> "mammals.summary"]``
 
     **Parameters:**
 
 
-.. _decorators.collate.tasks_or_file_names:
+.. _decorators.collate.input:
 
-    * *tasks_or_file_names*
+    * **input** = *tasks_or_file_names*
        can be a:
 
-       #.  Task / list of tasks (as in the example above).
+       #.  Task / list of tasks.
             File names are taken from the output of the specified task(s)
-       #.  (Nested) list of file name strings.
+       #.  (Nested) list of file name strings (as in the example above).
             File names containing ``*[]?`` will be expanded as a |glob|_.
              E.g.:``"a.*" => "a.1", "a.2"``
 
 
+.. _decorators.collate.filter:
+
 .. _decorators.collate.matching_regex:
 
-    * *matching_regex*
+    * **filter** = *matching_regex*
        is a python regular expression string, which must be wrapped in
        a :ref:`regex<decorators.regex>` indicator object
        See python `regular expression (re) <http://docs.python.org/library/re.html>`_
@@ -78,30 +93,26 @@
 
 .. _decorators.collate.matching_formatter:
 
-    * *matching_formatter*
+    * **filter** = *matching_formatter*
        a :ref:`formatter<decorators.formatter>` indicator object containing optionally
        a  python `regular expression (re) <http://docs.python.org/library/re.html>`_.
 
 
-.. _decorators.collate.output_pattern:
+.. _decorators.collate.output:
 
-    * *output_pattern*
-        Specifies the resulting output file name(s).
+    * **output** = *output*
+        Specifies the resulting output file name(s) after string substitution
 
-.. _decorators.collate.extra_parameters:
+.. _decorators.collate.extras:
 
-    * *extra_parameters*
-        Any extra parameters are passed verbatim to the task function
+    * **extras** = *extras*
+       Any extra parameters are passed verbatim to the task function
 
-    #. *outputs* and optional extra parameters are passed to the functions after string
-       substitution in any strings. Non-string values are passed through unchanged.
-    #. Each collate job consists of input files which are aggregated by string substitution
-       to a single set of output / extra parameter matches
-    #. In the above cases, ``a.fish`` and ``b.fish`` both produce ``fish.summary`` after regular
-       expression subsitution, and are collated into a single job:
-       ``["a.fish", "b.fish" -> "fish.summary"]``
-       while ``c.mammals``, ``d.mammals`` both produce ``mammals.summary``, are collated in a separate job:
-       ``["c.mammals", "d.mammals" -> "mammals.summary"]``
+       If you are using named parameters, these can be passed as a list, i.e. ``extras= [...]``
+
+       Any extra parameters are consumed by the task function and not forwarded further down the pipeline.
+
+
 
     **Example2**:
 

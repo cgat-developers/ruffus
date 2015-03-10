@@ -51,7 +51,7 @@ Checked into github: @transform(..., suffix(), output_dir = "")
     * ``output_dir`` only goes with ``@transform`` and ``@mkdir``
     * ``@subdivide`` can use ``suffix()`` (!!) but treats it like an ``extras`` parameters, so no ``output_dir`` substitution
       is possible.
-    See example ``test\test_suffix_output_dir.py``
+      See example ``test\test_suffix_output_dir.py``
 
 
 ****************************************************************************************
@@ -463,7 +463,7 @@ Implementation
     * When all slots are full in each job, this triggers putting the job parameters onto the job submission queue
     * The pipeline object should allow Ruffus to be reentrant?
 
-.. _todo.intermediate_files:
+.. _todo.move_checkpoint_files:
 
 ********************************************************************************************************
 Todo: Allow checkpoint files to be moved

@@ -2,7 +2,10 @@
 
 
 .. seealso::
-    :ref:`Decorators <decorators>`
+    * :ref:`Decorators <decorators>`
+    * :ref:`suffix(...) <new_manual.suffix>` in the **Ruffus** Manual
+    * :ref:`regex(...) <new_manual.regex>` in the **Ruffus** Manual
+    * :ref:`formatter(...) <new_manual.formatter>` in the **Ruffus** Manual
 
 .. index::
     single: Indicator Object (Disambiguating parameters)

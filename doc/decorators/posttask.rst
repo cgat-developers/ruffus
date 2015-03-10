@@ -5,6 +5,7 @@
 
 .. seealso::
 
+    * :ref:`@posttask <new_manual.posttask>` in the **Ruffus** Manual
     * :ref:`Decorators <decorators>` for more decorators
 
 .. |function| replace:: `function`

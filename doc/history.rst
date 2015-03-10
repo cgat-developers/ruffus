@@ -1,5 +1,12 @@
 .. include:: global.inc
 
+.. role:: raw-html(raw)
+   :format: html
+
+:raw-html:`<style> .red {color:red} </style>`
+
+.. role:: red
+
 
 ########################################
 Major Features added to Ruffus
@@ -13,14 +20,383 @@ Major Features added to Ruffus
 version 2.6
 ********************************************************************
 
-    Nth March 2015
+    10th March 2015
 
 =====================================================================================================================
 1) Bug fixes
 =====================================================================================================================
 
-    * pipeline_printout_graph incompatibility with python3 fixed
-    * checkpointing did not work correctly with @split and @subdivide
+    * ``pipeline_printout_graph()`` incompatibility with python3 fixed
+    * checkpointing did not work correctly with :ref:`@split(...) <decorators.split>` and :ref:`@subdivide(...) <decorators.subdivide>`
+
+
+=====================================================================================================================
+2) `@transform `(..., suffix("xxx"),` :red:`output_dir` `= "/new/output/path")`
+=====================================================================================================================
+
+    Thanks to the suggestion of Milan Simonovic.
+
+    :ref:`@transform(..., suffix(...) ) <decorators.transform>` has easy to understand syntax and takes care of all the common use cases
+    of Ruffus.
+
+    However, when we need to place the output in a different directories, we suddenly have to plunge into the deep end and parse file paths using
+    :ref:`regex() <decorators.regex>` or :ref:`formatter() <new_manual.formatter>`.
+
+    Now, :ref:`@transform <decorators.transform>` takes an optional ``output_dir`` named parameter so that we can continue to use :ref:`suffix() <new_manual.suffix>` even when the output needs
+    to go into a new directory.
+
+        .. <<Python
+
+        .. code-block:: python
+            :emphasize-lines: 2,3,9
+
+            #
+            #   input/a.fasta -> output/a.sam
+            #   input/b.fasta -> output/b.sam
+            #
+            starting_files = ["input/a.fasta","input/b.fasta"]
+            @transform(starting_files,
+                       suffix('.fasta'),
+                       '.sam',
+                       output_dir = "output")
+            def map_dna_sequence(input_file, output_file) :
+                pass
+
+        ..
+            Python
+
+
+=====================================================================================================================
+2) Named parameters
+=====================================================================================================================
+
+    Decorators can take named parameters.
+
+    These are self documenting, and improve clarity.
+
+    Note that the usual Python rules for function parameters apply:
+
+    * Positional arguments must precede named arguments
+    * Named arguments cannot be used to fill in for "missing" positional arguments
+
+
+    For example the following two functions are identical:
+
+    **Positional parameters:**
+
+        .. <<Python
+
+        .. code-block:: python
+
+            @merge(prev_task, ["a.summary", "b.summary"], 14, "extra_info", {"a":45, "b":5})
+            def merge_task(inputs, outputs, extra_num, extra_str, extra_dict):
+                pass
+        ..
+            Python
+
+    **Named parameters:**
+
+        .. <<Python
+
+        .. code-block:: python
+
+            # new style is a bit clearer
+            @merge(input   = prev_task,
+                   output  = ["a.summary", "b.summary"],
+                   extras  = [14, "extra_info", {"a":45, "b":5}]
+                   )
+            def merge_task(inputs, outputs, extra_num, extra_str, extra_dict):
+                pass
+        ..
+            Python
+
+    .. warning::
+
+        ``,extras=`` takes all the *extras* parameters (``14, "extra_info", {"a":45, "b":5}``) as a single list
+
+    * :ref:`@split(...) <decorators.split>` and :ref:`@merge(...) <decorators.merge>`
+        * *input*
+        * *output*
+        * [*extras*\ ]
+    * :ref:`@transform(...) <decorators.transform>` and :ref:`@mkdir(...) <decorators.mkdir>`
+        * *input*
+        * *filter*
+        * [*replace_inputs* or *add_inputs*\ ]
+        * *output*
+        * [*extras*\ ]
+        * [*output_dir*\ ]
+    * :ref:`@collate(...) <decorators.collate>` and :ref:`@subdivide(...) <decorators.collate>`
+        * *input*
+        * *filter*
+        * *output*
+        * [*extras*\ ]
+    * :ref:`@originate(...) <decorators.originate>`
+        * *output*
+        * [*extras*\ ]
+    * :ref:`@product(...) <decorators.product>`, :ref:`@permutations(...) <decorators.permutations>`, :ref:`@combinations(...) <decorators.combinations>`, and :ref:`@combinations_with_replacement(...) <decorators.combinations_with_replacement>`
+        * *input*
+        * *filter*
+        * [*input2...NNN*\ ] (for ``product``)
+        * [*filter2...NNN*\ ] (for ``product``) where NNN is an incrementing number
+        * *tuple_size* (except for ``product``)
+        * [*replace_inputs* or *add_inputs*\ ]
+        * *output*
+        * [*extras*\ ]
+
+
+
+=============================================
+3) New Object orientated syntax for Ruffus
+=============================================
+
+    Ruffus Pipelines can now be created directly using the new ``Pipeline`` and ``Task`` objects instead of via decorators.
+
+______________________________________________________________________________
+Syntax
+______________________________________________________________________________
+
+    This traditional Ruffus code:
+
+        .. <<python
+
+        .. code-block:: python
+
+            from ruffus import *
+
+            # task function
+            starting_files = ["input/a.fasta","input/b.fasta"]
+            @transform(input      = starting_files,
+                       filter     = suffix('.fasta'),
+                       output     = '.sam',
+                       output_dir = "output")
+            def map_dna_sequence(input_file, output_file) :
+                pass
+
+            pipeline_run()
+
+
+        ..
+            python
+
+
+    Can also be written as:
+
+        .. <<python
+
+        .. code-block:: python
+            :emphasize-lines: 9
+
+            from ruffus import *
+
+            # undecorated task function
+            def map_dna_sequence(input_file, output_file) :
+                pass
+
+            starting_files = ["input/a.fasta","input/b.fasta"]
+
+            # make ruffus pipeline
+            my_pipeline = Pipeline(name = "test")
+            my_pipeline.transform(task_func  = map_dna_sequence,
+                                  input      = starting_files,
+                                  filter     = suffix('.fasta'),
+                                  output     = '.sam',
+                                  output_dir = "output")
+
+            my_pipeline.run()
+        ..
+            python
+
+______________________________________________________________________________
+Advantages
+______________________________________________________________________________
+
+    The two different syntax are identical. With the exception of the first ``task_func`` parameter,
+    all parameters are in the same order as before and can be given by position or as named arguments.
+
+
+    These are some of the advantages of the new syntax:
+
+    #) Pipeline topology is in one place. This is obviously a matter of personal preference.
+
+       Annotating python functions with pipeline parameters (using decorators) locally may, however,
+       help separation of concerns.
+
+    #) Pipelines can easily be created on the fly, for example, using parameters parsed from configuration
+       files.
+
+    #) Stock "sub-pipelines" can be created as functional blocks in python modules and joined together
+       as needed. Bioinformaticists may have "mapping", "aligning", "variant-calling" sub-pipelines etc.
+
+    #) Multiple Tasks can share the same python function.
+
+       Tasks are normally referred to by their associated functions (as with decoratored Ruffus tasks).
+       However, you can also disambiguate Tasks by specifying their name directly.
+
+    #) Pipeline topology can be specified on the fly
+       Some tasks require serial, binary merging. For example, to merge 5-8 inputs require three rounds of
+       merging, and 9-16 inputs require four rounds. We can now tailor the number of successive tasks,
+       i.e. pipeline topology, to our data.
+
+
+
+______________________________________________________________________________
+Compatability
+______________________________________________________________________________
+
+    * The changes are fully backwards compatibile. All valid Ruffus code continues to work
+    * Decorators and ``Pipeline`` objects can be used interchangeably:
+
+      Decorated functions are part of a default constructed ``Pipeline`` named ``"main"``.
+          .. code-block:: python
+
+              main_pipeline = Pipeline.pipelines["main"]
+
+          ..
+
+      In the following example, a pipeline using the
+      Ruffus with classes syntax has a traditionally decorated task function in the middle.
+
+        .. <<python
+
+        .. code-block:: python
+
+            from ruffus import *
+
+            # get default pipeline
+            main_pipeline = Pipeline.pipelines["main"]
+
+            # undecorated task functions
+            def compress_sam_to_bam(input_file, output_file) :
+                open(output_file, "w").close()
+
+            def create_files(output_file) :
+                open(output_file, "w").close()
+
+
+            #
+            #   Ruffus with classes
+            #
+            starting_files = main_pipeline.originate(create_files, ["input/a.fasta","input/b.fasta"])\
+                .follows(mkdir("input", "output"))
+
+            #
+            #   Ruffus with python decorations
+            #
+            @transform(starting_files,
+                       suffix('.fasta'),
+                       '.sam',
+                       output_dir = "output")
+            def map_dna_sequence(input_file, output_file) :
+                open(output_file, "w").close()
+
+
+            #
+            #   Ruffus with classes
+            #
+            main_pipeline.transform(task_func   = compress_sam_to_bam,
+                                    input       = map_dna_sequence,
+                                    filter      = suffix(".sam"),
+                                    output      = ".bam")
+
+            # main_pipeline.run()
+            #    or
+            pipeline_run()
+
+
+        ..
+            python
+
+
+______________________________________________________________________________
+Class methods
+______________________________________________________________________________
+
+    The ``ruffus.Pipeline`` class has the following self-explanatory methods:
+
+        .. <<python
+
+        .. code-block:: python
+
+            Pipeline.run(...)
+            Pipeline.printout(...)
+            Pipeline.printout_graph(...)
+
+        ..
+            python
+
+
+    These methods return a ``ruffus.Task`` object
+
+        .. <<python
+
+
+        .. code-block:: python
+
+            Pipeline.originate(...)
+            Pipeline.transform(...)
+            Pipeline.split(...)
+            Pipeline.merge(...)
+            Pipeline.mkdir(...)
+
+            Pipeline.collate(...)
+            Pipeline.subdivide(...)
+
+            Pipeline.combinations(...)
+            Pipeline.combinations_with_replacement(...)
+            Pipeline.product(...)
+            Pipeline.permutations(...)
+
+            Pipeline.follows(...)
+            Pipeline.check_if_uptodate(...)
+            Pipeline.graphviz(...)
+
+            Pipeline.files(...)
+            Pipeline.parallel(...)
+
+        ..
+            python
+
+
+    Ruffus ``Task``\ s can be modified with the following methods
+
+        .. <<python
+
+        .. code-block:: python
+
+            Task.active_if(...)
+            Task.check_if_uptodate(...)
+            Task.follows(...)
+            Task.graphviz(...)
+            Task.jobs_limit(...)
+            Task.mkdir(...)
+            Task.posttask(...)
+
+        ..
+            python
+
+
+    The syntax is designed to allow call chaining:
+
+        .. <<python
+
+        .. code-block:: python
+
+            Pipeline.transform(...)\
+                .mkdir(follows(...))\
+                .active_if(...)\
+                .graphviz(...)
+
+        ..
+            python
+
+
+
+______________________________________________________________________________
+Further documentation
+______________________________________________________________________________
+
+    To follow ... :-)
+
 
 
 

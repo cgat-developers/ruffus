@@ -5,18 +5,16 @@
 
 .. seealso::
 
-    * :ref:`Decorators <decorators>` for more decorators
-    * More on @mkdir in the ``Ruffus`` :ref:`Manual <new_manual.mkdir>`
+    * :ref:`@mkdir <new_manual.mkdir>` in the **Ruffus** Manual
     * :ref:`@follows(mkdir("dir")) <decorators.follows>` specifies the creation of a *single* directory as a task pre-requisite.
+    * :ref:`Decorators <decorators>` for more decorators
 
-########################
-@mkdir
-########################
-
-.. |tasks_or_file_names| replace:: `tasks_or_file_names`
-.. _tasks_or_file_names: `decorators.mkdir.tasks_or_file_names`_
-.. |output_pattern| replace:: `output_pattern`
-.. _output_pattern: `decorators.mkdir.output_pattern`_
+.. |input| replace:: `input`
+.. _input: `decorators.mkdir.input`_
+.. |output| replace:: `output`
+.. _output: `decorators.mkdir.output`_
+.. |filter| replace:: `filter`
+.. _filter: `decorators.mkdir.filter`_
 .. |matching_regex| replace:: `matching_regex`
 .. _matching_regex: `decorators.mkdir.matching_regex`_
 .. |matching_formatter| replace:: `matching_formatter`
@@ -24,9 +22,9 @@
 .. |suffix_string| replace:: `suffix_string`
 .. _suffix_string: `decorators.mkdir.suffix_string`_
 
-******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
-*@mkdir* ( |tasks_or_file_names|_, :ref:`suffix<decorators.suffix>`\ *(*\ |suffix_string|_\ *)*\ | :ref:`regex<decorators.regex>`\ *(*\ |matching_regex|_\ *)* |  :ref:`formatter<decorators.formatter>`\ *(*\ |matching_formatter|_\ *)*\, |output_pattern|_)
-******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+########################################################################
+@mkdir( |input|_, |filter|_, |output|_ )
+########################################################################
     **Purpose:**
 
         * Prepares directories to receive *Output* files
@@ -128,38 +126,31 @@
                     Job  = [B.start -> [processed.txt, tmp.processed.txt]] completed
                 Completed Task = create_files_with_mkdir
 
-
-
-    **Escaping regular expression patterns**
-
-        A string like ``universal.h`` in ``add_inputs`` will added *as is*.
-        ``r"\1.h"``, however, performs suffix substitution, with the special form ``r"\1"`` matching everything up to the suffix.
-        Remember to 'escape' ``r"\1"`` otherwise Ruffus will complain and throw an Exception to remind you.
-        The most convenient way is to use a python "raw" string.
-
     **Parameters:**
 
-.. _decorators.mkdir.tasks_or_file_names:
+.. _decorators.mkdir.input:
 
-    * *tasks_or_file_names*
+    * **input** = *tasks_or_file_names*
        can be a:
 
        #.  Task / list of tasks (as in the example above).
-            File names are taken from the output of the specified task(s)
+            File names are taken from the |output|_ of the specified task(s)
        #.  (Nested) list of file name strings.
             File names containing ``*[]?`` will be expanded as a |glob|_.
              E.g.:``"a.*" => "a.1", "a.2"``
 
+.. _decorators.mkdir.filter:
+
 .. _decorators.mkdir.suffix_string:
 
-    * *suffix_string*
+    * **filter** = *suffix(suffix_string)*
        must be wrapped in a :ref:`suffix<decorators.suffix>` indicator object.
-       The end of each input file name which matches ``suffix_string`` will be replaced by ``output_pattern``.
+       The end of each |input|_ file name which matches ``suffix_string`` will be replaced by |output|_.
 
        Input file names which do not match suffix_string will be ignored
 
 
-       The non-suffix part of the match can be referred to using the ``"\1"`` pattern. This
+       The non-suffix part of the match can be referred to using the ``r"\1"`` pattern. This
        can be useful for putting the output in different directory, for example::
 
 
@@ -200,21 +191,21 @@
 
 .. _decorators.mkdir.matching_regex:
 
-    * *matching_regex*
+    * **filter** = *regex(matching_regex)*
        is a python regular expression string, which must be wrapped in
        a :ref:`regex<decorators.regex>`\  indicator object
        See python `regular expression (re) <http://docs.python.org/library/re.html>`_
        documentation for details of regular expression syntax
-       Each output file name is created using regular expression substitution with ``output_pattern``
+       Each output file name is created using regular expression substitution with ``output``
 
 .. _decorators.mkdir.matching_formatter:
 
-    * *matching_formatter*
+    * **filter** = *formatter(...)*
        a :ref:`formatter<decorators.formatter>` indicator object containing optionally
        a  python `regular expression (re) <http://docs.python.org/library/re.html>`_.
 
-.. _decorators.mkdir.output_pattern:
+.. _decorators.mkdir.output:
 
-    * *output_pattern*
-       Specifies the resulting output file name(s).
+    * **output** = *output*
+        Specifies the directories to be created after string substitution
 

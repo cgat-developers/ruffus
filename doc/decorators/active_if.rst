@@ -5,8 +5,8 @@
 
 .. seealso::
 
+    * :ref:`@active_if <new_manual.active_if>` in the **Ruffus** Manual
     * :ref:`Decorators <decorators>` for more decorators
-    * More on @active_if in the ``Ruffus`` :ref:`Manual <new_manual.active_if>`
 
 
 ############

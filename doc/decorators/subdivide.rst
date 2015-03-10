@@ -5,18 +5,19 @@
 
 .. seealso::
 
+    * :ref:`@subdivide <new_manual.subdivide>` in the **Ruffus** Manual
     * :ref:`Decorators <decorators>` for more decorators
 
 ########################
 @subdivide
 ########################
 
-.. |tasks_or_file_names| replace:: `tasks_or_file_names`
-.. _tasks_or_file_names: `decorators.subdivide.tasks_or_file_names`_
-.. |extra_parameters| replace:: `extra_parameters`
-.. _extra_parameters: `decorators.subdivide.extra_parameters`_
-.. |output_pattern| replace:: `output_pattern`
-.. _output_pattern: `decorators.subdivide.output_pattern`_
+.. |input| replace:: `input`
+.. _input: `decorators.subdivide.input`_
+.. |extras| replace:: `extras`
+.. _extras: `decorators.subdivide.extras`_
+.. |output| replace:: `output`
+.. _output: `decorators.subdivide.output`_
 .. |matching_regex| replace:: `matching_regex`
 .. _matching_regex: `decorators.subdivide.matching_regex`_
 .. |matching_formatter| replace:: `matching_formatter`
@@ -26,7 +27,7 @@
 
 
 ************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
-*@subdivide* ( |tasks_or_file_names|_, :ref:`regex<decorators.regex>`\ *(*\ |matching_regex|_\ *)* |  :ref:`formatter<decorators.formatter>`\ *(*\ |matching_formatter|_\ *)*\, [ :ref:`inputs<decorators.inputs>` *(*\ |input_pattern_or_glob|_\ *)* | :ref:`add_inputs<decorators.add_inputs>` *(*\ |input_pattern_or_glob|_\ *)* ], |output_pattern|_, [|extra_parameters|_,...]  )
+*@subdivide* ( |input|_, :ref:`regex<decorators.regex>`\ *(*\ |matching_regex|_\ *)* |  :ref:`formatter<decorators.formatter>`\ *(*\ |matching_formatter|_\ *)*\, [ :ref:`inputs<decorators.inputs>` *(*\ |input_pattern_or_glob|_\ *)* | :ref:`add_inputs<decorators.add_inputs>` *(*\ |input_pattern_or_glob|_\ *)* ], |output|_, [|extras|_,...]  )
 ************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
     **Purpose:**
 
@@ -36,7 +37,7 @@
 
         * The number of files in each *Output* can be set at runtime by the use of globs
 
-        * Output file names are specified using the :ref:`formatter<decorators.formatter>` or :ref:`regex<decorators.regex>` indicators from |tasks_or_file_names|_, i.e. from the output
+        * Output file names are specified using the :ref:`formatter<decorators.formatter>` or :ref:`regex<decorators.regex>` indicators from |input|_, i.e. from the output
           of specified tasks, or a list of file names, or a |glob|_ matching pattern.
 
         * Additional inputs or dependencies can be added dynamically to the task:
@@ -133,7 +134,7 @@
     **Parameters:**
 
 
-.. _decorators.subdivide.tasks_or_file_names:
+.. _decorators.subdivide.input:
 
     * *tasks_or_file_names*
        can be a:
@@ -159,12 +160,13 @@
        a :ref:`formatter<decorators.formatter>` indicator object containing optionally
        a  python `regular expression (re) <http://docs.python.org/library/re.html>`_.
 
-.. _decorators.subdivide.output_pattern:
+.. _decorators.subdivide.output:
 
-    * *output_pattern*
-        Specifies the resulting output file name(s). Can include glob patterns.
-        Strings are subject to :ref:`regex<decorators.regex>` or :ref:`formatter<decorators.formatter>`
-        substitution.
+    * **output** = *output*
+        Specifies the resulting output file name(s) after string substitution
+
+        Can include glob patterns.
+
 
 .. _decorators.subdivide.input_pattern_or_glob:
 
@@ -181,9 +183,14 @@
        Strings are subject to :ref:`regex<decorators.regex>` or :ref:`formatter<decorators.formatter>` substitution.
 
 
-.. _decorators.subdivide.extra_parameters:
+.. _decorators.subdivide.extras:
 
-    * *extra_parameters*
-        Any extra parameters are consumed by the task function and not forwarded further down the pipeline.
-        Strings are subject to :ref:`regex<decorators.regex>` or :ref:`formatter<decorators.formatter>`
-        substitution.
+    * **extras** = *extras*
+       Any extra parameters are passed verbatim to the task function
+
+       If you are using named parameters, these can be passed as a list, i.e. ``extras= [...]``
+
+       Any extra parameters are consumed by the task function and not forwarded further down the pipeline.
+
+       Strings are subject to :ref:`regex<decorators.regex>` or :ref:`formatter<decorators.formatter>`
+       substitution.

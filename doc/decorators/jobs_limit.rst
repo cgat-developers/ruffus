@@ -5,8 +5,8 @@
 
 .. seealso::
 
+    * :ref:`@jobs_limit <new_manual.jobs_limit>` in the **Ruffus** Manual
     * :ref:`Decorators <decorators>` for more decorators
-
 
 ########################
 @jobs_limit

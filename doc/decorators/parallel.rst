@@ -5,8 +5,8 @@
 
 .. seealso::
 
+    * :ref:`@parallel <new_manual.parallel>` in the **Ruffus** Manual
     * :ref:`Decorators <decorators>` for more decorators
-
 
 ########################
 @parallel

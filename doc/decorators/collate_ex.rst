@@ -5,47 +5,58 @@
     pair: @collate, inputs(...); Syntax
     pair: @collate, add_inputs(...); Syntax
 
+.. role:: raw-html(raw)
+   :format: html
+
+:raw-html:`<style> .red {color:red} </style>`
+
+.. role:: red
+
+
 .. seealso::
 
+    * :ref:`@collate <new_manual.collate>` in the **Ruffus** Manual
+    * :ref:`Use of add_inputs(...) | inputs(...) <new_manual.inputs>` in the **Ruffus** Manual
     * :ref:`Decorators <decorators>` for more decorators
 
-####################################################
-@collate  with ``add_inputs`` and ``inputs``
-####################################################
-
-.. |tasks_or_file_names| replace:: `tasks_or_file_names`
-.. _tasks_or_file_names: `decorators.collate_ex.tasks_or_file_names`_
-.. |extra_parameters| replace:: `extra_parameters`
-.. _extra_parameters: `decorators.collate_ex.extra_parameters`_
-.. |output_pattern| replace:: `output_pattern`
-.. _output_pattern: `decorators.collate_ex.output_pattern`_
-.. |input_pattern_or_glob| replace:: `input_pattern_or_glob`
-.. _input_pattern_or_glob: `decorators.collate_ex.input_pattern_or_glob`_
+.. |input| replace:: `input`
+.. _input: `decorators.collate_ex.input`_
+.. |extras| replace:: `extras`
+.. _extras: `decorators.collate_ex.extras`_
+.. |output| replace:: `output`
+.. _output: `decorators.collate_ex.output`_
+.. |filter| replace:: `filter`
+.. _filter: `decorators.collate_ex.filter`_
 .. |matching_regex| replace:: `matching_regex`
 .. _matching_regex: `decorators.collate_ex.matching_regex`_
 .. |matching_formatter| replace:: `matching_formatter`
 .. _matching_formatter: `decorators.collate_ex.matching_formatter`_
+.. |replace_inputs| replace:: `replace_inputs`
+.. _replace_inputs: `decorators.collate_ex.replace_inputs`_
+.. |add_inputs| replace:: `add_inputs`
+.. _add_inputs: `decorators.collate_ex.add_inputs`_
 
 
-*******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
-*@collate* ( |tasks_or_file_names|_, :ref:`regex<decorators.regex>`\ *(*\ |matching_regex|_\ *)* |  :ref:`formatter<decorators.formatter>`\ *(*\ |matching_formatter|_\ *)*\, [:ref:`inputs<decorators.inputs>`\ *(*\ |input_pattern_or_glob|_\ *)* | :ref:`add_inputs<decorators.add_inputs>`\ *(*\ |input_pattern_or_glob|_\ *)*\] , |output_pattern|_, [|extra_parameters|_,...] )
-*******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+################################################################################################################################################
+@collate( |input|_, |filter|_, |replace_inputs|_ | |add_inputs|_, |output|_, [|extras|_,...] )
+################################################################################################################################################
     **Purpose:**
-        Groups / collates sets of input files, each into a separate summary.
+        Use |filter|_ to identify common sets of |input|_\s which are to be grouped or collated together:
+
+        Each set of |input|_\ s which generate identical |output|_ and |extras|_ using the
+        :ref:`formatter<decorators.formatter>` or :ref:`regex<decorators.regex>` (regular expression)
+        filters are collated into one job.
 
         This variant of ``@collate`` allows additional inputs or dependencies to be added
-        dynamically to the task.
-
-        Output file names are determined from |tasks_or_file_names|_, i.e. from the output
-        of up stream tasks, or a list of file names.
-
-        This variant of ``@collate`` allows input file names to be derived in the same way.
+        dynamically to the task, with optional string substitution.
 
         :ref:`add_inputs<decorators.add_inputs>` nests the the original input parameters in a list before adding additional dependencies.
 
         :ref:`inputs<decorators.inputs>` replaces the original input parameters wholescale.
 
-        Only out of date tasks (comparing input and output files) will be run
+        This is a **many to fewer** operation.
+
+        Only out of date jobs (comparing input and output files) will be re-run.
 
     **Example of** :ref:`add_inputs<decorators.add_inputs>`
 
@@ -83,21 +94,23 @@
     **Parameters:**
 
 
-.. _decorators.collate_ex.tasks_or_file_names:
+.. _decorators.collate_ex.input:
 
-    * *tasks_or_file_names*
+    * **input** = *tasks_or_file_names*
        can be a:
 
-       #.  Task / list of tasks (as in the example above).
+       #.  Task / list of tasks.
             File names are taken from the output of the specified task(s)
-       #.  (Nested) list of file name strings.
+       #.  (Nested) list of file name strings (as in the example above).
             File names containing ``*[]?`` will be expanded as a |glob|_.
              E.g.:``"a.*" => "a.1", "a.2"``
 
 
+.. _decorators.collate_ex.filter:
+
 .. _decorators.collate_ex.matching_regex:
 
-    * *matching_regex*
+    * **filter** = *matching_regex*
        is a python regular expression string, which must be wrapped in
        a :ref:`regex<decorators.regex>` indicator object
        See python `regular expression (re) <http://docs.python.org/library/re.html>`_
@@ -105,41 +118,41 @@
 
 .. _decorators.collate_ex.matching_formatter:
 
-    * *matching_formatter*
+    * **filter** = *matching_formatter*
        a :ref:`formatter<decorators.formatter>` indicator object containing optionally
        a  python `regular expression (re) <http://docs.python.org/library/re.html>`_.
 
-.. _decorators.collate_ex.input_pattern_or_glob:
+.. _decorators.collate_ex.add_inputs:
 
-    * *input_pattern*
-       Specifies the resulting input(s) to each job.
-       Must be wrapped in an :ref:`inputs<decorators.inputs>` or an :ref:`inputs<decorators.add_inputs>` indicator object.
+.. _decorators.collate_ex.replace_inputs:
 
-       Can be a:
+    * **add_inputs** = *add_inputs*\ (...) or **replace_inputs** = *inputs*\ (...)
+       Specifies the resulting |input|_\ (s) to each job.
 
-       #.  Task / list of tasks (as in the example above).
+       Positional parameters must be disambiguated by wrapping the values in :ref:`inputs(...)<decorators.inputs>` or an :ref:`add_inputs(...)<decorators.add_inputs>`.
+
+       Named parameters can be passed the values directly.
+
+       Takes:
+
+       #.  Task / list of tasks.
             File names are taken from the output of the specified task(s)
        #.  (Nested) list of file name strings.
             Strings will be subject to substitution.
             File names containing ``*[]?`` will be expanded as a |glob|_.
-            E.g.:``"a.*" => "a.1", "a.2"``
+            E.g. ``"a.*" => "a.1", "a.2"``
 
+.. _decorators.collate_ex.output:
 
-
-.. _decorators.collate_ex.output_pattern:
-
-    * *output_pattern*
+    * **output** = *output*
         Specifies the resulting output file name(s).
 
-.. _decorators.collate_ex.extra_parameters:
+.. _decorators.collate_ex.extras:
 
-    * *extra_parameters*
+    * **extras** = *extras*
         Any extra parameters are passed verbatim to the task function
 
-    #. *outputs* and optional extra parameters are passed to the functions after string
-       substitution in any strings. Non-string values are passed through unchanged.
-    #. Each collate job consists of input files which are aggregated by string substitution
-       to a single set of output / extra parameter matches
+        If you are using named parameters, these can be passed as a list, i.e. ``extras= [...]``
 
 
 See :ref:`@collate <decorators.collate>` for more straightforward ways to use collate.

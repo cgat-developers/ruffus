@@ -5,18 +5,18 @@
 
 .. seealso::
 
+    * :ref:`@transform <new_manual.transform>` in the **Ruffus** Manual
     * :ref:`Decorators <decorators>` for more decorators
 
-########################
-@transform
-########################
 
-.. |tasks_or_file_names| replace:: `tasks_or_file_names`
-.. _tasks_or_file_names: `decorators.transform.tasks_or_file_names`_
-.. |extra_parameters| replace:: `extra_parameters`
-.. _extra_parameters: `decorators.transform.extra_parameters`_
-.. |output_pattern| replace:: `output_pattern`
-.. _output_pattern: `decorators.transform.output_pattern`_
+.. |input| replace:: `input`
+.. _input: `decorators.transform.input`_
+.. |extras| replace:: `extras`
+.. _extras: `decorators.transform.extras`_
+.. |output| replace:: `output`
+.. _output: `decorators.transform.output`_
+.. |filter| replace:: `filter`
+.. _filter: `decorators.transform.filter`_
 .. |matching_regex| replace:: `matching_regex`
 .. _matching_regex: `decorators.transform.matching_regex`_
 .. |matching_formatter| replace:: `matching_formatter`
@@ -24,25 +24,26 @@
 .. |suffix_string| replace:: `suffix_string`
 .. _suffix_string: `decorators.transform.suffix_string`_
 
-******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
-*@transform* ( |tasks_or_file_names|_, :ref:`suffix<decorators.suffix>`\ *(*\ |suffix_string|_\ *)*\ | :ref:`regex<decorators.regex>`\ *(*\ |matching_regex|_\ *)* |  :ref:`formatter<decorators.formatter>`\ *(*\ |matching_formatter|_\ *)*\, |output_pattern|_, [|extra_parameters|_,...] )
-******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
-    **Purpose:**
-        Applies the task function to transform data from input to output files.
+################################################################################################
+@transform( |input|_, |filter|_, |output|_, [|extras|_,...] )
+################################################################################################
 
-        Output file names are specified from |tasks_or_file_names|_, i.e. from the output
+    **Purpose:**
+        Applies the task function to transform data from |input|_ to |output|_ files.
+
+        Output file names are specified from |input|_, i.e. from the |output|_
         of specified tasks, or a list of file names, or a |glob|_ matching pattern.
 
-        String replacement occurs either through suffix matches via :ref:`suffix<decorators.suffix>` or 
+        String replacement occurs either through suffix matches via :ref:`suffix<decorators.suffix>` or
         the :ref:`formatter<decorators.formatter>` or :ref:`regex<decorators.regex>` indicators.
 
-        Only out of date tasks (comparing input and output files) will be run
+        Only out of date tasks (comparing |input|_ and |output|_ files) will be run
 
     **Simple Example**
 
         Transforms ``*.c`` to ``*.o``::
 
-            @transform(["1.c", "2.c"], suffix(".c"), ".o")
+            @transform(input = ["1.c", "2.c"], filter = suffix(".c"), output = ".o")
             def compile(infile, outfile):
                 pass
 
@@ -71,22 +72,25 @@
 
     **Parameters:**
 
-.. _decorators.transform.tasks_or_file_names:
+.. _decorators.transform.input:
 
-    * *tasks_or_file_names*
+    * **input** = *tasks_or_file_names*
        can be a:
 
        #.  Task / list of tasks (as in the example above).
-            File names are taken from the output of the specified task(s)
+            File names are taken from the |output|_ of the specified task(s)
        #.  (Nested) list of file name strings.
             File names containing ``*[]?`` will be expanded as a |glob|_.
              E.g.:``"a.*" => "a.1", "a.2"``
 
+
+.. _decorators.transform.filter:
+
 .. _decorators.transform.suffix_string:
 
-    * *suffix_string*
+    * **filter** = *suffix(suffix_string)*
        must be wrapped in a :ref:`suffix<decorators.suffix>` indicator object.
-       The end of each input file name which matches ``suffix_string`` will be replaced by ``output_pattern``.
+       The end of each |input|_ file name which matches ``suffix_string`` will be replaced by |output|_.
 
        Input file names which do not match suffix_string will be ignored
 
@@ -132,28 +136,32 @@
 
 .. _decorators.transform.matching_regex:
 
-    * *matching_regex*
+    * **filter** = *regex(matching_regex)*
        is a python regular expression string, which must be wrapped in
        a :ref:`regex<decorators.regex>`\  indicator object
        See python `regular expression (re) <http://docs.python.org/library/re.html>`_
        documentation for details of regular expression syntax
-       Each output file name is created using regular expression substitution with ``output_pattern``
+       Each output file name is created using regular expression substitution with ``output``
 
 .. _decorators.transform.matching_formatter:
 
-    * *matching_formatter*
+    * **filter** = *formatter(...)*
        a :ref:`formatter<decorators.formatter>` indicator object containing optionally
-       a  python `regular expression (re) <http://docs.python.org/library/re.html>`_.
+       a python `regular expression (re) <http://docs.python.org/library/re.html>`_.
 
-.. _decorators.transform.output_pattern:
+.. _decorators.transform.output:
 
-    * *output_pattern*
-       Specifies the resulting output file name(s).
+    * **output** = *output*
+        Specifies the resulting |output|_ file name(s) after string substitution
 
-.. _decorators.transform.extra_parameters:
+.. _decorators.transform.extras:
 
-    * [*extra_parameters, ...*]
-       Any extra parameters are passed to the task function.
+    * **extras** = *extras*
+       Any extra parameters are passed verbatim to the task function
+
+       If you are using named parameters, these can be passed as a list, i.e. ``extras= [...]``
+
+       Any extra parameters are consumed by the task function and not forwarded further down the pipeline.
 
        If ``regex(matching_regex)`` or ``formatter(...)``` is used, then substitution
        is first applied to (even nested) string parameters. Other data types are passed

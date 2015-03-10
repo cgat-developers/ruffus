@@ -5,8 +5,8 @@
 
 .. seealso::
 
+    * :ref:`@follows <new_manual.follows>` in the **Ruffus** Manual
     * :ref:`Decorators <decorators>` for more decorators
-    * More on @follows in the ``Ruffus`` :ref:`Manual <new_manual.follows>`
 
     .. note::
 

@@ -5,8 +5,8 @@
 
 .. seealso::
 
+    * :ref:`@files (deprecated) <new_manual.deprecated_files>` in the **Ruffus** Manual
     * :ref:`Decorators <decorators>` for more decorators
-
 
 .. |input| replace:: `input`
 .. _input: `decorators.files.input`_

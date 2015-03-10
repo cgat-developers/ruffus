@@ -6,6 +6,7 @@
 
 .. seealso::
 
+    * :ref:`@check_if_uptodate <new_manual.check_if_uptodate>` in the **Ruffus** Manual
     * :ref:`Decorators <decorators>` for more decorators
 
 .. |dependency_checking_function| replace:: `dependency_checking_function`

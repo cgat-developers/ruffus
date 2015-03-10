@@ -5,26 +5,24 @@
 
 .. seealso::
 
+    * :ref:`@merge <new_manual.merge>` in the **Ruffus** Manual
     * :ref:`Decorators <decorators>` for more decorators
 
-.. |tasks_or_file_names| replace:: `tasks_or_file_names`
-.. _tasks_or_file_names: `decorators.merge.tasks_or_file_names`_
-.. |extra_parameters| replace:: `extra_parameters`
-.. _extra_parameters: `decorators.merge.extra_parameters`_
-.. |output_file| replace:: `output_file`
-.. _output_file: `decorators.merge.output_file`_
+.. |input| replace:: `input`
+.. _input: `decorators.merge.input`_
+.. |extras| replace:: `extras`
+.. _extras: `decorators.merge.extras`_
+.. |output| replace:: `output`
+.. _output: `decorators.merge.output`_
 
-########################
-@merge
-########################
+########################################################################
+@merge ( |input|_, |filter|_, |output|_, [|extras|_,...] )
+########################################################################
 
-************************************************************************************
-*@merge* ( |tasks_or_file_names|_, |output_file|_, [|extra_parameters|_,...] )
-************************************************************************************
     **Purpose:**
-        Merges multiple input files into a single output.
+        Merges multiple |input|_ into a single |output|_.
 
-        Only out of date tasks (comparing input and output files) will be run
+        Only out of date tasks (comparing |input|_ and |output|_ files) will be run
 
     **Example**::
 
@@ -35,27 +33,31 @@
     **Parameters:**
 
 
-.. _decorators.merge.tasks_or_file_names:
+.. _decorators.merge.input:
 
-    * *tasks_or_file_names*
+    * **input** = *tasks_or_file_names*
        can be a:
 
-       #.  Task / list of tasks (as in the example above).
+       #.  Task / list of tasks.
             File names are taken from the output of the specified task(s)
        #.  (Nested) list of file name strings.
             File names containing ``*[]?`` will be expanded as a |glob|_.
              E.g.:``"a.*" => "a.1", "a.2"``
 
 
-.. _decorators.merge.output_file:
+.. _decorators.merge.output:
 
-    * *output_file*
+    * **output** = *output*
         Specifies the resulting output file name(s).
 
 .. _decorators.merge.extra_parameters:
 
-    * *extra_parameters, ...*
-        Any optional extra parameters are passed verbatim to the task function
+    * **extras** = *extras*
+       Any extra parameters are passed verbatim to the task function
+
+       If you are using named parameters, these can be passed as a list, i.e. ``extras= [...]``
+
+       Any extra parameters are consumed by the task function and not forwarded further down the pipeline.
 
 
 
