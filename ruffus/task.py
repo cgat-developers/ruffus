@@ -1060,7 +1060,7 @@ class Pipeline(dict):
 
     # _________________________________________________________________________
 
-    #   transform
+    #   _do_create_task_by_OOP
 
     # _________________________________________________________________________
     def _do_create_task_by_OOP(self, task_func, named_args, syntax):
@@ -1089,7 +1089,7 @@ class Pipeline(dict):
 
     # _________________________________________________________________________
 
-    #   transform
+    #   lookup_task_from_name
 
     # _________________________________________________________________________
     def lookup_task_from_name(self, task_name, default_module_name):
@@ -1851,7 +1851,11 @@ class Task (node):
     # _________________________________________________________________________
     def set_input(self, **args):
         """
-        Changes the input parameter(s) of the task
+        Changes any of the input parameter(s) of the task
+        For example:
+            set_input(input  = "test.txt")
+            set_input(input2 = "b.txt")
+            set_input(input = "a.txt", input2 = "b.txt")
         """
         #
         #   For product: filter parameter is a list of formatter()
@@ -1871,7 +1875,7 @@ class Task (node):
             #   update each element of the list accordingly
             #   removing args so we can check if there is anything left over
             for inputN in range(cnt_expected_input):
-                input_name = "input%d" % (inputN + 1)
+                input_name = "input%d" % (inputN + 1) if inputN else "input"
                 if input_name in args:
                     print (input_name, file = sys.stderr)
                     self.parsed_args["input"][inputN] = args[input_name]
@@ -1879,18 +1883,19 @@ class Task (node):
 
             if len(args):
                 raise error_set_input("Unexpected arguments in set_input(%s). "
-                                      "Only expecting inputN=???" % (args,))
+                                      "Only expecting inputN=xxx" % (args,))
             return
 
         if "input" in args:
             self.parsed_args["input"] = args["input"]
             del args["input"]
         else:
-            raise error_set_input("Missing arguments in set_input(input=???)")
+            raise error_set_input("Missing the input argument in set_input(input=xxx)")
 
+        # Non "input" arguments
         if len(args):
-            raise error_set_input("Unexpected arguments in set_input(%s). "
-                                  "Only expecting input=???" % (args,))
+            raise error_set_input("Unexpected argument name in set_input(%s). "
+                                  "Only expecting input=xxx." % (args,))
 
     # _________________________________________________________________________
 
