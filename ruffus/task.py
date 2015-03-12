@@ -886,8 +886,8 @@ class Pipeline(dict):
         # task_name already there as the identifying task_name.
         # If the task_func also matches everything is fine
         elif (task_name in self.task_names and
-              self[task_name][0].user_defined_work_func == task_func):
-            task = self[task_name][0]
+              self[task_name].user_defined_work_func == task_func):
+            task = self[task_name]
 
         # If the task name is already taken but with a different function,
         #   this will blow up
@@ -1853,7 +1853,8 @@ class Task (node):
                 if lookup in self.pipeline.lookup:
                     self.pipeline.lookup[lookup].append(self)
                     # remove non-uniques from Pipeline
-                    del self.pipeline[lookup]
+                    if lookup in self.pipeline:
+                        del self.pipeline[lookup]
                 else:
                     self.pipeline.lookup[lookup] = [self]
                     self.pipeline[lookup] = self

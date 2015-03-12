@@ -94,7 +94,6 @@ class Test_verbosity(unittest.TestCase):
             else:
                 pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 1, wrap_width = 500)
             ret = s.getvalue()
-            print (ret)
             self.assertTrue(re.search('Job needs update:.*Missing files.*'
                           '\[\.\.\./job2\.a\.start, test_verbosity/job2\.b\.start, \.\.\./job2.a.output.1\]', ret, re.DOTALL) is not None)
 
