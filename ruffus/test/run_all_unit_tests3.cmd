@@ -78,4 +78,6 @@ echo Running test_N_x_M_and_collate.py                                          
 python3 -m unittest test_N_x_M_and_collate                                          && \
 echo Running test_unicode_filenames.py                                              && \
 python3 -m unittest test_unicode_filenames                                          && \
+echo Running test_subpipeline.py                                                    && \
+python3 -m unittest test_subpipeline                                                && \
 echo DONE!!!                                                                        
