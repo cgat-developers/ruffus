@@ -164,8 +164,8 @@ def run_pipeline():
     pipeline2.set_input(input = [pipeline1a, pipeline1b, pipeline1c])
 
 
-    pipeline2.printout_graph("test.svg", "svg", [task_m_to_1])
-    pipeline2.printout(verbose = 0)
+    #pipeline2.printout_graph("test.svg", "svg", [task_m_to_1])
+    #pipeline2.printout(verbose = 0)
     pipeline2.run(multiprocess = 10, verbose = 0)
 
 
