@@ -913,6 +913,9 @@ class Pipeline(dict):
         unprocessed_tasks = deque(self.tasks)
         while len(unprocessed_tasks):
             task = unprocessed_tasks.popleft()
+            if task in processed_tasks:
+                continue
+            processed_tasks.add(task)
             for ancestral_task in task._complete_setup():
                 if ancestral_task not in processed_tasks:
                     unprocessed_tasks.append(ancestral_task)
@@ -960,6 +963,17 @@ class Pipeline(dict):
         Specifies tasks at the head of the pipeline,
             i.e. with only descendants/dependants
         """
+        if not isinstance(head_tasks, (list,)):
+            raise Exception("Pipelines['{pipeline_name}'].set_head_tasks() expects a "
+                            "list not {head_tasks_type}".format(pipeline_name = self.name,
+                                                                head_tasks_type = type(head_tasks)))
+
+        for tt in head_tasks:
+            if not isinstance(tt, (Task,)):
+                raise Exception("Pipelines['{pipeline_name}'].set_head_tasks() expects a "
+                                "list of tasks not {task_type} {task}".format(  pipeline_name = self.name,
+                                                                                task_type = type(tt),
+                                                                                task = 1))
         self.head_tasks = head_tasks
 
     # _________________________________________________________________________
@@ -1003,22 +1017,43 @@ class Pipeline(dict):
         Change the input parameter(s) of the designated "head" tasks of the pipeline
         """
         if not len(self.get_head_tasks()):
-            raise error_no_head_tasks("pipeline %s has no head tasks defined." % self.name)
+            raise error_no_head_tasks("Pipeline '{pipeline_name}' has no head tasks defined.\n"
+                                      "Which task in '{pipeline_name}' do you want "
+                                      "to set_input() for?".format(pipeline_name = self.name))
+
         for tt in self.get_head_tasks():
             tt.set_input(**args)
 
     # _________________________________________________________________________
 
+    #   set_output
+
+    #       forward to head tasks
+
+    # _________________________________________________________________________
+    def set_output(self, **args):
+        """
+        Change the output parameter(s) of the designated "head" tasks of the pipeline
+        """
+        if not len(self.get_head_tasks()):
+            raise error_no_head_tasks("Pipeline '{pipeline_name}' has no head tasks defined.\n"
+                                      "Which task in '{pipeline_name}' do you want "
+                                      "to set_output() for?".format(pipeline_name = self.name))
+
+        for tt in self.get_head_tasks():
+            tt.set_output(**args)
+    # _________________________________________________________________________
+
     #   clone
 
     # _________________________________________________________________________
-    def clone(self, name, *arg, **kw):
+    def clone(self, new_name, *arg, **kw):
         """
         Make a deep copy of the pipeline
         """
 
         # setup new pipeline
-        new_pipeline = Pipeline(name, *arg, **kw)
+        new_pipeline = Pipeline(new_name, *arg, **kw)
 
         # set of tasks
         new_pipeline.tasks = set(task._clone(new_pipeline) for task in self.tasks)
@@ -1028,8 +1063,9 @@ class Pipeline(dict):
         new_pipeline.original_name = self.original_name
 
         # lookup tasks in new pipeline
-        new_pipeline.head_tasks = [new_pipeline[t._name] for t in self.head_tasks]
-        new_pipeline.head_tasks = [new_pipeline[t._name] for t in self.tail_tasks]
+        new_pipeline.head_tasks = [new_pipeline[t._name][0] for t in self.head_tasks]
+        new_pipeline.tail_tasks = [new_pipeline[t._name][0] for t in self.tail_tasks]
+
         return new_pipeline
 
     # _________________________________________________________________________
@@ -1083,8 +1119,10 @@ class Pipeline(dict):
         task = self._create_task(task_func, name)
         task.created_via_decorator = False
         task.syntax = syntax
-        task.description_with_args_placeholder = "%s(name = %r, task_func = %s, %%s)" \
-            % (task.syntax, task._get_display_name(), task_func.__name__)
+        task.description_with_args_placeholder = "{syntax}(name = {task_display_name!r}, task_func = {task_func_name}, %s)" \
+            .format(syntax = task.syntax,
+               task_display_name = task._get_display_name(),
+               task_func_name = task_func.__name__)
         return task
 
     # _________________________________________________________________________
@@ -1146,7 +1184,7 @@ class Pipeline(dict):
         task.deferred_follow_params.append([task.description_with_args_placeholder, False,
                                              unnamed_args])
         #task._connect_parents(task.description_with_args_placeholder, False,
-        #                 *unnamed_args, **named_args)
+        #                 unnamed_args)
         return task
     # _________________________________________________________________________
 
@@ -1629,6 +1667,10 @@ class Task (node):
 
     """
 
+    #DEBUGGG
+    #def __str__ (self):
+    #    return "Task = <%s>" % self._get_display_name()
+
     _action_names = ["unspecified",
                      "task",
                      "task_files_re",
@@ -1761,7 +1803,7 @@ class Task (node):
         self.created_via_decorator = False
 
         # Finish setting up task
-        self._setup_task_func = self._do_nothing_setup
+        self._setup_task_func = Task._do_nothing_setup
 
         # Finish setting up task
         self.deferred_follow_params = []
@@ -1831,7 +1873,7 @@ class Task (node):
         new_task.job_descriptor = self.job_descriptor
         new_task._is_single_job_single_output = self._is_single_job_single_output
         new_task.single_multi_io = self.single_multi_io
-        new_task.posttask_functions = self.posttask_functions
+        new_task.posttask_functions = copy.deepcopy(self.posttask_functions)
         new_task.cnt_task_mkdir = self.cnt_task_mkdir
         new_task.indeterminate_output = self.indeterminate_output
         new_task.semaphore_name = self.semaphore_name
@@ -1843,15 +1885,43 @@ class Task (node):
         new_task.description_with_args_placeholder = self.description_with_args_placeholder
         new_task.has_input_param = self.has_input_param
         new_task.has_pipeline_in_input_param = self.has_pipeline_in_input_param
-        new_task.output_filenames = list(self.output_filenames)
-        new_task.active_if_checks = list(self.active_if_checks)
-        new_task.parsed_args = dict(self.parsed_args)
+        new_task.output_filenames = copy.deepcopy(self.output_filenames)
+        new_task.active_if_checks = copy.deepcopy(self.active_if_checks)
+        new_task.parsed_args = copy.deepcopy(self.parsed_args)
+        new_task.deferred_follow_params = copy.deepcopy(self.deferred_follow_params)
 
         return new_task
 
+
     # _________________________________________________________________________
 
-    #   _init_for_pipeline
+    #   set_output
+
+    # _________________________________________________________________________
+    def set_output(self, **args):
+        """
+        Changes output parameter(s) for originate
+            set_input(output  = "test.txt")
+        """
+
+        if self.syntax not in ("pipeline.originate", "@originate"):
+            raise error_set_output("Can only set output for originate tasks")
+        #
+        #   For product: filter parameter is a list of formatter()
+        #
+        if "output" in args:
+            self.parsed_args["output"] = args["output"]
+            del args["output"]
+        else:
+            raise error_set_output("Missing the output argument in set_input(output=xxx)")
+
+        # Non "input" arguments
+        if len(args):
+            raise error_set_output("Unexpected argument name in set_output(%s). "
+                                  "Only expecting output=xxx." % (args,))
+    # _________________________________________________________________________
+
+    #   set_input
 
     # _________________________________________________________________________
     def set_input(self, **args):
@@ -1882,7 +1952,6 @@ class Task (node):
             for inputN in range(cnt_expected_input):
                 input_name = "input%d" % (inputN + 1) if inputN else "input"
                 if input_name in args:
-                    print (input_name, file = sys.stderr)
                     self.parsed_args["input"][inputN] = args[input_name]
                     del args[input_name]
 
@@ -1973,7 +2042,11 @@ class Task (node):
         """
         Returns task name, removing __main__. namespace or main. if present
         """
-        return self._name.replace("__main__.", "").replace("main.", "")
+        if self.pipeline.name != "main":
+            return "{pipeline_name}.{task_name}".format(pipeline_name = self.pipeline.name,
+                                                    task_name = self._name.replace("__main__.", "").replace("main.", ""))
+        else:
+            return self._name.replace("__main__.", "").replace("main.", "")
 
     # _________________________________________________________________________
 
@@ -2487,6 +2560,8 @@ class Task (node):
                 t_extra_inputs.ADD_TO_INPUTS | REPLACE_INPUTS |
                                KEEP_INPUTS | KEEP_OUTPUTS
         """
+        # DEBUGGG
+        #print("    task._handle_tasks_globs_in_inputs start %s" % (self._get_display_name(), ), file = sys.stderr)
         #
         # get list of function/function names and globs
         #
@@ -2508,10 +2583,18 @@ class Task (node):
             description_with_args_placeholder = \
                 self.description_with_args_placeholder % "input =%r"
 
-        tasks = self._connect_parents(description_with_args_placeholder, True, *function_or_func_names)
-        functions_to_tasks = dict(zip(function_or_func_names, tasks))
-        input_params = replace_func_names_with_tasks(input_params, functions_to_tasks)
+        tasks = self._connect_parents(description_with_args_placeholder, True, function_or_func_names)
+        functions_to_tasks = dict()
+        for funct_name_task_or_pipeline, task in zip(function_or_func_names, tasks):
+            if isinstance(funct_name_task_or_pipeline, Pipeline):
+                functions_to_tasks["PIPELINE=%s=PIPELINE" % funct_name_task_or_pipeline.name] = task
+            else:
+                functions_to_tasks[funct_name_task_or_pipeline] = task
 
+        # replace strings, tasks, pipelines with tasks
+        input_params = replace_placeholders_with_tasks_in_input_params(input_params, functions_to_tasks)
+        #DEBUGGG
+        #print("    task._handle_tasks_globs_in_inputs finish %s" % (self._get_display_name(), ), file = sys.stderr)
         return t_params_tasks_globs_run_time_data(input_params, tasks, globs, runtime_data_names)
 
     # _________________________________________________________________________
@@ -2608,7 +2691,7 @@ class Task (node):
         """
         self.error_type = error_task_originate
         self._set_action_type(Task._action_task_originate)
-        self._setup_task_func = self._originate_setup
+        self._setup_task_func = Task._originate_setup
         self.needs_update_func = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper = job_wrapper_output_files
         self.job_descriptor = io_files_one_to_many_job_descriptor
@@ -2682,7 +2765,7 @@ class Task (node):
         """
         self.error_type = error_task_transform
         self._set_action_type(Task._action_task_transform)
-        self._setup_task_func = self._transform_setup
+        self._setup_task_func = Task._transform_setup
         self.needs_update_func = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper = job_wrapper_io_files
         self.job_descriptor = io_files_job_descriptor
@@ -2705,6 +2788,8 @@ class Task (node):
         """
         Finish setting up transform
         """
+        #DEBUGGG
+        #print("   task._transform_setup start %s" % (self._get_display_name(), ), file = sys.stderr)
 
         #
         # replace function / function names with tasks
@@ -2748,6 +2833,8 @@ class Task (node):
                                                             self.parsed_args["output"],
                                                             *self.parsed_args["extras"])
 
+        #DEBUGGG
+        #print("   task._transform_setup finish %s" % (self._get_display_name(), ), file = sys.stderr)
         return ancestral_tasks
 
     # ========================================================================
@@ -2776,7 +2863,7 @@ class Task (node):
         """
         self.error_type = error_task_subdivide
         self._set_action_type(Task._action_task_subdivide)
-        self._setup_task_func = self._subdivide_setup
+        self._setup_task_func = Task._subdivide_setup
         self.needs_update_func = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper = job_wrapper_io_files
         self.job_descriptor = io_files_one_to_many_job_descriptor
@@ -2880,7 +2967,7 @@ class Task (node):
         """
         self.error_type = error_task_split
         self._set_action_type(Task._action_task_split)
-        self._setup_task_func = self._split_setup
+        self._setup_task_func = Task._split_setup
         self.needs_update_func = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper = job_wrapper_io_files
         self.job_descriptor = io_files_one_to_many_job_descriptor
@@ -2952,7 +3039,7 @@ class Task (node):
         """
         self.error_type = error_task_merge
         self._set_action_type(Task._action_task_merge)
-        self._setup_task_func = self._merge_setup
+        self._setup_task_func = Task._merge_setup
         self.needs_update_func = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper = job_wrapper_io_files
         self.job_descriptor = io_files_job_descriptor
@@ -3011,7 +3098,7 @@ class Task (node):
         """
         self.error_type = error_task_collate
         self._set_action_type(Task._action_task_collate)
-        self._setup_task_func = self._collate_setup
+        self._setup_task_func = Task._collate_setup
         self.needs_update_func = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper = job_wrapper_io_files
         self.job_descriptor = io_files_job_descriptor
@@ -3100,7 +3187,7 @@ class Task (node):
 
     # _________________________________________________________________________
     def _prepare_preceding_mkdir(self, unnamed_args, named_args, syntax,
-                                 task_description):
+                                 task_description, defer = True):
         """
         Add mkdir Task to run before self
             Common to
@@ -3113,12 +3200,13 @@ class Task (node):
         #
         self.cnt_task_mkdir += 1
         cnt_task_mkdir_str = (" #%d" % self.cnt_task_mkdir) if self.cnt_task_mkdir > 1 else ""
-        task_name = r"mkdir%s before %s " % (cnt_task_mkdir_str, self._name)
+        task_name = r"mkdir%r%s  before %s " % (unnamed_args, cnt_task_mkdir_str, self._name)
         new_task = self.pipeline._create_task(task_func=job_wrapper_mkdir, task_name=task_name)
 
-        #   defer _add_parent so we can clone
-        #self._add_parent(new_task)
-        self.deferred_follow_params.append([task_description, False, [new_task]])
+        #   defer _add_parent so we can clone unless we are already
+        #       calling add_parent (from _connect_parents())
+        if defer:
+            self.deferred_follow_params.append([task_description, False, [new_task]])
 
         #
         #   Prepare new node
@@ -3133,6 +3221,7 @@ class Task (node):
         #       display_name
         #
         # new_node.display_name = ??? new_node.func_description
+        return new_task
 
     # _________________________________________________________________________
 
@@ -3157,7 +3246,7 @@ class Task (node):
         if (len(unnamed_args) > 1 and
                 isinstance(unnamed_args[1], (formatter, suffix, regex))) or "filter" in named_args:
             self.single_multi_io = self._many_to_many
-            self._setup_task_func = self._transform_setup
+            self._setup_task_func = Task._transform_setup
 
             #
             #   Parse named and unnamed arguments
@@ -3181,7 +3270,7 @@ class Task (node):
                 shorten_filenames_encoder(unnamed_args, 0))
 
             self.single_multi_io = self._one_to_one
-            self._setup_task_func = self._do_nothing_setup
+            self._setup_task_func = Task._do_nothing_setup
             self.has_input_param = False
 
             #
@@ -3233,7 +3322,7 @@ class Task (node):
         """
         self.error_type = error_task_product
         self._set_action_type(Task._action_task_product)
-        self._setup_task_func = self._product_setup
+        self._setup_task_func = Task._product_setup
         self.needs_update_func = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper = job_wrapper_io_files
         self.job_descriptor = io_files_job_descriptor
@@ -3340,7 +3429,7 @@ class Task (node):
                 pipeline.combinations_with_replacement
         """
         self.error_type = error_type
-        self._setup_task_func = self._combinatorics_setup
+        self._setup_task_func = Task._combinatorics_setup
         self.needs_update_func = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper = job_wrapper_io_files
         self.job_descriptor = io_files_job_descriptor
@@ -3434,7 +3523,7 @@ class Task (node):
         Common code for @files and pipeline.files
         """
         self.error_type = error_task_files
-        self._setup_task_func = self._do_nothing_setup
+        self._setup_task_func = Task._do_nothing_setup
         self.needs_update_func = self.needs_update_func or needs_update_check_modify_time
         self.job_wrapper = job_wrapper_io_files
         self.job_descriptor = io_files_job_descriptor
@@ -3477,7 +3566,7 @@ class Task (node):
 
             self.parsed_args["input"] = [pp[0] for pp in params]
             self.parsed_args["output"] = [tuple(pp[1:]) for pp in params]
-            self._setup_task_func = self._files_setup
+            self._setup_task_func = Task._files_setup
 
     # _________________________________________________________________________
 
@@ -3522,7 +3611,7 @@ class Task (node):
         """
         self.error_type = error_task_parallel
         self._set_action_type(Task._action_task_parallel)
-        self._setup_task_func = self._do_nothing_setup
+        self._setup_task_func = Task._do_nothing_setup
         self.needs_update_func = None
         self.job_wrapper = job_wrapper_generic
         self.job_descriptor = io_files_job_descriptor
@@ -3613,9 +3702,9 @@ class Task (node):
                                                 self.description_with_args_placeholder)
 
         if combining_all_jobs:
-            self._setup_task_func = self._collate_setup
+            self._setup_task_func = Task._collate_setup
         else:
-            self._setup_task_func = self._transform_setup
+            self._setup_task_func = Task._transform_setup
 
     # 8888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -3651,7 +3740,7 @@ class Task (node):
         self.deferred_follow_params.append([description_with_args_placeholder, False,
                                             unnamed_args])
         #self._connect_parents(description_with_args_placeholder, False,
-        #                 *unnamed_args, **named_args)
+        #                 unnamed_args)
         return self
 
     # _________________________________________________________________________
@@ -3668,7 +3757,7 @@ class Task (node):
             self.description_with_args_placeholder % "...")
         self.deferred_follow_params.append([description_with_args_placeholder, False,
                                             unnamed_args])
-        #self._connect_parents(description_with_args_placeholder, False, *unnamed_args)
+        #self._connect_parents(description_with_args_placeholder, False, unnamed_args)
 
 
 
@@ -3684,8 +3773,14 @@ class Task (node):
 
         Note will tear down previous parental links before doing anything
         """
+        #DEBUGGG
+        #print("  task._complete_setup start %s" % (self._get_display_name(), ), file = sys.stderr)
         self._remove_all_parents()
-        return self._deferred_connect_parents() | self._setup_task_func()
+        ancestral_tasks =  self._deferred_connect_parents()
+        ancestral_tasks |= self._setup_task_func(self)
+        #DEBUGGG
+        #print("  task._complete_setup finish %s\n" % (self._get_display_name(), ), file = sys.stderr)
+        return ancestral_tasks
 
     # _________________________________________________________________________
 
@@ -3697,10 +3792,22 @@ class Task (node):
         Called by _complete_task_setup() from pipeline_run, pipeline_printout etc.
         returns a non-redundant list of all the ancestral tasks
         """
+        # DEBUGGG
+        #print("   task._deferred_connect_parents start %s (%d to do)" % (self._get_display_name(), len(self.deferred_follow_params)), file = sys.stderr)
         parent_tasks = set()
-        for description_with_args_placeholder, no_mkdir, unnamed_args in self.deferred_follow_params:
-            parent_tasks.update(self._connect_parents(description_with_args_placeholder, no_mkdir,
-                                *unnamed_args))
+
+        for ii, deferred_follow_params in enumerate(self.deferred_follow_params):
+            #DEBUGGG
+            #print("   task._deferred_connect_parents %s %d out of %d " % (self._get_display_name(), ii, len(self.deferred_follow_params)), file = sys.stderr)
+            new_tasks = self._connect_parents(*deferred_follow_params)
+            # convert to mkdir and dynamically created tasks from follows into the actual created tasks
+            # otherwise each time we redo this, we will have a sorceror's apprentice situation!
+            deferred_follow_params[2] = new_tasks
+            parent_tasks.update(new_tasks)
+
+
+        # DEBUGGG
+        #print("   task._deferred_connect_parents finish %s" % self._get_display_name(), file = sys.stderr)
         return parent_tasks
 
 
@@ -3714,7 +3821,7 @@ class Task (node):
 
     # _________________________________________________________________________
     def _connect_parents(self, description_with_args_placeholder, no_mkdir,
-                                *unnamed_args, **named_args):
+                                unnamed_args):
         """
         unnamed_args can be string or function or Task
         For strings, if lookup fails, will defer.
@@ -3729,6 +3836,8 @@ class Task (node):
             * @split / pipeline.split _handle_tasks_globs_in_inputs
               (output dependencies)
         """
+        # DEBUGGG
+        #print("      _connect_parents start %s" % self._get_display_name(), file = sys.stderr)
         new_tasks = []
         for arg in unnamed_args:
             #
@@ -3762,15 +3871,15 @@ class Task (node):
             #   Pipeline: defer
             #
             elif isinstance(arg, Pipeline):
-                if arg == self.Pipeline:
+                if arg == self.pipeline:
                     raise error_decorator_args("Cannot have your own pipeline as a (circular) "
                                                "dependency of a Task:\n" +
                                                description_with_args_placeholder % (arg,))
 
                 if not len(arg.get_tail_tasks()):
-                    raise error_no_tail_tasks("Pipeline %s has no tail tasks defined. Which task "
-                                              "do you mean when you specify the whole pipeline as "
-                                              "a dependency?" % arg.name)
+                    raise error_no_tail_tasks("Pipeline '{pipeline_name}' has no 'tail' tasks defined.\nWhich task "
+                                              "in '{pipeline_name}' are you referring to?"
+                                              .format(pipeline_name = arg.name))
                 new_tasks.extend(arg.get_tail_tasks())
 
             #
@@ -3806,8 +3915,8 @@ class Task (node):
                     mkdir_task_syntax = "Task(name=%r).follows(mkdir())" % self._get_display_name()
                 mkdir_description_with_args_placeholder = \
                     description_with_args_placeholder % "mkdir(%s)"
-                self._prepare_preceding_mkdir(arg.args, {}, mkdir_task_syntax,
-                                              mkdir_description_with_args_placeholder)
+                new_tasks.append(self._prepare_preceding_mkdir(arg.args, {}, mkdir_task_syntax,
+                                              mkdir_description_with_args_placeholder, False))
 
             #
             #   Is this a function?
@@ -3834,6 +3943,8 @@ class Task (node):
         for task in new_tasks:
             self._add_parent(task)
 
+        # DEBUGGG
+        #print("      _connect_parents finish %s" % self._get_display_name(), file = sys.stderr)
         return new_tasks
 
     # ========================================================================
@@ -4842,6 +4953,7 @@ def make_job_parameter_generator(incomplete_tasks, task_parents, logger,
                     cnt_jobs_created = 0
                     for params, unglobbed_params in task_parameters:
 
+
                         #
                         #   save output even if uptodate
                         #
@@ -5236,6 +5348,8 @@ def pipeline_run(target_tasks=[],
                                        limit. Otherwise abbreviated paths are prefixed by
                                        ``<???>``
     """
+    # DEBUGGG
+    #print("pipeline_run start", file = sys.stderr)
 
     #
     # default values
@@ -5718,6 +5832,8 @@ def pipeline_run(target_tasks=[],
 
     if len(job_errors):
         raise job_errors
+    # DEBUGGG
+    #print("pipeline_run finish", file = sys.stderr)
 
 
 #   use high resolution timestamps where available
