@@ -73,7 +73,7 @@ def attributes_to_str (attributes, name):
 
     # if a label is specified, that overrides the node name
     if "label" not in attributes:
-        attributes["label"] = name.replace("  before ", "\\nbefore ")
+        attributes["label"] = name.replace("  before ", "\\nbefore ").replace(",  ", ",\n")
 
 
     # remove any quotes
