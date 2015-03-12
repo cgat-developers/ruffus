@@ -296,7 +296,7 @@ class Test_regex_error_messages(unittest.TestCase):
 
         s = StringIO()
         pipeline_printout(s, [test_regex_task], verbose=5, wrap_width = 10000)
-        self.assertTrue(re.search('Missing files\n\s+\[tmp_test_regex_error_messages/a_name.tmp1, tmp_test_regex_error_messages/a_name.tmp2', s.getvalue()))
+        self.assertTrue(re.search('Missing files.*\[tmp_test_regex_error_messages/a_name.tmp1, tmp_test_regex_error_messages/a_name.tmp2', s.getvalue(), re.DOTALL))
 
 
     def test_regex_run(self):
@@ -332,7 +332,7 @@ class Test_regex_error_messages(unittest.TestCase):
 
         s = StringIO()
         pipeline_printout(s, [test_suffix_task], verbose=5, wrap_width = 10000)
-        self.assertTrue(re.search('Missing files\n\s+\[tmp_test_regex_error_messages/a_name.tmp1, tmp_test_regex_error_messages/a_name.tmp2', s.getvalue()))
+        self.assertTrue(re.search('Missing files.*\[tmp_test_regex_error_messages/a_name.tmp1, tmp_test_regex_error_messages/a_name.tmp2', s.getvalue(), re.DOTALL))
 
     def test_suffix_run(self):
         """Run transform(...,suffix()...)"""

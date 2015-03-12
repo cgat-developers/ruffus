@@ -153,8 +153,8 @@ class TestJobCompletion(unittest.TestCase):
         for chksm in possible_chksms:
             s = StringIO()
             pipeline_printout(s, [transform1], verbose=6, checksum_level=chksm)
-            self.assertTrue(re.search(r'Job needs update: Missing file\n\s+\[tmp_test_job_completion/input.output\]'
-                                      , s.getvalue()))
+            self.assertTrue(re.search(r'Job needs update:.*Missing file.*\[tmp_test_job_completion/input.output\]'
+                                      , s.getvalue(), re.DOTALL))
 
 
 
@@ -386,8 +386,8 @@ class TestJobCompletion(unittest.TestCase):
         for chksm in possible_chksms:
             s = StringIO()
             self.create_pipeline().printout(s, [transform1], verbose=6, checksum_level=chksm)
-            self.assertTrue(re.search(r'Job needs update: Missing file\n\s+\[tmp_test_job_completion/input.output\]'
-                                      , s.getvalue()))
+            self.assertTrue(re.search(r'Job needs update:.*Missing file.*\[tmp_test_job_completion/input.output\]'
+                                      , s.getvalue(), re.DOTALL))
 
 
 

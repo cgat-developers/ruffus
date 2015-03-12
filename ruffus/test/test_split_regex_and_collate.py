@@ -9,6 +9,7 @@ JOBS_PER_TASK = 5
 
 import os
 import sys
+import re
 
 # add grandparent to search path for testing
 grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -209,7 +210,7 @@ class Test_ruffus(unittest.TestCase):
 
         s = StringIO()
         pipeline_printout(s, [combine_results], verbose=5, wrap_width = 10000)
-        self.assertTrue('Job needs update: Missing files\n' in s.getvalue())
+        self.assertTrue(re.search('Job needs update:.*Missing files.*', s.getvalue(), re.DOTALL) is not None)
         #print s.getvalue()
 
         pipeline_run([combine_results], verbose=0)
@@ -267,7 +268,7 @@ class Test_ruffus(unittest.TestCase):
         self.cleanup_tmpdir()
         s = StringIO()
         test_pipeline.printout(s, [combine_results], verbose=5, wrap_width = 10000)
-        self.assertTrue('Job needs update: Missing files\n' in s.getvalue())
+        self.assertTrue(re.search('Job needs update:.*Missing files.*', s.getvalue(), re.DOTALL) is not None)
         test_pipeline.run(verbose=0)
 
     #___________________________________________________________________________

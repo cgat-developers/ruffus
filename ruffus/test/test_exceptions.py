@@ -38,6 +38,7 @@ for attr in "parallel", "pipeline_run", "Pipeline":
 def parallel_task(name, param1):
     sys.stderr.write("    Parallel task %s: \n" % name)
     #raise task.JobSignalledBreak("Oops! I did it again!")
+    print ("    Raising exception", file = sys.stderr)
     raise Exception("new")
 
 

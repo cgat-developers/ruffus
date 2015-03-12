@@ -66,7 +66,7 @@ class Test_cmdline(unittest.TestCase):
     #    s = StringIO()
     #    cleanup_tmpdir()
     #    pipeline_printout(s, [test_regex_task], verbose=5, wrap_width = 10000)
-    #    self.assertTrue(re.search('Missing files\n\s+\[tmp_test_regex_error_messages/a_name.tmp1, tmp_test_regex_error_messages/a_name.tmp2', s.getvalue()))
+    #    self.assertTrue(re.search('Missing files.*\[tmp_test_regex_error_messages/a_name.tmp1, tmp_test_regex_error_messages/a_name.tmp2', s.getvalue(), re.DOTALL))
     #    self.assertIn("Warning: File match failure: File 'tmp_test_regex_error_messages/a_name.tmp1' does not match regex", s.getvalue())
     #    self.assertRaisesRegex(fatal_error_input_file_does_not_match,
     #                            "File '.*?' does not match regex\('.*?'\) and pattern '.*?':\n.*unknown group name",

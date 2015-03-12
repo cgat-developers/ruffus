@@ -367,11 +367,11 @@ class TestCombinatorics(unittest.TestCase):
         cleanup_tmpdir()
         s = StringIO()
         pipeline_printout(s, [test_product_merged_task], verbose=5, wrap_width = 10000)
-        self.assertTrue(re.search('Job needs update: Missing files\n\s+'
+        self.assertTrue(re.search('Job needs update:.*Missing files.*'
                       '\[.*tmp_test_combinatorics/a_name.tmp1, '
                       '.*tmp_test_combinatorics/e_name.tmp1, '
                       '.*tmp_test_combinatorics/h_name.tmp1, '
-                      '.*tmp_test_combinatorics/a_name.e_name.h_name.tmp2\]', s.getvalue()))
+                      '.*tmp_test_combinatorics/a_name.e_name.h_name.tmp2\]', s.getvalue(), re.DOTALL))
 
     def test_product_run(self):
         """Run product"""
@@ -433,10 +433,10 @@ class TestCombinatorics(unittest.TestCase):
 
         s = StringIO()
         pipeline_printout(s, [test_combinations2_merged_task], verbose=5, wrap_width = 10000)
-        self.assertTrue(re.search('Job needs update: Missing files\n\s+'
+        self.assertTrue(re.search('Job needs update:.*Missing files.*'
                       '\[.*tmp_test_combinatorics/a_name.tmp1, '
                         '.*tmp_test_combinatorics/b_name.tmp1, '
-                        '.*tmp_test_combinatorics/a_name.b_name.tmp2\]', s.getvalue()))
+                        '.*tmp_test_combinatorics/a_name.b_name.tmp2\]', s.getvalue(), re.DOTALL))
 
 
     def test_combinations2_run(self):
