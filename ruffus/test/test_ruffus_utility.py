@@ -66,42 +66,42 @@ class Test_get_nested_tasks_or_globs(unittest.TestCase):
         #
         # test strings
         #
-        self.check_equal("test", (set(), set(), set()))
-        self.check_equal([("test1",), "test2", 3], (set(), set(), set()))
+        self.check_equal("test", (list(), set(), set()))
+        self.check_equal([("test1",), "test2", 3], (list(), set(), set()))
 
         #
         # test missing
         #
-        self.check_equal((1,3, [5]), (set(), set(), set()))
-        self.check_equal(None, (set(), set(), set()))
+        self.check_equal((1,3, [5]), (list(), set(), set()))
+        self.check_equal(None, (list(), set(), set()))
 
         #
         # test glob
         #
-        self.check_equal([("test1.*",), "test?2", 3], (set(), set(['test1.*', 'test?2']), set()))
+        self.check_equal([("test1.*",), "test?2", 3], (list(), set(['test1.*', 'test?2']), set()))
 
         #
         # test glob and string
         #
-        self.check_equal([("test*1",), (("test3",),),"test2", 3], (set(), set(['test*1']), set()))
+        self.check_equal([("test*1",), (("test3",),),"test2", 3], (list(), set(['test*1']), set()))
 
         #
         # test task function
         #
-        self.check_equal(is_glob, (set([is_glob]), set([]), set()))
+        self.check_equal(is_glob, (list([is_glob]), set([]), set()))
         self.check_equal([is_glob, [1, "this", ["that*", 5]], [(get_strings_in_flattened_sequence,)]], (
-                        set([is_glob, get_strings_in_flattened_sequence]), set(["that*"]), set()))
+                        [is_glob, get_strings_in_flattened_sequence], set(["that*"]), set()))
         #
         # test wrapper
         #
-        self.check_equal(output_from(is_glob, ["what", 7], 5), (set([is_glob, "what"]), set([]), set()))
+        self.check_equal(output_from(is_glob, ["what", 7], 5), ([is_glob, "what"], set([]), set()))
 
 #_________________________________________________________________________________________
 
-#   replace_func_names_with_tasks
+#   replace_placeholders_with_tasks_in_input_params
 
 #_________________________________________________________________________________________
-class Test_replace_func_names_with_tasks(unittest.TestCase):
+class Test_replace_placeholders_with_tasks_in_input_params(unittest.TestCase):
     def setUp(self):
         exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
         os.chdir(exe_path)
@@ -111,9 +111,9 @@ class Test_replace_func_names_with_tasks(unittest.TestCase):
     #       self.assertRaises(ValueError, random.sample, self.seq, 20)
 
     def check_equal (self, a,b, d):
-        self.assertEqual(replace_func_names_with_tasks(a, d), b)
+        self.assertEqual(replace_placeholders_with_tasks_in_input_params(a, d), b)
 
-    def test_replace_func_names_with_tasks(self):
+    def test_replace_placeholders_with_tasks_in_input_params(self):
         func_or_name_to_task = {is_glob: "FF is_glob", "what" : "FF what", get_strings_in_flattened_sequence: "FF get_strings_in_flattened_sequence"}
 
 
@@ -422,7 +422,7 @@ class Test_expand_nested_tasks_or_globs(unittest.TestCase):
         task_or_glob_to_files["test?2" ] = ["test12"]
 
 
-        param_a = replace_func_names_with_tasks(a, func_or_name_to_task)
+        param_a = replace_placeholders_with_tasks_in_input_params(a, func_or_name_to_task)
         self.assertEqual(expand_nested_tasks_or_globs(param_a, task_or_glob_to_files), b)
 
     def test_expand_nested_tasks_or_globs(self):

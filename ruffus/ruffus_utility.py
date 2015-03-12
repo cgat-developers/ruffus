@@ -1022,15 +1022,15 @@ def get_nested_tasks_or_globs(p, treat_strings_as_tasks = False, runtime_data_na
     # create storage if this is not a recursive call
     #
     if globs is None:
-        runtime_data_names, tasks, globs = set(), set(), set()
+        runtime_data_names, tasks, globs = set(), list(), set()
 
     #
     #   task function
     #
     if (isinstance(p, collections.Callable)):
-        tasks.add(p)
-    elif p.__class__.__name__ == 'Task':
-        tasks.add(p)
+        tasks.append(p)
+    elif p.__class__.__name__ == 'Task' or p.__class__.__name__ == 'Pipeline':
+        tasks.append(p)
     elif isinstance(p, runtime_parameter):
         runtime_data_names.add(p)
 
@@ -1043,7 +1043,7 @@ def get_nested_tasks_or_globs(p, treat_strings_as_tasks = False, runtime_data_na
 
     elif isinstance(p, path_str_type):
         if treat_strings_as_tasks:
-            tasks.add(p)
+            tasks.append(p)
         elif is_glob(p):
             globs.add(p)
 
@@ -1054,15 +1054,22 @@ def get_nested_tasks_or_globs(p, treat_strings_as_tasks = False, runtime_data_na
 
 #_________________________________________________________________________________________
 #
-#   replace_func_names_with_tasks
+#   replace_placeholders_with_tasks_in_input_params
 #
 #________________________________________________________________________________________
-def replace_func_names_with_tasks(p, func_or_name_to_task, treat_strings_as_tasks = False):
+def replace_placeholders_with_tasks_in_input_params(p, func_or_name_to_task, treat_strings_as_tasks = False):
     """
     Replaces task functions or task name (strings) with the tasks they represent
+    Also replaces Tasks and Pipelines with the correct Tasks
     func_or_name_to_task are a dictionary of function and task names to tasks
 
     """
+    if p.__class__.__name__ == 'Pipeline':
+        return func_or_name_to_task["PIPELINE=%s=PIPELINE" % p.name]
+
+    if p.__class__.__name__ == 'Task' and p in func_or_name_to_task:
+        return func_or_name_to_task[p]
+
     #
     # Expand globs or tasks as a list only if they are top level
     #
@@ -1075,9 +1082,9 @@ def replace_func_names_with_tasks(p, func_or_name_to_task, treat_strings_as_task
     #
     if isinstance(p, output_from):
         if len(p.args) == 1:
-            return replace_func_names_with_tasks(p.args[0], func_or_name_to_task, True)
+            return replace_placeholders_with_tasks_in_input_params(p.args[0], func_or_name_to_task, True)
         else:
-            return [replace_func_names_with_tasks(pp, func_or_name_to_task, True) for pp in p.args]
+            return [replace_placeholders_with_tasks_in_input_params(pp, func_or_name_to_task, True) for pp in p.args]
 
     #
     # strings become tasks if treat_strings_as_tasks
@@ -1092,6 +1099,7 @@ def replace_func_names_with_tasks(p, func_or_name_to_task, treat_strings_as_task
     #
     if isinstance(p, dict):
         return p
+
 
     #
     # Other sequences are recursed down
@@ -1108,13 +1116,13 @@ def replace_func_names_with_tasks(p, func_or_name_to_task, treat_strings_as_task
             #
             if isinstance(pp, output_from):
                 if len(pp.args) > 1:
-                    l.extend(tuple(replace_func_names_with_tasks(pp, func_or_name_to_task, True)))
+                    l.extend(tuple(replace_placeholders_with_tasks_in_input_params(pp, func_or_name_to_task, True)))
                 elif len(pp.args) == 1:
-                    l.append(replace_func_names_with_tasks(pp.args[0], func_or_name_to_task, True))
+                    l.append(replace_placeholders_with_tasks_in_input_params(pp.args[0], func_or_name_to_task, True))
                 # else len(pp.args) == 0 !! do nothing
 
             else:
-                l.append(replace_func_names_with_tasks(pp, func_or_name_to_task, treat_strings_as_tasks))
+                l.append(replace_placeholders_with_tasks_in_input_params(pp, func_or_name_to_task, treat_strings_as_tasks))
         return type(p)(l)
 
     #
