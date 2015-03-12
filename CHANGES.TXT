@@ -1,3 +1,81 @@
+= v. 2.6=
+	2015-03-12
+	============================================================================================================================================================
+	Bug fixes
+	============================================================================================================================================================
+
+		* ``pipeline_printout_graph()`` incompatibility with python3 fixed
+		* checkpointing did not work correctly with :ref:`@split(...) <decorators.split>` and :ref:`@subdivide(...) <decorators.subdivide>`
+	=====================================================================================================================
+	`@transform `(..., suffix("xxx"),` :red:`output_dir` `= "/new/output/path")`
+	=====================================================================================================================
+
+		* Thanks to the suggestion of Milan Simonovic.
+		* :ref:`@transform <decorators.transform>` takes an optional ``output_dir`` named parameter with :ref:`suffix() <new_manual.suffix>`.
+		* Output files go to the specified directory.
+
+	=====================================================================================================================
+	Named parameters
+	=====================================================================================================================
+
+		* Decorators can take named parameters.
+		* These are self documenting, and improve clarity.
+
+	=============================================
+	New object orientated syntax for Ruffus
+	=============================================
+
+		* Ruffus Pipelines can now be created directly using the new ``Pipeline`` and ``Task`` objects instead of via decorators.
+		* This new syntax is fully compatible and inter-operates with traditional Ruffus syntax using decorators.
+		* Apart from cosmetic changes, the new syntax allows different instances of modular Ruffus sub-pipelines
+		  to be defined separately, in different python modules and then joined together flexible at runtime.
+
+= v. 2.5=
+	2014-08-06
+
+	============================================================================================================================================================
+	Python3 compatability 
+	============================================================================================================================================================
+
+		At least python 2.6 is now required.
+
+	============================================================================================================================================================
+	Ctrl-C interrupts
+	============================================================================================================================================================
+
+		Ruffus now mostly(!) terminates gracefully when interrupted by Ctrl-C .
+
+	============================================================================================================================================================
+	Customising flowcharts in pipeline_printout_graph() with ``@graphviz``
+	============================================================================================================================================================
+
+		*Contributed by Sean Davis, with improved syntax via Jake Biesinger*
+
+		The graphics for each task can have its own attributes (URL, shape, colour) etc. by adding
+		`graphviz attributes  <http://www.graphviz.org/doc/info/attrs.html>`__
+		using the ``@graphviz`` decorator.
+
+	============================================================================================================================================================
+	Consistent verbosity levels
+	============================================================================================================================================================
+
+		The verbosity levels are now more fine-grained and consistent between pipeline_printout and pipeline_run.
+
+	============================================================================================================================================================
+	Allow abbreviated paths from ``pipeline_run`` or ``pipeline_printout``
+	============================================================================================================================================================
+
+		Ruffus now allows either
+			1) Only the nth top level sub-directories to be included
+			2) The message to be truncated to a specified number of characters (to fit on a line, for example)
+
+	============================================================================================================================================================
+	Bug fixes
+	============================================================================================================================================================
+		* BUG FIX: Output producing wild cards was not saved in the checksum files!!!
+		* BUG FIX: @mkdir bug under Windows. Thanks to Sean Turley. (Aargh! Different exceptions are thrown in Windows vs. Linux for the same condition!)
+		* Added :ref:`pipeline_get_task_names(...) <pipeline_functions.pipeline_get_task_names>` which returns all task name as a list of strings. Thanks to Clare Sloggett
+
 = v. 2.4.1=
 	2014-04-26
 	* Breaking changes to drmaa API suggested by Bernie Pope to ensure portability across different drmaa implementations (SGE, SLURM etc.)
