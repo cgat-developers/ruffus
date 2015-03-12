@@ -6,26 +6,16 @@ Implementation Tips
 Items remaining for current release
 ******************************************************************************
 ======================================================================================================
-Docs
-======================================================================================================
-    * New docs for new interface
-    * How to write new pipeline functions
-    * How decorators / OOP code is shared
-    * How functions parameters are checked early
-
-======================================================================================================
 Code
 ======================================================================================================
-    #. Output dependencies
     #. update_checksum_level_on_tasks(checksum_level) is non reentrant
+    #. ``Task.description_with_args_placeholder`` needs to only fill in placeholders at the last minute
+       Otherwise cloned pipelines will have the wrong name
 
 ======================================================================================================
 Unit tests
 ======================================================================================================
     #. output_dir for @mkdir
-    #. ``Pipeline.get_head_tasks(self)`` (including tasks with mkdir())
-    #. ``Pipeline.get_tail_tasks(self)``
-    #. ``Pipeline._complete_task_setup()`` which follows chain of dependencies for each task in a pipeline
     #. When are things defined / linked up
     #. When can we join up Pipelines / tasks / set_input()?
     #.  Sub pipeline
@@ -59,7 +49,7 @@ Release
 
     * tag git with, for example::
 
-        git tag -a v2.5 -m "Version 2.5"
+        git tag -a v2.6 -m "Version 2.6"
 
 
     * Upload to pypi::
@@ -787,6 +777,9 @@ Passed Unit tests
        * Will blow up at any instance of ambiguity in any particular pipeline
        * Will blow up at any instance of ambiguity across pipelines (if not in current pipeline)
     #. @mkdir, @follows(mkdir)
+    #. ``Pipeline.get_head_tasks(self)`` (including tasks with mkdir())
+    #. ``Pipeline.get_tail_tasks(self)``
+    #. ``Pipeline._complete_task_setup()`` which follows chain of dependencies for each task in a pipeline
 
 
 ======================================================================================================
@@ -796,6 +789,11 @@ Pipeline and Task creation
     * Share code as far as possible between decorator and OOP syntax
     * Cannot use textbook OOP inheritance hierarchy easily because @decorators are not necessarily
       given in order.
+
+
+      .. <<python
+
+      .. code-block:: python
 
         Pipeline.transform
             _do_create_task_by_OOP()
@@ -820,6 +818,8 @@ Pipeline and Task creation
 
                 Call _complete_task_setup() for all the pipelines of each task
 
+      ..
+        python
 
 
 ======================================================================================================
@@ -840,6 +840,17 @@ Connecting Task into a DAG
 
     ..
         python
+
+    * Task dependencies are normally deferred and saved to ``Task.deferred_follow_params``
+    * If Task dependencies call for a new Task (``follows``/``follows(mkdir)``), this takes place
+      immediately
+    * The parameters in ``Task.deferred_follow_params`` are updated with the created ``Task`` when
+      this happens
+    * ``Task._prepare_preceding_mkdir()`` has a ``defer`` flag to prevent it from updating
+      ``Task.deferred_follow_params`` when it is called to resolve deferred dependencies from
+      ``Task._connect_parents()``. Otherwise we will have two copies of each deferred dependency...
+    * ``Task.deferred_follow_params`` must be deep-copied otherwise cloned pipelines will interfere
+      with each other when dependencies are resolved...
 
 
 

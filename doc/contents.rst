@@ -79,6 +79,9 @@ Overview:
    installation.rst
    design.rst
    Bugs and Updates <history>
+   tutorials/new_syntax.rst
+   tutorials/new_syntax_worked_example.rst
+   tutorials/new_syntax_worked_example_code.rst
    Future plans <todo>
    Implementation_notes <implementation_notes.rst>
    faq.rst

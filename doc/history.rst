@@ -20,7 +20,7 @@ Major Features added to Ruffus
 version 2.6
 ********************************************************************
 
-    10th March 2015
+    12th March 2015
 
 =====================================================================================================================
 1) Bug fixes
@@ -147,53 +147,15 @@ version 2.6
 
 
 =============================================
-3) New Object orientated syntax for Ruffus
+3) New object orientated syntax for Ruffus
 =============================================
 
     Ruffus Pipelines can now be created directly using the new ``Pipeline`` and ``Task`` objects instead of via decorators.
-
-______________________________________________________________________________
-Syntax
-______________________________________________________________________________
-
-    This traditional Ruffus code:
-
-        .. <<python
-
-        .. code-block:: python
-
-            from ruffus import *
-
-            # task function
-            starting_files = ["input/a.fasta","input/b.fasta"]
-            @transform(input      = starting_files,
-                       filter     = suffix('.fasta'),
-                       output     = '.sam',
-                       output_dir = "output")
-            def map_dna_sequence(input_file, output_file) :
-                pass
-
-            pipeline_run()
-
-
-        ..
-            python
-
-
-    Can also be written as:
 
         .. <<python
 
         .. code-block:: python
             :emphasize-lines: 9
-
-            from ruffus import *
-
-            # undecorated task function
-            def map_dna_sequence(input_file, output_file) :
-                pass
-
-            starting_files = ["input/a.fasta","input/b.fasta"]
 
             # make ruffus pipeline
             my_pipeline = Pipeline(name = "test")
@@ -207,197 +169,12 @@ ______________________________________________________________________________
         ..
             python
 
-______________________________________________________________________________
-Advantages
-______________________________________________________________________________
+    This new syntax is fully compatible and inter-operates with traditional Ruffus syntax using decorators.
 
-    The two different syntax are identical. With the exception of the first ``task_func`` parameter,
-    all parameters are in the same order as before and can be given by position or as named arguments.
+    Apart from cosmetic changes, the new syntax allows different instances of modular Ruffus sub-pipelines
+    to be defined separately, in different python modules and then joined together flexible at runtime.
 
-
-    These are some of the advantages of the new syntax:
-
-    #) Pipeline topology is in one place. This is obviously a matter of personal preference.
-
-       Annotating python functions with pipeline parameters (using decorators) locally may, however,
-       help separation of concerns.
-
-    #) Pipelines can easily be created on the fly, for example, using parameters parsed from configuration
-       files.
-
-    #) Stock "sub-pipelines" can be created as functional blocks in python modules and joined together
-       as needed. Bioinformaticists may have "mapping", "aligning", "variant-calling" sub-pipelines etc.
-
-    #) Multiple Tasks can share the same python function.
-
-       Tasks are normally referred to by their associated functions (as with decoratored Ruffus tasks).
-       However, you can also disambiguate Tasks by specifying their name directly.
-
-    #) Pipeline topology can be specified on the fly
-       Some tasks require serial, binary merging. For example, to merge 5-8 inputs require three rounds of
-       merging, and 9-16 inputs require four rounds. We can now tailor the number of successive tasks,
-       i.e. pipeline topology, to our data.
-
-
-
-______________________________________________________________________________
-Compatability
-______________________________________________________________________________
-
-    * The changes are fully backwards compatibile. All valid Ruffus code continues to work
-    * Decorators and ``Pipeline`` objects can be used interchangeably:
-
-      Decorated functions are part of a default constructed ``Pipeline`` named ``"main"``.
-          .. code-block:: python
-
-              main_pipeline = Pipeline.pipelines["main"]
-
-          ..
-
-      In the following example, a pipeline using the
-      Ruffus with classes syntax has a traditionally decorated task function in the middle.
-
-        .. <<python
-
-        .. code-block:: python
-
-            from ruffus import *
-
-            # get default pipeline
-            main_pipeline = Pipeline.pipelines["main"]
-
-            # undecorated task functions
-            def compress_sam_to_bam(input_file, output_file) :
-                open(output_file, "w").close()
-
-            def create_files(output_file) :
-                open(output_file, "w").close()
-
-
-            #
-            #   Ruffus with classes
-            #
-            starting_files = main_pipeline.originate(create_files, ["input/a.fasta","input/b.fasta"])\
-                .follows(mkdir("input", "output"))
-
-            #
-            #   Ruffus with python decorations
-            #
-            @transform(starting_files,
-                       suffix('.fasta'),
-                       '.sam',
-                       output_dir = "output")
-            def map_dna_sequence(input_file, output_file) :
-                open(output_file, "w").close()
-
-
-            #
-            #   Ruffus with classes
-            #
-            main_pipeline.transform(task_func   = compress_sam_to_bam,
-                                    input       = map_dna_sequence,
-                                    filter      = suffix(".sam"),
-                                    output      = ".bam")
-
-            # main_pipeline.run()
-            #    or
-            pipeline_run()
-
-
-        ..
-            python
-
-
-______________________________________________________________________________
-Class methods
-______________________________________________________________________________
-
-    The ``ruffus.Pipeline`` class has the following self-explanatory methods:
-
-        .. <<python
-
-        .. code-block:: python
-
-            Pipeline.run(...)
-            Pipeline.printout(...)
-            Pipeline.printout_graph(...)
-
-        ..
-            python
-
-
-    These methods return a ``ruffus.Task`` object
-
-        .. <<python
-
-
-        .. code-block:: python
-
-            Pipeline.originate(...)
-            Pipeline.transform(...)
-            Pipeline.split(...)
-            Pipeline.merge(...)
-            Pipeline.mkdir(...)
-
-            Pipeline.collate(...)
-            Pipeline.subdivide(...)
-
-            Pipeline.combinations(...)
-            Pipeline.combinations_with_replacement(...)
-            Pipeline.product(...)
-            Pipeline.permutations(...)
-
-            Pipeline.follows(...)
-            Pipeline.check_if_uptodate(...)
-            Pipeline.graphviz(...)
-
-            Pipeline.files(...)
-            Pipeline.parallel(...)
-
-        ..
-            python
-
-
-    Ruffus ``Task``\ s can be modified with the following methods
-
-        .. <<python
-
-        .. code-block:: python
-
-            Task.active_if(...)
-            Task.check_if_uptodate(...)
-            Task.follows(...)
-            Task.graphviz(...)
-            Task.jobs_limit(...)
-            Task.mkdir(...)
-            Task.posttask(...)
-
-        ..
-            python
-
-
-    The syntax is designed to allow call chaining:
-
-        .. <<python
-
-        .. code-block:: python
-
-            Pipeline.transform(...)\
-                .mkdir(follows(...))\
-                .active_if(...)\
-                .graphviz(...)
-
-        ..
-            python
-
-
-
-______________________________________________________________________________
-Further documentation
-______________________________________________________________________________
-
-    To follow ... :-)
-
+    The new syntax and discussion are introduced :ref:`here <new_syntax>`.
 
 
 

@@ -16,7 +16,7 @@
 .. _output: `decorators.merge.output`_
 
 ########################################################################
-@merge ( |input|_, |filter|_, |output|_, [|extras|_,...] )
+@merge ( |input|_, |output|_, [|extras|_,...] )
 ########################################################################
 
     **Purpose:**
@@ -50,7 +50,7 @@
     * **output** = *output*
         Specifies the resulting output file name(s).
 
-.. _decorators.merge.extra_parameters:
+.. _decorators.merge.extras:
 
     * **extras** = *extras*
        Any extra parameters are passed verbatim to the task function

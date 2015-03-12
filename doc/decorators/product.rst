@@ -10,8 +10,6 @@
 
 .. |input| replace:: `input`
 .. _input: `decorators.product.input`_
-.. |tuple_size| replace:: `tuple_size`
-.. _tuple_size: `decorators.product.tuple_size`_
 .. |filter| replace:: `filter`
 .. _filter: `decorators.product.filter`_
 .. |input2| replace:: `input2`
