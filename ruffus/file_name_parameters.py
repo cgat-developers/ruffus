@@ -355,9 +355,9 @@ def needs_update_check_directory_missing (*params, **kwargs):
 
     if len(missing_directories):
         if len(missing_directories) > 1:
-            return True, "Directories [%s] are missing" % (", ".join(missing_directories))
+            return True, ": Directories %r are missing" % (", ".join(missing_directories))
         else:
-            return True, "Directories [%s] is missing" % (missing_directories[0])
+            return True, ": Directories %r is missing" % (missing_directories[0])
     return False, "All directories exist"
 
 #_________________________________________________________________________________________
@@ -427,9 +427,9 @@ def needs_update_check_exist (*params, **kwargs):
             if not os.path.exists(p):
                 missing_files.append(p)
     if len(missing_files):
-        return True, "Missing file%s\n%s" % ("s" if len(missing_files) > 1 else "",
+        return True, "...\n        Missing file%s %s" % ("s" if len(missing_files) > 1 else "",
                                             shorten_filenames_encoder (missing_files,
-                                                                        verbose_abbreviated_path))
+                                                                       verbose_abbreviated_path))
 
     #
     #   missing input -> build only if output absent
@@ -511,7 +511,7 @@ def needs_update_check_modify_time (*params, **kwargs):
             if not os.path.exists(p):
                 missing_files.append(p)
     if len(missing_files):
-        return True, "Missing file%s\n        %s" % ("s" if len(missing_files) > 1 else "",
+        return True, "...\n        Missing file%s %s" % ("s" if len(missing_files) > 1 else "",
                                             shorten_filenames_encoder (missing_files,
                                                                        verbose_abbreviated_path))
     #
@@ -726,6 +726,7 @@ def file_names_from_tasks_globs(files_task_globs,
 
     task_or_glob_to_files = dict()
 
+
     # look up globs and tasks
     for g in files_task_globs.globs:
         # check whether still is glob pattern after transform
@@ -743,8 +744,6 @@ def file_names_from_tasks_globs(files_task_globs,
             raise error_missing_runtime_parameter("The inputs of this task depends on " +
                                                   "the runtime parameter " +
                                                   "'%s' which is missing " %  data_name)
-
-
 
     return expand_nested_tasks_or_globs(files_task_globs.params, task_or_glob_to_files)
 
