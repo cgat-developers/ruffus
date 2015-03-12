@@ -861,6 +861,7 @@ class Pipeline(dict):
         Pipeline.pipelines[name] = self
         self.head_tasks = []
         self.tail_tasks = []
+        self.lookup = dict()
 
     # _________________________________________________________________________
 
@@ -1063,8 +1064,8 @@ class Pipeline(dict):
         new_pipeline.original_name = self.original_name
 
         # lookup tasks in new pipeline
-        new_pipeline.head_tasks = [new_pipeline[t._name][0] for t in self.head_tasks]
-        new_pipeline.tail_tasks = [new_pipeline[t._name][0] for t in self.tail_tasks]
+        new_pipeline.head_tasks = [new_pipeline[t._name] for t in self.head_tasks]
+        new_pipeline.tail_tasks = [new_pipeline[t._name] for t in self.tail_tasks]
 
         return new_pipeline
 
@@ -1140,22 +1141,22 @@ class Pipeline(dict):
         #
         #   Does the unqualified name uniquely identify?
         #
-        if task_name in self:
-            if len(self[task_name]) == 1:
-                return self[task_name]
+        if task_name in self.lookup:
+            if len(self.lookup[task_name]) == 1:
+                return self.lookup[task_name]
             else:
-                multiple_tasks = self[task_name]
+                multiple_tasks = self.lookup[task_name]
 
         #
         #   Even if the unqualified name does not uniquely identify,
         #       maybe the qualified name does
         #
         full_qualified_name = default_module_name + "." + task_name
-        if full_qualified_name in self:
-            if len(self[full_qualified_name]) == 1:
-                return self[full_qualified_name]
+        if full_qualified_name in self.lookup:
+            if len(self.lookup[full_qualified_name]) == 1:
+                return self.lookup[full_qualified_name]
             else:
-                multiple_tasks = self[task_name]
+                multiple_tasks = self.lookup[task_name]
 
         #
         #   Nothing matched
@@ -1467,13 +1468,13 @@ def lookup_unique_task_from_func(task_func, default_pipeline_name="main"):
     """
 
     def unique_task_from_func_in_pipeline(task_func, pipeline):
-        if task_func in pipeline:
-            if len(pipeline[task_func]) == 1:
+        if task_func in pipeline.lookup:
+            if len(pipeline.lookup[task_func]) == 1:
                 # Found task!
-                return pipeline[task_func][0]
+                return pipeline.lookup[task_func][0]
 
             # Found too many tasks! Ambiguous...
-            task_names = ", ".join(task._name for task in pipeline[task_func])
+            task_names = ", ".join(task._name for task in pipeline.lookup[task_func])
             raise error_ambiguous_task(
                 "Function def %s(...): is used by multiple tasks (%s). Which one do you mean?."
                 % (task_func.__name__, task_names))
@@ -1831,7 +1832,8 @@ class Task (node):
         self.pipeline.tasks.add(self)
 
         # task_name is always a unique lookup and overrides everything else
-        self.pipeline[task_name] = [self]
+        self.pipeline[task_name] = self
+        self.pipeline.lookup[task_name] = [self]
         self.pipeline.task_names.add(task_name)
 
         #
@@ -1847,10 +1849,14 @@ class Task (node):
             # don't add to lookup if this conflicts with a task_name which is
             # always unique and overriding
             if lookup not in self.pipeline.task_names:
-                if lookup in self.pipeline:
-                    self.pipeline[lookup].append(self)
+                # non-unique map
+                if lookup in self.pipeline.lookup:
+                    self.pipeline.lookup[lookup].append(self)
+                    # remove non-uniques from Pipeline
+                    del self.pipeline[lookup]
                 else:
-                    self.pipeline[lookup] = [self]
+                    self.pipeline.lookup[lookup] = [self]
+                    self.pipeline[lookup] = self
 
     #
 
@@ -3200,7 +3206,8 @@ class Task (node):
         #
         self.cnt_task_mkdir += 1
         cnt_task_mkdir_str = (" #%d" % self.cnt_task_mkdir) if self.cnt_task_mkdir > 1 else ""
-        task_name = r"mkdir%r%s  before %s " % (unnamed_args, cnt_task_mkdir_str, self._name)
+        task_name = r"mkdir%r%s   before %s " % (unnamed_args, cnt_task_mkdir_str, self._name)
+        task_name = task_name.replace(",)", ")").replace(",", ",  ")
         new_task = self.pipeline._create_task(task_func=job_wrapper_mkdir, task_name=task_name)
 
         #   defer _add_parent so we can clone unless we are already
@@ -4310,14 +4317,9 @@ def pipeline_printout_graph(stream,
     :param checksum_level: Several options for checking up-to-dateness are
                            available: Default is level 1.
                            level 0 : Use only file timestamps
-                           level 1 : above, plus timestamp of successful
-                                     job completion
-                           level 2 : above, plus a checksum of the pipeline
-                                     function body
-                           level 3 : above, plus a checksum of the pipeline
-                                     function default arguments and the
-                                     additional arguments passed in by task
-                                     decorators
+                           level 1 : above, plus timestamp of successful job completion
+                           level 2 : above, plus a checksum of the pipeline function body
+                           level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
     """
 
     # EXTRA pipeline_run DEBUGGING
@@ -4512,10 +4514,8 @@ def pipeline_printout(output_stream=None,
         verbose = 1 : Out-of-date Task names
         verbose = 2 : All Tasks (including any task function docstrings)
         verbose = 3 : Out-of-date Jobs in Out-of-date Tasks, no explanation
-        verbose = 4 : Out-of-date Jobs in Out-of-date Tasks, with explanations
-                      and warnings
-        verbose = 5 : All Jobs in Out-of-date Tasks,  (include only list of
-                      up-to-date tasks)
+        verbose = 4 : Out-of-date Jobs in Out-of-date Tasks, with explanations and warnings
+        verbose = 5 : All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)
         verbose = 6 : All jobs in All Tasks whether out of date or not
 
     :param output_stream: where to print to
@@ -4526,17 +4526,12 @@ def pipeline_printout(output_stream=None,
                               they are out-of-date
     :param verbose: level 0 : nothing
                     level 1 : Out-of-date Task names
-                    level 2 : All Tasks (including any task function
-                              docstrings)
-                    level 3 : Out-of-date Jobs in Out-of-date Tasks, no
-                              explanation
-                    level 4 : Out-of-date Jobs in Out-of-date Tasks, with
-                              explanations and warnings
-                    level 5 : All Jobs in Out-of-date Tasks,  (include only
-                              list of up-to-date tasks)
+                    level 2 : All Tasks (including any task function docstrings)
+                    level 3 : Out-of-date Jobs in Out-of-date Tasks, no explanation
+                    level 4 : Out-of-date Jobs in Out-of-date Tasks, with explanations and warnings
+                    level 5 : All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)
                     level 6 : All jobs in All Tasks whether out of date or not
-                    level 10: logs messages useful only for debugging ruffus
-                              pipeline code
+                    level 10: logs messages useful only for debugging ruffus pipeline code
     :param indent: How much indentation for pretty format.
     :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all*
                                           out-of-date tasks. Runs minimal
@@ -4547,26 +4542,14 @@ def pipeline_printout(output_stream=None,
     :param checksum_level: Several options for checking up-to-dateness are
                            available: Default is level 1.
                            level 0 : Use only file timestamps
-                           level 1 : above, plus timestamp of successful
-                                     job completion
-                           level 2 : above, plus a checksum of the pipeline
-                                     function body
-                           level 3 : above, plus a checksum of the pipeline
-                                     function default arguments and the
-                                     additional arguments passed in by task
-                                     decorators
-    :param history_file: Database file storing checksums and file timestamps
-                         for input/output files.
-    :param verbose_abbreviated_path: whether input and output paths are
-                                     abbreviated.
+                           level 1 : above, plus timestamp of successful job completion
+                           level 2 : above, plus a checksum of the pipeline function body
+                           level 3 : above, plus a checksum of the pipeline function default arguments and the additional arguments passed in by task decorators
+    :param history_file: Database file storing checksums and file timestamps for input/output files.
+    :param verbose_abbreviated_path: whether input and output paths are abbreviated.
         level 0: The full (expanded, abspath) input or output path
-        level > 1: The number of subdirectories to include.
-                   Abbreviated paths are prefixed with ``[,,,]/``
-        level < 0: level < 0: Input / Output parameters are truncated to
-                   ``MMM`` letters where ``verbose_abbreviated_path ==-MMM``.
-                   Subdirectories are first removed to see if this allows the
-                   paths to fit in the specified limit. Otherwise abbreviated
-                   paths are prefixed by ``<???>``
+        level > 1: The number of subdirectories to include. Abbreviated paths are prefixed with ``[,,,]/``
+        level < 0: Input / Output parameters are truncated to ``MMM`` letters where ``verbose_abbreviated_path ==-MMM``. Subdirectories are first removed to see if this allows the paths to fit in the specified limit. Otherwise abbreviated paths are prefixed by ``<???>``
     """
     # do nothing!
     if verbose == 0:
