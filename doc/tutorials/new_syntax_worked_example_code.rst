@@ -79,7 +79,7 @@ Output
         ..
             bash
 
-    #) Specifying only ``pipeline1a`` or any task in ``pipeline1a``  in --target_tasks or --forced_tasks will only run the specified tasks in that subpipeline.
+    #) Specifying only ``pipeline1a`` or any task in ``pipeline1a``  in ``--target_tasks`` will only run the specified tasks in that subpipeline.
 
         .. <<bash
 
@@ -87,7 +87,7 @@ Output
 
             # grep Completed Tasks
             $ ./test_subpipeline_cmdline.py --cleanup --verbose 1 --just_print --target_tasks pipeline1a
-            $ ./test_subpipeline_cmdline.py --cleanup --verbose 1 --just_print --target_tasks pipeline1a::33_to_44
+            $ ./test_subpipeline_cmdline.py --cleanup --verbose 1 --just_print --forced_tasks pipeline1a::task_originate
 
             Task = "pipeline1a::mkdir('tempdir/')   before task_originate "
             Task = "pipeline1a::mkdir('tempdir/testdir',   'tempdir/testdir2') #2   before task_originate "
