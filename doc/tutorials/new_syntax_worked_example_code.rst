@@ -8,9 +8,101 @@ Python Code for: New Object orientated syntax for Ruffus in Version 2.6
 
         * :ref:`new_syntax.worked_example <new_syntax.worked_example>`
 
-    This code is from ``test/test_subpipeline.py`` in the **Ruffus** distribution
+    This code is adapted from ``test/test_subpipeline.py`` in the **Ruffus** distribution
 
 
+==============================================================================
+Output
+==============================================================================
+
+    Let us save the script to ``test_subpipeline_cmdline.py``
+
+    #) Try running the script as is:
+        .. <<bash
+
+        .. code-block:: bash
+
+            # cleanup before and afterwards
+            $ ./test_subpipeline_cmdline.py --cleanup
+        ..
+            bash
+
+    #) If we printout the pipeline, we can see that, by default,
+       the entire pipeline (with all its sub-pipelines) will run.
+
+        .. <<bash
+
+        .. code-block:: bash
+
+            # grep Completed Tasks
+            $ ./test_subpipeline_cmdline.py --cleanup --verbose 1 --just_print
+
+            ________________________________________
+            Tasks which will be run:
+
+            Task = "pipeline1a::mkdir('tempdir/')   before task_originate "
+            Task = "pipeline1a::mkdir('tempdir/testdir',   'tempdir/testdir2') #2   before task_originate "
+            Task = 'pipeline1a::task_originate'
+            Task = 'pipeline1a::add_input'
+            Task = 'pipeline1a::22_to_33'
+            Task = 'pipeline1a::33_to_44'
+            Task = "pipeline1b::mkdir('tempdir/')   before task_originate "
+            Task = "pipeline1b::mkdir('tempdir/testdir',   'tempdir/testdir2') #2   before task_originate "
+            Task = 'pipeline1b::task_originate'
+            Task = 'pipeline1b::add_input'
+            Task = 'pipeline1b::22_to_33'
+            Task = 'pipeline1b::33_to_44'
+            Task = "pipeline1c::mkdir('tempdir/')   before task_originate "
+            Task = "pipeline1c::mkdir('tempdir/testdir',   'tempdir/testdir2') #2   before task_originate "
+            Task = 'pipeline1c::task_originate'
+            Task = 'pipeline1c::add_input'
+            Task = 'pipeline1c::22_to_33'
+            Task = 'pipeline1c::33_to_44'
+            Task = 'pipeline2::44_to_55'
+            Task = 'pipeline2::task_m_to_1'
+
+        ..
+            bash
+
+    .. code-block:: bash
+
+    #) Specifying either the main ``pipeline2`` or the last task in ``pipeline2``  produces the same output. All the ancestral tasks in pipelines1a-c will be run automatically.
+
+        .. <<bash
+
+        .. code-block:: bash
+
+            # grep Completed Tasks
+            $ ./test_subpipeline_cmdline.py --cleanup --verbose 1 --just_print --target_tasks pipeline2
+
+            $ ./test_subpipeline_cmdline.py --cleanup --verbose 1 --just_print --target_tasks pipeline2::task_m_to_1
+        ..
+            bash
+
+    #) Specifying only ``pipeline1a`` or any task in ``pipeline1a``  in --target_tasks or --forced_tasks will only run the specified tasks in that subpipeline.
+
+        .. <<bash
+
+        .. code-block:: bash
+
+            # grep Completed Tasks
+            $ ./test_subpipeline_cmdline.py --cleanup --verbose 1 --just_print --target_tasks pipeline1a
+            $ ./test_subpipeline_cmdline.py --cleanup --verbose 1 --just_print --target_tasks pipeline1a::33_to_44
+
+            Task = "pipeline1a::mkdir('tempdir/')   before task_originate "
+            Task = "pipeline1a::mkdir('tempdir/testdir',   'tempdir/testdir2') #2   before task_originate "
+            Task = 'pipeline1a::task_originate'
+            Task = 'pipeline1a::add_input'
+            Task = 'pipeline1a::22_to_33'
+            Task = 'pipeline1a::33_to_44'
+
+        ..
+            bash
+
+
+==============================================================================
+Code
+==============================================================================
     .. <<python
 
     .. code-block:: python
@@ -19,7 +111,7 @@ Python Code for: New Object orientated syntax for Ruffus in Version 2.6
         #!/usr/bin/env python
         from __future__ import print_function
         """
-            test_subpipeline.py
+
 
                 Demonstrates the new Ruffus syntax in version 2.6
         """
@@ -163,60 +255,74 @@ Python Code for: New Object orientated syntax for Ruffus in Version 2.6
             return test_pipeline2
 
 
-        def run_pipeline():
-
-            #   First two pipelines are created as separate instances by the make_pipeline1 function
-            pipeline1a = make_pipeline1(pipeline_name = "pipeline1a", starting_file_names = [tempdir + ss for ss in ("a.1", "b.1")])
-            pipeline1b = make_pipeline1(pipeline_name = "pipeline1b", starting_file_names = [tempdir + ss for ss in ("c.1", "d.1")])
-
-            #   The Third pipeline is a clone of pipeline1b
-            pipeline1c = pipeline1b.clone(new_name = "pipeline1c")
-
-            #   Set the "originate" files for pipeline1c to ("e.1" and "f.1")
-            #       Otherwise they would use the original ("c.1", "d.1")
-            pipeline1c.set_output(output = [])
-            pipeline1c.set_output(output = [tempdir + ss for ss in ("e.1", "f.1")])
-
-            #   Join all pipeline1a-c to pipeline2
-            pipeline2 = make_pipeline2()
-            pipeline2.set_input(input = [pipeline1a, pipeline1b, pipeline1c])
 
 
-            pipeline2.printout_graph("test.svg", "svg", [task_m_to_1])
-            pipeline2.printout(verbose = 0)
-            pipeline2.run(multiprocess = 10, verbose = 0)
+        #   First two pipelines are created as separate instances by the make_pipeline1 function
+        pipeline1a = make_pipeline1(pipeline_name = "pipeline1a", starting_file_names = [tempdir + ss for ss in ("a.1", "b.1")])
+        pipeline1b = make_pipeline1(pipeline_name = "pipeline1b", starting_file_names = [tempdir + ss for ss in ("c.1", "d.1")])
+
+        #   The Third pipeline is a clone of pipeline1b
+        pipeline1c = pipeline1b.clone(new_name = "pipeline1c")
+
+        #   Set the "originate" files for pipeline1c to ("e.1" and "f.1")
+        #       Otherwise they would use the original ("c.1", "d.1")
+        pipeline1c.set_output(output = [])
+        pipeline1c.set_output(output = [tempdir + ss for ss in ("e.1", "f.1")])
+
+        #   Join all pipeline1a-c to pipeline2
+        pipeline2 = make_pipeline2()
+        pipeline2.set_input(input = [pipeline1a, pipeline1b, pipeline1c])
 
 
-        class Test_task(unittest.TestCase):
+        import ruffus.cmdline as cmdline
+        parser = cmdline.get_argparse(description='Demonstrates the new Ruffus syntax in version 2.6')
 
-            def tearDown (self):
-                """
-                """
-                try:
-                    shutil.rmtree(tempdir)
-                except:
-                    pass
+        parser.add_argument('--cleanup', "-C",
+                            action="store_true",
+                            help="Cleanup before and after.")
 
 
-            def test_subpipelines (self):
-
-                run_pipeline()
-
-                # Check that the output reflecting the pipeline topology is correct.
-                correct_output = 'tempdir/a.1.55=tempdir/a.1.44+tempdir/a.1.33+tempdir/a.1.22+tempdir/a.1=; tempdir/testdir/whatever.txt=; ; ' \
-                                 'tempdir/b.1.55=tempdir/b.1.44+tempdir/b.1.33+tempdir/b.1.22+tempdir/b.1=; tempdir/testdir/whatever.txt=; ; ' \
-                                 'tempdir/c.1.55=tempdir/c.1.44+tempdir/c.1.33+tempdir/c.1.22+tempdir/c.1=; tempdir/testdir/whatever.txt=; ; ' \
-                                 'tempdir/d.1.55=tempdir/d.1.44+tempdir/d.1.33+tempdir/d.1.22+tempdir/d.1=; tempdir/testdir/whatever.txt=; ; ' \
-                                 'tempdir/e.1.55=tempdir/e.1.44+tempdir/e.1.33+tempdir/e.1.22+tempdir/e.1=; tempdir/testdir/whatever.txt=; ; ' \
-                                 'tempdir/f.1.55=tempdir/f.1.44+tempdir/f.1.33+tempdir/f.1.22+tempdir/f.1=; tempdir/testdir/whatever.txt=; ; '
-                with open(tempdir + "final.output") as real_output:
-                    real_output_str = real_output.read()
-                self.assertEqual(correct_output, real_output_str)
+        options = parser.parse_args()
 
 
 
-        if __name__ == '__main__':
-            unittest.main()
+        #  standard python logger which can be synchronised across concurrent Ruffus tasks
+        logger, logger_mutex = cmdline.setup_logging (__name__, options.log_file, options.verbose)
+
+
+        # if we are printing only
+        if  not options.just_print and \
+            not options.flowchart and \
+            not options.touch_files_only:
+            cmdline.run (options)
+            sys.exit()
+
+        #
+        #   Cleanup beforehand
+        #
+        if options.cleanup:
+            try:
+                shutil.rmtree(tempdir)
+            except:
+                pass
+
+        #
+        #   Run
+        #
+        cmdline.run (options)
+
+        #
+        #   Cleanup Afterwards
+        #
+        if options.cleanup:
+            try:
+                shutil.rmtree(tempdir)
+            except:
+                pass
+
+
+
+
 
     ..
         python
