@@ -101,7 +101,7 @@ class Testmkdir(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_transform, test_transform2], verbose=5, wrap_width = 10000)
+        pipeline_printout(s, [test_transform, test_transform2], verbose=5, wrap_width = 10000, pipeline= "main")
         #self.assertIn('Job needs update: Missing files '
         #              '[tmp_test_mkdir/a_name.tmp1, '
         #              'tmp_test_mkdir/e_name.tmp1, '
@@ -112,7 +112,7 @@ class Testmkdir(unittest.TestCase):
         """Run mkdir"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_transform, test_transform2], verbose=0, multiprocess = 2)
+        pipeline_run([test_transform, test_transform2], verbose=0, multiprocess = 2, pipeline= "main")
 
 
     def test_newstyle_mkdir_run(self):
@@ -135,7 +135,7 @@ class Testmkdir(unittest.TestCase):
             .mkdir(generate_initial_files1, formatter(),
                     "{path[0]}/{basename[0]}.dir2")
         cleanup_tmpdir()
-        pipeline_run([test_transform, test_transform2], verbose=0, multiprocess = 2)
+        pipeline_run([test_transform, test_transform2], verbose=0, multiprocess = 2, pipeline= "main")
 
 
 

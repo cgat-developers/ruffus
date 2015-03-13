@@ -92,7 +92,7 @@ class Test_verbosity(unittest.TestCase):
             if syntax == oop_syntax:
                 test_pipeline.printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 1)
             else:
-                pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 1, wrap_width = 500)
+                pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 1, wrap_width = 500, pipeline= "main")
             ret = s.getvalue()
             self.assertTrue(re.search('Job needs update:.*Missing files.*'
                           '\[\.\.\./job2\.a\.start, test_verbosity/job2\.b\.start, \.\.\./job2.a.output.1\]', ret, re.DOTALL) is not None)
@@ -109,7 +109,7 @@ class Test_verbosity(unittest.TestCase):
             if syntax == oop_syntax:
                 test_pipeline.printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 2, wrap_width = 500)
             else:
-                pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 2, wrap_width = 500)
+                pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 2, wrap_width = 500, pipeline= "main")
             ret = s.getvalue()
             self.assertTrue('[.../three/job1.a.start, test_verbosity/job1.b.start, .../three/job1.a.output.1]' in ret)
 
@@ -125,7 +125,7 @@ class Test_verbosity(unittest.TestCase):
             if syntax == oop_syntax:
                 test_pipeline.printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 3, wrap_width = 500)
             else:
-                pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 3, wrap_width = 500)
+                pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 3, wrap_width = 500, pipeline= "main")
             ret = s.getvalue()
             self.assertTrue('[.../two/three/job1.a.start, test_verbosity/job1.b.start, .../two/three/job1.a.output.1]' in s.getvalue())
 
@@ -140,7 +140,7 @@ class Test_verbosity(unittest.TestCase):
             if syntax == oop_syntax:
                 test_pipeline.printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 9, wrap_width = 500)
             else:
-                pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 9, wrap_width = 500)
+                pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 9, wrap_width = 500, pipeline= "main")
             ret = s.getvalue()
             self.assertTrue('[%sdata/scratch/lg/what/one/two/three/job2.a.start, test_verbosity/job2.b.start,' % temp_dir in ret)
 
@@ -156,7 +156,7 @@ class Test_verbosity(unittest.TestCase):
             if syntax == oop_syntax:
                 test_pipeline.printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 0, wrap_width = 500)
             else:
-                pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 0, wrap_width = 500)
+                pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 0, wrap_width = 500, pipeline= "main")
             ret = s.getvalue()
             path_str = os.path.abspath('%sdata/scratch/lg/what/one/two/three/job2.a.start'  % temp_dir)
             path_str = '[[%s' % path_str
@@ -176,7 +176,7 @@ class Test_verbosity(unittest.TestCase):
             if syntax == oop_syntax:
                 test_pipeline.printout(s, [second_task], verbose = 5, verbose_abbreviated_path = -60, wrap_width = 500)
             else:
-                pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = -60, wrap_width = 500)
+                pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = -60, wrap_width = 500, pipeline= "main")
             ret = s.getvalue()
             self.assertTrue('[<???> ne/two/three/job2.a.start, test_verbosity/job2.b.start]' in ret)
 

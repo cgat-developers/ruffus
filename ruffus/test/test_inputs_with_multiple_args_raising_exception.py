@@ -92,7 +92,7 @@ class Test_task_mkdir(unittest.TestCase):
 
     def test_no_re_match (self):
         try:
-            pipeline_run(multiprocess = 10, verbose = 0)
+            pipeline_run(multiprocess = 10, verbose = 0, pipeline= "main")
         except:
             return
         raise Exception("Inputs(...) with multiple arguments should have thrown an exception")

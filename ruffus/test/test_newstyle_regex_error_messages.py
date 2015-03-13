@@ -464,7 +464,7 @@ class Test_regex_error_messages(unittest.TestCase):
 #       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 #
 if __name__ == '__main__':
-    #pipeline_printout(sys.stdout, [test_product_task], verbose = 3)
+    #pipeline_printout(sys.stdout, [test_product_task], verbose = 3, pipeline= "main")
     parallelism = 1
     suite = unittest.TestLoader().loadTestsFromTestCase(Test_regex_error_messages)
     unittest.TextTestRunner(verbosity=1).run(suite)

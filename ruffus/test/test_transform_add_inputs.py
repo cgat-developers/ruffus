@@ -107,7 +107,7 @@ class Test_task(unittest.TestCase):
 
 
     def test_task (self):
-        pipeline_run(multiprocess = 10, verbose = 0)
+        pipeline_run(multiprocess = 10, verbose = 0, pipeline= "main")
 
         correct_output = "tempdir/a.1.output:tempdir/a.1,tempdir/c.1,tempdir/d.1,test_transform_inputs.py;tempdir/b.1.output:tempdir/b.1,tempdir/c.1,tempdir/d.1,test_transform_inputs.py;"
         with open(tempdir + "final.output") as real_output:

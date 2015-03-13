@@ -105,7 +105,7 @@ class Test_task_mkdir(unittest.TestCase):
     def test_no_re_match (self):
 
         save_to_str_logger = t_save_to_str_logger()
-        pipeline_run(multiprocess = 10, logger = save_to_str_logger, verbose = 1)
+        pipeline_run(multiprocess = 10, logger = save_to_str_logger, verbose = 1, pipeline= "main")
 
         self.assertTrue("no files names matched" in save_to_str_logger.warning_str)
         print("\n    Warning printed out correctly", file=sys.stderr)

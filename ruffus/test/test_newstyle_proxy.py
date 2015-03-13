@@ -145,14 +145,14 @@ class Test_ruffus(unittest.TestCase):
         #   Run task 1 only
         #
         print("    Run start_task only", file=sys.stderr)
-        pipeline_run(log_exceptions = True, verbose = 0)
+        pipeline_run(log_exceptions = True, verbose = 0, pipeline= "main")
 
 
         #
         #   Run task 3 only
         #
         print("    Run final_task: linked_file_name_task should run as well", file=sys.stderr)
-        pipeline_run(log_exceptions = True, verbose = 0)
+        pipeline_run(log_exceptions = True, verbose = 0, pipeline= "main")
 
 
         #
@@ -161,7 +161,7 @@ class Test_ruffus(unittest.TestCase):
         #       All jobs should be up to date
         #
         print("    Run final_task again: All jobs should be up to date", file=sys.stderr)
-        pipeline_run(log_exceptions = True, verbose = 0)
+        pipeline_run(log_exceptions = True, verbose = 0, pipeline= "main")
 
         #
         #   Make sure right number of jobs / tasks ran

@@ -295,7 +295,7 @@ class Test_regex_error_messages(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_regex_task], verbose=5, wrap_width = 10000)
+        pipeline_printout(s, [test_regex_task], verbose=5, wrap_width = 10000, pipeline= "main")
         self.assertTrue(re.search('Missing files.*\[tmp_test_regex_error_messages/a_name.tmp1, tmp_test_regex_error_messages/a_name.tmp2', s.getvalue(), re.DOTALL))
 
 
@@ -303,7 +303,7 @@ class Test_regex_error_messages(unittest.TestCase):
         """Run transform(...,regex()...)"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_regex_task], verbose=0, multiprocess = parallelism, one_second_per_job = one_second_per_job)
+        pipeline_run([test_regex_task], verbose=0, multiprocess = parallelism, one_second_per_job = one_second_per_job, pipeline= "main")
 
 
     #___________________________________________________________________________
@@ -313,14 +313,14 @@ class Test_regex_error_messages(unittest.TestCase):
     def test_regex_unmatched_printout(self):
         cleanup_tmpdir()
         s = StringIO()
-        pipeline_printout(s, [test_regex_unmatched_task], verbose=5, wrap_width = 10000)
+        pipeline_printout(s, [test_regex_unmatched_task], verbose=5, wrap_width = 10000, pipeline= "main")
         self.assertIn("Warning: File match failure: File 'tmp_test_regex_error_messages/a_name.tmp1' does not match regex", s.getvalue())
 
     def test_regex_unmatched_run(self):
         """Run transform(...,regex()...)"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_regex_unmatched_task], verbose=0, multiprocess = parallelism, one_second_per_job = one_second_per_job)
+        pipeline_run([test_regex_unmatched_task], verbose=0, multiprocess = parallelism, one_second_per_job = one_second_per_job, pipeline= "main")
 
 
     #___________________________________________________________________________
@@ -331,14 +331,14 @@ class Test_regex_error_messages(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_suffix_task], verbose=5, wrap_width = 10000)
+        pipeline_printout(s, [test_suffix_task], verbose=5, wrap_width = 10000, pipeline= "main")
         self.assertTrue(re.search('Missing files.*\[tmp_test_regex_error_messages/a_name.tmp1, tmp_test_regex_error_messages/a_name.tmp2', s.getvalue(), re.DOTALL))
 
     def test_suffix_run(self):
         """Run transform(...,suffix()...)"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_suffix_task], verbose=0, multiprocess = parallelism, one_second_per_job = one_second_per_job)
+        pipeline_run([test_suffix_task], verbose=0, multiprocess = parallelism, one_second_per_job = one_second_per_job, pipeline= "main")
 
 
     #___________________________________________________________________________
@@ -366,14 +366,14 @@ class Test_regex_error_messages(unittest.TestCase):
     def test_suffix_unmatched_printout2(self):
         cleanup_tmpdir()
         s = StringIO()
-        pipeline_printout(s, [test_suffix_unmatched_task2], verbose=5, wrap_width = 10000)
+        pipeline_printout(s, [test_suffix_unmatched_task2], verbose=5, wrap_width = 10000, pipeline= "main")
         self.assertIn("Warning: File match failure: File 'tmp_test_regex_error_messages/a_name.tmp1' does not match suffix", s.getvalue())
 
     def test_suffix_unmatched_run2(self):
         """Run transform(...,suffix()...)"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_suffix_unmatched_task2], verbose=0, multiprocess = parallelism, one_second_per_job = one_second_per_job)
+        pipeline_run([test_suffix_unmatched_task2], verbose=0, multiprocess = parallelism, one_second_per_job = one_second_per_job, pipeline= "main")
 
 
 
@@ -445,7 +445,7 @@ class Test_regex_error_messages(unittest.TestCase):
 #       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 #
 if __name__ == '__main__':
-    #pipeline_printout(sys.stdout, [test_product_task], verbose = 3)
+    #pipeline_printout(sys.stdout, [test_product_task], verbose = 3, pipeline= "main")
     parallelism = 1
     suite = unittest.TestLoader().loadTestsFromTestCase(Test_regex_error_messages)
     unittest.TextTestRunner(verbosity=1).run(suite)

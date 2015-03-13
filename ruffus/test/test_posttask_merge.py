@@ -187,7 +187,7 @@ Results recombined
             pass
 
     def test_ruffus (self):
-        pipeline_run(multiprocess = 50, verbose = 0)
+        pipeline_run(multiprocess = 50, verbose = 0, pipeline= "main")
         with open(test_file) as ii:
             post_task_text =  ii.read()
         self.assertEqual(post_task_text, self.expected_text)

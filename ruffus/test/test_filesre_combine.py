@@ -166,7 +166,7 @@ class Test_ruffus(unittest.TestCase):
 
     def test_ruffus (self):
         ""
-        pipeline_run(multiprocess = 10, verbose = 0)
+        pipeline_run(multiprocess = 10, verbose = 0, pipeline= "main")
         check_species_correct()
 
 

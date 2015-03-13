@@ -157,7 +157,7 @@ class Test_ruffus(unittest.TestCase):
             pass
 
     def atest_ruffus (self):
-        pipeline_run(multiprocess = 50, verbose = 0)
+        pipeline_run(multiprocess = 50, verbose = 0, pipeline= "main")
         output_file = os.path.join(working_dir, "variance.result")
         if not os.path.exists (output_file):
             raise Exception("Missing %s" % output_file)

@@ -197,36 +197,36 @@ class Test_ruffus(unittest.TestCase):
         expected_files_after_4_runs = ["3.split", "0_3.subdivided", "1_2.subdivided", "2_1.subdivided", "3_0.subdivided"]
 
         print("     Run pipeline normally...")
-        pipeline_run(multiprocess = 10, verbose=0)
+        pipeline_run(multiprocess = 10, verbose=0, pipeline= "main")
         self.check_file_exists_or_not_as_expected(expected_files_after_1_runs,
                                                  expected_files_after_2_runs)
 
         print("     Check that running again does nothing. (All up to date).")
-        pipeline_run(multiprocess = 10, verbose=0)
+        pipeline_run(multiprocess = 10, verbose=0, pipeline= "main")
         self.check_file_exists_or_not_as_expected(expected_files_after_1_runs,
                                                  expected_files_after_2_runs)
 
         print("     Running again with forced tasks to generate more files...")
-        pipeline_run(forcedtorun_tasks = [make_start], multiprocess = 10, verbose=0)
+        pipeline_run(forcedtorun_tasks = [make_start], multiprocess = 10, verbose=0, pipeline= "main")
         self.check_file_exists_or_not_as_expected(expected_files_after_1_runs
                                                  + expected_files_after_2_runs,
                                                  expected_files_after_3_runs)
 
         print("     Check that running again does nothing. (All up to date).")
-        pipeline_run(multiprocess = 10, verbose=0)
+        pipeline_run(multiprocess = 10, verbose=0, pipeline= "main")
         self.check_file_exists_or_not_as_expected(expected_files_after_1_runs
                                                  + expected_files_after_2_runs,
                                                  expected_files_after_3_runs)
 
 
         print("     Running again with forced tasks to generate even more files...")
-        pipeline_run(forcedtorun_tasks = [make_start], multiprocess = 10, verbose=0)
+        pipeline_run(forcedtorun_tasks = [make_start], multiprocess = 10, verbose=0, pipeline= "main")
         self.check_file_exists_or_not_as_expected(expected_files_after_1_runs
                                                  + expected_files_after_2_runs
                                                  + expected_files_after_3_runs,
                                                  expected_files_after_4_runs)
         print("     Check that running again does nothing. (All up to date).")
-        pipeline_run(multiprocess = 10, verbose=0)
+        pipeline_run(multiprocess = 10, verbose=0, pipeline= "main")
         self.check_file_exists_or_not_as_expected(expected_files_after_1_runs
                                                  + expected_files_after_2_runs
                                                  + expected_files_after_3_runs,

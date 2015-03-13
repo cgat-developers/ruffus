@@ -305,7 +305,7 @@ class Test_ruffus(unittest.TestCase):
             pass
 
     def test_ruffus (self):
-        pipeline_run(multiprocess = 50, verbose = 0)
+        pipeline_run(multiprocess = 50, verbose = 0, pipeline= "main")
         check_final_output_correct()
         check_job_order_correct(tempdir + "jobs.start")
         check_job_order_correct(tempdir + "jobs.finish")

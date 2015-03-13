@@ -176,7 +176,7 @@ class Test_task(unittest.TestCase):
 
 
     def test_task (self):
-        pipeline_run(multiprocess = 10, verbose = 0)
+        pipeline_run(multiprocess = 10, verbose = 0, pipeline= "main")
 
     def test_newstyle_task (self):
         """

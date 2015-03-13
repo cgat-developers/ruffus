@@ -160,7 +160,7 @@ class Test_ruffus(unittest.TestCase):
 
 
     def test_ruffus (self):
-        pipeline_run(verbose = 0, runtime_data = {"a": runtime_files})
+        pipeline_run(verbose = 0, runtime_data = {"a": runtime_files}, pipeline= "main")
 
 
     def test_newstyle_ruffus (self):

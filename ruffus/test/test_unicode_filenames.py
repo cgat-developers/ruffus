@@ -118,7 +118,7 @@ class Test_task_mkdir(unittest.TestCase):
 
 
     def test_mkdir (self):
-        pipeline_run(multiprocess = 10, verbose = 0)
+        pipeline_run(multiprocess = 10, verbose = 0, pipeline= "main")
 
         for d in 'abcdefgh':
             fullpath = os.path.join(os.path.dirname(__file__), d)

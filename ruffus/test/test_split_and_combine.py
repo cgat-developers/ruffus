@@ -150,7 +150,7 @@ class Test_ruffus(unittest.TestCase):
             pass
 
     def test_ruffus (self):
-        pipeline_run(multiprocess = 50, verbose = 0)
+        pipeline_run(multiprocess = 50, verbose = 0, pipeline= "main")
         if not os.path.exists(tempdir + "all.combine_results"):
             raise Exception("Missing %s" % (tempdir + "all.combine_results"))
 

@@ -271,7 +271,8 @@ if __name__ == '__main__':
                                     minimal_key_legend             = False,
 
                                     user_colour_scheme = custom_flow_chart_colour_scheme,
-                                    pipeline_name = "Colour schemes")
+                                    pipeline_name = "Colour schemes",
+                                    pipeline= "main")
 
 
 

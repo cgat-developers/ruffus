@@ -517,7 +517,7 @@ def summarise_all( summary_files, total_summary_file_name):
 if __name__ == '__main__':
     try:
         if options.just_print:
-            pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks, verbose=1)
+            pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks, verbose=1, pipeline= "main")
 
         elif options.dependency_file:
             graph_printout (     open(options.dependency_file, "w"),
@@ -525,7 +525,7 @@ if __name__ == '__main__':
                                  options.target_tasks,
                                  options.forced_tasks)
         else:
-            pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs)
+            pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, pipeline= "main")
     except Exception as e:
         print(e.args)
-            
+

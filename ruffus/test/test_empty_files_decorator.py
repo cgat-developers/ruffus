@@ -117,7 +117,8 @@ class Test_task(unittest.TestCase):
         save_to_str_logger = t_save_to_str_logger()
         pipeline_run(multiprocess = 10,
                             logger = save_to_str_logger,
-                            verbose = 1)
+                            verbose = 1,
+                     pipeline= "main")
         self.assertTrue("@files() was empty" in save_to_str_logger.warning_str)
         print("\n    Warning printed out correctly", file=sys.stderr)
 

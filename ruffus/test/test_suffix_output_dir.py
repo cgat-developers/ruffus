@@ -215,7 +215,7 @@ class Test_ruffus(unittest.TestCase):
             pass
 
     def test_ruffus (self):
-        pipeline_run(multiprocess = 50, verbose = 0)
+        pipeline_run(multiprocess = 50, verbose = 0, pipeline= "main")
 
         with open(os.path.join(data_dir, "summary.5")) as ii:
             active_text = ii.read()

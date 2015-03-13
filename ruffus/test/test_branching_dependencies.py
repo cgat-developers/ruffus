@@ -375,7 +375,7 @@ class Test_ruffus(unittest.TestCase):
 
     def test_ruffus (self):
         print("\n\n     Run pipeline normally...")
-        pipeline_run(multiprocess = 10, verbose=0)
+        pipeline_run(multiprocess = 10, verbose=0, pipeline= "main")
         check_final_output_correct()
         check_job_order_correct(tempdir + "jobs.start")
         check_job_order_correct(tempdir + "jobs.finish")
@@ -387,11 +387,11 @@ class Test_ruffus(unittest.TestCase):
         print("       First delete b.1 for task2...")
         os.unlink(os.path.join(tempdir, "b.1"))
         print("       Then run with touch_file_only...")
-        pipeline_run([task2], multiprocess = 10, touch_files_only=True, verbose = 0)
+        pipeline_run([task2], multiprocess = 10, touch_files_only=True, verbose = 0, pipeline= "main")
 
         # check touching has made task2 up to date
         s = StringIO()
-        pipeline_printout(s, [task2], verbose=4, wrap_width = 10000)
+        pipeline_printout(s, [task2], verbose=4, wrap_width = 10000, pipeline= "main")
         output_str = s.getvalue()
         #print (">>>\n", output_str, "<<<\n", file=sys.stderr)
         if "b.1" in output_str:
@@ -401,7 +401,7 @@ class Test_ruffus(unittest.TestCase):
         print("     Touching has made task2 up to date...\n")
 
         print("     Then run normally again...")
-        pipeline_run(multiprocess = 10, verbose=0)
+        pipeline_run(multiprocess = 10, verbose=0, pipeline= "main")
         check_final_output_correct(True)
         check_job_order_correct(tempdir + "jobs.start")
         check_job_order_correct(tempdir + "jobs.finish")

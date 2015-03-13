@@ -65,7 +65,7 @@ class Test_cmdline(unittest.TestCase):
     #def test_something(self):
     #    s = StringIO()
     #    cleanup_tmpdir()
-    #    pipeline_printout(s, [test_regex_task], verbose=5, wrap_width = 10000)
+    #    pipeline_printout(s, [test_regex_task], verbose=5, wrap_width = 10000, pipeline= "main")
     #    self.assertTrue(re.search('Missing files.*\[tmp_test_regex_error_messages/a_name.tmp1, tmp_test_regex_error_messages/a_name.tmp2', s.getvalue(), re.DOTALL))
     #    self.assertIn("Warning: File match failure: File 'tmp_test_regex_error_messages/a_name.tmp1' does not match regex", s.getvalue())
     #    self.assertRaisesRegex(fatal_error_input_file_does_not_match,
@@ -291,5 +291,5 @@ class Test_cmdline(unittest.TestCase):
 #       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 #
 if __name__ == '__main__':
-    #pipeline_printout(sys.stdout, [test_product_task], verbose = 3)
+    #pipeline_printout(sys.stdout, [test_product_task], verbose = 3, pipeline= "main")
     unittest.main()

@@ -209,11 +209,11 @@ class Test_ruffus(unittest.TestCase):
         self.cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [combine_results], verbose=5, wrap_width = 10000)
+        pipeline_printout(s, [combine_results], verbose=5, wrap_width = 10000, pipeline= "main")
         self.assertTrue(re.search('Job needs update:.*Missing files.*', s.getvalue(), re.DOTALL) is not None)
         #print s.getvalue()
 
-        pipeline_run([combine_results], verbose=0)
+        pipeline_run([combine_results], verbose=0, pipeline= "main")
 
 
     def test_newstyle_collate (self):

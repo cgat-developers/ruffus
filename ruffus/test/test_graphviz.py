@@ -182,7 +182,7 @@ class Test_graphviz(unittest.TestCase):
                                         # use flowchart file name extension to decide flowchart format
                                         #   e.g. svg, jpg etc.
                                         "dot",
-                                        [Final_target, Up_to_date_final_target])
+                                        [Final_target, Up_to_date_final_target], pipeline= "main")
         self.assertTrue('[URL="http://cnn.com", color="#FF0000", fillcolor="#FFCCCC", fontcolor="#4B6000", height=1.5, label=<What is this?<BR/> What <FONT COLOR="red">is</FONT>this???>, pencolor="#FF0000", peripheries=5, shape=component, style=dashed]' in s.getvalue().decode())
 
 

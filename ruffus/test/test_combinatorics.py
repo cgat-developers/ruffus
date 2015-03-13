@@ -366,7 +366,7 @@ class TestCombinatorics(unittest.TestCase):
         """Input file exists, output doesn't exist"""
         cleanup_tmpdir()
         s = StringIO()
-        pipeline_printout(s, [test_product_merged_task], verbose=5, wrap_width = 10000)
+        pipeline_printout(s, [test_product_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
         self.assertTrue(re.search('Job needs update:.*Missing files.*'
                       '\[.*tmp_test_combinatorics/a_name.tmp1, '
                       '.*tmp_test_combinatorics/e_name.tmp1, '
@@ -377,7 +377,7 @@ class TestCombinatorics(unittest.TestCase):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_product_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
+        pipeline_run([test_product_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
         with open(workdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                          "aeg,aeh,afg,afh,beg,beh,bfg,bfh,ceg,ceh,cfg,cfh,deg,deh,dfg,dfh,")
@@ -395,7 +395,7 @@ class TestCombinatorics(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_product_misspelt_capture_error_task], verbose=3, wrap_width = 10000)
+        pipeline_printout(s, [test_product_misspelt_capture_error_task], verbose=3, wrap_width = 10000, pipeline= "main")
         self.assertIn("Warning: File match failure: Unmatched field 'FILEPART'", s.getvalue())
 
 
@@ -407,7 +407,7 @@ class TestCombinatorics(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_product_out_of_range_formatter_ref_error_task], verbose=3, wrap_width = 10000)
+        pipeline_printout(s, [test_product_out_of_range_formatter_ref_error_task], verbose=3, wrap_width = 10000, pipeline= "main")
         self.assertIn("Warning: File match failure: Unmatched field 2", s.getvalue())
 
     def test_product_formatter_ref_index_error(self):
@@ -418,7 +418,7 @@ class TestCombinatorics(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_product_formatter_ref_index_error_task], verbose=3, wrap_width = 10000)
+        pipeline_printout(s, [test_product_formatter_ref_index_error_task], verbose=3, wrap_width = 10000, pipeline= "main")
         self.assertIn("Warning: File match failure: Unmatched field string index out of range", s.getvalue())
         #print s.getvalue()
 
@@ -432,7 +432,7 @@ class TestCombinatorics(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_combinations2_merged_task], verbose=5, wrap_width = 10000)
+        pipeline_printout(s, [test_combinations2_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
         self.assertTrue(re.search('Job needs update:.*Missing files.*'
                       '\[.*tmp_test_combinatorics/a_name.tmp1, '
                         '.*tmp_test_combinatorics/b_name.tmp1, '
@@ -443,7 +443,7 @@ class TestCombinatorics(unittest.TestCase):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_combinations2_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
+        pipeline_run([test_combinations2_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
         with open(workdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                               'ab,ac,ad,bc,bd,cd,')
@@ -457,7 +457,7 @@ class TestCombinatorics(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_combinations3_merged_task], verbose=5, wrap_width = 10000)
+        pipeline_printout(s, [test_combinations3_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
         self.assertTrue(re.search(
                        '\[.*tmp_test_combinatorics/a_name.tmp1, '
                        '.*tmp_test_combinatorics/b_name.tmp1, '
@@ -468,7 +468,7 @@ class TestCombinatorics(unittest.TestCase):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_combinations3_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
+        pipeline_run([test_combinations3_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
         with open(workdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                          "abc,abd,acd,bcd,")
@@ -483,7 +483,7 @@ class TestCombinatorics(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_permutations2_merged_task], verbose=5, wrap_width = 10000)
+        pipeline_printout(s, [test_permutations2_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
         self.assertTrue(re.search('\[.*tmp_test_combinatorics/a_name.tmp1, '
                       '.*tmp_test_combinatorics/b_name.tmp1, '
                       '.*tmp_test_combinatorics/a_name.b_name.tmp2\]', s.getvalue()))
@@ -492,7 +492,7 @@ class TestCombinatorics(unittest.TestCase):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_permutations2_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
+        pipeline_run([test_permutations2_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
         with open(workdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                          "ab,ac,ad,ba,bc,bd,ca,cb,cd,da,db,dc,")
@@ -506,7 +506,7 @@ class TestCombinatorics(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_permutations3_merged_task], verbose=5, wrap_width = 10000)
+        pipeline_printout(s, [test_permutations3_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
         self.assertTrue(re.search('\[.*tmp_test_combinatorics/a_name.tmp1, '
                        '.*tmp_test_combinatorics/b_name.tmp1, '
                        '.*tmp_test_combinatorics/c_name.tmp1, '
@@ -516,7 +516,7 @@ class TestCombinatorics(unittest.TestCase):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_permutations3_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
+        pipeline_run([test_permutations3_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
         with open(workdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                          'abc,abd,acb,acd,adb,adc,bac,bad,bca,bcd,bda,bdc,cab,cad,cba,cbd,cda,cdb,dab,dac,dba,dbc,dca,dcb,')
@@ -531,7 +531,7 @@ class TestCombinatorics(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_combinations_with_replacement2_merged_task], verbose=5, wrap_width = 10000)
+        pipeline_printout(s, [test_combinations_with_replacement2_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
         self.assertTrue(re.search('\[.*tmp_test_combinatorics/a_name.tmp1, '
                       '.*tmp_test_combinatorics/b_name.tmp1, '
                       '.*tmp_test_combinatorics/a_name.b_name.tmp2\]', s.getvalue()))
@@ -540,7 +540,7 @@ class TestCombinatorics(unittest.TestCase):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_combinations_with_replacement2_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
+        pipeline_run([test_combinations_with_replacement2_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
         with open(workdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                          "aa,ab,ac,ad,bb,bc,bd,cc,cd,dd,")
@@ -554,7 +554,7 @@ class TestCombinatorics(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_combinations_with_replacement3_merged_task], verbose=5, wrap_width = 10000)
+        pipeline_printout(s, [test_combinations_with_replacement3_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
         self.assertTrue(re.search('\[.*tmp_test_combinatorics/a_name.tmp1, '
                        '.*tmp_test_combinatorics/b_name.tmp1, '
                        '.*tmp_test_combinatorics/c_name.tmp1, '
@@ -564,7 +564,7 @@ class TestCombinatorics(unittest.TestCase):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_combinations_with_replacement3_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
+        pipeline_run([test_combinations_with_replacement3_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
         with open(workdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                          'aaa,aab,aac,aad,abb,abc,abd,acc,acd,add,bbb,bbc,bbd,bcc,bcd,bdd,ccc,ccd,cdd,ddd,')
@@ -584,5 +584,5 @@ class TestCombinatorics(unittest.TestCase):
 #       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 #
 if __name__ == '__main__':
-    #pipeline_printout(sys.stdout, [test_product_task], verbose = 5)
+    #pipeline_printout(sys.stdout, [test_product_task], verbose = 5, pipeline= "main")
     unittest.main()

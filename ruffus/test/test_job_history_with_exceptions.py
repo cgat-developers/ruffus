@@ -159,7 +159,7 @@ class Test_job_history_with_exceptions(unittest.TestCase):
     def test_job_history_with_exceptions(self):
         cleanup_tmpdir()
         s = StringIO()
-        pipeline_printout(s, [test_task4], verbose=VERBOSITY, wrap_width = 10000)
+        pipeline_printout(s, [test_task4], verbose=VERBOSITY, wrap_width = 10000, pipeline= "main")
         #print s.getvalue()
 
 
@@ -208,11 +208,11 @@ class Test_job_history_with_exceptions(unittest.TestCase):
             try:
                 pipeline_run([test_task4], verbose = 0,
                              #multithread = 2,
-                             one_second_per_job = one_second_per_job)
+                             one_second_per_job = one_second_per_job, pipeline= "main")
             except:
                 pass
             s = StringIO()
-            pipeline_printout(s, [test_task4], verbose=VERBOSITY, wrap_width = 10000)
+            pipeline_printout(s, [test_task4], verbose=VERBOSITY, wrap_width = 10000, pipeline= "main")
             #
             # task 2 should be up to date because exception was throw in task 3
             #
@@ -314,19 +314,19 @@ class Test_job_history_with_exceptions(unittest.TestCase):
         pipeline_run([test_task4], verbose = 0,
                      checksum_level = CHECKSUM_FILE_TIMESTAMPS,
                      multithread = 10,
-                     one_second_per_job = one_second_per_job)
+                     one_second_per_job = one_second_per_job, pipeline= "main")
 
         #
         #   print "printout without sqlite"
         #
         s = StringIO()
-        pipeline_printout(s, [test_task4], checksum_level = CHECKSUM_FILE_TIMESTAMPS)
+        pipeline_printout(s, [test_task4], checksum_level = CHECKSUM_FILE_TIMESTAMPS, pipeline= "main")
         self.assertTrue(not re.search('Tasks which will be run:.*\n(.*\n)*Task = ', s.getvalue()))
         #
         # print "printout expecting sqlite file"
         #
         s = StringIO()
-        pipeline_printout(s, [test_task4])
+        pipeline_printout(s, [test_task4], pipeline= "main")
         self.assertTrue(re.search('Tasks which will be run:.*\n(.*\n)*Task = ', s.getvalue()))
         #
         #   print "Regenerate sqlite file"
@@ -337,12 +337,12 @@ class Test_job_history_with_exceptions(unittest.TestCase):
                      multithread = 1,
                      verbose = 0,
                      touch_files_only = 2,
-                     one_second_per_job = one_second_per_job)
+                     one_second_per_job = one_second_per_job, pipeline= "main")
         #
         # print "printout expecting sqlite file"
         #
         s = StringIO()
-        pipeline_printout(s, [test_task4], verbose = VERBOSITY)
+        pipeline_printout(s, [test_task4], verbose = VERBOSITY, pipeline= "main")
         succeed = not re.search('Tasks which will be run:.*\n(.*\n)*Task = ', s.getvalue())
         if not succeed:
             print(s.getvalue(), file=sys.stderr)
@@ -365,5 +365,5 @@ class Test_job_history_with_exceptions(unittest.TestCase):
 #       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 #
 if __name__ == '__main__':
-    #pipeline_printout(sys.stdout, [test_product_task], verbose = VERBOSITY)
+    #pipeline_printout(sys.stdout, [test_product_task], verbose = VERBOSITY, pipeline= "main")
     unittest.main()

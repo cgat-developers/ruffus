@@ -51,7 +51,7 @@ except:
 class Test_ruffus(unittest.TestCase):
     def test_ruffus (self):
         try:
-            pipeline_run(multiprocess = 50, verbose = 0)
+            pipeline_run(multiprocess = 50, verbose = 0, pipeline= "main")
         except ruffus.ruffus_exceptions.RethrownJobError:
             return
         raise Exception("Missing exception")

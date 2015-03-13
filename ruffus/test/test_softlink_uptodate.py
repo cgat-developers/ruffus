@@ -58,7 +58,11 @@ def same_file_name_task(input_file_name, output_file_name):
 #
 @transform(start_task, suffix(".1"), ".linked.1")
 def linked_file_name_task(input_file_name, output_file_name):
-    os.symlink(input_file_name, output_file_name)
+    try:
+        os.symlink(input_file_name, output_file_name)
+    except:
+        print (input_file_name, output_file_name)
+        raise
 
 
 #
@@ -87,8 +91,10 @@ class Test_ruffus(unittest.TestCase):
     def setUp(self):
         for f in ["a.1", "b.1", "a.linked.1", "b.linked.1", "a.3", "b.3", "a.linked.3", "b.linked.3"]:
             try:
-                os.unlink(f)
+                if os.path.exists(f):
+                    os.unlink(f)
             except:
+                print ("    !!!!OOPs. Can't unlink %s" % f, file = sys.stderr)
                 pass
 
     def tearDown(self):
@@ -99,7 +105,7 @@ class Test_ruffus(unittest.TestCase):
                 raise Exception("Expected %s missing" % f)
 
     def test_ruffus (self):
-        pipeline_run(log_exceptions = True, verbose = 0)
+        pipeline_run(log_exceptions = True, verbose = 0, pipeline= "main")
 
     def test_newstyle_ruffus (self):
         test_pipeline = Pipeline("test")
@@ -107,7 +113,7 @@ class Test_ruffus(unittest.TestCase):
         test_pipeline.transform(same_file_name_task, start_task, suffix(".1"), ".1")
         test_pipeline.transform(linked_file_name_task, start_task, suffix(".1"), ".linked.1")
         test_pipeline.transform(final_task, [linked_file_name_task, same_file_name_task], suffix(".1"), ".3")
-        test_pipeline.run(log_exceptions = True, verbose = 0)
+        test_pipeline.run(log_exceptions = True, verbose = 6)
 
 
 

@@ -147,25 +147,26 @@ class Test_ruffus(unittest.TestCase):
 
         print("     Run pipeline normally...")
         if self.graph_viz_present:
-            pipeline_printout_graph(tempdir + "flowchart.dot")
+            pipeline_printout_graph(tempdir + "flowchart.dot", pipeline= "main")
             pipeline_printout_graph(tempdir + "flowchart.jpg",
                                         target_tasks =[subdivide_start],
                                         forcedtorun_tasks = [split_start],
                                         no_key_legend = True)
-            pipeline_printout_graph(tempdir + "flowchart.svg", no_key_legend = False)
+            pipeline_printout_graph(tempdir + "flowchart.svg", no_key_legend = False, pipeline= "main")
             # Unknown format
             try:
-                pipeline_printout_graph(tempdir + "flowchart.unknown", no_key_legend = False)
+                pipeline_printout_graph(tempdir + "flowchart.unknown", no_key_legend = False, pipeline= "main")
                 raise Exception("Failed to throw exception for pipeline_printout_graph unknown extension ")
             except CalledProcessError as err:
                 pass
-            pipeline_printout_graph(tempdir + "flowchart.unknown", "svg", no_key_legend = False)
+            pipeline_printout_graph(tempdir + "flowchart.unknown", "svg", no_key_legend = False, pipeline= "main")
 
         else:
             pipeline_printout_graph(tempdir + "flowchart.dot",
                                         target_tasks =[subdivide_start],
                                         forcedtorun_tasks = [split_start],
-                                        no_key_legend = True)
+                                        no_key_legend = True,
+                                        pipeline= "main")
 
     def test_newstyle_ruffus (self):
 

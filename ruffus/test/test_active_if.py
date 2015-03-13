@@ -212,7 +212,7 @@ class Test_ruffus(unittest.TestCase):
     def test_active_if_true (self):
         global pipeline_active_if
         pipeline_active_if = True
-        pipeline_run(multiprocess = 50, verbose = 0)
+        pipeline_run(multiprocess = 50, verbose = 0, pipeline= "main")
 
         with open("test_active_if/summary.5") as ii:
             active_text = ii.read()
@@ -222,7 +222,7 @@ class Test_ruffus(unittest.TestCase):
     def test_active_if_false (self):
         global pipeline_active_if
         pipeline_active_if = False
-        pipeline_run(multiprocess = 50, verbose = 0)
+        pipeline_run(multiprocess = 50, verbose = 0, pipeline= "main")
         with open("test_active_if/summary.5") as ii:
             inactive_text = ii.read()
         if inactive_text != expected_inactive_text:

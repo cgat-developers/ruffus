@@ -86,7 +86,7 @@ def do_main ():
     print("Start....", file=sys.stdout)
     sys.stdout.flush()
     pipeline_run(verbose = 11,
-                 multiprocess = 5)
+                 multiprocess = 5, pipeline= "main")
     print("too late!!", file=sys.stdout)
     sys.stdout.flush()
     cleanup_tmpdir()

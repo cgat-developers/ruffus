@@ -303,7 +303,8 @@ if __name__ == '__main__':
         if options.just_print:
             pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
                                 verbose = options.verbose,
-                                gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode)
+                                gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode,
+                                pipeline= "main")
 
         elif options.dependency_file:
             pipeline_printout_graph (     open(options.dependency_file, "w"),
@@ -312,11 +313,13 @@ if __name__ == '__main__':
                                  options.forced_tasks,
                                  draw_vertically = not options.draw_horizontally,
                                  gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                                 no_key_legend  = options.no_key_legend_in_graph)
+                                 no_key_legend  = options.no_key_legend_in_graph,
+                                 pipeline= "main")
         else:
             pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
                             gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
                             verbose = options.verbose,
-                            logger = logger_proxy)
+                            logger = logger_proxy,
+                            pipeline= "main")
     except Exception as e:
         print(e.args)

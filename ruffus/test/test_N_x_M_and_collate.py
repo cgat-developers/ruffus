@@ -336,7 +336,7 @@ class Test_ruffus(unittest.TestCase):
             pass
 
     def test_ruffus (self):
-        pipeline_run(multiprocess = 50, verbose = 0)
+        pipeline_run(multiprocess = 50, verbose = 0, pipeline= "main")
         for oo in "000.mean", "001.mean":
             results_file_name = os.path.join(working_dir, oo)
             if not os.path.exists(results_file_name):

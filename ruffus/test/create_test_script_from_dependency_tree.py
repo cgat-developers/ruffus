@@ -286,7 +286,8 @@ if __name__ == '__main__':
                                  no_key_legend  = options.no_key_legend_in_graph)
         else:
             pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
-                            gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode)
+                            gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
+                            pipeline= "main")
 except Exception, e:
     print e.args
     \n""")

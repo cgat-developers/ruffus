@@ -207,16 +207,16 @@ def parallel_task(name, param1, param2):
     sys.stderr.write("%d + %d = %d\n" % (param1, param2, param1 + param2))
 
 
-    pipeline_run([parallel_task], multiprocess = 2)
+    pipeline_run([parallel_task], multiprocess = 2, pipeline= "main")
 
-pipeline_run([parallel_task])
+pipeline_run([parallel_task], pipeline= "main")
 
 
 
 
 
 if options.just_print:
-    pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks, long_winded=True)
+    pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks, long_winded=True, pipeline= "main")
 
 elif options.dependency_file:
     graph_printout (     open(options.dependency_file, "w"),
@@ -224,5 +224,5 @@ elif options.dependency_file:
                          options.target_tasks,
                          options.forced_tasks)
 else:
-    pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs)
+    pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs, pipeline= "main")
 
