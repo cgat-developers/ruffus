@@ -1514,7 +1514,8 @@ def lookup_unique_task_from_func(task_func, default_pipeline_name="main"):
 #   lookup_tasks_from_name
 
 # _____________________________________________________________________________
-def lookup_tasks_from_name(task_name, default_pipeline_name, default_module_name="__main__"):
+def lookup_tasks_from_name(task_name, default_pipeline_name, default_module_name="__main__",
+                           pipeline_names_as_alias_to_all_tasks = False):
     """
 
         Tries:
@@ -1555,11 +1556,14 @@ def lookup_tasks_from_name(task_name, default_pipeline_name, default_module_name
     #      N.B. This is the *only* time multiple tasks might be returned
     #
     if task_name in Pipeline.pipelines:
-        if not len(Pipeline.pipelines[task_name].get_tail_tasks()):
+        if pipeline_names_as_alias_to_all_tasks:
+            return Pipeline.pipelines[task_name].tasks
+        elif len(Pipeline.pipelines[task_name].get_tail_tasks()):
+            return Pipeline.pipelines[task_name].get_tail_tasks()
+        else:
             raise error_no_tail_tasks(
                 "Pipeline %s has no tail tasks defined. Which task do you "
                 "mean when you specify the whole pipeline as a dependency?" % task_name)
-        return Pipeline.pipelines[task_name].get_tail_tasks()
 
     #
     #   (4) Try all other pipelines
@@ -1594,7 +1598,8 @@ def lookup_tasks_from_name(task_name, default_pipeline_name, default_module_name
 # _____________________________________________________________________________
 def lookup_tasks_from_user_specified_names(task_description, task_names,
                                            default_pipeline_name="main",
-                                           default_module_name="__main__"):
+                                           default_module_name="__main__",
+                                           pipeline_names_as_alias_to_all_tasks = False):
     """
     Given a list of task names, look up the corresponding tasks
     Will just pass through if the task_name is already a task
@@ -1616,11 +1621,17 @@ def lookup_tasks_from_user_specified_names(task_description, task_names,
             continue
 
         elif isinstance(task_name, Pipeline):
-            if not len(task_name.get_tail_tasks()):
+            if pipeline_names_as_alias_to_all_tasks:
+                task_list.extend(task_name.tasks)
+                continue
+            # use tail tasks
+            elif len(task_name.get_tail_tasks()):
+                task_list.extend(task_name.get_tail_tasks())
+                continue
+            # no tail task
+            else:
                 raise error_no_tail_tasks("Pipeline %s has no 'tail tasks'. Which task do you mean"
                                           " when you specify the whole pipeline?" % task_name.name)
-            task_list.extend(task_name.get_tail_tasks())
-            continue
 
         if isinstance(task_name, collections.Callable):
             # blows up if ambiguous
@@ -1640,7 +1651,8 @@ def lookup_tasks_from_user_specified_names(task_description, task_names,
 
             # Will throw Exception if ambiguous
             tasks = lookup_tasks_from_name(
-                task_name, default_pipeline_name, default_module_name)
+                task_name, default_pipeline_name, default_module_name,
+                pipeline_names_as_alias_to_all_tasks)
             # not found
             if not tasks:
                 raise error_node_not_task("%s task '%s' is not a pipelined task in Ruffus. Is it "
@@ -2050,10 +2062,10 @@ class Task (node):
         Returns task name, removing __main__. namespace or main. if present
         """
         if self.pipeline.name != "main":
-            return "{pipeline_name}.{task_name}".format(pipeline_name = self.pipeline.name,
-                                                    task_name = self._name.replace("__main__.", "").replace("main.", ""))
+            return "{pipeline_name}::{task_name}".format(pipeline_name = self.pipeline.name,
+                                                    task_name = self._name.replace("__main__.", "").replace("main::", ""))
         else:
-            return self._name.replace("__main__.", "").replace("main.", "")
+            return self._name.replace("__main__.", "").replace("main::", "")
 
     # _________________________________________________________________________
 
@@ -4242,14 +4254,13 @@ def lookup_pipeline(pipeline):
         None                : main_pipeline
         string              : lookup name in pipelines
     """
+    if pipeline is None:
+        return main_pipeline
 
     # Pipeline object pass through unchanged
     if isinstance(pipeline, Pipeline):
         return pipeline
 
-    # default to main_pipeline if None
-    if not pipeline:
-        return main_pipeline
 
     # strings: lookup from name
     if isinstance(pipeline, str) and pipeline in Pipeline.pipelines:
@@ -4257,6 +4268,128 @@ def lookup_pipeline(pipeline):
 
     raise error_not_a_pipeline("%s does not name a pipeline." % pipeline)
 
+
+
+
+# _____________________________________________________________________________
+
+#   _pipeline_prepare_to_run
+
+# _____________________________________________________________________________
+def _pipeline_prepare_to_run(checksum_level, history_file, pipeline, runtime_data, target_tasks, forcedtorun_tasks):
+    """
+    Common function to setup pipeline, check parameters
+        before pipeline_run, pipeline_printout, pipeline_printout_graph
+    """
+
+    if checksum_level is None:
+        checksum_level = get_default_checksum_level()
+
+    update_checksum_level_on_tasks(checksum_level)
+
+    #
+    #   If we aren't using checksums, and history file hasn't been specified,
+    #       we might be a bit surprised to find Ruffus writing to a
+    #       sqlite db anyway.
+    #   Let us just dump to a placeholder memory db that can then be discarded
+    #   Of course, if history_file is specified, we presume you know what
+    #       you are doing
+    #
+    if checksum_level == CHECKSUM_FILE_TIMESTAMPS and history_file is None:
+        history_file = ':memory:'
+    #
+    # load previous job history if it exists, otherwise create an empty history
+    #
+    job_history = open_job_history(history_file)
+
+
+    #
+    # @active_if decorated tasks can change their active state every time
+    #   pipeline_run / pipeline_printout / pipeline_printout_graph is called
+    #
+    update_active_states_for_all_tasks()
+
+    #
+    #   run time data
+    #
+    if runtime_data is None:
+        runtime_data = {}
+    if not isinstance(runtime_data, dict):
+        raise Exception("Parameter runtime_data should be a "
+                        "dictionary of values passes to jobs at run time.")
+
+
+    #
+    #   This is the default namespace for looking for tasks
+    #
+    #   pipeline must be a Pipeline or a string naming a pipeline
+    #
+    #   Keep pipeline
+    #
+    if pipeline is not None:
+        pipeline = lookup_pipeline(pipeline)
+        default_pipeline_name = pipeline.name
+    else:
+        default_pipeline_name = "main"
+
+
+
+
+    #
+    #   Lookup target jobs
+    #
+    if target_tasks is None:
+        target_tasks = []
+    if forcedtorun_tasks is None:
+        forcedtorun_tasks = []
+    # lookup names, prioritise the specified pipeline or "main"
+    target_tasks = lookup_tasks_from_user_specified_names("Target", target_tasks, default_pipeline_name, "__main__", True)
+    forcedtorun_tasks = lookup_tasks_from_user_specified_names("Forced to run", forcedtorun_tasks,
+                                                               default_pipeline_name, "__main__", True)
+
+    #
+    #   Empty target, either run the specified tasks from the pipeline
+    #   or will run every single task under the sun
+    #
+    if not target_tasks:
+        if pipeline:
+            target_tasks.extend(list(pipeline.tasks))
+        if not target_tasks:
+            for pipeline_name in Pipeline.pipelines.keys():
+                target_tasks.extend(list(Pipeline.pipelines[pipeline_name].tasks))
+
+    # make sure pipeline is defined
+    pipeline = lookup_pipeline(pipeline)
+
+
+    # Unique task list
+    target_tasks = list(set(target_tasks))
+
+    #
+    #   Make sure all tasks in dependency list from (forcedtorun_tasks and target_tasks)
+    #       are setup and linked to real functions
+    #
+    processed_tasks = set()
+    completed_pipeline_names = set()
+    incomplete_pipeline_names = set()
+
+    # get list of all involved pipelines
+    for task in forcedtorun_tasks + target_tasks:
+        if task.pipeline.name not in completed_pipeline_names:
+            incomplete_pipeline_names.add(task.pipeline.name)
+
+    # set up each pipeline.
+    # These will in turn lookup up their antecedents (even in another pipeline) and
+    #   set them up as well.
+    for pipeline_name in incomplete_pipeline_names:
+        if pipeline_name in completed_pipeline_names:
+            continue
+        completed_pipeline_names = completed_pipeline_names.union(
+            pipeline.pipelines[pipeline_name]._complete_task_setup(processed_tasks))
+
+
+
+    return checksum_level, job_history, pipeline, runtime_data, target_tasks, forcedtorun_tasks
 # _____________________________________________________________________________
 
 #   pipeline_printout_in_dot_format
@@ -4327,79 +4460,16 @@ def pipeline_printout_graph(stream,
     global EXTRA_PIPELINERUN_DEBUGGING
     EXTRA_PIPELINERUN_DEBUGGING = False
 
-    if checksum_level is None:
-        checksum_level = get_default_checksum_level()
 
-    #
-    #   pipeline must be a Pipeline or a string naming a pipeline
-    #
-    pipeline = lookup_pipeline(pipeline)
-    #
-    #   Make sure all tasks in dependency list are linked to real functions
-    #
-    processed_tasks = set()
-    completed_pipeline_names = pipeline._complete_task_setup(processed_tasks)
+    (checksum_level,
+     job_history,
+     pipeline,
+     runtime_data,
+     target_tasks,
+     forcedtorun_tasks ) = _pipeline_prepare_to_run(checksum_level, history_file,
+                                                    pipeline, runtime_data,
+                                                    target_tasks, forcedtorun_tasks)
 
-    update_checksum_level_on_tasks(checksum_level)
-
-    #
-    # @active_if decorated tasks can change their active state every time
-    #   pipeline_run / pipeline_printout / pipeline_printout_graph is called
-    #
-    update_active_states_for_all_tasks()
-
-    #
-    #   run time data
-    #
-    if runtime_data is None:
-        runtime_data = {}
-    if not isinstance(runtime_data, dict):
-        raise Exception("pipeline_run parameter runtime_data should be a "
-                        "dictionary of values passes to jobs at run time.")
-
-    #
-    #   If we aren't using checksums, and history file hasn't been specified,
-    #       we might be a bit surprised to find Ruffus writing to a
-    #       sqlite db anyway.
-    #   Let us just dump to a placeholder memory db that can then be discarded
-    #   Of course, if history_file is specified, we presume you know what
-    #       you are doing
-    #
-    if checksum_level == CHECKSUM_FILE_TIMESTAMPS and history_file is None:
-        history_file = ':memory:'
-
-    #
-    # load previous job history if it exists, otherwise create an empty history
-    #
-    job_history = open_job_history(history_file)
-
-    #
-    #   target jobs
-    #
-    if target_tasks is None:
-        target_tasks = []
-    if forcedtorun_tasks is None:
-        forcedtorun_tasks = []
-    target_tasks = lookup_tasks_from_user_specified_names("Target", target_tasks, pipeline.name)
-    if not target_tasks:
-        target_tasks = list(pipeline.tasks)
-    forcedtorun_tasks = lookup_tasks_from_user_specified_names("Forced to run", forcedtorun_tasks,
-                                                               pipeline.name)
-
-    #
-    #   forcedtorun_tasks and target_tasks may include more pipelines
-    #       which have to be setup
-    #
-    incomplete_pipeline_names = set()
-    for task in forcedtorun_tasks + target_tasks:
-        if task.pipeline.name not in completed_pipeline_names:
-            incomplete_pipeline_names.add(task.pipeline.name)
-
-    for pipeline_name in incomplete_pipeline_names:
-        if pipeline_name in completed_pipeline_names:
-            continue
-        completed_pipeline_names = completed_pipeline_names.union(
-            pipeline.pipelines[pipeline_name]._complete_task_setup(processed_tasks))
 
     (topological_sorted, ignore_param1, ignore_param2, ignore_param3) = \
         topologically_sorted_nodes(target_tasks, forcedtorun_tasks,
@@ -4576,74 +4646,19 @@ def pipeline_printout(output_stream=None,
                         "an output file, e.g. sys.stdout and not %s"
                         % str(output_stream))
 
-    if runtime_data is None:
-        runtime_data = {}
-    if not isinstance(runtime_data, dict):
-        raise Exception("pipeline_run parameter runtime_data should be a "
-                        "dictionary of values passes to jobs at run time.")
-
-    if checksum_level is None:
-        checksum_level = get_default_checksum_level()
-
-    #
-    #   pipeline must be a Pipeline or a string naming a pipeline
-    #
-    pipeline = lookup_pipeline(pipeline)
-    #
-    #   Make sure all tasks in dependency list are linked to real functions
-    #
-    processed_tasks = set()
-    completed_pipeline_names = pipeline._complete_task_setup(processed_tasks)
-
-    update_checksum_level_on_tasks(checksum_level)
-
-    #
-    # @active_if decorated tasks can change their active state every time
-    #   pipeline_run / pipeline_printout / pipeline_printout_graph is called
-    #
-    update_active_states_for_all_tasks()
-
-    #
-    #   target jobs
-    #
-    target_tasks = lookup_tasks_from_user_specified_names("Target", target_tasks, pipeline.name)
-    if not target_tasks:
-        target_tasks = list(pipeline.tasks)
-    forcedtorun_tasks = lookup_tasks_from_user_specified_names("Forced to run", forcedtorun_tasks,
-                                                               pipeline.name)
-
-    #
-    #   forcedtorun_tasks and target_tasks may include more pipelines
-    #       which have to be setup
-    #
-    incomplete_pipeline_names = set()
-    for task in forcedtorun_tasks + target_tasks:
-        if task.pipeline.name not in completed_pipeline_names:
-            incomplete_pipeline_names.add(task.pipeline.name)
-
-    for pipeline_name in incomplete_pipeline_names:
-        if pipeline_name in completed_pipeline_names:
-            continue
-        completed_pipeline_names = completed_pipeline_names.union(
-            pipeline.pipelines[pipeline_name]._complete_task_setup(processed_tasks))
-
     logging_strm = t_verbose_logger(verbose, verbose_abbreviated_path,
                                     t_stream_logger(output_stream), runtime_data)
 
-    #
-    #   If we aren't using checksums, and history file hasn't been specified,
-    #       we might be a bit surprised to find Ruffus writing to a
-    #       sqlite db anyway.
-    #   Let us just dump to a placeholder memory db that can then be discarded
-    #   Of course, if history_file is specified, we presume you know what
-    #       you are doing
-    if checksum_level == CHECKSUM_FILE_TIMESTAMPS and history_file is None:
-        history_file = ':memory:'
+    (checksum_level,
+     job_history,
+     pipeline,
+     runtime_data,
+     target_tasks,
+     forcedtorun_tasks ) = _pipeline_prepare_to_run(checksum_level, history_file,
+                                                    pipeline, runtime_data,
+                                                    target_tasks, forcedtorun_tasks)
 
-    #
-    # load previous job history if it exists, otherwise create an empty history
-    #
-    job_history = open_job_history(history_file)
+
 
     (incomplete_tasks,
      self_terminated_nodes,
@@ -4989,7 +5004,7 @@ def make_job_parameter_generator(incomplete_tasks, task_parents, logger,
                     if cnt_jobs_created == 0:
                         incomplete_tasks.remove(t)
                         t._completed()
-                        log_at_level(logger, 2, verbose,
+                        log_at_level(logger, 1, verbose,
                                      "Uptodate Task = %r" % t._get_display_name())
                         # LOGGER: logs All Tasks (including any task function docstrings)
                         log_at_level(logger, 10, verbose, "   No jobs created for %r. Retired "
@@ -5360,12 +5375,6 @@ def pipeline_run(target_tasks=[],
 
     syncmanager = multiprocessing.Manager()
 
-    if runtime_data is None:
-        runtime_data = {}
-    if not isinstance(runtime_data, dict):
-        raise Exception("pipeline_run parameter runtime_data should be a "
-                        "dictionary of values passes to jobs at run time.")
-
     #
     #   whether using multiprocessing or multithreading
     #
@@ -5379,8 +5388,26 @@ def pipeline_run(target_tasks=[],
         parallelism = 1
         pool = None
 
-    if checksum_level is None:
-        checksum_level = get_default_checksum_level()
+    if verbose == 0:
+        logger = black_hole_logger
+    elif verbose >= 11:
+        #   debugging aid: See t_stderr_logger
+        #   Each invocation of add_unique_prefix adds a unique prefix to
+        #       all subsequent output So that individual runs of pipeline run
+        #       are tagged
+        if hasattr(logger, "add_unique_prefix"):
+            logger.add_unique_prefix()
+
+
+    (checksum_level,
+     job_history,
+     pipeline,
+     runtime_data,
+     target_tasks,
+     forcedtorun_tasks ) = _pipeline_prepare_to_run(checksum_level, history_file,
+                                                    pipeline, runtime_data,
+                                                    target_tasks, forcedtorun_tasks)
+
 
     #
     #   Supplement mtime with system clock if using CHECKSUM_HISTORY_TIMESTAMPS
@@ -5401,73 +5428,8 @@ def pipeline_run(target_tasks=[],
                      % one_second_per_job)
         runtime_data["ONE_SECOND_PER_JOB"] = one_second_per_job
 
-    if verbose == 0:
-        logger = black_hole_logger
-    elif verbose >= 11:
-        #   debugging aid: See t_stderr_logger
-        #   Each invocation of add_unique_prefix adds a unique prefix to
-        #       all subsequent output So that individual runs of pipeline run
-        #       are tagged
-        if hasattr(logger, "add_unique_prefix"):
-            logger.add_unique_prefix()
-
     if touch_files_only and verbose >= 1:
         logger.info("Touch output files instead of remaking them.")
-
-    #
-    #   pipeline must be a Pipeline or a string naming a pipeline
-    #
-    pipeline = lookup_pipeline(pipeline)
-    #
-    #   Make sure all tasks in dependency list are linked to real functions
-    #
-    processed_tasks = set()
-    completed_pipeline_names = pipeline._complete_task_setup(processed_tasks)
-
-    # link_task_names_to_functions ()
-    update_checksum_level_on_tasks(checksum_level)
-
-    #
-    #   If we aren't using checksums, and history file hasn't been specified,
-    #       we might be a bit surprised to find Ruffus writing to a
-    #       sqlite db anyway.
-    #   Let us just dump to a placeholder memory db that can then be discarded
-    #   Of course, if history_file is specified, we presume you know what
-    #       you are doing
-    if checksum_level == CHECKSUM_FILE_TIMESTAMPS and history_file is None:
-        history_file = ':memory:'
-
-    job_history = open_job_history(history_file)
-
-    #
-    # @active_if decorated tasks can change their active state every time
-    #   pipeline_run / pipeline_printout / pipeline_printout_graph is called
-    #
-    update_active_states_for_all_tasks()
-
-    #
-    #   target jobs
-    #
-    target_tasks = lookup_tasks_from_user_specified_names("Target", target_tasks, pipeline.name)
-    if not target_tasks:
-        target_tasks = list(pipeline.tasks)
-    forcedtorun_tasks = lookup_tasks_from_user_specified_names("Forced to run", forcedtorun_tasks,
-                                                               pipeline.name)
-
-    #
-    #   forcedtorun_tasks and target_tasks may include more pipelines
-    #       which have to be setup
-    #
-    incomplete_pipeline_names = set()
-    for task in forcedtorun_tasks + target_tasks:
-        if task.pipeline.name not in completed_pipeline_names:
-            incomplete_pipeline_names.add(task.pipeline.name)
-
-    for pipeline_name in incomplete_pipeline_names:
-        if pipeline_name in completed_pipeline_names:
-            continue
-        completed_pipeline_names = completed_pipeline_names.union(
-            pipeline.pipelines[pipeline_name]._complete_task_setup(processed_tasks))
 
     #
     #   To update the checksum file, we force all tasks to rerun
@@ -5816,8 +5778,6 @@ def pipeline_run(target_tasks=[],
 
     if len(job_errors):
         raise job_errors
-    # DEBUGGG
-    #print("pipeline_run finish", file = sys.stderr)
 
 
 #   use high resolution timestamps where available
