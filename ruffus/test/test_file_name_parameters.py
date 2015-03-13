@@ -417,6 +417,9 @@ class Test_split_param_factory(unittest.TestCase):
         time.sleep(0.1)
         touch("%s/f%d.output" % (test_path, 1))
         touch("%s/f%d.output" % (test_path, 2))
+        for ii in range(3):
+            touch("%s/%d.test_match1" % (test_path, ii))
+            touch("%s/%d.test_match2" % (test_path, ii))
 
         self.tasks = [t1, t2, t3, t4, t5]
 
@@ -424,6 +427,8 @@ class Test_split_param_factory(unittest.TestCase):
     def tearDown(self):
         for i in range(3):
             os.unlink("%s/f%d.test" % (test_path, i))
+            os.unlink("%s/%d.test_match1" % (test_path, i))
+            os.unlink("%s/%d.test_match2" % (test_path, i))
         for i in range(3):
             os.unlink("%s/f%d.output" % (test_path, i))
         os.removedirs(test_path)
@@ -466,20 +471,31 @@ class Test_split_param_factory(unittest.TestCase):
         #
         # simple 1 input, 1 output
         #
-        paths = self.do_task_split(test_path + "/*", [exe_path + "/a*.py", exe_path + "/r*.py"])
+        paths = self.do_task_split(test_path + "/*", [test_path + "/*.test_match1", test_path + "/*.test_match2"])
         self.assertEqual(recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR"),
-                        (   ['DIR/f0.output',
-                             'DIR/f0.test',
-                             'DIR/f1.output',
-                             'DIR/f1.test',
-                             'DIR/f2.output',
-                             'DIR/f2.test',
-                             ],
-                            ['DIR/adjacent_pairs_iterate.py',
-                             'DIR/ruffus_exceptions.py',
-                             'DIR/ruffus_utility.py',
-                             'DIR/ruffus_version.py'
-                             ]              ))
+                        (   ['DIR/0.test_match1',
+                            'DIR/0.test_match2',
+                            'DIR/1.test_match1',
+                            'DIR/1.test_match2',
+                            'DIR/2.test_match1',
+                            'DIR/2.test_match2',
+                            'DIR/f0.output',
+                            'DIR/f0.test',
+                            'DIR/f1.output',
+                            'DIR/f1.test',
+                            'DIR/f2.output',
+                            'DIR/f2.test'],
+                            ['DIR/0.test_match1',
+                            'DIR/1.test_match1',
+                            'DIR/2.test_match1',
+                            'DIR/0.test_match2',
+                            'DIR/1.test_match2',
+                            'DIR/2.test_match2']              ))
+
+
+
+
+
     def test_tasks(self):
         """
         test if can use tasks to specify dependencies
@@ -491,51 +507,58 @@ class Test_split_param_factory(unittest.TestCase):
                                                   "module.func4",
                                                   "module.func5"),
                                  test_path + "/*"],
-                                [exe_path + "/a*.py",                   # output params
-                                 exe_path + "/r*.py",
+                                [test_path + "/*.test_match1",                    # output params
+                                 test_path + "/*.test_match2",
                                  "extra.file"],
                                 6)                                      # extra params
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR")
         self.assertEqual(paths,
-                        ([
-                         5,
-                         ['output4.test', 'output.ignored'],
-                         'output1.test',
-                         'output2.test',
-                         'output3.test',
-                         'output.ignored',
-                         (2, 'output5.test'),
-                         'DIR/f0.output',
-                         'DIR/f0.test',
-                         'DIR/f1.output',
-                         'DIR/f1.test',
-                         'DIR/f2.output',
-                         'DIR/f2.test'],
-                        ['DIR/adjacent_pairs_iterate.py',
-                         'DIR/ruffus_exceptions.py',
-                         'DIR/ruffus_utility.py',
-                         'DIR/ruffus_version.py',
-                         'extra.file'],
-                        6))
+                        ([  5,
+                            ['output4.test', 'output.ignored'],
+                            'output1.test',
+                            'output2.test',
+                            'output3.test',
+                            'output.ignored',
+                            (2, 'output5.test'),
+                            'DIR/0.test_match1',
+                            'DIR/0.test_match2',
+                            'DIR/1.test_match1',
+                            'DIR/1.test_match2',
+                            'DIR/2.test_match1',
+                            'DIR/2.test_match2',
+                            'DIR/f0.output',
+                            'DIR/f0.test',
+                            'DIR/f1.output',
+                            'DIR/f1.test',
+                            'DIR/f2.output',
+                            'DIR/f2.test'],
+                            ['DIR/0.test_match1',
+                            'DIR/1.test_match1',
+                            'DIR/2.test_match1',
+                            'DIR/0.test_match2',
+                            'DIR/1.test_match2',
+                            'DIR/2.test_match2',
+                            'extra.file'],
+                            6))
 
 
         # single job output consisting of a single file
-        paths = self.do_task_split(task.output_from("module.func2"), exe_path + "/a*.py")
+        paths = self.do_task_split(task.output_from("module.func2"), test_path + "/*.test_match1")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, ('output.ignored', ['DIR_E/adjacent_pairs_iterate.py']))
+        self.assertEqual(paths,  ('output.ignored', ['DIR/0.test_match1', 'DIR/1.test_match1', 'DIR/2.test_match1']))
 
-        paths = self.do_task_split([task.output_from("module.func2")], exe_path + "/a*.py")
+        paths = self.do_task_split([task.output_from("module.func2")], test_path + "/*.test_match1")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, (['output.ignored'], ['DIR_E/adjacent_pairs_iterate.py']))
+        self.assertEqual(paths,  (['output.ignored'], ['DIR/0.test_match1', 'DIR/1.test_match1', 'DIR/2.test_match1']))
 
         # single job output consisting of a list
-        paths = self.do_task_split(task.output_from("module.func4"), exe_path + "/a*.py")
+        paths = self.do_task_split(task.output_from("module.func4"), test_path + "/*.test_match1")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, ((2, 'output5.test'), ['DIR_E/adjacent_pairs_iterate.py']) )
+        self.assertEqual(paths,  ((2, 'output5.test'), ['DIR/0.test_match1', 'DIR/1.test_match1', 'DIR/2.test_match1']) )
 
-        paths = self.do_task_split([task.output_from("module.func4")], exe_path + "/a*.py")
+        paths = self.do_task_split([task.output_from("module.func4")], test_path + "/*.test_match1")
         paths = recursive_replace(recursive_replace(paths, test_path, "DIR"), exe_path, "DIR_E")
-        self.assertEqual(paths, ([(2, 'output5.test')], ['DIR_E/adjacent_pairs_iterate.py']))
+        self.assertEqual(paths, ([(2, 'output5.test')], ['DIR/0.test_match1', 'DIR/1.test_match1', 'DIR/2.test_match1']))
 
 #=========================================================================================
 
