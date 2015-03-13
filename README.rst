@@ -19,7 +19,7 @@ Documentation
 ***************************************
 
 Ruffus documentation can be found `here <http://www.ruffus.org.uk/>`_ ,
-with an `download notes <http://www.ruffus.org.uk/installation.html>`_ ,
+with `installation notes <http://www.ruffus.org.uk/installation.html>`_ ,
 a `short tutorial <http://www.ruffus.org.uk/tutorials/simple_tutorial/simple_tutorial.html>`_ and
 an `in-depth manual <http://www.ruffus.org.uk/tutorials/manual/manual_introduction.html>`_ .
 
