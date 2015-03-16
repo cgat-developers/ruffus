@@ -14,6 +14,7 @@ import os
 tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
 runtime_files = [tempdir + "a.3"]
 import sys
+import shutil
 
 
 # add grandparent to search path for testing
@@ -68,7 +69,6 @@ import json
 #
 #    task1
 #
-@mkdir(tempdir)
 @originate([tempdir + 'a.1'] + runtime_files)
 def task1(outfile):
     """
@@ -84,7 +84,6 @@ def task1(outfile):
 #
 #    task2
 #
-@mkdir(tempdir)
 @transform(task1, suffix(".1"), ".2")
 def task2(infile, outfile):
     """
@@ -151,6 +150,11 @@ class Test_ruffus(unittest.TestCase):
             f = os.path.join(tempdir, f)
             if os.path.exists(f):
                 os.unlink(f)
+        try:
+            os.makedirs(tempdir)
+        except:
+            pass
+
 
     def tearDown(self):
         for f in ["a.1", "a.2","a.3","a.4"]:
@@ -160,6 +164,7 @@ class Test_ruffus(unittest.TestCase):
             else:
                 raise Exception("%s is missing" % f)
 
+        shutil.rmtree(tempdir)
 
     def test_ruffus (self):
         pipeline_run(verbose = 0, runtime_data = {"a": runtime_files}, pipeline= "main")

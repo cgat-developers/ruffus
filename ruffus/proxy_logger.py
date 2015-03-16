@@ -351,49 +351,4 @@ def make_shared_logger_and_proxy (logger_factory, logger_name, args):
 
 
 
-import unittest, os,sys
-from .proxy_logger import *
-import traceback
-
-
-class Test_Logging(unittest.TestCase):
-
-
-
-    def test_rotating_log(self):
-        """
-            test rotating via proxy
-        """
-        open("/tmp/lg.log", "w").close()
-        args={}
-        args["file_name"] = "/tmp/lg.log"
-        args["rotating"] = True
-        args["maxBytes"]=20000
-        args["backupCount"]=10
-        #args["level"]= logging.INFO
-        (my_log,
-         logging_mutex) = make_shared_logger_and_proxy (setup_std_shared_logger,
-                                                        "my_logger", args)
-        with logging_mutex:
-            my_log.debug('This is a debug message')
-            my_log.info('This is an info message')
-            my_log.warning('This is a warning message')
-            my_log.error('This is an error message')
-            my_log.critical('This is a critical error message')
-            my_log.log(logging.ERROR, 'This is a debug message')
-        self.assert_(open("/tmp/lg.log") .read() == \
-"""This is a warning message
-This is an error message
-This is a critical error message
-This is a debug message
-""")
-
-
-#
-#   debug code not run if called as a module
-#
-if __name__ == '__main__':
-    if sys.argv.count("--debug"):
-        sys.argv.remove("--debug")
-    unittest.main()
 
