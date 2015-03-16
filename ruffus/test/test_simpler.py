@@ -37,6 +37,7 @@ import re
 import sys
 import os
 import json
+import shutil
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -122,15 +123,14 @@ class Test_ruffus(unittest.TestCase):
         self.tearDown()
         try:
             os.makedirs(tempdir)
+            #sys.stderr.write("    Created %s\n" % tempdir)
         except:
             pass
-
-
-
 
     def tearDown(self):
         try:
             shutil.rmtree(tempdir)
+            #sys.stderr.write("    Removed %s\n" % tempdir)
         except:
             pass
 
@@ -144,7 +144,6 @@ class Test_ruffus(unittest.TestCase):
         test_pipeline.transform(task3, task2, suffix(".2"), ".3")
         test_pipeline.transform(task4, task3, suffix(".3"), ".4")
         test_pipeline.run(multiprocess = 50, verbose = 0)
-
 
 
 
