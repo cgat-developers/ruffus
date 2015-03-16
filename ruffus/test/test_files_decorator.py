@@ -10,6 +10,7 @@ from __future__ import print_function
 """
 
 import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
 import sys
 
 # add grandparent to search path for testing
@@ -19,27 +20,10 @@ sys.path.insert(0, grandparent_dir)
 # module name = script name without extension
 module_name = os.path.splitext(os.path.basename(__file__))[0]
 
+import ruffus
+from ruffus import transform, follows, pipeline_run, Pipeline, regex, mkdir, files
 
-# funky code to import by file name
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
-
-try:
-    attrlist = ruffus.__all__
-except AttributeError:
-    attrlist = dir (ruffus)
-for attr in attrlist:
-    if attr[0:2] != "__":
-        globals()[attr] = getattr (ruffus, attr)
-try:
-    attrlist = ruffus.file_name_parameters.__all__
-except AttributeError:
-    attrlist = dir (ruffus.file_name_parameters)
-for attr in attrlist:
-    if attr[0:2] != "__":
-        globals()[attr] = getattr (ruffus.file_name_parameters, attr)
-
+#from ruffus.file_name_parameters import
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -102,7 +86,7 @@ def test_job_io(infiles, outfiles, extra_params):
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-tempdir = "tempdir/"
+
 @follows(mkdir(tempdir))
 #
 #    task1

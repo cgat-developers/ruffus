@@ -9,6 +9,7 @@ from __future__ import print_function
 """
 
 import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
 import sys
 
 # add grandparent to search path for testing
@@ -54,7 +55,6 @@ def touch (outfile):
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-tempdir = "tempdir/"
 @follows(mkdir(tempdir))
 @ruffus.files([[None, tempdir+ "a.1"], [None, tempdir+ "b.1"]])
 def task1(i, o):
@@ -109,7 +109,7 @@ class Test_task(unittest.TestCase):
     def test_task (self):
         pipeline_run(multiprocess = 10, verbose = 0, pipeline= "main")
 
-        correct_output = "tempdir/a.1.output:tempdir/a.1,tempdir/c.1,tempdir/d.1,test_transform_inputs.py;tempdir/b.1.output:tempdir/b.1,tempdir/c.1,tempdir/d.1,test_transform_inputs.py;"
+        correct_output = "{tempdir}a.1.output:{tempdir}a.1,{tempdir}c.1,{tempdir}d.1,test_transform_inputs.py;{tempdir}b.1.output:{tempdir}b.1,{tempdir}c.1,{tempdir}d.1,test_transform_inputs.py;".format(tempdir = tempdir)
         with open(tempdir + "final.output") as real_output:
             real_output_str = real_output.read()
         self.assertEqual(correct_output, real_output_str)
@@ -132,7 +132,7 @@ class Test_task(unittest.TestCase):
                                 output      = tempdir + "final.output")
         test_pipeline.run(multiprocess = 10, verbose = 0)
 
-        correct_output = "tempdir/a.1.output:tempdir/a.1,tempdir/c.1,tempdir/d.1,test_transform_inputs.py;tempdir/b.1.output:tempdir/b.1,tempdir/c.1,tempdir/d.1,test_transform_inputs.py;"
+        correct_output = "{tempdir}a.1.output:{tempdir}a.1,{tempdir}c.1,{tempdir}d.1,test_transform_inputs.py;{tempdir}b.1.output:{tempdir}b.1,{tempdir}c.1,{tempdir}d.1,test_transform_inputs.py;".format(tempdir = tempdir)
         with open(tempdir + "final.output") as real_output:
             real_output_str = real_output.read()
         self.assertEqual(correct_output, real_output_str)

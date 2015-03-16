@@ -10,11 +10,10 @@ from __future__ import print_function
 
 
 import sys
-tempdir = "temp_filesre_split_and_combine/"
+import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
 verbose_output = sys.stderr
 
-import os
-import sys
 
 # add grandparent to search path for testing
 grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -26,11 +25,7 @@ module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 # funky code to import by file name
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
-
-for attr in "posttask", "split", "merge", "transform", "pipeline_printout", "pipeline_run", "Pipeline", "suffix":
-    globals()[attr] = getattr (ruffus, attr)
+from ruffus import  posttask, split, merge, transform, pipeline_printout, pipeline_run, Pipeline, suffix
 
 
 

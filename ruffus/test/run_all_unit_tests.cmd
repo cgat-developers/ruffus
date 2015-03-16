@@ -2,6 +2,8 @@ echo Running test_file_name_parameters.py                                       
 python  -m unittest test_file_name_parameters                                       && \
 echo Running test_with_logger.py                                                    && \
 python  -m unittest test_with_logger                                                && \
+echo Running test_proxy_logger.py                                                   && \
+python  -m unittest test_proxy_logger                                               && \
 echo Running test_exceptions.py                                                     && \
 python  -m unittest test_exceptions                                                 && \
 echo Running test_task_file_dependencies.py                                         && \

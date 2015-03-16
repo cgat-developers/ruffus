@@ -28,7 +28,8 @@ from __future__ import print_function
 
 """
 
-workdir = 'tmp_test_regex_error_messages'
+import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0]))
 #sub-1s resolution in system?
 one_second_per_job = None
 parallelism = 2
@@ -45,15 +46,11 @@ sys.path.insert(0, grandparent_dir)
 module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-# funky code to import by file name
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
-for attr in "pipeline_run", "pipeline_printout", "suffix", "transform", "split", "merge", "dbdict", "follows", "originate", "Pipeline", "regex":
-    globals()[attr] = getattr (ruffus, attr)
-RUFFUS_HISTORY_FILE = ruffus.ruffus_utility.RUFFUS_HISTORY_FILE
-fatal_error_input_file_does_not_match = ruffus.ruffus_exceptions.fatal_error_input_file_does_not_match
-RethrownJobError                      = ruffus.ruffus_exceptions.RethrownJobError
+import ruffus
+from ruffus import pipeline_run, pipeline_printout, suffix, transform, split, merge, dbdict, follows, originate, Pipeline, regex
+
+from ruffus.ruffus_exceptions import RethrownJobError, fatal_error_input_file_does_not_match
+from ruffus.ruffus_utility import CHECKSUM_FILE_TIMESTAMPS, RUFFUS_HISTORY_FILE, get_default_history_file_name
 
 
 
@@ -168,7 +165,7 @@ def test_regex_out_of_range_regex_reference_error_task(infiles, outfile,
 test_pipeline = Pipeline("test")
 
 test_pipeline.originate(task_func = generate_initial_files1,
-                        output    = [workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcdefghi"])
+                        output    = [tempdir +  "/" + prefix + "_name.tmp1" for prefix in "abcdefghi"])
 
 test_pipeline.transform(task_func = test_regex_task,
                         input     = generate_initial_files1,
@@ -229,7 +226,7 @@ test_pipeline.transform(task_func = test_regex_out_of_range_regex_reference_erro
 
 
 def cleanup_tmpdir():
-    os.system('rm -f %s %s' % (os.path.join(workdir, '*'), RUFFUS_HISTORY_FILE))
+    os.system('rm -f %s %s' % (os.path.join(tempdir, '*'), RUFFUS_HISTORY_FILE))
 
 class _AssertRaisesContext_27(object):
     """A context manager used to implement TestCase.assertRaises* methods.
@@ -272,7 +269,7 @@ class _AssertRaisesContext_27(object):
 class Test_regex_error_messages(unittest.TestCase):
     def setUp(self):
         try:
-            os.mkdir(workdir)
+            os.mkdir(tempdir)
         except OSError:
             pass
         if sys.hexversion < 0x03000000:
@@ -315,7 +312,7 @@ class Test_regex_error_messages(unittest.TestCase):
 
         s = StringIO()
         test_pipeline.printout(s, [test_regex_task], verbose=5, wrap_width = 10000)
-        self.assertTrue(re.search('Missing files.*\[tmp_test_regex_error_messages/a_name.tmp1, tmp_test_regex_error_messages/a_name.tmp2', s.getvalue(), re.DOTALL))
+        self.assertTrue(re.search('Missing files.*\[{tempdir}/a_name.tmp1, {tempdir}/a_name.tmp2'.format(tempdir=tempdir), s.getvalue(), re.DOTALL))
 
 
     def test_regex_run(self):
@@ -333,7 +330,7 @@ class Test_regex_error_messages(unittest.TestCase):
         cleanup_tmpdir()
         s = StringIO()
         test_pipeline.printout(s, [test_regex_unmatched_task], verbose=5, wrap_width = 10000)
-        self.assertIn("Warning: File match failure: File 'tmp_test_regex_error_messages/a_name.tmp1' does not match regex", s.getvalue())
+        self.assertIn("Warning: File match failure: File '{tempdir}/a_name.tmp1' does not match regex".format(tempdir=tempdir), s.getvalue())
 
     def test_regex_unmatched_run(self):
         """Run transform(...,regex()...)"""
@@ -351,7 +348,7 @@ class Test_regex_error_messages(unittest.TestCase):
 
         s = StringIO()
         test_pipeline.printout(s, [test_suffix_task], verbose=5, wrap_width = 10000)
-        self.assertTrue(re.search('Missing files.*\[tmp_test_regex_error_messages/a_name.tmp1, tmp_test_regex_error_messages/a_name.tmp2', s.getvalue(), re.DOTALL))
+        self.assertTrue(re.search('Missing files.*\[{tempdir}/a_name.tmp1, {tempdir}/a_name.tmp2'.format(tempdir=tempdir), s.getvalue(), re.DOTALL))
 
     def test_suffix_run(self):
         """Run transform(...,suffix()...)"""
@@ -386,7 +383,7 @@ class Test_regex_error_messages(unittest.TestCase):
         cleanup_tmpdir()
         s = StringIO()
         test_pipeline.printout(s, [test_suffix_unmatched_task2], verbose=5, wrap_width = 10000)
-        self.assertIn("Warning: File match failure: File 'tmp_test_regex_error_messages/a_name.tmp1' does not match suffix", s.getvalue())
+        self.assertIn("Warning: File match failure: File '{tempdir}/a_name.tmp1' does not match suffix".format(tempdir=tempdir), s.getvalue())
 
     def test_suffix_unmatched_run2(self):
         """Run transform(...,suffix()...)"""
@@ -455,7 +452,7 @@ class Test_regex_error_messages(unittest.TestCase):
     #___________________________________________________________________________
     def tearDown(self):
         pass
-        shutil.rmtree(workdir)
+        shutil.rmtree(tempdir)
 
 
 

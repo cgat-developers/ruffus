@@ -17,11 +17,8 @@ module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 # funky code to import by file name
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
-
-for attr in "task",:
-    globals()[attr] = getattr (ruffus, attr)
+import ruffus
+from ruffus import task
 
 
 

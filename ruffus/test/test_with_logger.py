@@ -2,13 +2,13 @@
 from __future__ import print_function
 """
 
-    test_simpler.py
+    test_with_logger.py
 
 """
 
 
 import os
-tempdir = os.path.splitext(__file__)[0] + "/"
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
 input_file_names = [os.path.join(tempdir, "%d.1"  % fn) for fn in range(20)]
 final_file_name = os.path.join(tempdir, "final.result")
 try:
@@ -29,8 +29,8 @@ module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 # funky code to import by file name
 import ruffus
-from ruffus import *
-from ruffus.proxy_logger import *
+from ruffus import originate, transform, suffix, merge, pipeline_run, Pipeline
+from ruffus.proxy_logger import make_shared_logger_and_proxy, setup_std_shared_logger
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   imports
@@ -40,6 +40,7 @@ from ruffus.proxy_logger import *
 
 import unittest
 import re
+import logging
 import sys
 import os
 import json

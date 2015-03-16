@@ -9,6 +9,8 @@ from __future__ import print_function
 import os
 import sys
 
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
+
 # add grandparent to search path for testing
 grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, grandparent_dir)
@@ -16,19 +18,7 @@ sys.path.insert(0, grandparent_dir)
 # module name = script name without extension
 module_name = os.path.splitext(os.path.basename(__file__))[0]
 
-
-# funky code to import by file name
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
-try:
-    attrlist = ruffus.__all__
-except AttributeError:
-    attrlist = dir (ruffus)
-for attr in attrlist:
-    if attr[0:2] != "__":
-        globals()[attr] = getattr (ruffus, attr)
-
+from ruffus import Pipeline, suffix, pipeline_run
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -70,7 +60,7 @@ def same_file_name_task(input_file_name, output_file_name, executed_tasks_proxy,
 #   Links file names, is always as up to date if links are not missing
 #
 def linked_file_name_task(input_file_name, output_file_name, executed_tasks_proxy, mutex_proxy):
-    os.symlink(input_file_name, output_file_name)
+    os.symlink(os.path.abspath(input_file_name), os.path.abspath(output_file_name))
     with mutex_proxy:
         executed_tasks_proxy["linked_file_name_task"] = executed_tasks_proxy.get("linked_file_name_task", 0) + 1
 
@@ -111,8 +101,9 @@ class Test_ruffus(unittest.TestCase):
 
         pipeline = Pipeline.pipelines["main"]
         pipeline.originate(task_func = start_task,
-                            output = ["a.1", "b.1"],
-                            extras = [executed_tasks_proxy, mutex_proxy])
+                            output = [tempdir + "a.1", tempdir + "b.1"],
+                            extras = [executed_tasks_proxy, mutex_proxy])\
+                .mkdir(tempdir)
         pipeline.transform(task_func = same_file_name_task,
                             input = start_task,
                             filter = suffix(".1"),
@@ -132,10 +123,14 @@ class Test_ruffus(unittest.TestCase):
 
     def cleanUp(self, check_expected = False):
         for f in ["a.1", "b.1", "a.linked.1", "b.linked.1", "a.3", "b.3", "a.linked.3", "b.linked.3"]:
-            if os.path.lexists(f):
-                os.unlink(f)
+            if os.path.lexists(tempdir + f):
+                os.unlink(tempdir + f)
             elif check_expected:
-                    raise Exception("Expected %s missing" % f)
+                raise Exception("Expected %s missing" % (tempdir + f))
+        if os.path.lexists(tempdir):
+            os.rmdir(tempdir)
+        elif check_expected:
+            raise Exception("Expected %s missing" % (tempdir))
 
     def tearDown(self):
         self.cleanUp(True)

@@ -8,12 +8,12 @@ from __future__ import print_function
 
 """
 
-workdir = 'tmp_test_job_history_with_exceptions'
 #sub-1s resolution in system?
 one_second_per_job = None
 throw_exception = False
 
 import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
 import sys
 
 # add grandparent to search path for testing
@@ -24,16 +24,11 @@ sys.path.insert(0, grandparent_dir)
 module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-# funky code to import by file name
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
-for attr in "pipeline_run", "pipeline_printout", "suffix", "transform", "split", "merge", "dbdict", "follows", "originate", "collate", "formatter", "Pipeline":
-    globals()[attr] = getattr (ruffus, attr)
-RethrownJobError =  ruffus.ruffus_exceptions.RethrownJobError
-RUFFUS_HISTORY_FILE           = ruffus.ruffus_utility.RUFFUS_HISTORY_FILE
-CHECKSUM_FILE_TIMESTAMPS      = ruffus.ruffus_utility.CHECKSUM_FILE_TIMESTAMPS
-get_default_history_file_name = ruffus.ruffus_utility.get_default_history_file_name
+import ruffus
+from ruffus import pipeline_run, pipeline_printout, Pipeline, collate, mkdir, regex, suffix, formatter, originate, transform
+
+from ruffus.ruffus_exceptions import RethrownJobError
+from ruffus.ruffus_utility import CHECKSUM_FILE_TIMESTAMPS, RUFFUS_HISTORY_FILE, get_default_history_file_name
 
 
 
@@ -58,7 +53,7 @@ import re
 #
 #   generate_initial_files1
 #___________________________________________________________________________
-@originate([workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"])
+@originate([tempdir +  prefix + "_name.tmp1" for prefix in "abcd"])
 def generate_initial_files1(on):
     with open(on, 'w') as outfile:
         pass
@@ -67,7 +62,7 @@ def generate_initial_files1(on):
 #
 #   generate_initial_files2
 #___________________________________________________________________________
-@originate([workdir +  "/e_name.tmp1", workdir +  "/f_name.tmp1"])
+@originate([tempdir +  "e_name.tmp1", tempdir +  "f_name.tmp1"])
 def generate_initial_files2(on):
     with open(on, 'w') as outfile:
         pass
@@ -76,7 +71,7 @@ def generate_initial_files2(on):
 #
 #   generate_initial_files3
 #___________________________________________________________________________
-@originate([workdir +  "/g_name.tmp1", workdir +  "/h_name.tmp1"])
+@originate([tempdir +  "/g_name.tmp1", tempdir +  "/h_name.tmp1"])
 def generate_initial_files3(on):
     with open(on, 'w') as outfile:
         pass
@@ -85,7 +80,7 @@ def generate_initial_files3(on):
 #
 #   generate_initial_files1
 #___________________________________________________________________________
-@originate(workdir +  "/i_name.tmp1")
+@originate(tempdir +  "i_name.tmp1")
 def generate_initial_files4(on):
     with open(on, 'w') as outfile:
         pass
@@ -138,7 +133,7 @@ def test_task4( infile, outfile):
 
 
 def cleanup_tmpdir():
-    os.system('rm -f %s %s' % (os.path.join(workdir, '*'), RUFFUS_HISTORY_FILE))
+    os.system('rm -f %s %s' % (os.path.join(tempdir, '*'), RUFFUS_HISTORY_FILE))
 
 
 VERBOSITY = 5
@@ -148,7 +143,7 @@ cnt_pipelines = 0
 class Test_job_history_with_exceptions(unittest.TestCase):
     def setUp(self):
         try:
-            os.mkdir(workdir)
+            os.mkdir(tempdir)
         except OSError:
             pass
 
@@ -170,16 +165,16 @@ class Test_job_history_with_exceptions(unittest.TestCase):
         test_pipeline = Pipeline("test %d" % cnt_pipelines)
 
         test_pipeline.originate(task_func   = generate_initial_files1,
-                                output      = [workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"])
+                                output      = [tempdir + prefix + "_name.tmp1" for prefix in "abcd"])
 
         test_pipeline.originate(task_func   = generate_initial_files2,
-                                output      = [workdir +  "/e_name.tmp1", workdir +  "/f_name.tmp1"])
+                                output      = [tempdir +  "e_name.tmp1", tempdir +  "f_name.tmp1"])
 
         test_pipeline.originate(task_func   = generate_initial_files3,
-                                output      = [workdir +  "/g_name.tmp1", workdir +  "/h_name.tmp1"])
+                                output      = [tempdir +  "g_name.tmp1", tempdir +  "h_name.tmp1"])
 
         test_pipeline.originate(task_func   = generate_initial_files4,
-                                output      = workdir +  "/i_name.tmp1")
+                                output      = tempdir +  "i_name.tmp1")
 
         test_pipeline.collate(  task_func   = test_task2,
                                 input       = [generate_initial_files1,
@@ -355,7 +350,7 @@ class Test_job_history_with_exceptions(unittest.TestCase):
     #   cleanup
     #___________________________________________________________________________
     def tearDown(self):
-        shutil.rmtree(workdir)
+        shutil.rmtree(tempdir)
         pass
 
 

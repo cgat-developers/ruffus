@@ -4,12 +4,12 @@ from __future__ import print_function
 
 NUMBER_OF_RANDOMS = 10000
 CHUNK_SIZE = 1000
-working_dir = "temp_tutorial7/"
 
 
 
 
 import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
 import sys
 
 # add grandparent to search path for testing
@@ -19,13 +19,7 @@ sys.path.insert(0, grandparent_dir)
 # module name = script name without extension
 module_name = os.path.splitext(os.path.basename(__file__))[0]
 
-
-# funky code to import by file name
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
-for attr in "follows", "split", "mkdir", "files", "transform", "suffix", "posttask", "touch_file", "merge", "Pipeline":
-    globals()[attr] = getattr (ruffus, attr)
+from ruffus import follows, split, mkdir, files, transform, suffix, posttask, touch_file, merge, Pipeline
 
 import random
 import glob
@@ -35,8 +29,8 @@ import glob
 #
 #   Create random numbers
 #
-@follows(mkdir(working_dir))
-@files(None, working_dir + "random_numbers.list")
+@follows(mkdir(tempdir))
+@files(None, tempdir + "random_numbers.list")
 def create_random_numbers(input_file_name, output_file_name):
     f = open(output_file_name, "w")
     for i in range(NUMBER_OF_RANDOMS):
@@ -48,7 +42,7 @@ def create_random_numbers(input_file_name, output_file_name):
 #   Split initial file
 #
 @follows(create_random_numbers)
-@split(working_dir + "random_numbers.list", working_dir + "*.chunks")
+@split(tempdir + "random_numbers.list", tempdir + "*.chunks")
 def step_4_split_numbers_into_chunks (input_file_name, output_files):
     """
         Splits random numbers file into XXX files of CHUNK_SIZE each
@@ -70,7 +64,7 @@ def step_4_split_numbers_into_chunks (input_file_name, output_files):
                 cnt_files += 1
                 if output_file:
                     output_file.close()
-                output_file = open(working_dir + "%d.chunks" % cnt_files, "w")
+                output_file = open(tempdir + "%d.chunks" % cnt_files, "w")
             output_file.write(line)
     if output_file:
         output_file.close()
@@ -105,8 +99,8 @@ def print_whoppee_again():
 #   Calculate sum and sum of squares for each chunk
 #
 @posttask(lambda: sys.stdout.write("     hooray\n"))
-@posttask(print_hooray_again, print_whoppee_again, touch_file(os.path.join(working_dir, "done")))
-@merge(step_5_calculate_sum_of_squares, os.path.join(working_dir, "variance.result"))
+@posttask(print_hooray_again, print_whoppee_again, touch_file(os.path.join(tempdir, "done")))
+@merge(step_5_calculate_sum_of_squares, os.path.join(tempdir, "variance.result"))
 def step_6_calculate_variance (input_file_names, output_file_name):
     """
     Calculate variance naively
@@ -145,20 +139,20 @@ except:
 class Test_ruffus(unittest.TestCase):
     def setUp(self):
         try:
-            shutil.rmtree(working_dir)
+            shutil.rmtree(tempdir)
         except:
             pass
 
     def tearDown(self):
         try:
-            shutil.rmtree(working_dir)
+            shutil.rmtree(tempdir)
             pass
         except:
             pass
 
     def atest_ruffus (self):
         pipeline_run(multiprocess = 50, verbose = 0, pipeline= "main")
-        output_file = os.path.join(working_dir, "variance.result")
+        output_file = os.path.join(tempdir, "variance.result")
         if not os.path.exists (output_file):
             raise Exception("Missing %s" % output_file)
 
@@ -166,13 +160,13 @@ class Test_ruffus(unittest.TestCase):
     def test_newstyle_ruffus (self):
         test_pipeline = Pipeline("test")
 
-        test_pipeline.files(create_random_numbers, None, working_dir + "random_numbers.list")\
-            .follows(mkdir(working_dir))
+        test_pipeline.files(create_random_numbers, None, tempdir + "random_numbers.list")\
+            .follows(mkdir(tempdir))
 
 
         test_pipeline.split(task_func = step_4_split_numbers_into_chunks,
-                       input = working_dir + "random_numbers.list",
-                       output = working_dir + "*.chunks")\
+                       input = tempdir + "random_numbers.list",
+                       output = tempdir + "*.chunks")\
             .follows(create_random_numbers)
 
         test_pipeline.transform(task_func = step_5_calculate_sum_of_squares,
@@ -180,12 +174,12 @@ class Test_ruffus(unittest.TestCase):
                            filter = suffix(".chunks"),
                            output = ".sums")
 
-        test_pipeline.merge(task_func = step_6_calculate_variance, input = step_5_calculate_sum_of_squares, output = os.path.join(working_dir, "variance.result"))\
+        test_pipeline.merge(task_func = step_6_calculate_variance, input = step_5_calculate_sum_of_squares, output = os.path.join(tempdir, "variance.result"))\
             .posttask(lambda: sys.stdout.write("     hooray\n"))\
-            .posttask(print_hooray_again, print_whoppee_again, touch_file(os.path.join(working_dir, "done")))
+            .posttask(print_hooray_again, print_whoppee_again, touch_file(os.path.join(tempdir, "done")))
 
         test_pipeline.run(multiprocess = 50, verbose = 0)
-        output_file = os.path.join(working_dir, "variance.result")
+        output_file = os.path.join(tempdir, "variance.result")
         if not os.path.exists (output_file):
             raise Exception("Missing %s" % output_file)
 

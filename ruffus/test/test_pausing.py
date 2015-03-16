@@ -9,6 +9,7 @@ from __future__ import print_function
 """
 
 import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
 import sys
 
 # add grandparent to search path for testing
@@ -19,19 +20,7 @@ sys.path.insert(0, grandparent_dir)
 module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-# funky code to import by file name
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
-
-try:
-    attrlist = ruffus.__all__
-except AttributeError:
-    attrlist = dir (ruffus)
-for attr in attrlist:
-    if attr[0:2] != "__":
-        globals()[attr] = getattr (ruffus, attr)
-
+from ruffus import  *
 
 
 
@@ -107,7 +96,6 @@ def test_job_io(infiles, outfiles, extra_params):
 #                   5   ->    6
 #
 
-tempdir = "test_pausing_dir/"
 def do_write(file_name, what):
     with open(file_name, "a") as oo:
         oo.write(what)

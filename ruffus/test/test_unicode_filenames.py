@@ -15,6 +15,7 @@ from __future__ import print_function
 
 
 import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
 import sys
 
 # add grandparent to search path for testing
@@ -27,18 +28,7 @@ module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 # funky code to import by file name
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
-
-try:
-    attrlist = ruffus.__all__
-except AttributeError:
-    attrlist = dir (ruffus)
-for attr in attrlist:
-    if attr[0:2] != "__":
-        globals()[attr] = getattr (ruffus, attr)
-
-
+from ruffus import follows, posttask, files, suffix, mkdir, Pipeline, touch_file, originate, pipeline_run
 
 
 
@@ -53,13 +43,6 @@ for attr in attrlist:
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 import json
-# use simplejson in place of json for python < 2.6
-#try:
-#    import json
-#except ImportError:
-#    import simplejson
-#    json = simplejson
-
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Main logic
@@ -85,16 +68,15 @@ if sys.hexversion >= 0x03000000:
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-directories = [os.path.abspath(unicode("a")), unicode("b")]
-@follows(mkdir(directories), mkdir(unicode("c")), mkdir(unicode("d"), unicode("e")), mkdir(unicode("e")))
-@posttask(touch_file(unicode("f")))
+directories = [os.path.abspath(unicode(tempdir + "a")), unicode(tempdir + "b")]
+@follows(mkdir(directories), mkdir(unicode(tempdir + "c")), mkdir(unicode(tempdir + "d"), unicode(tempdir + "e")), mkdir(unicode(tempdir + "e")))
+@posttask(touch_file(unicode(tempdir + "f")))
 def task_which_makes_directories ():
     pass
 
-@files(None, ["g", "h"])
-def task_which_makes_files (i, o):
-    for f in o:
-        touch(f)
+@originate([tempdir + "g", tempdir + "h"])
+def task_which_makes_files (o):
+        touch(o)
 
 import unittest
 
@@ -110,18 +92,20 @@ class Test_task_mkdir(unittest.TestCase):
         delete directories
         """
         for d in 'abcde':
-            fullpath = os.path.join(os.path.dirname(__file__), d)
+            fullpath = os.path.join(os.path.dirname(__file__), tempdir, d)
             os.rmdir(fullpath)
         for d in 'fgh':
-            fullpath = os.path.join(os.path.dirname(__file__), d)
+            fullpath = os.path.join(os.path.dirname(__file__), tempdir, d)
             os.unlink(fullpath)
+
+        os.rmdir(tempdir)
 
 
     def test_mkdir (self):
         pipeline_run(multiprocess = 10, verbose = 0, pipeline= "main")
 
         for d in 'abcdefgh':
-            fullpath = os.path.join(os.path.dirname(__file__), d)
+            fullpath = os.path.join(os.path.dirname(__file__), tempdir, d)
             self.assertTrue(os.path.exists(fullpath))
 
 
@@ -130,17 +114,17 @@ class Test_task_mkdir(unittest.TestCase):
 
         test_pipeline.follows(task_which_makes_directories,
                          mkdir(directories),
-                         mkdir(unicode("c")),
-                         mkdir(unicode("d"),
-                               unicode("e")),
-                         mkdir(unicode("e")))\
-            .posttask(touch_file(unicode("f")))
+                         mkdir(unicode(tempdir + "c")),
+                         mkdir(unicode(tempdir + "d"),
+                               unicode(tempdir + "e")),
+                         mkdir(unicode(tempdir + "e")))\
+            .posttask(touch_file(unicode(tempdir + "f")))
 
-        test_pipeline.files(task_which_makes_files, None, ["g", "h"])
+        test_pipeline.originate(task_which_makes_files, [tempdir + "g", tempdir + "h"])
         test_pipeline.run(multiprocess = 10, verbose = 0)
 
         for d in 'abcdefgh':
-            fullpath = os.path.join(os.path.dirname(__file__), d)
+            fullpath = os.path.join(os.path.dirname(__file__), tempdir, d)
             self.assertTrue(os.path.exists(fullpath))
 
 

@@ -7,6 +7,9 @@ from __future__ import print_function
 """
 
 import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0]))
+data_dir  = tempdir + "/data"
+work_dir  = tempdir + "/work"
 import sys
 
 # add grandparent to search path for testing
@@ -16,22 +19,8 @@ sys.path.insert(0, grandparent_dir)
 # module name = script name without extension
 module_name = os.path.splitext(os.path.basename(__file__))[0]
 
-
-# funky code to import by file name
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
-
-try:
-    attrlist = ruffus.__all__
-except AttributeError:
-    attrlist = dir (ruffus)
-for attr in attrlist:
-    if attr[0:2] != "__":
-        globals()[attr] = getattr (ruffus, attr)
-
-
-
+import ruffus
+from ruffus import transform, subdivide, merge, suffix, mkdir, pipeline_run, Pipeline, originate
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -88,9 +77,6 @@ def helper (infiles, outfiles):
 #
 #    task1
 #
-root_dir  = "test_suffix_output_dir"
-data_dir  = "test_suffix_output_dir/data"
-work_dir  = "test_suffix_output_dir/work"
 @mkdir(data_dir, work_dir)
 @originate([os.path.join(data_dir, "%s.1" % aa) for aa in "abcd"])
 def task1(outfile):
@@ -153,40 +139,40 @@ def task5(infiles, outfile):
     helper (infiles, outfile)
 
 
-expected_active_text = """[null] -> ["test_suffix_output_dir/data/a.1"]
-    ["test_suffix_output_dir/data/a.1"] -> ["test_suffix_output_dir/work/a.1"]
-        ["test_suffix_output_dir/work/a.1"] -> ["test_suffix_output_dir/work/a.a.2", "test_suffix_output_dir/work/a.b.2"]
-            ["test_suffix_output_dir/work/a.a.2"] -> ["test_suffix_output_dir/work/a.a.3"]
-[null] -> ["test_suffix_output_dir/data/a.1"]
-    ["test_suffix_output_dir/data/a.1"] -> ["test_suffix_output_dir/work/a.1"]
-        ["test_suffix_output_dir/work/a.1"] -> ["test_suffix_output_dir/work/a.a.2", "test_suffix_output_dir/work/a.b.2"]
-            ["test_suffix_output_dir/work/a.b.2"] -> ["test_suffix_output_dir/work/a.b.3"]
-[null] -> ["test_suffix_output_dir/data/b.1"]
-    ["test_suffix_output_dir/data/b.1"] -> ["test_suffix_output_dir/work/b.1"]
-        ["test_suffix_output_dir/work/b.1"] -> ["test_suffix_output_dir/work/b.a.2", "test_suffix_output_dir/work/b.b.2"]
-            ["test_suffix_output_dir/work/b.a.2"] -> ["test_suffix_output_dir/work/b.a.3"]
-[null] -> ["test_suffix_output_dir/data/b.1"]
-    ["test_suffix_output_dir/data/b.1"] -> ["test_suffix_output_dir/work/b.1"]
-        ["test_suffix_output_dir/work/b.1"] -> ["test_suffix_output_dir/work/b.a.2", "test_suffix_output_dir/work/b.b.2"]
-            ["test_suffix_output_dir/work/b.b.2"] -> ["test_suffix_output_dir/work/b.b.3"]
-[null] -> ["test_suffix_output_dir/data/c.1"]
-    ["test_suffix_output_dir/data/c.1"] -> ["test_suffix_output_dir/work/c.1"]
-        ["test_suffix_output_dir/work/c.1"] -> ["test_suffix_output_dir/work/c.a.2", "test_suffix_output_dir/work/c.b.2"]
-            ["test_suffix_output_dir/work/c.a.2"] -> ["test_suffix_output_dir/work/c.a.3"]
-[null] -> ["test_suffix_output_dir/data/c.1"]
-    ["test_suffix_output_dir/data/c.1"] -> ["test_suffix_output_dir/work/c.1"]
-        ["test_suffix_output_dir/work/c.1"] -> ["test_suffix_output_dir/work/c.a.2", "test_suffix_output_dir/work/c.b.2"]
-            ["test_suffix_output_dir/work/c.b.2"] -> ["test_suffix_output_dir/work/c.b.3"]
-[null] -> ["test_suffix_output_dir/data/d.1"]
-    ["test_suffix_output_dir/data/d.1"] -> ["test_suffix_output_dir/work/d.1"]
-        ["test_suffix_output_dir/work/d.1"] -> ["test_suffix_output_dir/work/d.a.2", "test_suffix_output_dir/work/d.b.2"]
-            ["test_suffix_output_dir/work/d.a.2"] -> ["test_suffix_output_dir/work/d.a.3"]
-[null] -> ["test_suffix_output_dir/data/d.1"]
-    ["test_suffix_output_dir/data/d.1"] -> ["test_suffix_output_dir/work/d.1"]
-        ["test_suffix_output_dir/work/d.1"] -> ["test_suffix_output_dir/work/d.a.2", "test_suffix_output_dir/work/d.b.2"]
-            ["test_suffix_output_dir/work/d.b.2"] -> ["test_suffix_output_dir/work/d.b.3"]
-                ["test_suffix_output_dir/work/a.a.3", "test_suffix_output_dir/work/a.b.3", "test_suffix_output_dir/work/b.a.3", "test_suffix_output_dir/work/b.b.3", "test_suffix_output_dir/work/c.a.3", "test_suffix_output_dir/work/c.b.3", "test_suffix_output_dir/work/d.a.3", "test_suffix_output_dir/work/d.b.3"] -> ["test_suffix_output_dir/data/summary.5"]
-"""
+expected_active_text = """[null] -> ["{tempdir}/data/a.1"]
+    ["{tempdir}/data/a.1"] -> ["{tempdir}/work/a.1"]
+        ["{tempdir}/work/a.1"] -> ["{tempdir}/work/a.a.2", "{tempdir}/work/a.b.2"]
+            ["{tempdir}/work/a.a.2"] -> ["{tempdir}/work/a.a.3"]
+[null] -> ["{tempdir}/data/a.1"]
+    ["{tempdir}/data/a.1"] -> ["{tempdir}/work/a.1"]
+        ["{tempdir}/work/a.1"] -> ["{tempdir}/work/a.a.2", "{tempdir}/work/a.b.2"]
+            ["{tempdir}/work/a.b.2"] -> ["{tempdir}/work/a.b.3"]
+[null] -> ["{tempdir}/data/b.1"]
+    ["{tempdir}/data/b.1"] -> ["{tempdir}/work/b.1"]
+        ["{tempdir}/work/b.1"] -> ["{tempdir}/work/b.a.2", "{tempdir}/work/b.b.2"]
+            ["{tempdir}/work/b.a.2"] -> ["{tempdir}/work/b.a.3"]
+[null] -> ["{tempdir}/data/b.1"]
+    ["{tempdir}/data/b.1"] -> ["{tempdir}/work/b.1"]
+        ["{tempdir}/work/b.1"] -> ["{tempdir}/work/b.a.2", "{tempdir}/work/b.b.2"]
+            ["{tempdir}/work/b.b.2"] -> ["{tempdir}/work/b.b.3"]
+[null] -> ["{tempdir}/data/c.1"]
+    ["{tempdir}/data/c.1"] -> ["{tempdir}/work/c.1"]
+        ["{tempdir}/work/c.1"] -> ["{tempdir}/work/c.a.2", "{tempdir}/work/c.b.2"]
+            ["{tempdir}/work/c.a.2"] -> ["{tempdir}/work/c.a.3"]
+[null] -> ["{tempdir}/data/c.1"]
+    ["{tempdir}/data/c.1"] -> ["{tempdir}/work/c.1"]
+        ["{tempdir}/work/c.1"] -> ["{tempdir}/work/c.a.2", "{tempdir}/work/c.b.2"]
+            ["{tempdir}/work/c.b.2"] -> ["{tempdir}/work/c.b.3"]
+[null] -> ["{tempdir}/data/d.1"]
+    ["{tempdir}/data/d.1"] -> ["{tempdir}/work/d.1"]
+        ["{tempdir}/work/d.1"] -> ["{tempdir}/work/d.a.2", "{tempdir}/work/d.b.2"]
+            ["{tempdir}/work/d.a.2"] -> ["{tempdir}/work/d.a.3"]
+[null] -> ["{tempdir}/data/d.1"]
+    ["{tempdir}/data/d.1"] -> ["{tempdir}/work/d.1"]
+        ["{tempdir}/work/d.1"] -> ["{tempdir}/work/d.a.2", "{tempdir}/work/d.b.2"]
+            ["{tempdir}/work/d.b.2"] -> ["{tempdir}/work/d.b.3"]
+                ["{tempdir}/work/a.a.3", "{tempdir}/work/a.b.3", "{tempdir}/work/b.a.3", "{tempdir}/work/b.b.3", "{tempdir}/work/c.a.3", "{tempdir}/work/c.b.3", "{tempdir}/work/d.a.3", "{tempdir}/work/d.b.3"] -> ["{tempdir}/data/summary.5"]
+""".format(tempdir = tempdir)
 
 
 
@@ -196,12 +182,12 @@ expected_active_text = """[null] -> ["test_suffix_output_dir/data/a.1"]
 class Test_ruffus(unittest.TestCase):
     def setUp(self):
         try:
-            shutil.rmtree(root_dir)
+            shutil.rmtree(tempdir)
         except:
             pass
-        for tempdir in root_dir, work_dir, data_dir:
+        for dd in tempdir, work_dir, data_dir:
             try:
-                os.makedirs(tempdir)
+                os.makedirs(dd)
             except:
                 pass
 
@@ -209,9 +195,9 @@ class Test_ruffus(unittest.TestCase):
 
     def tearDown(self):
         try:
-            shutil.rmtree(root_dir)
+            shutil.rmtree(tempdir)
         except:
-            sys.stderr.write("Can't remove %s" % root_dir)
+            sys.stderr.write("Can't remove %s" % tempdir)
             pass
 
     def test_ruffus (self):

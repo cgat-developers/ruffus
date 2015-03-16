@@ -7,7 +7,8 @@ from __future__ import print_function
 
 """
 
-workdir = 'tmp_test_mkdir'
+import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0]))
 
 
 import os
@@ -21,16 +22,8 @@ sys.path.insert(0, grandparent_dir)
 module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-# funky code to import by file name
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
-
-for attr in "pipeline_run", "pipeline_printout", "transform", "split", "mkdir", "formatter", "Pipeline":
-    globals()[attr] = getattr (ruffus, attr)
-RethrownJobError = ruffus.ruffus_exceptions.RethrownJobError
-RUFFUS_HISTORY_FILE      = ruffus.ruffus_utility.RUFFUS_HISTORY_FILE
-CHECKSUM_FILE_TIMESTAMPS = ruffus.ruffus_utility.CHECKSUM_FILE_TIMESTAMPS
+from ruffus import pipeline_run, pipeline_printout, transform, split, mkdir, formatter, Pipeline
+from ruffus.ruffus_utility import RUFFUS_HISTORY_FILE, CHECKSUM_FILE_TIMESTAMPS
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 #
@@ -52,7 +45,7 @@ import time
 #
 #   generate_initial_files1
 #___________________________________________________________________________
-@split(1, [workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"])
+@split(1, [tempdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"])
 def generate_initial_files1(in_name, out_names):
     for on in out_names:
         with open(on, 'w') as outfile:
@@ -62,8 +55,8 @@ def generate_initial_files1(in_name, out_names):
 #
 #   test_product_task
 #___________________________________________________________________________
-@mkdir(workdir + "/test1")
-@mkdir(workdir + "/test2")
+@mkdir(tempdir + "/test1")
+@mkdir(tempdir + "/test2")
 @mkdir(generate_initial_files1, formatter(),
             ["{path[0]}/{basename[0]}.dir", 3, "{path[0]}/{basename[0]}.dir2"])
 @transform( generate_initial_files1,
@@ -73,7 +66,7 @@ def test_transform( infiles, outfile):
     with open(outfile, "w") as p: pass
 
 
-@mkdir(workdir + "/test3")
+@mkdir(tempdir + "/test3")
 @mkdir(generate_initial_files1, formatter(),
             "{path[0]}/{basename[0]}.dir2")
 def test_transform2():
@@ -82,13 +75,13 @@ def test_transform2():
 
 
 def cleanup_tmpdir():
-    os.system('rm -f %s %s' % (os.path.join(workdir, '*'), RUFFUS_HISTORY_FILE))
+    os.system('rm -f %s %s' % (os.path.join(tempdir, '*'), RUFFUS_HISTORY_FILE))
 
 
 class Testmkdir(unittest.TestCase):
     def setUp(self):
         try:
-            os.mkdir(workdir)
+            os.mkdir(tempdir)
         except OSError:
             pass
 
@@ -120,18 +113,18 @@ class Testmkdir(unittest.TestCase):
 
         test_pipeline.split(task_func = generate_initial_files1,
                             input = 1,
-                            output = [workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"])
+                            output = [tempdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"])
 
         test_pipeline.transform( task_func = test_transform,
                                  input     = generate_initial_files1,
                                  filter    = formatter(),
                                  output    = "{path[0]}/{basename[0]}.dir/{basename[0]}.tmp2")\
-            .mkdir(workdir + "/test1")\
-            .mkdir(workdir + "/test2")\
+            .mkdir(tempdir + "/test1")\
+            .mkdir(tempdir + "/test2")\
             .mkdir(generate_initial_files1, formatter(),
                         ["{path[0]}/{basename[0]}.dir", 3, "{path[0]}/{basename[0]}.dir2"])
 
-        test_pipeline.mkdir(test_transform2, workdir + "/test3")\
+        test_pipeline.mkdir(test_transform2, tempdir + "/test3")\
             .mkdir(generate_initial_files1, formatter(),
                     "{path[0]}/{basename[0]}.dir2")
         cleanup_tmpdir()
@@ -145,7 +138,7 @@ class Testmkdir(unittest.TestCase):
     #   cleanup
     #___________________________________________________________________________
     def tearDown(self):
-        shutil.rmtree(workdir)
+        shutil.rmtree(tempdir)
 
 
 

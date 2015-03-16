@@ -6,6 +6,7 @@ from __future__ import print_function
 
 
 import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
 import sys
 
 # add grandparent to search path for testing
@@ -15,20 +16,8 @@ sys.path.insert(0, grandparent_dir)
 # module name = script name without extension
 module_name = os.path.splitext(os.path.basename(__file__))[0]
 
-
-# funky code to import by file name
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
-
-try:
-    attrlist = ruffus.__all__
-except AttributeError:
-    attrlist = dir (ruffus)
-for attr in attrlist:
-    if attr[0:2] != "__":
-        globals()[attr] = getattr (ruffus, attr)
-
+import ruffus
+from ruffus import follows, pipeline_run, Pipeline, mkdir
 
 
 
@@ -39,8 +28,8 @@ for attr in attrlist:
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-directories = [os.path.abspath('a'), 'b']
-@follows(mkdir(directories), mkdir('c'), mkdir('d', 'e'), mkdir('e'))
+directories = [os.path.abspath(tempdir +'a'), tempdir + 'b']
+@follows(mkdir(tempdir), mkdir(directories), mkdir(tempdir +'c'), mkdir(tempdir +'d', tempdir +'e'), mkdir(tempdir +'e'))
 def task_which_makes_directories ():
     pass
 
@@ -59,24 +48,25 @@ class Test_task_mkdir(unittest.TestCase):
         delete directories
         """
         for d in 'abcde':
-            fullpath = os.path.join(os.path.dirname(__file__), d)
+            fullpath = os.path.join(os.path.dirname(__file__), tempdir, d)
             os.rmdir(fullpath)
+        os.rmdir(tempdir)
 
 
     def test_mkdir (self):
         pipeline_run(multiprocess = 10, verbose = 0, pipeline= "main")
 
         for d in 'abcde':
-            fullpath = os.path.join(os.path.dirname(__file__), d)
+            fullpath = os.path.join(os.path.dirname(__file__), tempdir, d)
             self.assertTrue(os.path.exists(fullpath))
 
     def test_newstyle_mkdir (self):
         test_pipeline = Pipeline("test")
-        test_pipeline.follows(task_which_makes_directories, mkdir(directories), mkdir('c'), mkdir('d', 'e'), mkdir('e'))
+        test_pipeline.follows(task_which_makes_directories, mkdir(directories), mkdir(tempdir + 'c'), mkdir(tempdir + 'd', tempdir + 'e'), mkdir(tempdir + 'e'))
         test_pipeline.run(multiprocess = 10, verbose = 0)
 
         for d in 'abcde':
-            fullpath = os.path.join(os.path.dirname(__file__), d)
+            fullpath = os.path.join(os.path.dirname(__file__), tempdir, d)
             self.assertTrue(os.path.exists(fullpath))
 
 

@@ -9,6 +9,7 @@ from __future__ import print_function
 """
 
 import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
 import sys
 
 # add grandparent to search path for testing
@@ -21,17 +22,12 @@ module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 # funky code to import by file name
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
-for attr in "pipeline_run", "pipeline_printout", "suffix", "transform", "split", "merge", "dbdict", "Pipeline":
-    globals()[attr] = getattr (ruffus, attr)
-get_default_history_file_name =  ruffus.task.get_default_history_file_name
-RUFFUS_HISTORY_FILE           = ruffus.ruffus_utility.RUFFUS_HISTORY_FILE
-CHECKSUM_FILE_TIMESTAMPS      = ruffus.ruffus_utility.CHECKSUM_FILE_TIMESTAMPS
-CHECKSUM_HISTORY_TIMESTAMPS   = ruffus.ruffus_utility.CHECKSUM_HISTORY_TIMESTAMPS
-CHECKSUM_FUNCTIONS            = ruffus.ruffus_utility.CHECKSUM_FUNCTIONS
-CHECKSUM_FUNCTIONS_AND_PARAMS = ruffus.ruffus_utility.CHECKSUM_FUNCTIONS_AND_PARAMS
-RethrownJobError = ruffus.ruffus_exceptions.RethrownJobError
+import ruffus
+from ruffus import pipeline_run, pipeline_printout, suffix, transform, split, merge, dbdict, Pipeline
+
+from ruffus.task import get_default_history_file_name
+from ruffus.ruffus_utility import RUFFUS_HISTORY_FILE, CHECKSUM_FILE_TIMESTAMPS, CHECKSUM_HISTORY_TIMESTAMPS, CHECKSUM_FUNCTIONS, CHECKSUM_FUNCTIONS_AND_PARAMS
+from ruffus.ruffus_exceptions import RethrownJobError
 
 
 
@@ -54,12 +50,12 @@ import re
 
 
 possible_chksms = list(range(CHECKSUM_FUNCTIONS_AND_PARAMS + 1))
-workdir = 'tmp_test_job_completion/'
-input_file = os.path.join(workdir, 'input.txt')
+tempdir = 'tmp_test_job_completion/'
+input_file = os.path.join(tempdir, 'input.txt')
 transform1_out = input_file.replace('.txt', '.output')
-split1_outputs = [ os.path.join(workdir, 'split.out1.txt'),
-                   os.path.join(workdir, 'split.out2.txt')]
-merge2_output =  os.path.join(workdir, 'merged.out')
+split1_outputs = [ os.path.join(tempdir, 'split.out1.txt'),
+                   os.path.join(tempdir, 'split.out2.txt')]
+merge2_output =  os.path.join(tempdir, 'merged.out')
 
 runtime_data = []
 
@@ -100,14 +96,14 @@ def merge2(in_names, out_name):
 
 
 def cleanup_tmpdir():
-    os.system('rm -f %s %s' % (os.path.join(workdir, '*'), get_default_history_file_name()))
+    os.system('rm -f %s %s' % (os.path.join(tempdir, '*'), get_default_history_file_name()))
 
 count_pipelines = 0
 
 class TestJobCompletion(unittest.TestCase):
     def setUp(self):
         try:
-            os.mkdir(workdir)
+            os.mkdir(tempdir)
         except OSError:
             pass
 
@@ -657,17 +653,17 @@ class TestJobCompletion(unittest.TestCase):
             self.assertNotIn('left over from a failed run?', s.getvalue())
 
     def tearDown(self):
-        shutil.rmtree(workdir)
+        shutil.rmtree(tempdir)
         pass
 
 if __name__ == '__main__':
     unittest.main()
 
 #        try:
-#            os.mkdir(workdir)
+#            os.mkdir(tempdir)
 #        except OSError:
 #            pass
-#        #os.system('rm %s/*' % workdir)
+#        #os.system('rm %s/*' % tempdir)
 #        #open(input_file, 'w').close()
 #        s = StringIO()
 #        pipeline_run([transform1], checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, pipeline= "main")

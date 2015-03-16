@@ -9,6 +9,7 @@ from __future__ import print_function
 """
 
 import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
 import sys
 
 # add grandparent to search path for testing
@@ -19,14 +20,9 @@ sys.path.insert(0, grandparent_dir)
 module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-# funky code to import by file name
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-
-ruffus = __import__ (ruffus_name)
-
-for attr in "follows", "mkdir", "transform", "regex", "merge", "Pipeline", "pipeline_run":
-    globals()[attr] = getattr (ruffus, attr)
+import ruffus
+from ruffus import follows, mkdir, transform, regex, merge, Pipeline, pipeline_run
 
 
 
@@ -51,7 +47,6 @@ def touch (outfile):
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-tempdir = "tempdir/"
 @follows(mkdir(tempdir))
 @ruffus.files([[None, tempdir+ "a.1"], [None, tempdir+ "b.1"]])
 def task1(i, o):
@@ -94,7 +89,7 @@ class Test_task(unittest.TestCase):
     def test_task (self):
         pipeline_run([task4], multiprocess = 10, verbose = 0, pipeline= "main")
 
-        correct_output = "tempdir/a.1.output:tempdir/a.1,tempdir/c.1,tempdir/d.1,test_transform_inputs.py;tempdir/b.1.output:tempdir/b.1,tempdir/c.1,tempdir/d.1,test_transform_inputs.py;"
+        correct_output = "{tempdir}a.1.output:test_transform_inputs.py,{tempdir}a.1,{tempdir}c.1,{tempdir}d.1;{tempdir}b.1.output:test_transform_inputs.py,{tempdir}b.1,{tempdir}c.1,{tempdir}d.1;".format(tempdir = tempdir)
         with open(tempdir + "final.output") as ff:
             real_output = ff.read()
         self.assertEqual(correct_output, real_output)
@@ -119,10 +114,12 @@ class Test_task(unittest.TestCase):
 
         test_pipeline.run([task4], multiprocess = 10, verbose = 0)
 
-        correct_output = "tempdir/a.1.output:tempdir/a.1,tempdir/c.1,tempdir/d.1,test_transform_inputs.py;tempdir/b.1.output:tempdir/b.1,tempdir/c.1,tempdir/d.1,test_transform_inputs.py;"
+        correct_output = "{tempdir}a.1.output:test_transform_inputs.py,{tempdir}a.1,{tempdir}c.1,{tempdir}d.1;{tempdir}b.1.output:test_transform_inputs.py,{tempdir}b.1,{tempdir}c.1,{tempdir}d.1;".format(tempdir = tempdir)
         with open(tempdir + "final.output") as ff:
             real_output = ff.read()
         self.assertEqual(correct_output, real_output)
+
+
 
 
 if __name__ == '__main__':

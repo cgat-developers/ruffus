@@ -7,7 +7,8 @@ from __future__ import print_function
         bug where @files follows merge and extra parenthesis inserted
 
 """
-tempdir = "temp_filesre_split_and_combine/"
+import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
 test_file = tempdir  + "test_output"
 jobs_per_task = 50
 
@@ -21,21 +22,7 @@ sys.path.insert(0, grandparent_dir)
 # module name = script name without extension
 module_name = os.path.splitext(os.path.basename(__file__))[0]
 
-
-# funky code to import by file name
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
-
-try:
-    attrlist = ruffus.__all__
-except AttributeError:
-    attrlist = dir (ruffus)
-for attr in attrlist:
-    if attr[0:2] != "__":
-        globals()[attr] = getattr (ruffus, attr)
-
-
+from ruffus import  *
 
 
 

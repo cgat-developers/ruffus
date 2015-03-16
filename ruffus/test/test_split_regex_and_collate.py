@@ -8,6 +8,7 @@ from __future__ import print_function
 JOBS_PER_TASK = 5
 
 import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
 import sys
 import re
 
@@ -21,23 +22,14 @@ module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 # funky code to import by file name
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
+import ruffus
+from ruffus import pipeline_run, pipeline_printout, Pipeline, suffix, regex, formatter, originate, follows, merge, mkdir, posttask, subdivide, transform, collate, split
 
-try:
-    attrlist = ruffus.combinatorics.__all__
+from ruffus.ruffus_exceptions import RethrownJobError
+from ruffus.ruffus_utility import RUFFUS_HISTORY_FILE, CHECKSUM_FILE_TIMESTAMPS
+from ruffus.combinatorics import *
 
-except AttributeError:
-    attrlist = dir (ruffus.combinatorics)
-for attr in attrlist:
-    if attr[0:2] != "__":
-        globals()[attr] = getattr (ruffus.combinatorics, attr)
 
-for attr in "collate", "pipeline_run", "pipeline_printout", "suffix", "transform", "split", "merge", "dbdict", "follows", "mkdir", "originate", "posttask", "subdivide", "regex", "Pipeline":
-    globals()[attr] = getattr (ruffus, attr)
-RethrownJobError = ruffus.ruffus_exceptions.RethrownJobError
-RUFFUS_HISTORY_FILE = ruffus.ruffus_utility.RUFFUS_HISTORY_FILE
-CHECKSUM_FILE_TIMESTAMPS = ruffus.ruffus_utility.CHECKSUM_FILE_TIMESTAMPS
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -81,7 +73,6 @@ except ImportError:
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-tempdir = "temp_filesre_split_and_combine"
 
 #
 #   Three starting files

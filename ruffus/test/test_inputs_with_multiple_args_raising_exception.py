@@ -10,6 +10,7 @@ from __future__ import print_function
 
 
 import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
 import sys
 
 # add grandparent to search path for testing
@@ -22,18 +23,8 @@ module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 # funky code to import by file name
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
-
-try:
-    attrlist = ruffus.__all__
-except AttributeError:
-    attrlist = dir (ruffus)
-for attr in attrlist:
-    if attr[0:2] != "__":
-        globals()[attr] = getattr (ruffus, attr)
-
-
+import ruffus
+from ruffus import transform, Pipeline, pipeline_run, regex, inputs, mkdir
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -46,14 +37,6 @@ for attr in attrlist:
 import unittest
 
 import json
-## use simplejson in place of json for python < 2.6
-#try:
-#    import json
-#except ImportError:
-#    import simplejson
-#    json = simplejson
-
-
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -63,7 +46,7 @@ import json
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 try:
-    @transform(None, regex("b"), inputs("a", "b"), "task_1.output")
+    @transform(None, regex(tempdir + "b"), inputs(tempdir + "a", tempdir + "b"), "task_1.output")
     def task_1 (i, o):
         for f in o:
             open(f, 'w')
@@ -102,8 +85,8 @@ class Test_task_mkdir(unittest.TestCase):
             test_pipeline = Pipeline("test")
             test_pipeline.transform(task_func = task_2,
                                     input = None,
-                                    filter = regex("b"),
-                                    replace_inputs = inputs("a", "b"),
+                                    filter = regex(tempdir + "b"),
+                                    replace_inputs = inputs(tempdir + "a", tempdir + "b"),
                                     output = "task_1.output")
             test_pipeline.run(multiprocess = 10, verbose = 0)
         except ruffus.ruffus_exceptions.error_task_transform_inputs_multiple_args:

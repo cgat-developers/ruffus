@@ -57,25 +57,16 @@ sys.path.insert(0, grandparent_dir)
 module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-# funky code to import by file name
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
+import ruffus
+from ruffus import pipeline_run, pipeline_printout, Pipeline, follows, merge, posttask, split, collate, mkdir, regex, files
 
-try:
-    attrlist = ruffus.__all__
-except AttributeError:
-    attrlist = dir (ruffus)
-for attr in attrlist:
-    if attr[0:2] != "__":
-        globals()[attr] = getattr (ruffus, attr)
 
 import random
 
-script_path = os.path.dirname(os.path.abspath(__file__))
-gene_data_dir ="%s/temp_gene_data_for_intermediate_example" % script_path
-simulation_data_dir =  "%s/temp_simulation_data_for_intermediate_example" % script_path
-working_dir =  "%s/working_dir_for_intermediate_example" % script_path
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0]))
+gene_data_dir ="%s/temp_gene_data_for_intermediate_example" % tempdir
+simulation_data_dir =  "%s/temp_simulation_data_for_intermediate_example" % tempdir
+working_dir =  "%s/working_dir_for_intermediate_example" % tempdir
 
 
 
@@ -239,6 +230,10 @@ def cleanup_simulation_data ():
     for f in glob.glob(os.path.join(working_dir, "*.mean")):
         os.unlink(f)
     try_rmdir(working_dir)
+
+    try_rmdir(tempdir)
+
+
 
 
 #_________________________________________________________________________________________

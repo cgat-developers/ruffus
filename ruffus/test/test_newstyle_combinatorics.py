@@ -8,8 +8,8 @@ from __future__ import print_function
 
 """
 
-
-workdir = 'tmp_test_combinatorics'
+import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0]))
 #sub-1s resolution in system?
 one_second_per_job = None
 
@@ -24,23 +24,9 @@ sys.path.insert(0, grandparent_dir)
 module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-# funky code to import by file name
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
-try:
-    attrlist = ruffus.combinatorics.__all__
-except AttributeError:
-    attrlist = dir (ruffus.combinatorics)
-for attr in attrlist:
-    if attr[0:2] != "__":
-        globals()[attr] = getattr (ruffus.combinatorics, attr)
-
-for attr in "pipeline_run", "pipeline_printout", "suffix", "transform", "split", "merge", "dbdict", "follows", "Pipeline", "formatter", "output_from":
-    globals()[attr] = getattr (ruffus, attr)
-RethrownJobError = ruffus.ruffus_exceptions.RethrownJobError
-RUFFUS_HISTORY_FILE      = ruffus.ruffus_utility.RUFFUS_HISTORY_FILE
-CHECKSUM_FILE_TIMESTAMPS = ruffus.ruffus_utility.CHECKSUM_FILE_TIMESTAMPS
+import ruffus
+from ruffus import pipeline_run, pipeline_printout, Pipeline, formatter, output_from
+from ruffus.ruffus_utility import RUFFUS_HISTORY_FILE
 
 
 import unittest
@@ -261,20 +247,20 @@ def test_combinations_with_replacement3_merged_task( infiles, outfile):
 
 
 def cleanup_tmpdir():
-    os.system('rm -f %s %s' % (os.path.join(workdir, '*'), RUFFUS_HISTORY_FILE))
+    os.system('rm -f %s %s' % (os.path.join(tempdir, '*'), RUFFUS_HISTORY_FILE))
 
 
 test_pipeline1 = Pipeline("test1")
 test_pipeline2 = Pipeline("test2")
 gen_task1 = test_pipeline1.originate(task_func  = generate_initial_files1,
                                      name       = "WOWWWEEE",
-                                     output     = [workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"])
+                                     output     = [tempdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"])
 test_pipeline1.originate(            task_func  = generate_initial_files2,
-                                     output     = [workdir +  "/e_name.tmp1", workdir +  "/f_name.tmp1"])
+                                     output     = [tempdir +  "/e_name.tmp1", tempdir +  "/f_name.tmp1"])
 test_pipeline1.originate(            task_func  = generate_initial_files3,
-                                     output     = [workdir +  "/g_name.tmp1", workdir +  "/h_name.tmp1"])
+                                     output     = [tempdir +  "/g_name.tmp1", tempdir +  "/h_name.tmp1"])
 test_pipeline1.product(              task_func  = test_product_task,
-                                     input      = [workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"],
+                                     input      = [tempdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"],
                                      filter     = formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
                                      input2     = generate_initial_files2,
                                      filter2    = formatter(),
@@ -286,7 +272,7 @@ test_pipeline1.product(              task_func  = test_product_task,
                                                     "{subdir[0][0][0]}"]).follows("WOWWWEEE").follows(gen_task1).follows(generate_initial_files1).follows("generate_initial_files1")
 test_pipeline1.merge(               task_func   = test_product_merged_task,
                                     input       = test_product_task,
-                                    output      = workdir +  "/merged.results")
+                                    output      = tempdir +  "/merged.results")
 test_pipeline1.product(             task_func   = test_product_misspelt_capture_error_task,
                                     input       = gen_task1,
                                     filter      = formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
@@ -311,7 +297,7 @@ test_pipeline1.combinations(task_func   = test_combinations2_task,
                                            "{subdir[0][0][0]}"])
 test_pipeline1.merge(task_func  = test_combinations2_merged_task,
                      input      = test_combinations2_task,
-                     output     = workdir +  "/merged.results")
+                     output     = tempdir +  "/merged.results")
 test_pipeline1.combinations(    task_func   = test_combinations3_task,
                                 input       = output_from("WOWWWEEE"),
                                 filter      = formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
@@ -321,7 +307,7 @@ test_pipeline1.combinations(    task_func   = test_combinations3_task,
                                                "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
                                                "{subdir[0][0][0]}"])
 
-test_pipeline1.merge(test_combinations3_merged_task, test_combinations3_task, workdir +  "/merged.results")
+test_pipeline1.merge(test_combinations3_merged_task, test_combinations3_task, tempdir +  "/merged.results")
 test_pipeline1.permutations(task_func   = test_permutations2_task,
                             input       = output_from("WOWWWEEE"),
                             filter      = formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
@@ -331,7 +317,7 @@ test_pipeline1.permutations(task_func   = test_permutations2_task,
                                           "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
                                           "{subdir[0][0][0]}"])
 
-test_pipeline2.merge(test_permutations2_merged_task, test_permutations2_task, workdir +  "/merged.results")
+test_pipeline2.merge(test_permutations2_merged_task, test_permutations2_task, tempdir +  "/merged.results")
 
 
 
@@ -343,7 +329,7 @@ test_pipeline2.permutations(task_func   = test_permutations3_task,
                             extras      = ["{basename[0][0][0]}{basename[1][0][0]}{basename[2][0][0]}",       # extra: prefices
                                           "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
                                           "{subdir[0][0][0]}"])
-test_pipeline2.merge(test_permutations3_merged_task, test_permutations3_task, workdir +  "/merged.results")
+test_pipeline2.merge(test_permutations3_merged_task, test_permutations3_task, tempdir +  "/merged.results")
 test_pipeline2.combinations_with_replacement(test_combinations_with_replacement2_task,
                                             input = output_from("WOWWWEEE"),
                                             filter = formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
@@ -353,7 +339,7 @@ test_pipeline2.combinations_with_replacement(test_combinations_with_replacement2
                                             "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
                                             "{subdir[0][0][0]}"])
 test_pipeline2.merge(test_combinations_with_replacement2_merged_task,
-    test_combinations_with_replacement2_task, workdir +  "/merged.results")
+    test_combinations_with_replacement2_task, tempdir +  "/merged.results")
 test_pipeline2.combinations_with_replacement(   task_func   = test_combinations_with_replacement3_task,
                                                 input       = output_from("WOWWWEEE"),
                                                 filter      = formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
@@ -363,13 +349,13 @@ test_pipeline2.combinations_with_replacement(   task_func   = test_combinations_
                                                               "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
                                                               "{subdir[0][0][0]}"])
 test_pipeline2.merge(test_combinations_with_replacement3_merged_task,
-    test_combinations_with_replacement3_task, workdir +  "/merged.results")
+    test_combinations_with_replacement3_task, tempdir +  "/merged.results")
 
 
 class TestCombinatorics(unittest.TestCase):
     def setUp(self):
         try:
-            os.mkdir(workdir)
+            os.mkdir(tempdir)
         except OSError:
             pass
 
@@ -383,17 +369,17 @@ class TestCombinatorics(unittest.TestCase):
         s = StringIO()
         test_pipeline2.printout(s, [test_product_merged_task], verbose=5, wrap_width = 10000)
         self.assertTrue(re.search('Job needs update:.*Missing files.*'
-                      '\[.*tmp_test_combinatorics/a_name.tmp1, '
-                      '.*tmp_test_combinatorics/e_name.tmp1, '
-                      '.*tmp_test_combinatorics/h_name.tmp1, '
-                      '.*tmp_test_combinatorics/a_name.e_name.h_name.tmp2\]', s.getvalue(), re.DOTALL))
+                      '\[.*{tempdir}/a_name.tmp1, '
+                      '.*{tempdir}/e_name.tmp1, '
+                      '.*{tempdir}/h_name.tmp1, '
+                      '.*{tempdir}/a_name.e_name.h_name.tmp2\]'.format(tempdir=tempdir), s.getvalue(), re.DOTALL))
 
     def test_product_run(self):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         test_pipeline2.run([test_product_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
-        with open(workdir +  "/merged.results") as oo:
+        with open(tempdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                          "aeg,aeh,afg,afh,beg,beh,bfg,bfh,ceg,ceh,cfg,cfh,deg,deh,dfg,dfh,")
 
@@ -449,9 +435,9 @@ class TestCombinatorics(unittest.TestCase):
         s = StringIO()
         test_pipeline1.printout(s, [test_combinations2_merged_task], verbose=5, wrap_width = 10000)
         self.assertTrue(re.search('Job needs update:.*Missing files.*'
-                      '\[.*tmp_test_combinatorics/a_name.tmp1, '
-                        '.*tmp_test_combinatorics/b_name.tmp1, '
-                        '.*tmp_test_combinatorics/a_name.b_name.tmp2\]', s.getvalue(), re.DOTALL))
+                      '\[.*{tempdir}/a_name.tmp1, '
+                        '.*{tempdir}/b_name.tmp1, '
+                        '.*{tempdir}/a_name.b_name.tmp2\]'.format(tempdir=tempdir), s.getvalue(), re.DOTALL))
 
 
     def test_combinations2_run(self):
@@ -459,7 +445,7 @@ class TestCombinatorics(unittest.TestCase):
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         test_pipeline2.run([test_combinations2_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
-        with open(workdir +  "/merged.results") as oo:
+        with open(tempdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                               'ab,ac,ad,bc,bd,cd,')
 
@@ -474,17 +460,17 @@ class TestCombinatorics(unittest.TestCase):
         s = StringIO()
         test_pipeline2.printout(s, [test_combinations3_merged_task], verbose=5, wrap_width = 10000)
         self.assertTrue(re.search(
-                       '\[.*tmp_test_combinatorics/a_name.tmp1, '
-                       '.*tmp_test_combinatorics/b_name.tmp1, '
-                       '.*tmp_test_combinatorics/c_name.tmp1, '
-                       '.*tmp_test_combinatorics/a_name.b_name.c_name.tmp2\]', s.getvalue()))
+                       '\[.*{tempdir}/a_name.tmp1, '
+                       '.*{tempdir}/b_name.tmp1, '
+                       '.*{tempdir}/c_name.tmp1, '
+                       '.*{tempdir}/a_name.b_name.c_name.tmp2\]'.format(tempdir=tempdir), s.getvalue()))
 
     def test_combinations3_run(self):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         test_pipeline2.run([test_combinations3_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
-        with open(workdir +  "/merged.results") as oo:
+        with open(tempdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                          "abc,abd,acd,bcd,")
 
@@ -499,16 +485,16 @@ class TestCombinatorics(unittest.TestCase):
 
         s = StringIO()
         test_pipeline2.printout(s, [test_permutations2_merged_task], verbose=5, wrap_width = 10000)
-        self.assertTrue(re.search('\[.*tmp_test_combinatorics/a_name.tmp1, '
-                      '.*tmp_test_combinatorics/b_name.tmp1, '
-                      '.*tmp_test_combinatorics/a_name.b_name.tmp2\]', s.getvalue()))
+        self.assertTrue(re.search('\[.*{tempdir}/a_name.tmp1, '
+                      '.*{tempdir}/b_name.tmp1, '
+                      '.*{tempdir}/a_name.b_name.tmp2\]'.format(tempdir=tempdir), s.getvalue()))
 
     def test_permutations2_run(self):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         test_pipeline2.run([test_permutations2_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
-        with open(workdir +  "/merged.results") as oo:
+        with open(tempdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                          "ab,ac,ad,ba,bc,bd,ca,cb,cd,da,db,dc,")
 
@@ -522,17 +508,17 @@ class TestCombinatorics(unittest.TestCase):
 
         s = StringIO()
         test_pipeline2.printout(s, [test_permutations3_merged_task], verbose=5, wrap_width = 10000)
-        self.assertTrue(re.search('\[.*tmp_test_combinatorics/a_name.tmp1, '
-                       '.*tmp_test_combinatorics/b_name.tmp1, '
-                       '.*tmp_test_combinatorics/c_name.tmp1, '
-                       '.*tmp_test_combinatorics/a_name.b_name.c_name.tmp2\]', s.getvalue()))
+        self.assertTrue(re.search('\[.*{tempdir}/a_name.tmp1, '
+                       '.*{tempdir}/b_name.tmp1, '
+                       '.*{tempdir}/c_name.tmp1, '
+                       '.*{tempdir}/a_name.b_name.c_name.tmp2\]'.format(tempdir=tempdir), s.getvalue()))
 
     def test_permutations3_run(self):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         test_pipeline2.run([test_permutations3_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
-        with open(workdir +  "/merged.results") as oo:
+        with open(tempdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                          'abc,abd,acb,acd,adb,adc,bac,bad,bca,bcd,bda,bdc,cab,cad,cba,cbd,cda,cdb,dab,dac,dba,dbc,dca,dcb,')
 
@@ -547,16 +533,16 @@ class TestCombinatorics(unittest.TestCase):
 
         s = StringIO()
         test_pipeline2.printout(s, [test_combinations_with_replacement2_merged_task], verbose=5, wrap_width = 10000)
-        self.assertTrue(re.search('\[.*tmp_test_combinatorics/a_name.tmp1, '
-                      '.*tmp_test_combinatorics/b_name.tmp1, '
-                      '.*tmp_test_combinatorics/a_name.b_name.tmp2\]', s.getvalue()))
+        self.assertTrue(re.search('\[.*{tempdir}/a_name.tmp1, '
+                      '.*{tempdir}/b_name.tmp1, '
+                      '.*{tempdir}/a_name.b_name.tmp2\]'.format(tempdir=tempdir), s.getvalue()))
 
     def test_combinations_with_replacement2_run(self):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         test_pipeline2.run([test_combinations_with_replacement2_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
-        with open(workdir +  "/merged.results") as oo:
+        with open(tempdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                          "aa,ab,ac,ad,bb,bc,bd,cc,cd,dd,")
 
@@ -570,17 +556,17 @@ class TestCombinatorics(unittest.TestCase):
 
         s = StringIO()
         test_pipeline2.printout(s, [test_combinations_with_replacement3_merged_task], verbose=5, wrap_width = 10000)
-        self.assertTrue(re.search('\[.*tmp_test_combinatorics/a_name.tmp1, '
-                       '.*tmp_test_combinatorics/b_name.tmp1, '
-                       '.*tmp_test_combinatorics/c_name.tmp1, '
-                       '.*tmp_test_combinatorics/a_name.b_name.c_name.tmp2\]', s.getvalue()))
+        self.assertTrue(re.search('\[.*{tempdir}/a_name.tmp1, '
+                       '.*{tempdir}/b_name.tmp1, '
+                       '.*{tempdir}/c_name.tmp1, '
+                       '.*{tempdir}/a_name.b_name.c_name.tmp2\]'.format(tempdir=tempdir), s.getvalue()))
 
     def test_combinations_with_replacement3_run(self):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         test_pipeline2.run([test_combinations_with_replacement3_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job)
-        with open(workdir +  "/merged.results") as oo:
+        with open(tempdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                          'aaa,aab,aac,aad,abb,abc,abd,acc,acd,add,bbb,bbc,bbd,bcc,bcd,bdd,ccc,ccd,cdd,ddd,')
 
@@ -590,7 +576,7 @@ class TestCombinatorics(unittest.TestCase):
     #   cleanup
     #___________________________________________________________________________
     def tearDown(self):
-        shutil.rmtree(workdir)
+        shutil.rmtree(tempdir)
 
 
 

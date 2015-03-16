@@ -9,6 +9,7 @@ from __future__ import print_function
 """
 
 import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
 import sys
 
 # add grandparent to search path for testing
@@ -19,19 +20,12 @@ sys.path.insert(0, grandparent_dir)
 module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-# funky code to import by file name
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
+import ruffus
+from ruffus import pipeline_run, pipeline_printout, Pipeline, follows, merge, posttask, split, collate, mkdir, regex, files_re, combine
 
-try:
-    attrlist = ruffus.__all__
-except AttributeError:
-    attrlist = dir (ruffus)
-for attr in attrlist:
-    if attr[0:2] != "__":
-        globals()[attr] = getattr (ruffus, attr)
-
+from ruffus.ruffus_exceptions import RethrownJobError
+from ruffus.ruffus_utility import CHECKSUM_FILE_TIMESTAMPS
+from ruffus.combinatorics import *
 
 
 
@@ -75,7 +69,6 @@ species_list["reptiles"].append("crocodile" )
 species_list["fish"   ].append("pufferfish")
 
 
-tempdir = "temp_filesre_combine/"
 def do_write(file_name, what):
     with open(file_name, "a") as oo:
         oo.write(what)

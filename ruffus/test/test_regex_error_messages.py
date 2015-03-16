@@ -27,7 +27,8 @@ from __future__ import print_function
         SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 """
-workdir = 'tmp_test_regex_error_messages'
+import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
 #sub-1s resolution in system?
 one_second_per_job = None
 parallelism = 2
@@ -67,7 +68,7 @@ except:
 #
 #   generate_initial_files1
 #___________________________________________________________________________
-@originate([workdir +  "/" + prefix + "_name.tmp1" for prefix in "abcdefghi"])
+@originate([tempdir +  prefix + "_name.tmp1" for prefix in "abcdefghi"])
 def generate_initial_files1(out_name):
     with open(out_name, 'w') as outfile:
         pass
@@ -210,7 +211,7 @@ def test_regex_out_of_range_regex_reference_error_task(infiles, outfile,
 
 
 def cleanup_tmpdir():
-    os.system('rm -f %s %s' % (os.path.join(workdir, '*'), RUFFUS_HISTORY_FILE))
+    os.system('rm -f %s %s' % (os.path.join(tempdir, '*'), RUFFUS_HISTORY_FILE))
 
 class _AssertRaisesContext_27(object):
     """A context manager used to implement TestCase.assertRaises* methods.
@@ -253,7 +254,7 @@ class _AssertRaisesContext_27(object):
 class Test_regex_error_messages(unittest.TestCase):
     def setUp(self):
         try:
-            os.mkdir(workdir)
+            os.mkdir(tempdir)
         except OSError:
             pass
         if sys.hexversion < 0x03000000:
@@ -296,7 +297,7 @@ class Test_regex_error_messages(unittest.TestCase):
 
         s = StringIO()
         pipeline_printout(s, [test_regex_task], verbose=5, wrap_width = 10000, pipeline= "main")
-        self.assertTrue(re.search('Missing files.*\[tmp_test_regex_error_messages/a_name.tmp1, tmp_test_regex_error_messages/a_name.tmp2', s.getvalue(), re.DOTALL))
+        self.assertTrue(re.search('Missing files.*\[{tempdir}a_name.tmp1, {tempdir}a_name.tmp2'.format(tempdir=tempdir), s.getvalue(), re.DOTALL))
 
 
     def test_regex_run(self):
@@ -314,7 +315,7 @@ class Test_regex_error_messages(unittest.TestCase):
         cleanup_tmpdir()
         s = StringIO()
         pipeline_printout(s, [test_regex_unmatched_task], verbose=5, wrap_width = 10000, pipeline= "main")
-        self.assertIn("Warning: File match failure: File 'tmp_test_regex_error_messages/a_name.tmp1' does not match regex", s.getvalue())
+        self.assertIn("Warning: File match failure: File '{tempdir}a_name.tmp1' does not match regex".format(tempdir=tempdir), s.getvalue())
 
     def test_regex_unmatched_run(self):
         """Run transform(...,regex()...)"""
@@ -332,7 +333,7 @@ class Test_regex_error_messages(unittest.TestCase):
 
         s = StringIO()
         pipeline_printout(s, [test_suffix_task], verbose=5, wrap_width = 10000, pipeline= "main")
-        self.assertTrue(re.search('Missing files.*\[tmp_test_regex_error_messages/a_name.tmp1, tmp_test_regex_error_messages/a_name.tmp2', s.getvalue(), re.DOTALL))
+        self.assertTrue(re.search('Missing files.*\[{tempdir}a_name.tmp1, {tempdir}a_name.tmp2'.format(tempdir=tempdir), s.getvalue(), re.DOTALL))
 
     def test_suffix_run(self):
         """Run transform(...,suffix()...)"""
@@ -367,7 +368,7 @@ class Test_regex_error_messages(unittest.TestCase):
         cleanup_tmpdir()
         s = StringIO()
         pipeline_printout(s, [test_suffix_unmatched_task2], verbose=5, wrap_width = 10000, pipeline= "main")
-        self.assertIn("Warning: File match failure: File 'tmp_test_regex_error_messages/a_name.tmp1' does not match suffix", s.getvalue())
+        self.assertIn("Warning: File match failure: File '{tempdir}a_name.tmp1' does not match suffix".format(tempdir=tempdir), s.getvalue())
 
     def test_suffix_unmatched_run2(self):
         """Run transform(...,suffix()...)"""
@@ -436,7 +437,7 @@ class Test_regex_error_messages(unittest.TestCase):
     #___________________________________________________________________________
     def tearDown(self):
         pass
-        shutil.rmtree(workdir)
+        shutil.rmtree(tempdir)
 
 
 

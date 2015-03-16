@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 from __future__ import print_function
-################################################################################
-#
-#   test_task_file_dependencies.py
-#
-#################################################################################
 """
     test_task_file_dependencies.py
 """
@@ -24,13 +19,10 @@ module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
 # funky code to import by file name
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
-for attr in "parallel", "pipeline_run", "Pipeline", "task":
-    globals()[attr] = getattr (ruffus, attr)
-open_job_history                = ruffus.file_name_parameters.open_job_history
-CHECKSUM_HISTORY_TIMESTAMPS     = ruffus.ruffus_utility.CHECKSUM_HISTORY_TIMESTAMPS
+import ruffus
+from ruffus import parallel, pipeline_run, Pipeline, task
+from ruffus.file_name_parameters import open_job_history
+from ruffus.ruffus_utility import CHECKSUM_HISTORY_TIMESTAMPS
 
 
 import unittest

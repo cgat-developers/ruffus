@@ -2,14 +2,19 @@
 from __future__ import print_function
 """
 
-    test_tasks.py
+    test_runtime_data.py
+
+        Tests having inputs depend on a run time parameter
+        (named element in the dict runtime_data passed to pipeline_run)
 
 """
 
-runtime_files = ["a.3"]
 
 import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
+runtime_files = [tempdir + "a.3"]
 import sys
+
 
 # add grandparent to search path for testing
 grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -21,16 +26,9 @@ module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 # funky code to import by file name
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
+import ruffus
+from ruffus import pipeline_run, pipeline_printout, Pipeline, originate, transform, suffix, follows, runtime_parameter, mkdir
 
-try:
-    attrlist = ruffus.__all__
-except AttributeError:
-    attrlist = dir (ruffus)
-for attr in attrlist:
-    if attr[0:2] != "__":
-        globals()[attr] = getattr (ruffus, attr)
 
 
 
@@ -70,7 +68,8 @@ import json
 #
 #    task1
 #
-@originate(['a.1'] + runtime_files)
+@mkdir(tempdir)
+@originate([tempdir + 'a.1'] + runtime_files)
 def task1(outfile):
     """
     First task
@@ -85,6 +84,7 @@ def task1(outfile):
 #
 #    task2
 #
+@mkdir(tempdir)
 @transform(task1, suffix(".1"), ".2")
 def task2(infile, outfile):
     """
@@ -148,11 +148,13 @@ def task4(infile, outfile):
 class Test_ruffus(unittest.TestCase):
     def setUp(self):
         for f in ["a.1", "a.2","a.3","a.4"]:
+            f = os.path.join(tempdir, f)
             if os.path.exists(f):
                 os.unlink(f)
 
     def tearDown(self):
         for f in ["a.1", "a.2","a.3","a.4"]:
+            f = os.path.join(tempdir, f)
             if os.path.exists(f):
                 os.unlink(f)
             else:
@@ -168,7 +170,7 @@ class Test_ruffus(unittest.TestCase):
 
         test_pipeline = Pipeline("test")
         test_pipeline.originate(task_func = task1,
-                                output = ['a.1'] + runtime_files)
+                                output = [tempdir + 'a.1'] + runtime_files)
         test_pipeline.transform(task2, task1, suffix(".1"), ".2")
         test_pipeline.transform(task_func = task3,
                                    input = task2,

@@ -18,6 +18,7 @@ from __future__ import print_function
 
 
 import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
 import sys
 
 # add grandparent to search path for testing
@@ -27,14 +28,8 @@ sys.path.insert(0, grandparent_dir)
 # module name = script name without extension
 module_name = os.path.splitext(os.path.basename(__file__))[0]
 
-
-# funky code to import by file name
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ruffus_name = os.path.basename(parent_dir)
-ruffus = __import__ (ruffus_name)
-for attr in "files", "transform", "regex", "pipeline_run", "Pipeline":
-    globals()[attr] = getattr (ruffus, attr)
-
+from ruffus import transform, regex, pipeline_run, Pipeline, originate, mkdir
+import ruffus
 print("    Ruffus Version = ", ruffus.__version__)
 
 
@@ -57,11 +52,10 @@ print("    Ruffus Version = ", ruffus.__version__)
 
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-@files(None, "a")
-def task_1 (i, o):
-    for f in o:
-        with open(f, 'w') as oo:
-            pass
+@mkdir(tempdir)
+@originate(tempdir + "a")
+def task_1 (o):
+    open(o, 'w').close()
 
 @transform(task_1, regex("b"), "task_2.output")
 def task_2 (i, o):
@@ -98,8 +92,9 @@ class Test_task_mkdir(unittest.TestCase):
         """
         """
         for d in ['a']:
-            fullpath = os.path.join(os.path.dirname(__file__), d)
+            fullpath = os.path.join(os.path.dirname(__file__), tempdir + d)
             os.unlink(fullpath)
+        os.rmdir(tempdir)
 
 
     def test_no_re_match (self):
@@ -113,7 +108,7 @@ class Test_task_mkdir(unittest.TestCase):
     def test_newstyle_no_re_match (self):
 
         test_pipeline = Pipeline("test")
-        test_pipeline.files(task_1, None, "a")
+        test_pipeline.originate(task_1, tempdir + "a").mkdir(tempdir)
         test_pipeline.transform(task_2, task_1, regex("b"), "task_2.output")
 
 

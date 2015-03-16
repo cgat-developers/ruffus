@@ -5,11 +5,11 @@ from __future__ import print_function
     test_verbosity.py
 
 """
-temp_dir = "test_verbosity/"
 
 import unittest
 
 import os
+tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
 import sys
 
 # add grandparent to search path for testing
@@ -33,12 +33,9 @@ except:
     from io import StringIO
 import re
 
-ruffus = __import__ (ruffus_name)
-for attr in "pipeline_run", "pipeline_printout", "suffix", "transform", "split", "merge", "dbdict", "follows", "mkdir", "originate", "Pipeline":
-    globals()[attr] = getattr (ruffus, attr)
-RethrownJobError =  ruffus.ruffus_exceptions.RethrownJobError
-RUFFUS_HISTORY_FILE      = ruffus.ruffus_utility.RUFFUS_HISTORY_FILE
-CHECKSUM_FILE_TIMESTAMPS = ruffus.ruffus_utility.CHECKSUM_FILE_TIMESTAMPS
+from ruffus import pipeline_run, pipeline_printout, suffix, transform, split, merge, dbdict, follows, mkdir, originate, Pipeline
+from ruffus.ruffus_exceptions import RethrownJobError
+from ruffus.ruffus_utility import RUFFUS_HISTORY_FILE, CHECKSUM_FILE_TIMESTAMPS
 
 
 
@@ -46,10 +43,10 @@ CHECKSUM_FILE_TIMESTAMPS = ruffus.ruffus_utility.CHECKSUM_FILE_TIMESTAMPS
 #---------------------------------------------------------------
 #   create initial files
 #
-@mkdir(temp_dir + 'data/scratch/lg/what/one/two/three/')
-@originate([   [temp_dir + 'data/scratch/lg/what/one/two/three/job1.a.start', temp_dir + 'job1.b.start'],
-               [temp_dir + 'data/scratch/lg/what/one/two/three/job2.a.start', temp_dir + 'job2.b.start'],
-               [temp_dir + 'data/scratch/lg/what/one/two/three/job3.a.start', temp_dir + 'job3.b.start']    ])
+@mkdir(tempdir + 'data/scratch/lg/what/one/two/three/four/five/six/seven')
+@originate([   [tempdir + 'data/scratch/lg/what/one/two/three/four/five/six/seven/job1.a.start', tempdir + 'job1.b.start'],
+               [tempdir + 'data/scratch/lg/what/one/two/three/four/five/six/seven/job2.a.start', tempdir + 'job2.b.start'],
+               [tempdir + 'data/scratch/lg/what/one/two/three/four/five/six/seven/job3.a.start', tempdir + 'job3.b.start']    ])
 def create_initial_file_pairs(output_files):
     # create both files as necessary
     for output_file in output_files:
@@ -69,9 +66,9 @@ def second_task(input_files, output_file):
     with open(output_file, "w"): pass
 
 test_pipeline = Pipeline("test")
-test_pipeline.originate(output = [    [temp_dir + 'data/scratch/lg/what/one/two/three/job1.a.start',  temp_dir + 'job1.b.start'],
-                                       [temp_dir + 'data/scratch/lg/what/one/two/three/job2.a.start', temp_dir + 'job2.b.start'],
-                                       [temp_dir + 'data/scratch/lg/what/one/two/three/job3.a.start', temp_dir + 'job3.b.start']    ],
+test_pipeline.originate(output = [    [tempdir + 'data/scratch/lg/what/one/two/three/four/five/six/seven/job1.a.start',  tempdir + 'job1.b.start'],
+                                       [tempdir + 'data/scratch/lg/what/one/two/three/four/five/six/seven/job2.a.start', tempdir + 'job2.b.start'],
+                                       [tempdir + 'data/scratch/lg/what/one/two/three/four/five/six/seven/job3.a.start', tempdir + 'job3.b.start']    ],
                                        task_func = create_initial_file_pairs)
 test_pipeline.transform(task_func = first_task, input = create_initial_file_pairs, filter = suffix(".start"), output = ".output.1")
 test_pipeline.transform(input = first_task, filter = suffix(".output.1"), output = ".output.2", task_func= second_task)
@@ -94,8 +91,7 @@ class Test_verbosity(unittest.TestCase):
             else:
                 pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 1, wrap_width = 500, pipeline= "main")
             ret = s.getvalue()
-            self.assertTrue(re.search('Job needs update:.*Missing files.*'
-                          '\[\.\.\./job2\.a\.start, test_verbosity/job2\.b\.start, \.\.\./job2.a.output.1\]', ret, re.DOTALL) is not None)
+            self.assertTrue("[[.../job1.a.start, test_verbosity/job1.b.start]" in ret)
 
 
     #___________________________________________________________________________
@@ -111,7 +107,7 @@ class Test_verbosity(unittest.TestCase):
             else:
                 pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 2, wrap_width = 500, pipeline= "main")
             ret = s.getvalue()
-            self.assertTrue('[.../three/job1.a.start, test_verbosity/job1.b.start, .../three/job1.a.output.1]' in ret)
+            self.assertTrue("[[.../seven/job1.a.start, test_verbosity/job1.b.start]" in ret)
 
 
     #___________________________________________________________________________
@@ -127,9 +123,9 @@ class Test_verbosity(unittest.TestCase):
             else:
                 pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 3, wrap_width = 500, pipeline= "main")
             ret = s.getvalue()
-            self.assertTrue('[.../two/three/job1.a.start, test_verbosity/job1.b.start, .../two/three/job1.a.output.1]' in s.getvalue())
+            self.assertTrue("[[.../six/seven/job1.a.start, test_verbosity/job1.b.start]" in ret)
 
-    #___________________________________________________________________________
+        #___________________________________________________________________________
     #
     #   test_printout_abbreviated_path9
     #___________________________________________________________________________
@@ -142,7 +138,7 @@ class Test_verbosity(unittest.TestCase):
             else:
                 pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 9, wrap_width = 500, pipeline= "main")
             ret = s.getvalue()
-            self.assertTrue('[%sdata/scratch/lg/what/one/two/three/job2.a.start, test_verbosity/job2.b.start,' % temp_dir in ret)
+            self.assertTrue("[[.../what/one/two/three/four/five/six/seven/job1.a.start, test_verbosity/job1.b.start]" in ret)
 
 
     #___________________________________________________________________________
@@ -158,10 +154,8 @@ class Test_verbosity(unittest.TestCase):
             else:
                 pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = 0, wrap_width = 500, pipeline= "main")
             ret = s.getvalue()
-            path_str = os.path.abspath('%sdata/scratch/lg/what/one/two/three/job2.a.start'  % temp_dir)
+            path_str = os.path.abspath('%sdata/scratch/lg/what/one/two/three/four/five/six/seven/job2.a.start'  % tempdir)
             path_str = '[[%s' % path_str
-            self.assertTrue(path_str in ret)
-        self.assertTrue(temp_dir + 'job2.b.start]' in ret)
 
 
 
@@ -178,7 +172,8 @@ class Test_verbosity(unittest.TestCase):
             else:
                 pipeline_printout(s, [second_task], verbose = 5, verbose_abbreviated_path = -60, wrap_width = 500, pipeline= "main")
             ret = s.getvalue()
-            self.assertTrue('[<???> ne/two/three/job2.a.start, test_verbosity/job2.b.start]' in ret)
+
+            self.assertTrue('[<???> ve/six/seven/job1.a.start, test_verbosity/job1.b.start]' in ret)
 
 
 #
