@@ -18,7 +18,7 @@ Unit tests
     #. output_dir for @mkdir
     #. When are things defined / linked up
     #. When can we join up Pipelines / tasks / set_input()?
-    #.  Sub pipeline
+    #. pipeline in separate module
     #.  Whether setup occurs ``pipeline_run()`` where ``target_tasks`` and ``forcedtorun_tasks`` are in different linked or unlinked pipelines
     #. name lookup
     #. Task (dependency) parsing inside @transform, pipeline.transform(input = , add_inputs, replace_inputs =), pipeline.split(..., output=)
@@ -27,6 +27,7 @@ Unit tests
     #. ``Pipeline.clone()``
     #. ``Task.set_input()``
     #. ``@product`` ``set_input`` should take (``input``, ``input2``...)
+    #. bioinformatics pipelines
 
 
 
