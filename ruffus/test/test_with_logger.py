@@ -95,6 +95,39 @@ args["maxBytes"]=20000
 args["backupCount"]=10
 args["formatter"]="%(asctime)s - %(name)s - %(levelname)6s - %(message)s"
 
+if sys.version_info.major == 3 and sys.version_info.minor == 2 and __name__ != "__main__":
+    print (
+"""
+    888888888888888888888888888888888888888888888888888888888888888888888888888
+
+        ERROR: 
+
+    This unit test can not be run as a python module (python -m unittest xxx) 
+    due to the interaction of bugs / misfeatures in the multiprocessing module
+    and python3.2
+
+        See http://bugs.python.org/issue15914 
+            http://bugs.python.org/issue9573
+
+    In detail:
+
+    Making a shared logger calls code within the multiprocessing module.
+    This in turn tries to import the hmac module inside deliver_challenge(). 
+    This hangs if it happens after a module fork.
+
+    The only way around this is to only make calls to multiprocessing 
+    (i.e. make_shared_logger_and_proxy(...)) after the import phase of 
+    module loading.
+
+    This python bug will be triggered if your make_shared_logger_and_proxy() 
+    call is at global scope in a module (i.e. not __main__) and only for 
+    python version 3.2
+
+    888888888888888888888888888888888888888888888888888888888888888888888888888
+
+""")
+    sys.exit()
+
 (logger_proxy,
  logging_mutex) = make_shared_logger_and_proxy (setup_std_shared_logger,
                                                 "my_logger", args)
