@@ -762,6 +762,8 @@ ruffus/test/manual_test_ctrl_c_exceptions.py
 ruffus/test/manual_test_drmaa.py
 ruffus/test/play_with_colours.py
 ruffus/test/qrsh_workaround.py
+ruffus/test/run_all_unit_tests.cmd
+ruffus/test/run_all_unit_tests3.cmd
 ruffus/test/simpler.py
 ruffus/test/simpler_with_shared_logging.py
 ruffus/test/test_N_x_M_and_collate.py
@@ -797,6 +799,7 @@ ruffus/test/test_split_and_combine.py
 ruffus/test/test_split_regex_and_collate.py
 ruffus/test/test_split_subdivide_checkpointing.py
 ruffus/test/test_subpipeline.py
+ruffus/test/test_subpipeline_cmdline.py
 ruffus/test/test_suffix_output_dir.py
 ruffus/test/test_task_file_dependencies.py
 ruffus/test/test_task_misc.py

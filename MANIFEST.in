@@ -1,3 +1,6 @@
 include *.TXT
 recursive-include doc *
 recursive-include ruffus *.py
+include ruffus/test/run_all_unit_tests.cmd 
+include ruffus/test/run_all_unit_tests3.cmd
+include README.rst
