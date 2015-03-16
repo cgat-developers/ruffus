@@ -9,6 +9,12 @@ from __future__ import print_function
 
 import os
 tempdir = os.path.splitext(__file__)[0] + "/"
+input_file_names = [os.path.join(tempdir, "%d.1"  % fn) for fn in range(20)]
+final_file_name = os.path.join(tempdir, "final.result")
+try:
+    os.makedirs(tempdir)
+except:
+    pass
 
 
 import sys
@@ -24,7 +30,7 @@ module_name = os.path.splitext(os.path.basename(__file__))[0]
 # funky code to import by file name
 import ruffus
 from ruffus import *
-
+from ruffus.proxy_logger import *
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   imports
@@ -46,13 +52,13 @@ import shutil
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-def write_input_output_filenames_to_output(infiles, outfile):
+def write_input_output_filenames_to_output(infiles, outfile, logger_proxy, logging_mutex):
     """
     Helper function: Writes input output file names and input contents to outfile
     """
     with open(outfile, "w") as oo:
         # save file name strings before we turn infiles into a list
-        fn_str = "%s -> %s\n" % (infiles, outfile)
+        fn_str = "%s -> %s" % (infiles, outfile)
 
         # None = []
         if infiles is None:
@@ -69,50 +75,70 @@ def write_input_output_filenames_to_output(infiles, outfile):
                     oo.write(line)
                     max_white_space = max([max_white_space, len(line) - len(line.lstrip())])
         # add extra spaces before filenames
-        oo.write(" " * (max_white_space + 2) + fn_str)
+        oo.write(" " * (max_white_space + 2) + fn_str + "\n")
 
+    with logging_mutex:
+        logger_proxy.info(fn_str)
+
+
+
+#
+#   Make logger
+#
+#import logging
+args=dict()
+args["file_name"] = os.path.join(tempdir, module_name + ".log")
+args["level"] = logging.DEBUG
+args["rotating"] = True
+args["maxBytes"]=20000
+args["backupCount"]=10
+args["formatter"]="%(asctime)s - %(name)s - %(levelname)6s - %(message)s"
+
+(logger_proxy,
+ logging_mutex) = make_shared_logger_and_proxy (setup_std_shared_logger,
+                                                "my_logger", args)
 
 
 
 #
 #    task1
 #
-@originate(tempdir + 'a.1')
-def task1(outfile):
-    write_input_output_filenames_to_output(None, outfile)
+@originate(input_file_names, logger_proxy, logging_mutex)
+def task1(outfile, logger_proxy, logging_mutex):
+    write_input_output_filenames_to_output(None, outfile, logger_proxy, logging_mutex)
 
 
 
 #
 #    task2
 #
-@transform(task1, suffix(".1"), ".2")
-def task2(infile, outfile):
-    write_input_output_filenames_to_output(infile, outfile)
+@transform(task1, suffix(".1"), ".2", logger_proxy, logging_mutex)
+def task2(infile, outfile, logger_proxy, logging_mutex):
+    write_input_output_filenames_to_output(infile, outfile, logger_proxy, logging_mutex)
 
 
 
 #
 #    task3
 #
-@transform(task2, suffix(".2"), ".3")
-def task3(infile, outfile):
+@transform(task2, suffix(".2"), ".3", logger_proxy, logging_mutex)
+def task3(infile, outfile, logger_proxy, logging_mutex):
     """
     Third task
     """
-    write_input_output_filenames_to_output(infile, outfile)
+    write_input_output_filenames_to_output(infile, outfile, logger_proxy, logging_mutex)
 
 
 
 #
 #    task4
 #
-@transform(task3, suffix(".3"), ".4")
-def task4(infile, outfile):
+@merge(task3, final_file_name, logger_proxy, logging_mutex)
+def task4(infile, outfile, logger_proxy, logging_mutex):
     """
     Fourth task
     """
-    write_input_output_filenames_to_output(infile, outfile)
+    write_input_output_filenames_to_output(infile, outfile, logger_proxy, logging_mutex)
 
 
 
@@ -129,21 +155,22 @@ class Test_ruffus(unittest.TestCase):
 
     def tearDown(self):
         try:
-            shutil.rmtree(tempdir)
+            #shutil.rmtree(tempdir)
             #sys.stderr.write("    Removed %s\n" % tempdir)
+            pass
         except:
             pass
 
     def test_simpler (self):
-        pipeline_run(multiprocess = 50, verbose = 0, pipeline= "main")
+        pipeline_run(multiprocess = 500, verbose = 0, pipeline= "main")
 
     def test_newstyle_simpler (self):
         test_pipeline = Pipeline("test")
-        test_pipeline.originate(task1, tempdir + 'a.1')
-        test_pipeline.transform(task2, task1, suffix(".1"), ".2")
-        test_pipeline.transform(task3, task2, suffix(".2"), ".3")
-        test_pipeline.transform(task4, task3, suffix(".3"), ".4")
-        test_pipeline.run(multiprocess = 50, verbose = 0)
+        test_pipeline.originate(task1, input_file_names, extras = [logger_proxy, logging_mutex])
+        test_pipeline.transform(task2, task1, suffix(".1"), ".2", extras = [logger_proxy, logging_mutex])
+        test_pipeline.transform(task3, task2, suffix(".2"), ".3", extras = [logger_proxy, logging_mutex])
+        test_pipeline.merge(task4, task3, final_file_name, extras = [logger_proxy, logging_mutex])
+        test_pipeline.run(multiprocess = 500, verbose = 0)
 
 
 
