@@ -155,7 +155,7 @@ class Test_ruffus(unittest.TestCase):
 
     def tearDown(self):
         try:
-            #shutil.rmtree(tempdir)
+            shutil.rmtree(tempdir)
             #sys.stderr.write("    Removed %s\n" % tempdir)
             pass
         except:
