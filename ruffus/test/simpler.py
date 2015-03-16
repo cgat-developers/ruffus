@@ -2,94 +2,28 @@
 from __future__ import print_function
 """
 
-    test_tasks.py
+    test_simpler.py
 
 """
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   options
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-from optparse import OptionParser
-import sys, os
-import os.path
-try:
-    import StringIO as io
-except:
-    import io as io
-
-# add self to search path for testing
-exe_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-sys.path.insert(0,os.path.abspath(os.path.join(exe_path,"..", "..")))
-if __name__ == '__main__':
-    module_name = os.path.split(sys.argv[0])[1]
-    module_name = os.path.splitext(module_name)[0];
-else:
-    module_name = __name__
+import os
+tempdir = os.path.splitext(__file__)[0] + "/"
 
 
+import sys
+
+# add grandparent to search path for testing
+grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, grandparent_dir)
+
+# module name = script name without extension
+module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-parser = OptionParser(version="%prog 1.0")
-parser.add_option("-t", "--target_tasks", dest="target_tasks",
-                  action="append",
-                  default = list(),
-                  metavar="JOBNAME",
-                  type="string",
-                  help="Target task(s) of pipeline.")
-parser.add_option("-f", "--forced_tasks", dest="forced_tasks",
-                  action="append",
-                  default = list(),
-                  metavar="JOBNAME",
-                  type="string",
-                  help="Pipeline task(s) which will be included even if they are up to date.")
-parser.add_option("-j", "--jobs", dest="jobs",
-                  default=1,
-                  metavar="jobs",
-                  type="int",
-                  help="Specifies  the number of jobs (commands) to run simultaneously.")
-parser.add_option("-v", "--verbose", dest = "verbose",
-                  action="count", default=0,
-                  help="Print more verbose messages for each additional verbose level.")
-parser.add_option("-d", "--dependency", dest="dependency_file",
-                  metavar="FILE",
-                  type="string",
-                  help="Print a dependency graph of the pipeline that would be executed "
-                        "to FILE, but do not execute it.")
-parser.add_option("-F", "--dependency_graph_format", dest="dependency_graph_format",
-                  metavar="FORMAT",
-                  type="string",
-                  default = 'svg',
-                  help="format of dependency graph file. Can be 'ps' (PostScript), "+
-                  "'svg' 'svgz' (Structured Vector Graphics), " +
-                  "'png' 'gif' (bitmap  graphics) etc ")
-parser.add_option("-n", "--just_print", dest="just_print",
-                    action="store_true", default=False,
-                    help="Print a description of the jobs that would be executed, "
-                        "but do not execute them.")
-parser.add_option("-M", "--minimal_rebuild_mode", dest="minimal_rebuild_mode",
-                    action="store_true", default=False,
-                    help="Rebuild a minimum of tasks necessary for the target. "
-                    "Ignore upstream out of date tasks if intervening tasks are fine.")
-parser.add_option("-K", "--no_key_legend_in_graph", dest="no_key_legend_in_graph",
-                    action="store_true", default=False,
-                    help="Do not print out legend and key for dependency graph.")
-parser.add_option("-H", "--draw_graph_horizontally", dest="draw_horizontally",
-                    action="store_true", default=False,
-                    help="Draw horizontal dependency graph.")
-
-parameters = [
-                ]
-
-
-
-
-
-
+# funky code to import by file name
+import ruffus
+from ruffus import *
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -98,52 +32,11 @@ parameters = [
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
+import unittest
 import re
-import operator
-import sys,os
-from collections import defaultdict
-
-sys.path.append(os.path.abspath(os.path.join(exe_path,"..", "..")))
-from ruffus import *
-
-# use simplejson in place of json for python < 2.6
-try:
-    import json
-except ImportError:
-    import simplejson
-    json = simplejson
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   Functions
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   Main logic
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-
-
-
-
-# get help string
-f =io.StringIO()
-parser.print_help(f)
-helpstr = f.getvalue()
-(options, remaining_args) = parser.parse_args()
-
-import time
-def sleep_a_while ():
-    time.sleep(0.1)
-
-
-
+import sys
+import os
+import json
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -152,18 +45,40 @@ def sleep_a_while ():
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
+def write_input_output_filenames_to_output(infiles, outfile):
+    """
+    Helper function: Writes input output file names and input contents to outfile
+    """
+    with open(outfile, "w") as oo:
+        # save file name strings before we turn infiles into a list
+        fn_str = "%s -> %s\n" % (infiles, outfile)
+
+        # None = []
+        if infiles is None:
+            infiles = []
+        # str = [str]
+        if not isinstance(infiles, list):
+            infiles = [infiles]
+
+        max_white_space = -2
+        # write content of infiles indented
+        for infile in infiles:
+            with open(infile) as ii:
+                for line in ii:
+                    oo.write(line)
+                    max_white_space = max([max_white_space, len(line) - len(line.lstrip())])
+        # add extra spaces before filenames
+        oo.write(" " * (max_white_space + 2) + fn_str)
+
+
+
 
 #
 #    task1
 #
-@files(None, 'a.1')
-def task1(infile, outfile):
-    """
-    First task
-    """
-    output_text  = ""
-    output_text += json.dumps(infile) + " -> " + json.dumps(outfile) + "\n"
-    open(outfile, "w").write(output_text)
+@originate(tempdir + 'a.1')
+def task1(outfile):
+    write_input_output_filenames_to_output(None, outfile)
 
 
 
@@ -172,12 +87,7 @@ def task1(infile, outfile):
 #
 @transform(task1, suffix(".1"), ".2")
 def task2(infile, outfile):
-    """
-    Second task
-    """
-    output_text  = open(infile).read() if infile else ""
-    output_text += json.dumps(infile) + " -> " + json.dumps(outfile) + "\n"
-    open(outfile, "w").write(output_text)
+    write_input_output_filenames_to_output(infile, outfile)
 
 
 
@@ -189,9 +99,7 @@ def task3(infile, outfile):
     """
     Third task
     """
-    output_text  = open(infile).read() if infile else ""
-    output_text += json.dumps(infile) + " -> " + json.dumps(outfile) + "\n"
-    open(outfile, "w").write(output_text)
+    write_input_output_filenames_to_output(infile, outfile)
 
 
 
@@ -203,32 +111,43 @@ def task4(infile, outfile):
     """
     Fourth task
     """
-    output_text  = open(infile).read() if infile else ""
-    output_text += json.dumps(infile) + " -> " + json.dumps(outfile) + "\n"
-    open(outfile, "w").write(output_text)
+    write_input_output_filenames_to_output(infile, outfile)
 
-#
-#   Necessary to protect the "entry point" of the program under windows.
-#       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
-#
+
+
+
+
+class Test_ruffus(unittest.TestCase):
+    def setUp(self):
+        self.tearDown()
+        try:
+            os.makedirs(tempdir)
+        except:
+            pass
+
+
+
+
+    def tearDown(self):
+        try:
+            shutil.rmtree(tempdir)
+        except:
+            pass
+
+    def test_simpler (self):
+        pipeline_run(multiprocess = 50, verbose = 0, pipeline= "main")
+
+    def test_newstyle_simpler (self):
+        test_pipeline = Pipeline("test")
+        test_pipeline.originate(task1, tempdir + 'a.1')
+        test_pipeline.transform(task2, task1, suffix(".1"), ".2")
+        test_pipeline.transform(task3, task2, suffix(".2"), ".3")
+        test_pipeline.transform(task4, task3, suffix(".3"), ".4")
+        test_pipeline.run(multiprocess = 50, verbose = 0)
+
+
+
+
 if __name__ == '__main__':
-    try:
-        if options.just_print:
-            pipeline_printout(sys.stdout, options.target_tasks, options.forced_tasks,
-                                gnu_make_maximal_rebuild_mode = not options.minimal_rebuild_mode,
-                            verbose = options.verbose, pipeline= "main")
+    unittest.main()
 
-        elif options.dependency_file:
-            pipeline_printout_graph (     open(options.dependency_file, "w"),
-                                 options.dependency_graph_format,
-                                 options.target_tasks,
-                                 options.forced_tasks,
-                                 draw_vertically = not options.draw_horizontally,
-                                 gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                                 no_key_legend  = options.no_key_legend_in_graph, pipeline= "main")
-        else:
-            pipeline_run(options.target_tasks, options.forced_tasks, multiprocess = options.jobs,
-                            gnu_make_maximal_rebuild_mode  = not options.minimal_rebuild_mode,
-                            verbose = options.verbose, pipeline= "main")
-    except Exception as e:
-        print(e.args)
