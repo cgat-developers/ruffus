@@ -95,7 +95,7 @@ args["maxBytes"]=20000
 args["backupCount"]=10
 args["formatter"]="%(asctime)s - %(name)s - %(levelname)6s - %(message)s"
 
-if sys.version_info.major == 3 and sys.version_info.minor == 2 and __name__ != "__main__":
+if sys.version_info[0] == 3 and sys.version_info[1] == 2 and __name__ != "__main__":
     print (
 """
     888888888888888888888888888888888888888888888888888888888888888888888888888
