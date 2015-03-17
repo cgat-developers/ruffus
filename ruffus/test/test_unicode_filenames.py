@@ -85,6 +85,7 @@ class Test_task_mkdir(unittest.TestCase):
     def setUp (self):
         """
         """
+        os.makedirs(tempdir)
         pass
 
     def tearDown (self):
