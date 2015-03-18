@@ -17,7 +17,21 @@ Major Features added to Ruffus
     See :ref:`To do list <todo>` for future enhancements to Ruffus
 
 ********************************************************************
-version 2.6
+version 2.6.3
+********************************************************************
+    18th March 2015
+
+=====================================================================================================================
+1) Bug fixes and minor enhancements
+=====================================================================================================================
+
+    * `@transform(..., suffix("xxx"),` :red:`output_dir` `= "/new/output/path")` did work when the ouput has more than one file
+    * `@subdivide( ..., suffix("xxx"),` :red:`output_dir` `= "/new/output/path")` works in exactly the same way as `@transform(..., outputdir="xxx")`
+
+
+
+********************************************************************
+version 2.6.2
 ********************************************************************
 
     12th March 2015

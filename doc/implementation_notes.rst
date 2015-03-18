@@ -2,34 +2,6 @@
 Implementation Tips
 ##########################################
 
-******************************************************************************
-Items remaining for current release
-******************************************************************************
-======================================================================================================
-Code
-======================================================================================================
-    #. update_checksum_level_on_tasks(checksum_level) is non reentrant
-    #. ``Task.description_with_args_placeholder`` needs to only fill in placeholders at the last minute
-       Otherwise cloned pipelines will have the wrong name
-
-======================================================================================================
-Unit tests
-======================================================================================================
-    #. output_dir for @mkdir
-    #. When are things defined / linked up
-    #. When can we join up Pipelines / tasks / set_input()?
-    #. pipeline in separate module
-    #.  Whether setup occurs ``pipeline_run()`` where ``target_tasks`` and ``forcedtorun_tasks`` are in different linked or unlinked pipelines
-    #. name lookup
-    #. Task (dependency) parsing inside @transform, pipeline.transform(input = , add_inputs, replace_inputs =), pipeline.split(..., output=)
-    #. ``mkdir()`` should not be allowed inside input parameters apart from @follows
-    #. Cannot dependency cannot be self
-    #. ``Pipeline.clone()``
-    #. ``Task.set_input()``
-    #. ``@product`` ``set_input`` should take (``input``, ``input2``...)
-    #. bioinformatics pipelines
-
-
 
 
 ******************************************************************************

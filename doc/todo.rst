@@ -40,6 +40,21 @@ In up coming release:
 ##########################################
 
 ****************************************************************************************
+Todo: Mention python3.2 multiprocessing import and proxies bug in FAQ
+****************************************************************************************
+
+****************************************************************************************
+Todo: OOP syntax taking strings
+****************************************************************************************
+
+****************************************************************************************
+Todo: Extra unit tests
+****************************************************************************************
+    #. ``@product`` ``set_input`` should take (``input``, ``input2``...)
+    #. bioinformatics pipelines (complicated example)
+    #. ``output_from`` and Pipeline names
+
+****************************************************************************************
 Todo: document ``output_from()``
 ****************************************************************************************
 
@@ -55,6 +70,23 @@ Todo: Log the progress through the pipeline in a machine parsable format
 
     * Timestamped text file
     * Timestamped Database
+
+    Unit tests dependeing on topology output:
+
+    * ``Pipeline.clone()``
+    * Whether setup occurs ``pipeline_run()`` where ``target_tasks`` and ``forcedtorun_tasks`` are in different linked or unlinked pipelines
+    * pipeline in separate module
+    * self dependency -> errors
+
+
+****************************************************************************************
+Todo: Check non-reentrant / global variables
+****************************************************************************************
+    #. update_checksum_level_on_tasks(checksum_level) is non reentrant
+
+****************************************************************************************
+Todo: Pipeline runs should have tags / names
+****************************************************************************************
 
 ****************************************************************************************
 Todo: either_or: Prevent failed jobs from propagating further
@@ -486,11 +518,6 @@ Planned: Ruffus GUI interface.
 ****************************************************************************
 
     Desktop (PyQT or web-based solution?)  I'd love to see an svg pipeline picture that I could actually interact with
-
-
-********************************************************************************************************
-Planned: Non-decorator / Function interface to Ruffus
-********************************************************************************************************
 
 
 
