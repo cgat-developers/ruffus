@@ -100,27 +100,27 @@ if sys.version_info[0] == 3 and sys.version_info[1] == 2 and __name__ != "__main
 """
     888888888888888888888888888888888888888888888888888888888888888888888888888
 
-        ERROR: 
+        ERROR:
 
-    This unit test can not be run as a python module (python -m unittest xxx) 
+    This unit test can not be run as a python module (python -m unittest xxx)
     due to the interaction of bugs / misfeatures in the multiprocessing module
     and python3.2
 
-        See http://bugs.python.org/issue15914 
+        See http://bugs.python.org/issue15914
             http://bugs.python.org/issue9573
 
     In detail:
 
     Making a shared logger calls code within the multiprocessing module.
-    This in turn tries to import the hmac module inside deliver_challenge(). 
+    This in turn tries to import the hmac module inside deliver_challenge().
     This hangs if it happens after a module fork.
 
-    The only way around this is to only make calls to multiprocessing 
-    (i.e. make_shared_logger_and_proxy(...)) after the import phase of 
+    The only way around this is to only make calls to multiprocessing
+    (i.e. make_shared_logger_and_proxy(...)) after the import phase of
     module loading.
 
-    This python bug will be triggered if your make_shared_logger_and_proxy() 
-    call is at global scope in a module (i.e. not __main__) and only for 
+    This python bug will be triggered if your make_shared_logger_and_proxy()
+    call is at global scope in a module (i.e. not __main__) and only for
     python version 3.2
 
     888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -204,6 +204,7 @@ class Test_ruffus(unittest.TestCase):
         test_pipeline.transform(task2, task1, suffix(".1"), ".2", extras = [logger_proxy, logging_mutex])
         test_pipeline.transform(task3, task2, suffix(".2"), ".3", extras = [logger_proxy, logging_mutex])
         test_pipeline.merge(task4, task3, final_file_name, extras = [logger_proxy, logging_mutex])
+        #test_pipeline.merge(task4, task3, final_file_name, extras = {"logger_proxy": logger_proxy, "logging_mutex": logging_mutex})
         test_pipeline.run(multiprocess = 500, verbose = 0)
 
 

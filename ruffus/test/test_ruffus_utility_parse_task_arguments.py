@@ -43,18 +43,21 @@ class Test_parse_transform_args (unittest.TestCase):
                              'filter'   : orig_unnamed_arguments[1],
                              'output'   : orig_unnamed_arguments[2],
                              'extras'   : orig_unnamed_arguments[3:],
+                             'named_extras'   : {},
                              'modify_inputs_mode': 2,
                              'modify_inputs': None}
         add_inputs_expected_results = { 'input'    : orig_unnamed_arguments[0],
                                          'filter'   : orig_unnamed_arguments[1],
                                          'output'   : orig_unnamed_arguments[2],
                                          'extras'   : orig_unnamed_arguments[3:],
+                                         'named_extras'   : {},
                                          'modify_inputs_mode': 0,
                                          'modify_inputs': ("a.test", "b.test")}
         replace_inputs_expected_results = { 'input'    : orig_unnamed_arguments[0],
                                          'filter'   : orig_unnamed_arguments[1],
                                          'output'   : orig_unnamed_arguments[2],
                                          'extras'   : orig_unnamed_arguments[3:],
+                                         'named_extras'   : {},
                                          'modify_inputs_mode': 1,
                                          'modify_inputs': ("a.test", "b.test")}
 
@@ -86,7 +89,7 @@ class Test_parse_transform_args (unittest.TestCase):
                                         {'input'    : orig_unnamed_arguments[0],
                                          'filter'   : orig_unnamed_arguments[1],
                                          'output'   : orig_unnamed_arguments[2],
-                                         'extras'   : orig_unnamed_arguments[3:]
+                                         'extras'   : orig_unnamed_arguments[3:],
                                          },
                                         expected_arguments, task_description)
         self.assertEqual(results, expected_results)
@@ -97,7 +100,7 @@ class Test_parse_transform_args (unittest.TestCase):
                                             {'input'    : orig_unnamed_arguments[0],
                                              'filter'   : "a",
                                              'output'   : orig_unnamed_arguments[2],
-                                             'extras'   : orig_unnamed_arguments[3:]
+                                             'extras'   : orig_unnamed_arguments[3:],
                                              },
                                             expected_arguments, task_description)
 
@@ -115,7 +118,8 @@ class Test_parse_transform_args (unittest.TestCase):
         with self.assertRaises(error_too_many_args):
             results = parse_task_arguments (orig_unnamed_arguments,
                                         {'input'    : orig_unnamed_arguments[0],
-                                         'extras'   : orig_unnamed_arguments[3:]
+                                         'extras'   : orig_unnamed_arguments[3:],
+                                         'named_extras'   : {},
                                          },
                                         expected_arguments, task_description)
 
@@ -215,18 +219,21 @@ class Test_parse_product_args (unittest.TestCase):
                              'filter'   : [orig_unnamed_arguments[1], orig_unnamed_arguments[3], orig_unnamed_arguments[5]],
                              'output'   : orig_unnamed_arguments[6],
                              'extras'   : orig_unnamed_arguments[7:],
+                             'named_extras'   : {},
                              'modify_inputs_mode': 2,
                              'modify_inputs': None}
         add_inputs_expected_results = { 'input'    : [orig_unnamed_arguments[0], orig_unnamed_arguments[2], orig_unnamed_arguments[4]],
                                          'filter'   : [orig_unnamed_arguments[1], orig_unnamed_arguments[3], orig_unnamed_arguments[5]],
                                          'output'   : orig_unnamed_arguments[6],
                                          'extras'   : orig_unnamed_arguments[7:],
+                                         'named_extras'   : {},
                                          'modify_inputs_mode': 0,
                                          'modify_inputs': ("a.test", "b.test")}
         replace_inputs_expected_results = { 'input'    : [orig_unnamed_arguments[0], orig_unnamed_arguments[2], orig_unnamed_arguments[4]],
                                             'filter'   : [orig_unnamed_arguments[1], orig_unnamed_arguments[3], orig_unnamed_arguments[5]],
                                             'output'   : orig_unnamed_arguments[6],
                                             'extras'   : orig_unnamed_arguments[7:],
+                                            'named_extras'   : {},
                                             'modify_inputs_mode': 1,
                                             'modify_inputs': ("a.test", "b.test")}
 
@@ -262,7 +269,7 @@ class Test_parse_product_args (unittest.TestCase):
                                          'input3'   : orig_unnamed_arguments[4],
                                          'filter3'  : orig_unnamed_arguments[5],
                                          'output'   : orig_unnamed_arguments[6],
-                                         'extras'   : orig_unnamed_arguments[7:]
+                                         'extras'   : orig_unnamed_arguments[7:],
                                          },
                                         expected_arguments, task_description)
         self.assertEqual(results, expected_results)
@@ -286,7 +293,7 @@ class Test_parse_product_args (unittest.TestCase):
         with self.assertRaises(error_too_many_args):
             results = parse_task_arguments (orig_unnamed_arguments,
                                         {'input'    : orig_unnamed_arguments[0],
-                                         'extras'   : orig_unnamed_arguments[7:]
+                                         'extras'   : orig_unnamed_arguments[7:],
                                          },
                                         expected_arguments, task_description)
 
@@ -383,6 +390,7 @@ class Test_parse_combinatorics_args (unittest.TestCase):
                              'tuple_size': orig_unnamed_arguments[2],
                              'output'   : orig_unnamed_arguments[3],
                              'extras'   : orig_unnamed_arguments[4:],
+                             'named_extras'   : {},
                              'modify_inputs_mode': 2,
                              'modify_inputs': None}
         add_inputs_expected_results = { 'input'    : orig_unnamed_arguments[0],
@@ -390,6 +398,7 @@ class Test_parse_combinatorics_args (unittest.TestCase):
                                          'tuple_size': orig_unnamed_arguments[2],
                                          'output'   : orig_unnamed_arguments[3],
                                          'extras'   : orig_unnamed_arguments[4:],
+                                         'named_extras'   : {},
                                          'modify_inputs_mode': 0,
                                          'modify_inputs': ("a.test", "b.test")}
         replace_inputs_expected_results = { 'input'    : orig_unnamed_arguments[0],
@@ -397,6 +406,7 @@ class Test_parse_combinatorics_args (unittest.TestCase):
                                          'tuple_size': orig_unnamed_arguments[2],
                                          'output'   : orig_unnamed_arguments[3],
                                          'extras'   : orig_unnamed_arguments[4:],
+                                         'named_extras'   : {},
                                          'modify_inputs_mode': 1,
                                          'modify_inputs': ("a.test", "b.test")}
 
@@ -440,7 +450,7 @@ class Test_parse_combinatorics_args (unittest.TestCase):
                                          'filter'   : orig_unnamed_arguments[1],
                                          'tuple_size': orig_unnamed_arguments[2],
                                          'output'   : orig_unnamed_arguments[3],
-                                         'extras'   : orig_unnamed_arguments[4:]
+                                         'extras'   : orig_unnamed_arguments[4:],
                                          },
                                         expected_arguments, task_description)
         self.assertEqual(results, expected_results)
@@ -454,7 +464,7 @@ class Test_parse_combinatorics_args (unittest.TestCase):
                                              'filter'   : orig_unnamed_arguments[1],
                                              'tuple_size': "a",
                                              'output'   : orig_unnamed_arguments[3],
-                                             'extras'   : orig_unnamed_arguments[4:]
+                                             'extras'   : orig_unnamed_arguments[4:],
                                              },
                                             expected_arguments, task_description)
 
@@ -474,7 +484,7 @@ class Test_parse_combinatorics_args (unittest.TestCase):
         with self.assertRaises(error_too_many_args):
             results = parse_task_arguments (orig_unnamed_arguments,
                                         {'input'    : orig_unnamed_arguments[0],
-                                         'extras'   : orig_unnamed_arguments[3:]
+                                         'extras'   : orig_unnamed_arguments[3:],
                                          },
                                         expected_arguments, task_description)
 
@@ -565,7 +575,9 @@ class Test_parse_originate_args (unittest.TestCase):
         orig_unnamed_arguments   = [["a.1","b.1"], 1,2,3,4]
         task_description = "@originate(%s)\ndef myfunc(...)\n"
         expected_results = { 'output'   : orig_unnamed_arguments[0],
-                             'extras'   : orig_unnamed_arguments[1:]}
+                             'extras'   : orig_unnamed_arguments[1:],
+                             'named_extras'   : {},
+                             }
 
         # Error: empty list
         with self.assertRaises(error_missing_args):

@@ -175,15 +175,21 @@ class t_suffix_file_names_transform(t_file_names_transform):
         self.output_dir = output_dir
 
     def substitute (self, starting_file_names, pattern):
-        return regex_replace(starting_file_names[0], self.matching_regex_str, self.matching_regex, pattern)
+        if self.output_dir == []:
+            return regex_replace(starting_file_names[0], self.matching_regex_str, self.matching_regex, pattern)
+        else:
+            # change directory of starting file and return substitution
+            starting_file_name = os.path.join(self.output_dir, os.path.split(starting_file_names[0])[1])
+            return regex_replace(starting_file_name, self.matching_regex_str, self.matching_regex, pattern)
+        return
 
     def substitute_output_files (self, starting_file_names, pattern):
-        res = regex_replace(starting_file_names[0], self.matching_regex_str, self.matching_regex, pattern, SUFFIX_SUBSTITUTE)
         if self.output_dir == []:
-            return res
-        # N.B. Does not do output directory substitution for extra parameters
+            return regex_replace(starting_file_names[0], self.matching_regex_str, self.matching_regex, pattern, SUFFIX_SUBSTITUTE)
         else:
-            return os.path.join(self.output_dir, os.path.split(res)[1])
+            # change directory of starting file and return substitution
+            starting_file_name = os.path.join(self.output_dir, os.path.split(starting_file_names[0])[1])
+            return regex_replace(starting_file_name, self.matching_regex_str, self.matching_regex, pattern, SUFFIX_SUBSTITUTE)
 
 
 class t_regex_file_names_transform(t_file_names_transform):
@@ -291,6 +297,14 @@ class t_params_tasks_globs_run_time_data(object):
         return t_params_tasks_globs_run_time_data(output_param, self.tasks, output_glob,
                                                     self.runtime_data_names)
 
+    def output_file_names_transformed (self, filenames, file_names_transform):
+        """
+        return clone with the filenames / globs transformed by the supplied transform object
+        """
+        output_glob  = file_names_transform.substitute_output_files(filenames, self.globs)
+        output_param = file_names_transform.substitute_output_files(filenames, self.params)
+        return t_params_tasks_globs_run_time_data(output_param, self.tasks, output_glob,
+                                                    self.runtime_data_names)
     #
     #   deprecated
     #
@@ -1101,7 +1115,6 @@ def yield_io_params_per_job (input_params,
             #
             #       So we do (2) first, ignoring tasks, then (1)
             if extra_input_files_task_globs:
-                # DEBUGGG
                 extra_inputs = extra_input_files_task_globs.file_names_transformed (filenames, file_names_transform)
 
                 #
@@ -1127,7 +1140,7 @@ def yield_io_params_per_job (input_params,
                 #   do regex substitution to complete glob pattern
                 #       before glob matching
                 #
-                output_pattern_transformed = output_pattern.file_names_transformed (filenames, file_names_transform)
+                output_pattern_transformed = output_pattern.output_file_names_transformed (filenames, file_names_transform)
                 output_param          = file_names_from_tasks_globs(output_pattern_transformed, runtime_data)
                 output_param_unglobbed= file_names_from_tasks_globs(output_pattern_transformed.unexpanded_globs(), runtime_data)
                 yield ( (input_param, output_param            ) + extra_params,

@@ -558,10 +558,12 @@ def job_wrapper_io_files(params, user_defined_work_func, register_cleanup, touch
     if touch_files_only == 0:
         # @originate only uses output files
         if output_files_only:
+            # TODOOO extra and named extras
             ret_val = user_defined_work_func(*(params[1:]))
         # all other decorators
         else:
             try:
+                # TODOOO extra and named extras
                 ret_val = user_defined_work_func(*params)
                 # EXTRA pipeline_run DEBUGGING
                 if EXTRA_PIPELINERUN_DEBUGGING:
@@ -801,6 +803,40 @@ def run_pooled_job_without_exceptions(process_parameters):
 #   Helper function
 
 # 88888888888888888888888888888888888888888888888888888888888888888888888888888
+def subprocess_checkcall_wrapper(**named_args):
+    """
+    Splits string at semicolons and runs with subprocess.check_call
+    """
+    for cmd in named_args["command_str"].split(";"):
+        cmd = cmd.replace("\n", " ").strip()
+        if not len(cmd):
+            continue
+        cmd = cmd.format(**named_args)
+        subprocess.check_call(cmd, shell = True)
+
+
+def exec_string_as_task_func(input_args, output_args, **named_args):
+    """
+    Ruffus provided function for tasks which are just strings
+        (no Python function provided)
+    The task executor function is given as a paramter which is
+        then called with the arguments.
+    Convoluted but avoids special casing too much
+    """
+    if not "__RUFFUS_TASK_CALLBACK__" in named_args or \
+        not callable(named_args["__RUFFUS_TASK_CALLBACK__"]):
+        raise Exception("Missing call back function")
+    if not "command_str" in named_args or \
+        not isinstance(named_args["command_str"], (path_str_type,)):
+        raise Exception("Missing call back function string")
+
+
+    callback = named_args["__RUFFUS_TASK_CALLBACK__"]
+    del named_args["__RUFFUS_TASK_CALLBACK__"]
+
+    named_args["input"] = input_args
+    named_args["output"] = output_args
+    callback(**named_args)
 
 
 # _____________________________________________________________________________
@@ -863,6 +899,9 @@ class Pipeline(dict):
         self.tail_tasks = []
         self.lookup = dict()
 
+        self.command_str_callback = subprocess_checkcall_wrapper
+
+
     # _________________________________________________________________________
 
     #   _create_task
@@ -872,7 +911,33 @@ class Pipeline(dict):
         """
         Create task with a function
         """
-        # add task to main pipeline
+
+        #
+        #   If string, this is a command to be executed later
+        #   Derive task name from command
+        #
+        #
+        if isinstance(task_func, (path_str_type,)):
+            task_str = task_func
+            task_func = exec_string_as_task_func
+            if not task_name:
+                elements = task_str.split()
+                use_n_elements = 1
+                while use_n_elements < len(elements):
+                    task_name = " ".join(elements[0:use_n_elements])
+                    if task_name not in self.task_names:
+                        break
+                else:
+                    raise error_duplicate_task_name("The task string '%s' is ambiguous for "
+                                                    "Pipeline '%s'. You must disambiguate "
+                                                    "explicitly with different task names "
+                                                    % (task_str, self.name))
+            return Task(task_func, task_name, self)
+
+
+        #
+        #   Derive task name from Python Task function name
+        #
         if not task_name:
             if task_func.__module__ == "__main__":
                 task_name = task_func.__name__
@@ -881,22 +946,22 @@ class Pipeline(dict):
                     "." + task_func.__name__
 
         if task_name not in self:
-            task = Task(task_func, task_name, self)
+            return Task(task_func, task_name, self)
 
         # task_name already there as the identifying task_name.
         # If the task_func also matches everything is fine
         elif (task_name in self.task_names and
               self[task_name].user_defined_work_func == task_func):
-            task = self[task_name]
+            return self[task_name]
 
         # If the task name is already taken but with a different function,
         #   this will blow up
         # But if the function is being reused and with a previously different
         # task name then OK
         else:
-            task = Task(task_func, task_name, self)
+            return Task(task_func, task_name, self)
 
-        return task
+
 
     # _________________________________________________________________________
 
@@ -937,6 +1002,16 @@ class Pipeline(dict):
                 processed_pipelines |= self.pipelines[pipeline_name]._complete_task_setup(processed_tasks)
 
         return processed_pipelines
+
+    # _________________________________________________________________________
+
+    #   command_str_callback
+
+    # _________________________________________________________________________
+    def set_command_str_callback(self, command_str_callback):
+        if not callable(command_str_callback):
+            raise Exception("set_command_str_callback() takes a python function or a callable object.")
+        self.command_str_callback = command_str_callback
 
     # _________________________________________________________________________
 
@@ -1117,13 +1192,43 @@ class Pipeline(dict):
             pipeline.merge
         """
         name = get_name_from_args(named_args)
+
+        #   if task_func is a string, will
+        #       1) set self.task_func = exec_string_as_task_func
+        #       2) set self.name if necessary to the first unambigous words of the the command_str
+        #       2) set self.func_description to the command_str
         task = self._create_task(task_func, name)
+
+
         task.created_via_decorator = False
         task.syntax = syntax
+        if isinstance(task_func, (path_str_type,)):
+            task_func_name = task._name
+        else:
+            task_func_name = task_func.__name__
+
         task.description_with_args_placeholder = "{syntax}(name = {task_display_name!r}, task_func = {task_func_name}, %s)" \
-            .format(syntax = task.syntax,
-               task_display_name = task._get_display_name(),
-               task_func_name = task_func.__name__)
+            .format(syntax = syntax,
+                    task_display_name = task._get_display_name(),
+                    task_func_name = task_func_name,)
+
+        if isinstance(task_func, (path_str_type,)):
+            #
+            #   Make sure extras is  dict
+            #
+            if "extras" in named_args:
+                if not isinstance(named_args["extras"], dict):
+                    raise error_executable_str((task.description_with_args_placeholder % "...") +
+                                               "\n requires a dictionary for named parameters. " +
+                                               "For example:\n" +
+                                               task.description_with_args_placeholder %
+                                               "extras = {my_param = 45, her_param = 'whatever'}")
+            else:
+                named_args["extras"] = dict()
+            named_args["extras"]["command_str"] = task_func
+            #named_args["extras"]["__RUFFUS_TASK_CALLBACK__"] = pipeline.command_str_callback
+
+
         return task
 
     # _________________________________________________________________________
@@ -1744,7 +1849,7 @@ class Task (node):
     #   __init__
 
     # _________________________________________________________________________
-    def __init__(self, func, task_name=None, pipeline=None):
+    def __init__(self, func, task_name, pipeline = None, command_str = None):
         """
         * Creates a Task object with a specified python function and task name
         * The type of the Task (whether it is a transform or merge or collate
@@ -1755,10 +1860,16 @@ class Task (node):
         if pipeline is None:
             pipeline = main_pipeline
         self.pipeline = pipeline
-        self.func_module_name = str(func.__module__)
-        self.func_name = func.__name__
-        # convert description into one line
-        self.func_description = re.sub("\n\s+", " ", func.__doc__).strip() if func.__doc__ else ""
+        # no function: just string
+        if command_str is not None:
+            self.func_module_name = ""
+            self.func_name = ""
+            self.func_description = command_str
+        else:
+            self.func_module_name = str(func.__module__)
+            self.func_name = func.__name__
+            # convert description into one line
+            self.func_description = re.sub("\n\s+", " ", func.__doc__).strip() if func.__doc__ else ""
 
         if not task_name:
             task_name = self.func_module_name + "." + self.func_name
@@ -1848,6 +1959,8 @@ class Task (node):
         self.pipeline.lookup[task_name] = [self]
         self.pipeline.task_names.add(task_name)
 
+        self.command_str_callback = "PIPELINE"
+
         #
         #   Allow pipeline to lookup task by
         #       1) Func
@@ -1860,6 +1973,8 @@ class Task (node):
         for lookup in (func, self.func_name, self.func_module_name + "." + self.func_name):
             # don't add to lookup if this conflicts with a task_name which is
             # always unique and overriding
+            if lookup == ".":
+                continue
             if lookup not in self.pipeline.task_names:
                 # non-unique map
                 if lookup in self.pipeline.lookup:
@@ -1871,18 +1986,17 @@ class Task (node):
                     self.pipeline.lookup[lookup] = [self]
                     self.pipeline[lookup] = self
 
-    #
-
     # _________________________________________________________________________
 
     #   _clone
 
     # _________________________________________________________________________
-    def _clone(self, pipeline):
+    def _clone(self, new_pipeline):
         """
         * Clones a Task object from self
         """
-        new_task = Task(self.user_defined_work_func, self._name, pipeline)
+        new_task = Task(self.user_defined_work_func, self._name, new_pipeline)
+        new_task.command_str_callback = self.command_str_callback
         new_task._action_type = self._action_type
         new_task._action_type_desc = self._action_type_desc
         new_task.checksum_level = self.checksum_level
@@ -1901,7 +2015,8 @@ class Task (node):
         new_task._setup_task_func = self._setup_task_func
         new_task.error_type = self.error_type
         new_task.syntax = self.syntax
-        new_task.description_with_args_placeholder = self.description_with_args_placeholder
+        new_task.description_with_args_placeholder = \
+            self.description_with_args_placeholder.replace(self.pipeline.name, new_pipeline.name)
         new_task.has_input_param = self.has_input_param
         new_task.has_pipeline_in_input_param = self.has_pipeline_in_input_param
         new_task.output_filenames = copy.deepcopy(self.output_filenames)
@@ -1910,6 +2025,17 @@ class Task (node):
         new_task.deferred_follow_params = copy.deepcopy(self.deferred_follow_params)
 
         return new_task
+
+    # _________________________________________________________________________
+
+    #   command_str_callback
+
+    # _________________________________________________________________________
+    def set_command_str_callback(self, command_str_callback):
+        if not callable(command_str_callback):
+            raise Exception("set_command_str_callback() takes a python function or a callable object.")
+        self.command_str_callback = command_str_callback
+
 
 
     # _________________________________________________________________________
@@ -2034,8 +2160,11 @@ class Task (node):
             old_action = Task._action_names[self._action_type]
             new_action = Task._action_names[new_action_type]
             actions = " and ".join(list(set((old_action, new_action))))
-            raise error_decorator_args("%s\n      has conflicting task specifications: (%s)\n" %
-                                       (self.description_with_args_placeholder % "...", actions))
+            raise error_decorator_args("Duplicate task for:\n\n%s\n\n"
+                                       "This has already been specified with a the same name "
+                                       "or function\n"
+                                       "(%r, %s)\n" %
+                                       (self.description_with_args_placeholder % "...", self._get_display_name(), actions))
         self._action_type = new_action_type
         self._action_type_desc = Task._action_names[new_action_type]
 
@@ -2895,7 +3024,7 @@ class Task (node):
         #
         self.parsed_args = parse_task_arguments(unnamed_args, named_args,
                                                 ["input", "filter", "modify_inputs",
-                                                 "output", "extras"],
+                                                 "output", "extras", "output_dir"],
                                                 self.description_with_args_placeholder)
 
     # _________________________________________________________________________
@@ -3798,6 +3927,11 @@ class Task (node):
         self._remove_all_parents()
         ancestral_tasks =  self._deferred_connect_parents()
         ancestral_tasks |= self._setup_task_func(self)
+        if "named_extras" in self.parsed_args:
+            if self.command_str_callback == "PIPELINE":
+                self.parsed_args["named_extras"]["__RUFFUS_TASK_CALLBACK__"] = self.pipeline.command_str_callback
+            else:
+                self.parsed_args["named_extras"]["__RUFFUS_TASK_CALLBACK__"] = self.command_str_callback
         #DEBUGGG
         #print("  task._complete_setup finish %s\n" % (self._get_display_name(), ), file = sys.stderr)
         return ancestral_tasks

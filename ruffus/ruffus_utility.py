@@ -634,7 +634,7 @@ def get_all_paths_components(paths, compiled_regexes):
 #   apply_func_to_sequence
 #
 #_________________________________________________________________________________________
-def apply_func_to_sequence(seq, func, tuple_of_conforming_types = (path_str_type,), tuple_of_sequences_types = (list, tuple,set)):
+def apply_func_to_sequence(seq, func, tuple_of_conforming_types = (path_str_type,), tuple_of_sequences_types = (list, tuple, set)):
     """
     Recurses into list/tuple/set sequences to apply func to conforming types
     Non-conforming types are left alone
@@ -786,6 +786,22 @@ class t_nested_formatter_replace(object):
                                                         formatter_str,
                                                         self.filenames))
 
+#_________________________________________________________________________________________
+#
+#   t_nested_string_replace
+#
+#_________________________________________________________________________________________
+class t_nested_string_replace(object):
+    """
+    Replaces path with directory
+    """
+    def __init__(self, prev_str, new_str):
+        self.prev_str = prev_str
+        self.new_str  = new_str
+
+    def __call__(self, p):
+        return p.replace(prev_str, new_str)
+
 
 #_________________________________________________________________________________________
 #
@@ -825,6 +841,9 @@ def formatter_replace (filenames, regex_str, compiled_regex, substitution_patter
 
 def nested_formatter_replace (filenames, regex_strings, compiled_regexes, substitution_patterns):
     return apply_func_to_sequence(substitution_patterns, t_nested_formatter_replace(filenames, regex_strings, compiled_regexes))
+
+def nested_string_replace (prev_str, new_str, substitution_patterns):
+    return apply_func_to_sequence(substitution_patterns, t_nested_string_replace(prev_str, new_str))
 
 
 #_________________________________________________________________________________________
@@ -905,6 +924,10 @@ def get_first_string_in_nested_sequence (p):
         return strings[0]
     return None
 
+
+#
+#   TODOOO third object could be a dict or a list
+#
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Encoders: turn objects and filenames into a more presentable format
@@ -1438,10 +1461,10 @@ def get_parsed_arguments_str_for_errors (task_description, bad_arg_str, unnamed_
     parsed_arg_str = ", ".join(unnamed_result_strs + named_result_strs)
     # make function names clearer in arg list
     parsed_arg_str = re.sub(r"<function (\w+) at 0x[0-9a-f]+>", r"\1", parsed_arg_str)
-    return task_description %  (parsed_arg_str + ", ...\n" +
-                                # mark out problem
-                                (" " * (indent-5 if indent - 5 > 0 else 0)) + "===> " +
-                                bad_arg_str)
+    return "\n" + task_description %  (parsed_arg_str + ", ...\n" +
+                                            # mark out problem
+                                            (" " * (indent-5 if indent - 5 > 0 else 0)) + "===> " +
+                                            bad_arg_str)
 
 
 
@@ -1705,6 +1728,8 @@ def parse_task_arguments ( orig_unnamed_arguments, orig_named_arguments, expecte
     #   extras is mandatory if exists
     #
     if 'extras' in expected_arguments:
+        results['extras' ] = []
+        results['named_extras'] = {}
         if len(unnamed_arguments):
             # move list to results: remember python does shallow copies of lists
             results['extras'] = unnamed_arguments
@@ -1712,11 +1737,23 @@ def parse_task_arguments ( orig_unnamed_arguments, orig_named_arguments, expecte
             unnamed_arguments = []
             #del unnamed_arguments[:]
         elif 'extras'  in named_arguments:
-            results['extras' ] = named_arguments['extras' ]
-            named_result_strs.append("%s=%r" % ("extras", named_arguments['extras' ]))
-            del named_arguments['extras' ]
-        else:
-            results['extras' ] = []
+            # Named extras only
+            if isinstance(named_arguments['extras'], dict):
+                results["named_extras"] = named_arguments['extras']
+            # Unnamed extras only
+            elif isinstance(named_arguments['extras'], list):
+                results["extras"] = named_arguments['extras']
+            # Wrong type: blow up
+            else:
+                err_msg = ("The extras paramter must be either a list of values\nor a dictionary of named parameter values:\n%s" %
+                            get_parsed_arguments_str_for_errors(task_description,
+                                                                "extras=%r" % (named_arguments['extras'],),
+                                                                unnamed_result_strs,
+                                                                named_result_strs))
+                raise error_extras_wrong_type(err_msg)
+
+            named_result_strs.append("%s=%r" % ("extras", named_arguments['extras']))
+            del named_arguments['extras']
 
 
     if len(unnamed_arguments):

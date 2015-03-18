@@ -230,6 +230,10 @@ class error_no_head_tasks(error_task):
     pass
 class error_no_tail_tasks(error_task):
     pass
+class error_executable_str(error_task):
+    pass
+class error_extras_wrong_type(error_task):
+    pass
 
 
 
