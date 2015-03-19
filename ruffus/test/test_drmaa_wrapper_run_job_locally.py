@@ -57,7 +57,7 @@ class Test_ruffus(unittest.TestCase):
                                                          local_echo = True)
 
         self.assertEqual(stdout, ['    Stdout 0\n', '    Stdout 1\n', '    Stdout 2\n', '    Stdout 3\n'])
-        self.assertEqual(stderr, ['     /home/lg\n', "     {'PWD': '/home/lg', 'RUFFUS_HEEHEE': 'what?'}\n", '    Stderr 0\n', '    Stderr 1\n', '    Stderr 2\n', '    Stderr 3\n'])
+        self.assertEqual(stderr, ['     %s\n' % home_dir, "     {'PWD': '%s', 'RUFFUS_HEEHEE': 'what?'}\n" % home_dir, '    Stderr 0\n', '    Stderr 1\n', '    Stderr 2\n', '    Stderr 3\n'])
 
 if __name__ == '__main__':
     unittest.main()
