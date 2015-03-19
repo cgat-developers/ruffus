@@ -23,6 +23,14 @@
 #   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #   THE SOFTWARE.
+#
+#   Portions of code from adapted from:
+#
+#       http://stackoverflow.com/questions/375427/non-blocking-read-on-a-subprocess-pipe-in-python
+#       Courtesy of J.F. Sebastian
+#       Use is licensed under the "Creative Commons Attribution Share Alike license"
+#       See http://stackexchange.com/legal
+#
 #################################################################################
 """
 
@@ -50,6 +58,18 @@ import tempfile
 import datetime
 import subprocess
 import time
+
+import sys
+import subprocess
+import threading
+
+try:
+    from Queue import Queue, Empty
+except ImportError:
+    from queue import Queue, Empty  # python 3.x
+
+ON_POSIX = 'posix' in sys.builtin_module_names
+
 
 if sys.hexversion >= 0x03000000:
     # everything is unicode in python3
@@ -361,33 +381,69 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
     return stdout, stderr
 
 
+
+def enqueue_output(out, queue, echo):
+    for line in iter(out.readline, b''):
+        queue.put(line)
+        if echo is not None:
+            echo.write(line)
+            echo.flush()
+    out.close()
+
+
 #_________________________________________________________________________________________
 
 #   run_job_locally
 
 #_________________________________________________________________________________________
-def run_job_locally (cmd_str, logger = None):
+def run_job_locally (cmd_str, logger = None, job_environment = None, working_directory = None, local_echo = False):
     """
     Runs specified command locally instead of drmaa
     """
-    process = subprocess.Popen(  cmd_str,
-                                 cwd = os.getcwd(),
-                                 shell = True,
-                                 stdin = subprocess.PIPE,
-                                 stdout = subprocess.PIPE,
-                                 stderr = subprocess.PIPE )
 
-    # process.stdin.close()
-    stdout, stderr = process.communicate()
+    popen_params = {"args"      : cmd_str,
+                    "cwd"       : working_directory if working_directory is not None else os.getcwd(),
+                    "shell"     : True,
+                    "stdin"     : subprocess.PIPE,
+                    "stdout"    : subprocess.PIPE,
+                    "stderr"    : subprocess.PIPE,
+                    "bufsize"   :1,
+                    "close_fds" : ON_POSIX}
+    if job_environment is not None:
+        popen_params["env"] = job_environment
+
+    process = subprocess.Popen(  **popen_params )
+    stderrQ = Queue()
+    stdoutQ = Queue()
+    stdout_t = threading.Thread(target=enqueue_output, args=(process.stdout, stdoutQ, sys.stdout if local_echo else None))
+    stderr_t = threading.Thread(target=enqueue_output, args=(process.stderr, stderrQ, sys.stderr if local_echo else None))
+    stdout_t.daemon = True
+    stderr_t.daemon = True
+    stderr_t.start()
+    stdout_t.start()
+    process.wait()
+
+    stdout, stderr = [], []
+    try:
+        while True:
+            stdout.append(stdoutQ.get(False))
+    except:
+        pass
+
+    try:
+        while True:
+            stderr.append(stderrQ.get(False))
+    except:
+        pass
 
     if process.returncode != 0:
         raise error_drmaa_job( "The locally run command was terminated by signal %i:\n"
                                "The original command was:\n%s\n"
                                "The stderr was: \n%s\n\n"
                                "The stdout was: \n%s\n\n" %
-                                 (-process.returncode, cmd_str, "".join( stderr), "".join( stdout)) )
+                                 (-process.returncode, cmd_str, stderr, stdout) )
 
-    return stdout.splitlines(True), stderr.splitlines(True)
+    return stdout, stderr
 
 
 #_________________________________________________________________________________________
@@ -453,7 +509,7 @@ def touch_output_files (cmd_str, output_files, logger = None):
 def run_job(cmd_str, job_name = None, job_other_options = None, job_script_directory = None,
             job_environment = None, working_directory = None, logger = None,
             drmaa_session = None, retain_job_scripts = False,
-            run_locally = False, output_files = None, touch_only = False, verbose = 0):
+            run_locally = False, output_files = None, touch_only = False, verbose = 0, local_echo = False):
     """
     Runs specified command either using drmaa, or locally or only in simulation (touch the output files only)
     """
@@ -463,6 +519,6 @@ def run_job(cmd_str, job_name = None, job_other_options = None, job_script_direc
         return "","",
 
     if run_locally:
-        return run_job_locally (cmd_str, logger)
+        return run_job_locally (cmd_str, logger, job_environment, working_directory, local_echo)
 
     return run_job_using_drmaa (cmd_str, job_name, job_other_options, job_script_directory, job_environment, working_directory, retain_job_scripts, logger, drmaa_session, verbose)
