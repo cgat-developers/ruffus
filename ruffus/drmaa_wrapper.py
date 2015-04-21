@@ -201,7 +201,7 @@ def write_job_script_to_temp_file( cmd_str, job_script_directory, job_name, job_
         os.makedirs(job_script_directory)
     except:
         pass
-    tmpfile = tempfile.NamedTemporaryFile(mode='w+b', prefix='drmaa_script_' + time_stmp_str + "__", dir = job_script_directory,  delete = False)
+    tmpfile = tempfile.NamedTemporaryFile(mode='w', prefix='drmaa_script_' + time_stmp_str + "__", dir = job_script_directory,  delete = False)
 
     #
     #   hopefully #!/bin/sh is universally portable among unix-like operating systems
