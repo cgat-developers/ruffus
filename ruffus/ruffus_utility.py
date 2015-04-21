@@ -427,7 +427,7 @@ def swap_nesting_order (orig_coll):
                 new_list[jj][ii] = value
             else:
                 new_dict[jj][ii] = value
-    return new_list, new_dict
+    return new_list, dict(new_dict)
 
 #_________________________________________________________________________________________
 #
@@ -734,12 +734,13 @@ class t_formatter_replace(object):
 
         # some contortions because format decodes {0} as an offset into a list and not not a lookup into a dict...
         dl, dd = swap_nesting_order(self.path_regex_components)
+
         try:
             return p.format(*dl, **dd)
         except (KeyError, IndexError):
-            raise error_input_file_does_not_match("Field '%s' in ('%s') using formatter(%s) fails to match Files '%s'."
+            raise error_input_file_does_not_match("Missing key = {%s} in '%s'.\n  input =  %r,\n filter = formatter(%s)."
                                                   "."
-                                                  % (   str(sys.exc_info()[1]),
+                                                  % (   str(sys.exc_info()[1])[1:-1],
                                                         p,
                                                         self.display_regex_strings,
                                                         self.filenames))

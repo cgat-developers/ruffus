@@ -130,9 +130,9 @@ def epoch_seconds_to_str (epoch_seconds):
     return (time_str + fraction_of_second_as_str)
 
 
-err_msg_no_regex_match = ("No jobs were run because no files names matched. "
+err_msg_no_regex_match = ("No jobs were run because no file names matched.\n"
                         "Please make sure that the regular expression is correctly specified.")
-err_msg_empty_files_parameter= ("@files() was empty, i.e. no files were specified. "
+err_msg_empty_files_parameter= ("@files() was empty, i.e. no files were specified.\n"
                         "Please make sure this is by design.")
 
 
@@ -1157,8 +1157,8 @@ def yield_io_params_per_job (input_params,
         except error_input_file_does_not_match:
             if runtime_data != None:
                 if not "MATCH_FAILURE" in runtime_data:
-                    runtime_data["MATCH_FAILURE"] = []
-                runtime_data["MATCH_FAILURE"].append(str(sys.exc_info()[1]).replace("\n", "").strip())
+                    runtime_data["MATCH_FAILURE"] = defaultdict(set)
+                runtime_data["MATCH_FAILURE"][iterator].add(str(sys.exc_info()[1]).strip())
             continue
 
         # all other exceptions including malformed regexes are raised

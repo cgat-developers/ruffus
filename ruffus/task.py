@@ -219,10 +219,10 @@ class t_stream_logger:
         self.stream.write(message + "\n")
 
     def warning(self, message):
-        sys.stream.write("\n\nWARNING:\n    " + message + "\n\n")
+        self.stream.write("\n\nWARNING:\n    " + message + "\n\n")
 
     def error(self, message):
-        sys.stream.write("\n\nERROR:\n    " + message + "\n\n")
+        self.stream.write("\n\nERROR:\n    " + message + "\n\n")
 
     def debug(self, message):
         self.stream.write(message + "\n")
@@ -1538,16 +1538,24 @@ class Pipeline(dict):
 
     # _________________________________________________________________________
     def run(self, *unnamed_args, **named_args):
-        pipeline_run(pipeline=self, *unnamed_args, **named_args)
+        if "pipeline" not in named_args:
+            named_args["pipeline"] = self
+        pipeline_run(*unnamed_args, **named_args)
 
     def printout(self, *unnamed_args, **named_args):
-        pipeline_printout(pipeline=self, *unnamed_args, **named_args)
+        if "pipeline" not in named_args:
+            named_args["pipeline"] = self
+        pipeline_printout(*unnamed_args, **named_args)
 
     def get_task_names(self, *unnamed_args, **named_args):
-        pipeline_get_task_names(pipeline=self, *unnamed_args, **named_args)
+        if "pipeline" not in named_args:
+            named_args["pipeline"] = self
+        pipeline_get_task_names(*unnamed_args, **named_args)
 
     def printout_graph(self, *unnamed_args, **named_args):
-        pipeline_printout_graph(pipeline=self, *unnamed_args, **named_args)
+        if "pipeline" not in named_args:
+            named_args["pipeline"] = self
+        pipeline_printout_graph(*unnamed_args, **named_args)
 
 #
 #   Global default shared pipeline (used for decorators)
@@ -2368,7 +2376,7 @@ class Task (node):
             #        messages.append(indent_str + "Task up-to-date")
 
         else:
-            runtime_data["MATCH_FAILURE"] = []
+            runtime_data["MATCH_FAILURE"] = defaultdict(set)
             #
             #   return messages description per job if verbose > 5 else
             #       whether up to date or not
@@ -2418,14 +2426,20 @@ class Task (node):
                         #    messages.append(indent_str + "  Job up-to-date")
 
             if cnt_jobs == 0:
-                messages.append(indent_str + "!!! No jobs for this task. Are you sure there is "
+                messages.append(indent_str + "!!! No jobs for this task.")
+                messages.append(indent_str + "Are you sure there is "
                                 "not a error in your code / regular expression?")
             # LOGGER
+
+            # DEBUGGGG!!
             if verbose >= 4 or (verbose and cnt_jobs == 0):
-                if runtime_data and "MATCH_FAILURE" in runtime_data:
-                    for s in runtime_data["MATCH_FAILURE"]:
-                        messages.append(indent_str + "Job Warning: File match failure: " + s)
-            runtime_data["MATCH_FAILURE"] = []
+                if runtime_data and "MATCH_FAILURE" in runtime_data and\
+                    self.param_generator_func in runtime_data["MATCH_FAILURE"]:
+                    for job_msg in runtime_data["MATCH_FAILURE"][self.param_generator_func]:
+                        messages.append(indent_str + "Job Warning: Input substitution failed:")
+                        messages.extend("  "+ indent_str + line for line in job_msg.split("\n"))
+
+            runtime_data["MATCH_FAILURE"][self.param_generator_func] = set()
         messages.append("")
         return messages
 
@@ -2508,6 +2522,7 @@ class Task (node):
                 #
                 #   Percolate warnings from parameter factories
                 #
+                #  !!
                 if (verbose >= 1 and "ruffus_WARNING" in runtime_data and
                         self.param_generator_func in runtime_data["ruffus_WARNING"]):
                     for msg in runtime_data["ruffus_WARNING"][self.param_generator_func]:
@@ -5148,13 +5163,22 @@ def make_job_parameter_generator(incomplete_tasks, task_parents, logger,
                         #   Add extra warning if no regular expressions match:
                         #   This is a common class of frustrating errors
                         #
+                        # DEBUGGGG!!
                         if verbose >= 1 and \
                                 "ruffus_WARNING" in runtime_data and \
                                 t.param_generator_func in runtime_data["ruffus_WARNING"]:
-                            for msg in runtime_data["ruffus_WARNING"][
-                                    t.param_generator_func]:
-                                logger.warning("    'In Task %r:' %s "
-                                               % (t._get_display_name(), msg))
+                            indent_str = " " * 8
+                            for msg in runtime_data["ruffus_WARNING"][t.param_generator_func]:
+                                messages = [msg.replace("\n", "\n" + indent_str)]
+                                if verbose >= 4 and runtime_data and \
+                                    "MATCH_FAILURE" in runtime_data and \
+                                    t.param_generator_func in runtime_data["MATCH_FAILURE"]:
+                                    for job_msg in runtime_data["MATCH_FAILURE"][t.param_generator_func]:
+                                        messages.append(indent_str + "Job Warning: Input substitution failed:")
+                                        messages.append(indent_str + "  " +job_msg.replace("\n", "\n" + indent_str + "  "))
+                                logger.warning("    In Task %r:\n%s%s "
+                                               % (t._get_display_name(), indent_str, "\n".join(messages)))
+
 
                 #
                 #   GeneratorExit thrown when generator doesn't complete.
