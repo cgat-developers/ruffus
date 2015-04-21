@@ -52,16 +52,10 @@ echo Running test_softlink_uptodate.py                                          
 python  -m unittest test_softlink_uptodate                                          && \
 echo Running test_newstyle_proxy.py                                                 && \
 python  -m unittest test_newstyle_proxy                                             && \
-echo Running test_job_completion_checksums.py                                       && \
-python  -m unittest test_job_completion_checksums                                   && \
-echo Running test_combinatorics.py                                                  && \
-python  -m unittest test_combinatorics                                              && \
 echo Running test_job_history_with_exceptions.py                                    && \
 python  -m unittest test_job_history_with_exceptions                                && \
 echo Running test_mkdir.py                                                          && \
 python  -m unittest test_mkdir                                                      && \
-echo Running test_regex_error_messages.py                                           && \
-python  -m unittest test_regex_error_messages                                       && \
 echo Running test_posttask_merge.py                                                 && \
 python  -m unittest test_posttask_merge                                             && \
 echo Running test_cmdline.py                                                        && \
@@ -74,10 +68,6 @@ echo Running test_split_subdivide_checkpointing.py                              
 python  -m unittest test_split_subdivide_checkpointing                              && \
 echo Running test_pipeline_printout_graph.py                                        && \
 python  -m unittest test_pipeline_printout_graph                                    && \
-echo Running test_newstyle_regex_error_messages.py                                  && \
-python  -m unittest test_newstyle_regex_error_messages                              && \
-echo Running test_newstyle_combinatorics.py                                         && \
-python  -m unittest test_newstyle_combinatorics                                     && \
 echo Running test_follows_mkdir.py                                                  && \
 python  -m unittest test_follows_mkdir                                              && \
 echo Running test_N_x_M_and_collate.py                                              && \
@@ -86,5 +76,18 @@ echo Running test_unicode_filenames.py                                          
 python  -m unittest test_unicode_filenames                                          && \
 echo Running test_subpipeline.py                                                    && \
 python  -m unittest test_subpipeline                                                && \
+# fragile tests involving error messages
+echo Running test_regex_error_messages.py                                           && \
+python  -m unittest test_regex_error_messages                                       && \
+echo Running test_newstyle_regex_error_messages.py                                  && \
+python  -m unittest test_newstyle_regex_error_messages                              && \
+echo Running test_combinatorics.py                                                  && \
+python  -m unittest test_combinatorics                                              && \
+echo Running test_newstyle_combinatorics.py                                         && \
+python  -m unittest test_newstyle_combinatorics                                     && \
+echo Running test_job_completion_checksums.py                                       && \
+python  -m unittest test_job_completion_checksums                                   && \
+echo Running test_transform_formatter.py                                            && \
+python  -m unittest test_transform_formatter                                        && \
 echo DONE!!!                                                                        
 

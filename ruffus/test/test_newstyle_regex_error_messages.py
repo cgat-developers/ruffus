@@ -330,7 +330,8 @@ class Test_regex_error_messages(unittest.TestCase):
         cleanup_tmpdir()
         s = StringIO()
         test_pipeline.printout(s, [test_regex_unmatched_task], verbose=5, wrap_width = 10000)
-        self.assertIn("Warning: File match failure: File '{tempdir}/a_name.tmp1' does not match regex".format(tempdir=tempdir), s.getvalue())
+        self.assertIn("Warning: Input substitution failed:", s.getvalue())
+        self.assertIn("File '{tempdir}/a_name.tmp1' does not match regex".format(tempdir=tempdir), s.getvalue())
 
     def test_regex_unmatched_run(self):
         """Run transform(...,regex()...)"""
@@ -383,7 +384,8 @@ class Test_regex_error_messages(unittest.TestCase):
         cleanup_tmpdir()
         s = StringIO()
         test_pipeline.printout(s, [test_suffix_unmatched_task2], verbose=5, wrap_width = 10000)
-        self.assertIn("Warning: File match failure: File '{tempdir}/a_name.tmp1' does not match suffix".format(tempdir=tempdir), s.getvalue())
+        self.assertIn("Warning: Input substitution failed:", s.getvalue())
+        self.assertIn("File '{tempdir}/a_name.tmp1' does not match suffix".format(tempdir=tempdir), s.getvalue())
 
     def test_suffix_unmatched_run2(self):
         """Run transform(...,suffix()...)"""

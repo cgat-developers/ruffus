@@ -387,7 +387,8 @@ class TestCombinatorics(unittest.TestCase):
 
         s = StringIO()
         pipeline_printout(s, [test_product_misspelt_capture_error_task], verbose=3, wrap_width = 10000, pipeline= "main")
-        self.assertIn("Warning: File match failure: Unmatched field 'FILEPART'", s.getvalue())
+        self.assertIn("Warning: Input substitution failed:", s.getvalue())
+        self.assertIn("Unmatched field 'FILEPART'", s.getvalue())
 
 
     def test_product_out_of_range_formatter_ref_error(self):
@@ -399,7 +400,9 @@ class TestCombinatorics(unittest.TestCase):
 
         s = StringIO()
         pipeline_printout(s, [test_product_out_of_range_formatter_ref_error_task], verbose=3, wrap_width = 10000, pipeline= "main")
-        self.assertIn("Warning: File match failure: Unmatched field 2", s.getvalue())
+        self.assertIn("Warning: Input substitution failed:", s.getvalue())
+        self.assertIn("Unmatched field 2", s.getvalue())
+
 
     def test_product_formatter_ref_index_error(self):
         """
@@ -410,7 +413,9 @@ class TestCombinatorics(unittest.TestCase):
 
         s = StringIO()
         pipeline_printout(s, [test_product_formatter_ref_index_error_task], verbose=3, wrap_width = 10000, pipeline= "main")
-        self.assertIn("Warning: File match failure: Unmatched field string index out of range", s.getvalue())
+        self.assertIn("Warning: Input substitution failed:", s.getvalue())
+        self.assertIn("Unmatched field string index out of range", s.getvalue())
+
         #print s.getvalue()
 
 

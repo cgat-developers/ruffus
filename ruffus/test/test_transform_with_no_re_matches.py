@@ -102,7 +102,8 @@ class Test_task_mkdir(unittest.TestCase):
         save_to_str_logger = t_save_to_str_logger()
         pipeline_run(multiprocess = 10, logger = save_to_str_logger, verbose = 1, pipeline= "main")
 
-        self.assertTrue("no files names matched" in save_to_str_logger.warning_str)
+        print(save_to_str_logger.warning_str)
+        self.assertTrue("no file names matched" in save_to_str_logger.warning_str)
         print("\n    Warning printed out correctly", file=sys.stderr)
 
     def test_newstyle_no_re_match (self):
@@ -114,7 +115,8 @@ class Test_task_mkdir(unittest.TestCase):
 
         save_to_str_logger = t_save_to_str_logger()
         test_pipeline.run(multiprocess = 10, logger = save_to_str_logger, verbose = 1)
-        self.assertTrue("no files names matched" in save_to_str_logger.warning_str)
+        print(save_to_str_logger.warning_str)
+        self.assertTrue("no file names matched" in save_to_str_logger.warning_str)
         print("\n    Warning printed out correctly", file=sys.stderr)
 
 

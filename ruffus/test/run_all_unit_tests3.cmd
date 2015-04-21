@@ -1,5 +1,11 @@
 echo Running test_file_name_parameters.py                                           && \
 python3 -m unittest test_file_name_parameters                                       && \
+echo Running test_with_logger.py                                                    && \
+python3 -m unittest test_with_logger                                                && \
+echo Running script test_with_logger.py                                             && \
+python3 test_with_logger.py                                                         && \
+echo Running test_proxy_logger.py                                                   && \
+python3 -m unittest test_proxy_logger                                               && \
 echo Running test_exceptions.py                                                     && \
 python3 -m unittest test_exceptions                                                 && \
 echo Running test_task_file_dependencies.py                                         && \
@@ -46,16 +52,10 @@ echo Running test_softlink_uptodate.py                                          
 python3 -m unittest test_softlink_uptodate                                          && \
 echo Running test_newstyle_proxy.py                                                 && \
 python3 -m unittest test_newstyle_proxy                                             && \
-echo Running test_job_completion_checksums.py                                       && \
-python3 -m unittest test_job_completion_checksums                                   && \
-echo Running test_combinatorics.py                                                  && \
-python3 -m unittest test_combinatorics                                              && \
 echo Running test_job_history_with_exceptions.py                                    && \
 python3 -m unittest test_job_history_with_exceptions                                && \
 echo Running test_mkdir.py                                                          && \
 python3 -m unittest test_mkdir                                                      && \
-echo Running test_regex_error_messages.py                                           && \
-python3 -m unittest test_regex_error_messages                                       && \
 echo Running test_posttask_merge.py                                                 && \
 python3 -m unittest test_posttask_merge                                             && \
 echo Running test_cmdline.py                                                        && \
@@ -68,10 +68,6 @@ echo Running test_split_subdivide_checkpointing.py                              
 python3 -m unittest test_split_subdivide_checkpointing                              && \
 echo Running test_pipeline_printout_graph.py                                        && \
 python3 -m unittest test_pipeline_printout_graph                                    && \
-echo Running test_newstyle_regex_error_messages.py                                  && \
-python3 -m unittest test_newstyle_regex_error_messages                              && \
-echo Running test_newstyle_combinatorics.py                                         && \
-python3 -m unittest test_newstyle_combinatorics                                     && \
 echo Running test_follows_mkdir.py                                                  && \
 python3 -m unittest test_follows_mkdir                                              && \
 echo Running test_N_x_M_and_collate.py                                              && \
@@ -80,4 +76,18 @@ echo Running test_unicode_filenames.py                                          
 python3 -m unittest test_unicode_filenames                                          && \
 echo Running test_subpipeline.py                                                    && \
 python3 -m unittest test_subpipeline                                                && \
+# fragile tests involving error messages
+echo Running test_regex_error_messages.py                                           && \
+python3 -m unittest test_regex_error_messages                                       && \
+echo Running test_newstyle_regex_error_messages.py                                  && \
+python3 -m unittest test_newstyle_regex_error_messages                              && \
+echo Running test_combinatorics.py                                                  && \
+python3 -m unittest test_combinatorics                                              && \
+echo Running test_newstyle_combinatorics.py                                         && \
+python3 -m unittest test_newstyle_combinatorics                                     && \
+echo Running test_job_completion_checksums.py                                       && \
+python3 -m unittest test_job_completion_checksums                                   && \
+echo Running test_transform_formatter.py                                            && \
+python3 -m unittest test_transform_formatter                                        && \
 echo DONE!!!                                                                        
+
