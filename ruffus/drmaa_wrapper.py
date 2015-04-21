@@ -417,11 +417,14 @@ def run_job_locally (cmd_str, logger = None, job_environment = None, working_dir
     stdoutQ = Queue()
     stdout_t = threading.Thread(target=enqueue_output, args=(process.stdout, stdoutQ, sys.stdout if local_echo else None))
     stderr_t = threading.Thread(target=enqueue_output, args=(process.stderr, stderrQ, sys.stderr if local_echo else None))
+    # if daemon = False, sub process cannot be interrupted by Ctrl-C
     stdout_t.daemon = True
     stderr_t.daemon = True
     stderr_t.start()
     stdout_t.start()
     process.wait()
+    stdout_t.join()
+    stderr_t.join()
 
     stdout, stderr = [], []
     try:
