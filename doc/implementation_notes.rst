@@ -20,6 +20,9 @@ Release
 
         make htmlsync
 
+
+    * Check passes Travis
+
     * tag git with, for example::
 
         git tag -a v2.6.3 -m "Version 2.6.3"

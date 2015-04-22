@@ -13,7 +13,7 @@
 .. _dependency_checking_function: `decorators.check_if_uptodate.dependency_checking_function`_
 
 ########################
-@check_if_uptodate
+check_if_uptodate
 ########################
 
 *******************************************************************************************

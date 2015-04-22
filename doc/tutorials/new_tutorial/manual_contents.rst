@@ -4,7 +4,7 @@
 .. _new_manual.table_of_contents:
 
 ####################################################################
-**Ruffus** Manual: List of Chapters and Example code
+**Ruffus** Manual
 ####################################################################
 
     Download as :download:`pdf <../../static_data/ruffus.pdf>`.

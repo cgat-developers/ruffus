@@ -10,7 +10,7 @@
 
 
 ############
-@active_if
+active_if
 ############
 
 .. Comment. These are parameter names

@@ -3,7 +3,7 @@
 .. _todo:
 
 ##########################################
-Where I see Ruffus going
+Planned improvements
 ##########################################
 
     These are the future enhancements I would like to see in Ruffus:
@@ -35,9 +35,9 @@ Where I see Ruffus going
         * Can we read and write from databases instead of files?
         * Can we cleanup files but preserve history?
 
-##########################################
+===============================================
 In up coming release:
-##########################################
+===============================================
 
 ****************************************************************************************
 Todo: Mention python3.2 multiprocessing import and proxies bug in FAQ
@@ -164,9 +164,9 @@ Todo: Mark input strings as non-file names, and add support for dynamically retu
 
 
 
-##########################################
+===============================================
 Future Changes to Ruffus
-##########################################
+===============================================
 
     I would appreciated feedback and help on all these issues and where next to take *ruffus*.
 
@@ -287,9 +287,9 @@ Todo: ``@split`` / ``@subdivide`` returns the actual output created
 
     * Consider yielding?
 
-==========================================================================================
+_________________________________________________________
 Checkpointing
-==========================================================================================
+_________________________________________________________
 
     * If checkpoint file is used, the actual files are saved and checked the next time
     * If no files are generated, no files are checked the next time...
@@ -301,18 +301,18 @@ Checkpointing
 Todo: New decorators
 ***************************************
 
-==============================================================================
+_________________________________________________________
 Todo: ``@originate``
-==============================================================================
+_________________________________________________________
 
     Each (serial) invocation returns lists of output parameters until returns
     None. (Empty list = ``continue``, None = ``break``).
 
 
 
-==============================================================================
+_________________________________________________________
 Todo: ``@recombine``
-==============================================================================
+_________________________________________________________
 
     Like ``@collate`` but automatically regroups jobs which were a result of a previous ``@subdivide`` / ``@split`` (even after intervening ``@transform`` )
 
@@ -344,9 +344,9 @@ Todo: Allow the next task to start before all jobs in the previous task have fin
     * We can choose between prioritising completion of the entire pipeline for some jobs
       (depth first) or trying to complete as many tasks as possible (breadth first)
 
-==============================================================================
+_________________________________________________________
 Converting to per-job rather than per task dependencies
-==============================================================================
+_________________________________________________________
     Some decorators prevent per job (rather than per task) dependency calculations, and
     will call a pipeline stall until the dependent tasks are completed (the current situation):
 
@@ -370,9 +370,9 @@ Converting to per-job rather than per task dependencies
 
     Breaking change: to force the entirety of the previous task to complete before the next one, use ``@follows``
 
-==============================================================================
+_________________________________________________________
 Implementation
-==============================================================================
+_________________________________________________________
 
     * "Push" model. Completing jobs "check in" their outputs to "input slots" for all the sucessor jobs.
     * When "input slots" are full for any job, it is put on the dispatch queue to be run.
@@ -433,9 +433,9 @@ Todo: Remove intermediate files
 
 
 
-##########################################
+===============================================
 Planned Improvements to Ruffus
-##########################################
+===============================================
 
 .. _todo.run_on_cluster:
 

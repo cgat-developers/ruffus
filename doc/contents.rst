@@ -5,10 +5,104 @@
 ==========================================
 Start Here:
 ==========================================
+
 .. toctree::
-   :maxdepth: 2
+   :titlesonly:
+   :maxdepth: 1
+   :caption: Introduction
+   :name: introduction_toc
 
    installation.rst
+   tutorials/new_tutorial/manual_contents.rst
+   cheatsheet.rst
+   pipeline_functions.rst
+   drmaa_wrapper_functions.rst
+   history.rst
+   tutorials/new_syntax.rst
+   Future plans <todo>
+   faq.rst
+   why_ruffus.rst
+
+
+=====================
+Quick Reference:
+=====================
+.. toctree::
+    :maxdepth: 1
+    :caption: Decorators
+    :name: decorators_toc
+
+    decorators/decorators.rst
+    decorators/indicator_objects.rst
+
+.. toctree::
+    :maxdepth: 1
+    :name: core_toc
+    :caption: Core
+
+    decorators/originate.rst
+    decorators/split.rst
+    decorators/transform.rst
+    decorators/merge.rst
+
+.. toctree::
+    :maxdepth: 1
+    :name: advanced_toc
+    :caption: Advanced
+
+    decorators/subdivide.rst
+    decorators/transform_ex.rst
+    decorators/collate.rst
+    decorators/collate_ex.rst
+    decorators/graphviz.rst
+    decorators/mkdir.rst
+    decorators/jobs_limit.rst
+    decorators/posttask.rst
+    decorators/active_if.rst
+    decorators/follows.rst
+
+
+
+.. toctree::
+    :maxdepth: 1
+    :name: combinatorics_toc
+    :caption: Combinatorics
+
+    decorators/product.rst
+    decorators/permutations.rst
+    decorators/combinations.rst
+    decorators/combinations_with_replacement.rst
+
+.. topic::
+    Esoteric
+
+    .. toctree::
+        :maxdepth: 1
+        :name: esoteric_toc
+
+        decorators/files_ex.rst
+        decorators/check_if_uptodate.rst
+        decorators/parallel.rst
+
+.. topic::
+    Deprecated
+
+    .. toctree::
+        :maxdepth: 1
+        :name: deprecated_toc
+
+        decorators/files.rst
+        decorators/files_re.rst
+
+
+==========================================
+Manual
+==========================================
+.. toctree::
+   :maxdepth: 1
+   :caption: Manual / Tutorial
+   :name: manual_toc
+
    tutorials/new_tutorial/manual_contents.rst
    tutorials/new_tutorial/introduction.rst
    tutorials/new_tutorial/transform.rst
@@ -41,9 +135,10 @@ Start Here:
    tutorials/new_tutorial/deprecated_files_re.rst
 
 
-Example code for:
-
 .. toctree::
+   :caption: Example code
+   :name: example_code_toc
+   :hidden:
    :maxdepth: 1
 
    tutorials/new_tutorial/introduction_code.rst
@@ -67,11 +162,9 @@ Example code for:
 
 
 
-=====================
-Overview:
-=====================
 .. toctree::
    :maxdepth: 2
+   :hidden:
 
    cheatsheet.rst
    pipeline_functions.rst
@@ -89,11 +182,9 @@ Overview:
    gallery.rst
    why_ruffus.rst
 
-=====================
-Examples
-=====================
 .. toctree::
    :maxdepth: 2
+   :hidden:
 
    examples/bioinformatics/index.rst
    examples/bioinformatics/part2.rst
@@ -103,84 +194,11 @@ Examples
 
 
 
-=====================
-Reference:
-=====================
-######################
-Decorators
-######################
-.. toctree::
-    :maxdepth: 1
 
-    decorators/decorators.rst
-    decorators/indicator_objects.rst
-
-
-.. topic::
-    Core
-
-    .. toctree::
-        :maxdepth: 1
-
-        decorators/originate.rst
-        decorators/split.rst
-        decorators/transform.rst
-        decorators/merge.rst
-
-.. topic::
-    For advanced users
-
-    .. toctree::
-        :maxdepth: 1
-
-        decorators/subdivide.rst
-        decorators/transform_ex.rst
-        decorators/collate.rst
-        decorators/collate_ex.rst
-        decorators/graphviz.rst
-        decorators/mkdir.rst
-        decorators/jobs_limit.rst
-        decorators/posttask.rst
-        decorators/active_if.rst
-        decorators/follows.rst
-
-.. topic::
-    Combinatorics
-
-    .. toctree::
-        :maxdepth: 1
-
-        decorators/product.rst
-        decorators/permutations.rst
-        decorators/combinations.rst
-        decorators/combinations_with_replacement.rst
-
-.. topic::
-    Esoteric
-
-    .. toctree::
-        :maxdepth: 1
-
-        decorators/files_ex.rst
-        decorators/check_if_uptodate.rst
-        decorators/parallel.rst
-
-.. topic::
-    Deprecated
-
-    .. toctree::
-        :maxdepth: 1
-
-        decorators/files.rst
-        decorators/files_re.rst
-
-
-######################
-Modules:
-######################
 
 .. toctree::
    :maxdepth: 2
+   :hidden:
 
    task.rst
    proxy_logger.rst
