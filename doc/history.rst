@@ -28,8 +28,8 @@ version 2.6.3
     * `@transform(..., suffix("xxx"),` :red:`output_dir` `= "/new/output/path")` works even when the ouput has more than one file  `(github)  <https://github.com/bunbun/ruffus/issues/43>`__
     * `@subdivide( ..., suffix("xxx"),` :red:`output_dir` `= "/new/output/path")` works in exactly the same way as `@transform(..., outputdir="xxx")`  `(github)  <https://github.com/bunbun/ruffus/issues/42>`__
     * `ruffus.drmaa_wrapper.run_job()` works with python3 `(github)  <https://github.com/bunbun/ruffus/issues/46>`__
-    * `ruffus.drmaa.wrapper.run_job_locally()` allows env to be set (environment) `(github)  <https://github.com/bunbun/ruffus/issues/44>`__
-    * New object-orientated style syntax and `ruffus.cmdline.run` `(github)  <https://github.com/bunbun/ruffus/issues/48>`__
+    * `ruffus.drmaa.wrapper.run_job()` allows env (environment) to be set for both jobs run locally and on the cluster `(github)  <https://github.com/bunbun/ruffus/issues/44>`__
+    * New object-orientated style syntax works seamlessly with Ruffus command line support `ruffus.cmdline.run` `(github)  <https://github.com/bunbun/ruffus/issues/48>`__
 
 
 
