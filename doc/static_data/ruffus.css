@@ -3,9 +3,9 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-@import url("basic.css");
+@import url("css/theme.css");
 
-/* -- page layout ----------------------------------------------------------- */
+/*
 
 body {
     font-family: sans-serif;
@@ -54,11 +54,6 @@ div.related {
     color: #ffffff;
 }
 
-div.related a {
-    font-size: 120%;    /* new */
-    color: #c0c0FF;     /* new */
-    /*color: #ffffff;     /* orig */
-}
 
 div.sphinxsidebar {
 }
@@ -76,8 +71,6 @@ div.sphinxsidebar h3 a {
     color: #98dbcc;
     margin: 0;
     padding: 0;
-/*    margin: 0px 0px 0px 0px;
-    padding: 0px 0px 0px 0px;*/
 }
 
 
@@ -100,7 +93,7 @@ div.sphinxsidebar p.topless {
 }
 
 div.sphinxsidebar ul {
-    font-size: 100%;    /* NEW */
+    font-size: 100%;
     margin: 10px;
     padding: 0;
     color: #ffffff;
@@ -121,6 +114,7 @@ div.sphinxsidebar input {
 }
 
 /* -- body styles ----------------------------------------------------------- */
+/*
 
 a {
     color: #355f7c;
@@ -323,5 +317,13 @@ div.sphinxsidebar h3 a{
 */
 
 .highlight .nd:nth-of-type(n)   { background-color: #ffff88; color: red; font-weight: bold; outline:red dotted thin}/**/
-.highlight .hll:nth-of-type(n)   { background-color: #eeffcc; font-weight: bold}
+.highlight .hll:nth-of-type(n)   { font-weight: bold}
 .highlight .hll .c:nth-of-type(n)    { background-color: #ffffff; color: red; font-weight: bold; font-style: normal;font-size:120%} /* Comment */
+
+
+div.related a {
+    font-size: 120%;    /* new */
+    color: #c0c0FF;     /* new */
+    /*color: #ffffff;     /* orig */
+}
+

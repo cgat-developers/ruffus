@@ -4,7 +4,7 @@
 .. _new_manual.table_of_contents:
 
 ####################################################################
-**Ruffus** Manual
+**Ruffus** Manual Table of Contents
 ####################################################################
 
     Download as :download:`pdf <../../static_data/ruffus.pdf>`.
@@ -60,5 +60,40 @@
     * :ref:`new_manual.combinatorics.code`
     * :ref:`new_manual.inputs.code`
     * :ref:`new_manual.on_the_fly.code`
+
+.. toctree::
+   :caption: Example code
+   :name: example_code_toc
+   :hidden:
+   :maxdepth: 1
+
+   introduction_code.rst
+   transform_code.rst
+   transform_in_parallel_code.rst
+   originate_code.rst
+   pipeline_printout_code.rst
+   pipeline_printout_graph_code.rst
+   output_file_names_code.rst
+   mkdir_code.rst
+   checkpointing_code.rst
+   split_code.rst
+   merge_code.rst
+   multiprocessing_code.rst
+   logging_code.rst
+   subdivide_collate_code.rst
+   combinatorics_code.rst
+   inputs_code.rst
+   onthefly_code.rst
+   flowchart_colours_code.rst
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+
+   ../../examples/bioinformatics/index.rst
+   ../../examples/bioinformatics/part2.rst
+   ../../examples/bioinformatics/part1_code.rst
+   ../../examples/bioinformatics/part2_code.rst
+   ../../examples/paired_end_data.py.rst
 
 

@@ -89,18 +89,14 @@ Code for :ref:`regex() <decorators.regex>` Zoo example
 
 
         # create directories for each clade
-        @mkdir(    create_initial_files,                                       # Input
-
+        @mkdir(    create_initial_files,                                        # Input
                    regex(r"(.*?/?)(\w+)/(?P<clade>\w+).(?P<tame>\w+).animals"), # Only animals: ignore plants!
-                   r"\g<clade>")                                             # new_directory
+                   r"\g<clade>")                                                # new_directory
         #   Put different animals in different directories depending on their clade
         @transform(create_initial_files,                                        # Input
-
                    regex(r"(.*?/?)(\w+)/(?P<clade>\w+).(?P<tame>\w+).animals"), # Only animals: ignore plants!
-
-                   r"\1\g<clade>/\g<tame>.\2.food",                            # Replacement
-
-                   r"\1\g<clade>",                                             # new_directory
+                   r"\1\g<clade>/\g<tame>.\2.food",                             # Replacement
+                   r"\1\g<clade>",                                              # new_directory
                    r"\2",                                                       # animal_name
                    "\g<tame>")                                                  # tameness
         def feed(input_file, output_file, new_directory, animal_name, tameness):

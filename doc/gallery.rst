@@ -3,7 +3,7 @@
 .. image:: images/logo.jpg
 
 ******************************************************
-Hall of Fame: User contributed flowcharts
+Hall of Fame:
 ******************************************************
 Please contribute your own work flows in your favourite colours with (an optional) short description
 to email: ruffus_lib at llew.org.uk

@@ -9,12 +9,12 @@
 .. _design.why_ruffus:
 
 ###############################
-Why *Ruffus*?
+Who is *Ruffus*?
 ###############################
 
 **Cylindrophis ruffus** is the name of the
 `red-tailed pipe snake <http://en.wikipedia.org/wiki/Cylindrophis_ruffus>`_ (bad python-y pun)
-which can be found in `Hong Kong <http://www.discoverhongkong.com/eng/index.html>`_ where the original author comes from.
+which can be found in `Hong Kong <http://www.discoverhongkong.com/eng/index.html>`_ where the author Leo Goodstadt comes from.
 
 
 *Ruffus* is a shy creature, and pretends to be a cobra or a `banded krait  <http://en.wikipedia.org/wiki/File:Bandedkrait.jpg>`__ by putting up its red tail and ducking its

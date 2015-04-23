@@ -9,7 +9,7 @@
     * :ref:`Decorators <decorators>` for more decorators
 
 ########################
-@jobs_limit
+jobs_limit
 ########################
 
 .. |maximum_num_of_jobs| replace:: `maximum_num_of_jobs`

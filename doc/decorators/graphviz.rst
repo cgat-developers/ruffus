@@ -9,7 +9,7 @@
     * :ref:`Decorators <decorators>` for more decorators
 
 ########################
-@graphviz
+graphviz
 ########################
 
 .. |graphviz_parameters| replace:: `graphviz_parameters`

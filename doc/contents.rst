@@ -13,14 +13,13 @@ Start Here:
    :name: introduction_toc
 
    installation.rst
-   tutorials/new_tutorial/manual_contents.rst
-   cheatsheet.rst
-   pipeline_functions.rst
-   drmaa_wrapper_functions.rst
    history.rst
+   pipeline_functions.rst
+
    tutorials/new_syntax.rst
    Future plans <todo>
    faq.rst
+   gallery.rst
    why_ruffus.rst
 
 
@@ -53,7 +52,6 @@ Quick Reference:
     decorators/subdivide.rst
     decorators/transform_ex.rst
     decorators/collate.rst
-    decorators/collate_ex.rst
     decorators/graphviz.rst
     decorators/mkdir.rst
     decorators/jobs_limit.rst
@@ -73,26 +71,22 @@ Quick Reference:
     decorators/combinations.rst
     decorators/combinations_with_replacement.rst
 
-.. topic::
-    Esoteric
+.. toctree::
+    :maxdepth: 1
+    :name: esoteric_toc
+    :caption: Esoteric
 
-    .. toctree::
-        :maxdepth: 1
-        :name: esoteric_toc
+    decorators/files_ex.rst
+    decorators/check_if_uptodate.rst
+    decorators/parallel.rst
 
-        decorators/files_ex.rst
-        decorators/check_if_uptodate.rst
-        decorators/parallel.rst
+.. toctree::
+    :maxdepth: 1
+    :name: deprecated_toc
+    :caption: Deprecated
 
-.. topic::
-    Deprecated
-
-    .. toctree::
-        :maxdepth: 1
-        :name: deprecated_toc
-
-        decorators/files.rst
-        decorators/files_re.rst
+    decorators/files.rst
+    decorators/files_re.rst
 
 
 ==========================================
@@ -135,30 +129,6 @@ Manual
    tutorials/new_tutorial/deprecated_files_re.rst
 
 
-.. toctree::
-   :caption: Example code
-   :name: example_code_toc
-   :hidden:
-   :maxdepth: 1
-
-   tutorials/new_tutorial/introduction_code.rst
-   tutorials/new_tutorial/transform_code.rst
-   tutorials/new_tutorial/transform_in_parallel_code.rst
-   tutorials/new_tutorial/originate_code.rst
-   tutorials/new_tutorial/pipeline_printout_code.rst
-   tutorials/new_tutorial/pipeline_printout_graph_code.rst
-   tutorials/new_tutorial/output_file_names_code.rst
-   tutorials/new_tutorial/mkdir_code.rst
-   tutorials/new_tutorial/checkpointing_code.rst
-   tutorials/new_tutorial/split_code.rst
-   tutorials/new_tutorial/merge_code.rst
-   tutorials/new_tutorial/multiprocessing_code.rst
-   tutorials/new_tutorial/logging_code.rst
-   tutorials/new_tutorial/subdivide_collate_code.rst
-   tutorials/new_tutorial/combinatorics_code.rst
-   tutorials/new_tutorial/inputs_code.rst
-   tutorials/new_tutorial/onthefly_code.rst
-   tutorials/new_tutorial/flowchart_colours_code.rst
 
 
 
@@ -166,32 +136,10 @@ Manual
    :maxdepth: 2
    :hidden:
 
-   cheatsheet.rst
-   pipeline_functions.rst
-   drmaa_wrapper_functions.rst
-   installation.rst
    design.rst
-   Bugs and Updates <history>
-   tutorials/new_syntax.rst
-   tutorials/new_syntax_worked_example.rst
-   tutorials/new_syntax_worked_example_code.rst
-   Future plans <todo>
    Implementation_notes <implementation_notes.rst>
-   faq.rst
+   cheatsheet.rst
    glossary.rst
-   gallery.rst
-   why_ruffus.rst
-
-.. toctree::
-   :maxdepth: 2
-   :hidden:
-
-   examples/bioinformatics/index.rst
-   examples/bioinformatics/part2.rst
-   examples/bioinformatics/part1_code.rst
-   examples/bioinformatics/part2_code.rst
-   examples/paired_end_data.py.rst
-
 
 
 

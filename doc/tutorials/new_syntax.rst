@@ -17,7 +17,7 @@
 
 
 ################################################################################
-New Object orientated syntax for Ruffus in Version 2.6
+New Object Orientated Syntax
 ################################################################################
 
     Ruffus Pipelines can now be created and manipulated directly using :highlight-red:`Pipeline` and :highlight-red:`Task` objects instead of via decorators.
@@ -482,4 +482,10 @@ ______________________________________________________________________________
 
     All this will be much clearer going through the :ref:`worked_example <new_syntax.worked_example>`.
 
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+
+   new_syntax_worked_example.rst
+   new_syntax_worked_example_code.rst
 

@@ -18,7 +18,7 @@
 
 
 ############
-@follows
+follows
 ############
 
 .. _decorators.follows.mkdir:

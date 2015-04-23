@@ -258,7 +258,7 @@ Your first *Ruffus* pipeline
     These are specified using the *Ruffus* :ref:`@transform <decorators.transform>` decorator as follows:
 
         .. code-block:: python
-            :emphasize-lines: 6-8,17-19,29-31
+            :emphasize-lines: 8-10,19-21,30-33
 
             from ruffus import *
 

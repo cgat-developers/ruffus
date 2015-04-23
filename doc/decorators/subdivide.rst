@@ -9,7 +9,7 @@
     * :ref:`Decorators <decorators>` for more decorators
 
 ########################
-@subdivide
+subdivide
 ########################
 
 .. |input| replace:: `input`

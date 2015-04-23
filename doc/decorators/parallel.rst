@@ -9,7 +9,7 @@
     * :ref:`Decorators <decorators>` for more decorators
 
 ########################
-@parallel
+parallel
 ########################
 
 .. |job_params| replace:: `job_params`
