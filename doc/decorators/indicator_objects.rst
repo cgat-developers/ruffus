@@ -91,12 +91,12 @@ Indicator Objects
             #
             #   formatter
             #
-            @transform(create_initial_file_pairs,                               # Input
+            @transform(create_initial_file_pairs,                      # Input
 
-                        formatter(".+/job(?P<JOBNUMBER>\d+).a.start",           # Extract job number
-                                  ".+/job[123].b.start"),                       # Match only "b" files
+                        formatter(".+/job(?P<JOBNUMBER>\d+).a.start",  # Extract job number
+                                  ".+/job[123].b.start"),              # Match only "b" files
 
-                        ["{path[0]}/jobs{JOBNUMBER[0]}.output.a.1",             # Replacement list
+                        ["{path[0]}/jobs{JOBNUMBER[0]}.output.a.1",    # Replacement list
                          "{path[1]}/jobs{JOBNUMBER[0]}.output.b.1"])
             def first_task(input_files, output_parameters):
                 print "input_parameters = ", input_files
@@ -133,7 +133,7 @@ Indicator Objects
         parsed components:
 
         .. code-block:: python
-            :emphasize-lines: 14, 18,19
+            :emphasize-lines: 14,16,23-27
 
             from ruffus import *
             from ruffus.combinatorics import *
@@ -148,15 +148,18 @@ Indicator Objects
             #
             #   formatter
             #
-            @permutations(create_initial_files,                                           # Input
+            @permutations(create_initial_files,   # Input
 
-                        formatter("(.start)$"),                                           # match input file in permutations
+                        formatter("(.start)$"),   # match input file in permutations
                         2,
 
-                        "{path[0][0]}/{basename[0][0]}_vs_{basename[1][0]}.product",    # Output Replacement string
-                        "{path[0][0]}",                                                 # path for 1st set of files, 1st file name
-                        ["{basename[0][0]}",                                            # basename for 1st set of files, 1st file name
-                         "{basename[1][0]}"])                                           # basename for 2nd set of files, 1st file name
+                        "{path[0][0]}/"
+                            "{basename[0][0]}_"
+                            "vs_{basename[1][0]}"
+                            ".product",           # Output Replacement string
+                        "{path[0][0]}",           # path for 1st set of files, 1st file name
+                        ["{basename[0][0]}",      # basename for 1st set of files, 1st file name
+                         "{basename[1][0]}"])     # basename for 2nd set of files, 1st file name
             def product_task(input_file, output_parameter, shared_path, basenames):
                 print "input_parameter  = ", input_file
                 print "output_parameter = ", output_parameter
@@ -319,7 +322,8 @@ Indicator Objects
         The suffix match (``suffix(...)``) is exactly equivalent to the following code using regular expression (``regex(...)``):
             ::
 
-                @transform(["1.c", "2.c"], regex(r"^(.+)\.c$"), add_inputs([r"\1.h", "universal.h"]),  r"\1.o")
+                @transform(["1.c", "2.c"], regex(r"^(.+)\.c$"),
+                           add_inputs([r"\1.h", "universal.h"]),  r"\1.o")
                 def compile(infile, outfile):
                     # do something here
                     pass
@@ -335,7 +339,8 @@ Indicator Objects
 
                 @transform([    ["1.c", "A.c", 2]
                                 ["2.c", "B.c", "C.c", 3]],
-                                suffix(".c"), add_inputs([r"\1.h", "universal.h"]),  ".o")
+                                suffix(".c"), add_inputs([r"\1.h", "universal.h"]),
+                                ".o")
                 def compile(infile, outfile):
                     # do something here
                     pass

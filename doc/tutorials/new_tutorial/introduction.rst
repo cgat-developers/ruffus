@@ -215,7 +215,7 @@ Your first *Ruffus* pipeline
             #
             def summarise_bam_file(input_file,             # Input  parameter
                                    output_file,            # Output parameter
-                                   extra_stats_parameter): # Any number of extra parameters as required
+                                   extra_stats_parameter): # 1 or more extra parameters as required
                 """
                 Sketch of real analysis function
                 """

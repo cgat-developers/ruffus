@@ -71,9 +71,10 @@ active_if
         Produces the following output:
 
             .. code-block:: pycon
-                :emphasize-lines: 1,13
+                :emphasize-lines: 1,2,14,15
 
-                >>> # @active_if switches off task "this_task_might_be_inactive" because run_if_true_2 == False
+                >>> # @active_if switches off task "this_task_might_be_inactive"
+                >>> # because run_if_true_2 == False
                 >>> pipeline_run(verbose = 3)
 
                 Task enters queue = create_files
@@ -85,7 +86,8 @@ active_if
                 Completed Task = create_files
                 Inactive Task = this_task_might_be_inactive
 
-                >>> # @active_if switches on task "this_task_might_be_inactive" because all run_if_true conditions are met
+                >>> # @active_if switches on task "this_task_might_be_inactive"
+                >>> # because all run_if_true conditions are met
                 >>> run_if_true_2 = True
                 >>> pipeline_run(verbose = 3)
 

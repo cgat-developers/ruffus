@@ -55,7 +55,7 @@ subdivide
     **Example**:
 
         .. code-block:: python
-            :emphasize-lines: 12,13,20
+            :emphasize-lines: 17,19,23
 
             from ruffus import *
             from random import randint
@@ -68,12 +68,15 @@ subdivide
 
 
             #
-            #   Subdivide each of 3 start files further into [NNN1, NNN2, NNN3] number of files
+            #   Subdivide each of 3 start files further into
+            #      [NNN1, NNN2, NNN3] number of files
             #      where NNN1, NNN2, NNN3 are determined at run time
             #
             @subdivide(create_files, formatter(),
-                        "{path[0]}/{basename[0]}.*.step1",  # Output parameter: Glob matches any number of output file names
-                        "{path[0]}/{basename[0]}")          # Extra parameter:  Append to this for output file names
+                        # Output parameter: Glob matches any number of output file names
+                        "{path[0]}/{basename[0]}.*.step1",
+                        # Extra parameter:  Append to this for output file names
+                        "{path[0]}/{basename[0]}")
             def subdivide_files(input_file, output_files, output_file_name_root):
                 #
                 #   IMPORTANT: cleanup rubbish from previous run first

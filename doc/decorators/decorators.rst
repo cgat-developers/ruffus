@@ -13,6 +13,65 @@ Ruffus Decorators
 
 .. _decorators:
 
+.. toctree::
+    :maxdepth: 1
+    :name: core_toc
+    :caption: Core
+    :hidden:
+
+    originate.rst
+    split.rst
+    transform.rst
+    merge.rst
+
+.. toctree::
+    :maxdepth: 1
+    :name: advanced_toc
+    :caption: Advanced
+    :hidden:
+
+    subdivide.rst
+    transform_ex.rst
+    collate.rst
+    graphviz.rst
+    mkdir.rst
+    jobs_limit.rst
+    posttask.rst
+    active_if.rst
+    follows.rst
+
+
+
+.. toctree::
+    :maxdepth: 1
+    :name: combinatorics_toc
+    :caption: Combinatorics
+    :hidden:
+
+    product.rst
+    permutations.rst
+    combinations.rst
+    combinations_with_replacement.rst
+
+.. toctree::
+    :maxdepth: 1
+    :name: esoteric_toc
+    :caption: Esoteric
+    :hidden:
+
+    files_ex.rst
+    check_if_uptodate.rst
+    parallel.rst
+
+.. toctree::
+    :maxdepth: 1
+    :name: deprecated_toc
+    :caption: Deprecated
+    :hidden:
+
+    files.rst
+    files_re.rst
+
 
 =============================================
 *Core*
@@ -23,7 +82,7 @@ Ruffus Decorators
 
    "**@originate** (:ref:`Summary <decorators.originate>` / :ref:`Manual <new_manual.originate>`)
 
-    - Creates (originates) a set of starting |br| file from scratch  (*ex nihilo*!)
+    - Creates (originates) a set of starting file from scratch  (*ex nihilo*!)
     - Only called to create files which do not exist.
     - Each item in ``output`` is created by a separate job.
 
@@ -35,7 +94,7 @@ Ruffus Decorators
    "**@split** (:ref:`Summary <decorators.split>` / :ref:`Manual <new_manual.split>`)
 
    - Splits a single input into multiple output
-   - Globs in ``output`` can specify an |br| indeterminate number of files.
+   - Globs in ``output`` can specify an indeterminate number of files.
 
    ", "
    * :ref:`@split <decorators.split>` ( ``input``, ``output``, [``extras``,...] )
@@ -48,11 +107,11 @@ Ruffus Decorators
      | transform input data to output.
 
    ", "
-   * :ref:`@transform <decorators.transform>` ( ``input``, :ref:`suffix <decorators.transform.suffix_string>`\ *(*\ ``suffix_string``\ *)*\ , ``output``, [``extras``,...] )
+   * :ref:`@transform <decorators.transform>` ( ``input``, :ref:`suffix <decorators.transform.suffix_string>`\ () , ``output``, [``extras``,...] )
               \
-   * :ref:`@transform <decorators.transform>` ( ``input``, :ref:`regex <decorators.transform.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , ``output``, [``extras``,...] )
+   * :ref:`@transform <decorators.transform>` ( ``input``, :ref:`regex <decorators.transform.matching_regex>`\ () , ``output``, [``extras``,...] )
            \
-   * :ref:`@transform <decorators.transform>` ( ``input``, :ref:`formatter <decorators.transform.matching_formatter>`\ *(*\ ``regex_pattern``\ *)*\ , ``output``, [``extras``,...] )
+   * :ref:`@transform <decorators.transform>` ( ``input``, :ref:`formatter <decorators.transform.matching_formatter>`\ () , ``output``, [``extras``,...] )
            \
 
    ", ""
@@ -77,50 +136,50 @@ Ruffus Decorators
 
    "**@product** (:ref:`Summary <decorators.product>` / :ref:`Manual <new_manual.product>`)
 
-    - Generates the **product** between sets of input, |br| i.e. all vs all comparisons.
+    - Generates the **product** between sets of input, i.e. all vs all comparisons.
    ", "
-   * :ref:`@product <decorators.product>` ( ``input``, :ref:`formatter <decorators.product.matching_formatter>` *([* ``regex_pattern`` *])* ,*[* ``input``, :ref:`formatter <decorators.product.matching_formatter>` *([* ``regex_pattern`` *]), ]*, ``output``, [``extras``,...] )
+   * :ref:`@product <decorators.product>` ( ``input``, :ref:`formatter <decorators.product.matching_formatter>`\ () ,*[* ``input``, :ref:`formatter <decorators.product.matching_formatter>`\ (), ``output``, [``extras``,...] )
            \
 
    ", ""
    "**@permutations** (:ref:`Summary <decorators.permutations>` / :ref:`Manual <new_manual.permutations>`)
 
-    - Generates the **permutations**, between |br| all elements of a set of **Input**
+    - Generates the **permutations**, between all elements of a set of **Input**
     - Analogous to the python `itertools.permutations <http://docs.python.org/2/library/itertools.html#itertools.permutations>`__
-    - permutations('ABCD', 2) --> |br| AB AC AD BA BC BD CA CB CD DA DB DC
+    - permutations('ABCD', 2) --> AB AC AD BA BC BD CA CB CD DA DB DC
 
    ", "
-   * :ref:`@permutations <decorators.permutations>` ( ``input``, :ref:`formatter <decorators.product.matching_formatter>` *([* ``regex_pattern`` *])*, ``tuple_size``, ``output``, [``extras``,...] )
+   * :ref:`@permutations <decorators.permutations>` ( ``input``, :ref:`formatter <decorators.product.matching_formatter>`\ (), ``tuple_size``, ``output``, [``extras``,...] )
            \
    ", ""
    "**@combinations** (:ref:`Summary <decorators.combinations>` / :ref:`Manual <new_manual.combinations>`)
 
-    - Generates the **permutations**, |br| between all elements of a set of **Input**
+    - Generates the **permutations**, between all elements of a set of **Input**
     - Analogous to the python `itertools.combinations <http://docs.python.org/2/library/itertools.html#itertools.permutations>`__
-    - combinations('ABCD', 3) --> |br| ABC ABD ACD BCD
-    - Generates the **combinations**, |br| between all the elements of a set of **Input**: |br|
-      i.e. r-length tuples of *input* elements |br| with no repeated elements (**A A**) |br|
-      and where order of the tuples is irrelevant |br|
+    - combinations('ABCD', 3) --> ABC ABD ACD BCD
+    - Generates the **combinations**, between all the elements of a set of **Input**:
+      i.e. r-length tuples of *input* elements with no repeated elements (**A A**)
+      and where order of the tuples is irrelevant
       (either **A B** or  **B A**, not both).
 
    ", "
-   * :ref:`@combinations <decorators.permutations>` ( ``input``, :ref:`formatter <decorators.product.matching_formatter>` *([* ``regex_pattern`` *])*, ``tuple_size``, ``output``, [``extras``,...] )
+   * :ref:`@combinations <decorators.permutations>` ( ``input``, :ref:`formatter <decorators.product.matching_formatter>`\ (), ``tuple_size``, ``output``, [``extras``,...] )
            \
 
    ", ""
    "**@combinations_with_replacement** (:ref:`Summary <decorators.combinations_with_replacement>` / :ref:`Manual <new_manual.combinations_with_replacement>`)
 
-    - Generates the **permutations**, between |br| all the elements of a set of **Input**
+    - Generates the **permutations**, between all the elements of a set of **Input**
     - Analogous to the python `itertools.permutations <http://docs.python.org/2/library/itertools.html#itertools.permutations>`__
-    - combinations('ABCD', 3) --> |br| ABC ABD ACD BCD
-    - Generates the **combinations_with_replacement**, |br|
-      between all the elements of a set of **Input**: |br|
-      i.e. r-length tuples of *input* elements |br| with no repeated elements (**A A**) |br|
-      and where order of the tuples is irrelevant |br|
+    - combinations('ABCD', 3) --> ABC ABD ACD BCD
+    - Generates the **combinations_with_replacement**,
+      between all the elements of a set of **Input**:
+      i.e. r-length tuples of *input* elements with no repeated elements (**A A**)
+      and where order of the tuples is irrelevant
       (either **A B** or  **B A**, not both).
 
    ", "
-   * :ref:`@combinations_with_replacement <decorators.permutations>` ( ``input``, :ref:`formatter <decorators.product.matching_formatter>` *([* ``regex_pattern`` *])*, ``tuple_size``, ``output``, [``extras``,...] )
+   * :ref:`@combinations_with_replacement <decorators.permutations>` ( ``input``, :ref:`formatter <decorators.product.matching_formatter>`\ (), ``tuple_size``, ``output``, [``extras``,...] )
            \
 
    ", ""
@@ -135,42 +194,42 @@ Ruffus Decorators
    "**@subdivide** (:ref:`Summary <decorators.subdivide>` / :ref:`Manual <new_manual.subdivide>`)
 
    - Subdivides each *input* into multiple *Outputs*.
-   - The number of *output* can be determined at |br| runtime using globs.
+   - The number of *output* can be determined at runtime using globs.
    - **Many to Even More** operator.
-   - Do not use **split** as a synonym for |br| **subdivide**.
+   - Do not use **split** as a synonym for **subdivide**.
 
    ", "
-   * :ref:`@subdivide <decorators.subdivide>` ( ``input``, :ref:`regex <decorators.subdivide.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , [ :ref:`inputs <decorators.inputs>` | :ref:`add_inputs <decorators.add_inputs>`\ *(*\ ``input_pattern``\ *)*\ , ] ``output``, [``extras``,...] )
+   * :ref:`@subdivide <decorators.subdivide>` ( ``input``, :ref:`regex <decorators.subdivide.matching_regex>`\ () , [ :ref:`inputs <decorators.inputs>` | :ref:`add_inputs <decorators.add_inputs>`\ *(*\ ``input_pattern``\ *)*\ , ] ``output``, [``extras``,...] )
            \
-   * :ref:`@subdivide <decorators.subdivide>` ( ``input``, :ref:`formatter <decorators.subdivide.matching_formatter>`\ *(*\ [``regex_pattern``] *)*\ , [ :ref:`inputs <decorators.inputs>` | :ref:`add_inputs <decorators.add_inputs>`\ *(*\ ``input_pattern``\ *)*\ , ] ``output``, [``extras``,...] )
+   * :ref:`@subdivide <decorators.subdivide>` ( ``input``, :ref:`formatter <decorators.subdivide.matching_formatter>`\ *(*\ [] *)*\ , [ :ref:`inputs <decorators.inputs>` | :ref:`add_inputs <decorators.add_inputs>`\ *(*\ ``input_pattern``\ *)*\ , ] ``output``, [``extras``,...] )
            \
 
    ", ""
    "**@transform** (:ref:`Summary <decorators.transform_ex>` / :ref:`Manual <new_manual.inputs>`)
 
-   - Generates both **input** & **output** |br| from regular expressions
+   - Generates both **input** & **output** from regular expressions
    - Useful for adding additional file dependencies
 
    ", "
-   * :ref:`@transform <decorators.transform_ex>` ( ``input``, :ref:`regex <decorators.transform.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , [ :ref:`inputs <decorators.inputs>` | :ref:`add_inputs <decorators.add_inputs>`\ *(*\ ``input_pattern``\ *)*\ , ] ``output``, [``extras``,...] )
+   * :ref:`@transform <decorators.transform_ex>` ( ``input``, :ref:`regex <decorators.transform.matching_regex>`\ () , [ :ref:`inputs <decorators.inputs>` | :ref:`add_inputs <decorators.add_inputs>`\ *(*\ ``input_pattern``\ *)*\ , ] ``output``, [``extras``,...] )
            \
-   * :ref:`@transform <decorators.transform_ex>` ( ``input``, :ref:`formatter <decorators.transform.matching_formatter>`\ *(*\ ``regex_pattern``\ *)*\ , [ :ref:`inputs <decorators.inputs>` | :ref:`add_inputs <decorators.add_inputs>`\ *(*\ ``input_pattern``\ *)*\ , ] ``output``, [``extras``,...] )
+   * :ref:`@transform <decorators.transform_ex>` ( ``input``, :ref:`formatter <decorators.transform.matching_formatter>`\ () , [ :ref:`inputs <decorators.inputs>` | :ref:`add_inputs <decorators.add_inputs>`\ *(*\ ``input_pattern``\ *)*\ , ] ``output``, [``extras``,...] )
            \
 
    ", ""
    "**@collate** (:ref:`Summary <decorators.collate>` / :ref:`Manual <new_manual.collate>`)
 
-   - Groups multiple input using |br| regular expression matching.
-   - Multiple input which generate identical |br| output are collated together.
+   - Groups multiple input using regular expression matching.
+   - Multiple input generating identical output are collated together.
 
    ", "
-   * :ref:`@collate <decorators.collate>` (``input``, :ref:`regex <decorators.collate.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , ``output``, [``extras``,...] )
+   * :ref:`@collate <decorators.collate>` (``input``, :ref:`regex <decorators.collate.matching_regex>`\ () , ``output``, [``extras``,...] )
            \
-   * :ref:`@collate <decorators.collate_ex>` (``input``, :ref:`regex <decorators.collate_ex.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , :ref:`inputs <decorators.inputs>` | :ref:`add_inputs <decorators.add_inputs>`\ *(*\ ``input_pattern``\ *)*\ , ``output``, [``extras``,...] )
+   * :ref:`@collate <decorators.collate_ex>` (``input``, :ref:`regex <decorators.collate_ex.matching_regex>`\ () , :ref:`inputs <decorators.inputs>` | :ref:`add_inputs <decorators.add_inputs>`\ *(*\ ``input_pattern``\ *)*\ , ``output``, [``extras``,...] )
            \
-   * :ref:`@collate <decorators.collate>` (``input``, :ref:`formatter <decorators.collate.matching_formatter>`\ *(*\ ``formatter_pattern``\ *)*\ , ``output``, [``extras``,...] )
+   * :ref:`@collate <decorators.collate>` (``input``, :ref:`formatter <decorators.collate.matching_formatter>`\ () , ``output``, [``extras``,...] )
            \
-   * :ref:`@collate <decorators.collate_ex>` (``input``, :ref:`formatter <decorators.collate_ex.matching_formatter>`\ *(*\ ``formatter_pattern``\ *)*\ , :ref:`inputs <decorators.inputs>` | :ref:`add_inputs <decorators.add_inputs>`\ *(*\ ``input_pattern``\ *)*\ , ``output``, [``extras``,...] )
+   * :ref:`@collate <decorators.collate_ex>` (``input``, :ref:`formatter <decorators.collate_ex.matching_formatter>`\ () , :ref:`inputs <decorators.inputs>` | :ref:`add_inputs <decorators.add_inputs>`\ *(*\ ``input_pattern``\ *)*\ , ``output``, [``extras``,...] )
            \
 
    ", ""
@@ -192,9 +251,9 @@ Ruffus Decorators
    - Optional :ref:`touch_file <decorators.posttask.file_name>` indicator (:ref:`Manual <new_manual.posttask.touch_file>`)
 
    ", "
-   * :ref:`@posttask <decorators.posttask>` ( ``signal_task_completion_function`` )
+   * :ref:`@posttask <decorators.posttask>` ( ``completion_signal_func`` )
            \
-   * :ref:`@posttask <decorators.posttask>` (:ref:`touch_file <decorators.touch_file>`\ ( ``'task1.completed'`` ))
+   * :ref:`@posttask <decorators.posttask>` (:ref:`touch_file <decorators.touch_file>`\ ( ``'task1.done'`` ))
            \
 
    ", ""
@@ -210,15 +269,15 @@ Ruffus Decorators
         * have no output.
 
    ", "
-   * :ref:`@active_if <decorators.active_if>` ( ``on_or_off1, [on_or_off2, ...]`` )
+   * :ref:`@active_if <decorators.active_if>` ( ``on_or_off1``, ``[on_or_off2, ...]`` )
            \
 
    ", ""
    "**@jobs_limit** (:ref:`Summary <decorators.jobs_limit>` / :ref:`Manual <new_manual.jobs_limit>`)
 
-   - Limits the amount of multiprocessing |br| for the specified task
-   - Ensures that fewer than N jobs |br| are run in parallel for this task
-   - Overrides ``multiprocess`` parameter |br| in :ref:`pipeline_run(...) <pipeline_functions.pipeline_run>`
+   - Limits the amount of multiprocessing for the specified task
+   - Ensures that fewer than N jobs are run in parallel for this task
+   - Overrides ``multiprocess`` parameter in :ref:`pipeline_run(...) <pipeline_functions.pipeline_run>`
    ", "
    * :ref:`@jobs_limit <decorators.jobs_limit>` ( ``NUMBER_OF_JOBS_RUNNING_CONCURRENTLY`` )
            \
@@ -229,17 +288,17 @@ Ruffus Decorators
    - Generates paths for `os.makedirs  <http://docs.python.org/2/library/os.html#os.makedirs>`__
 
    ", "
-   * :ref:`@mkdir <decorators.mkdir>` ( ``input``, :ref:`suffix <decorators.mkdir.suffix_string>`\ *(*\ ``suffix_string``\ *)*\ , ``output`` )
+   * :ref:`@mkdir <decorators.mkdir>` ( ``input``, :ref:`suffix <decorators.mkdir.suffix_string>`\ () , ``output`` )
               \
-   * :ref:`@mkdir <decorators.mkdir>` ( ``input``, :ref:`regex <decorators.mkdir.matching_regex>`\ *(*\ ``regex_pattern``\ *)*\ , ``output`` )
+   * :ref:`@mkdir <decorators.mkdir>` ( ``input``, :ref:`regex <decorators.mkdir.matching_regex>`\ () , ``output`` )
            \
-   * :ref:`@mkdir <decorators.mkdir>` ( ``input``, :ref:`formatter <decorators.mkdir.matching_formatter>`\ *(*\ ``regex_pattern``\ *)*\ , ``output``)
+   * :ref:`@mkdir <decorators.mkdir>` ( ``input``, :ref:`formatter <decorators.mkdir.matching_formatter>`\ () , ``output``)
            \
 
    ", ""
    "**@graphviz** (:ref:`Summary <decorators.graphviz>` / :ref:`Manual <new_manual.pipeline_printout_graph>`)
 
-   - Customise the task graphics in |br|
+   - Customise the task graphics in
      flowcharts from :ref:`pipeline_printout_graph(...) <pipeline_functions.pipeline_printout_graph>`
 
    ", "
@@ -278,9 +337,9 @@ Ruffus Decorators
    - Best used in conjuction with :ref:`@check_if_uptodate <decorators.check_if_uptodate>`
 
    ", "
-   * :ref:`@parallel <decorators.parallel>` ( ``parameter_list`` ) (:ref:`see Manual <new_manual.deprecated_parallel>`)
+   * :ref:`@parallel <decorators.parallel>` ( ``parameter_list`` )
            \
-   * :ref:`@parallel <decorators.parallel>` ( ``parameter_generating_function`` ) (:ref:`see Manual <new_manual.on_the_fly>`)
+   * :ref:`@parallel <decorators.parallel>` ( ``parameter_generating_function`` )
            \
 
    ", ""
@@ -304,9 +363,6 @@ Ruffus Decorators
        - skips up-to-date jobs
    ", "
    * :ref:`@files_re <decorators.files_re>` ( ``input``, ``matching_regex``, [``input_pattern``,] ``output``, ``...`` )
-       ``input_pattern``/``output`` are regex patterns
-       used to create input/output file names from the starting
-       list of either glob_str or file names
 
    ", ""
 

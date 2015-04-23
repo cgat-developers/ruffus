@@ -14,13 +14,13 @@ Start Here:
 
    installation.rst
    history.rst
-   pipeline_functions.rst
-
    tutorials/new_syntax.rst
    Future plans <todo>
    faq.rst
    gallery.rst
    why_ruffus.rst
+   tutorials/new_tutorial/manual_contents.rst
+
 
 
 =====================
@@ -28,107 +28,12 @@ Quick Reference:
 =====================
 .. toctree::
     :maxdepth: 1
-    :caption: Decorators
-    :name: decorators_toc
+    :caption: Reference
+    :name: reference_toc
 
+    pipeline_functions.rst
     decorators/decorators.rst
     decorators/indicator_objects.rst
-
-.. toctree::
-    :maxdepth: 1
-    :name: core_toc
-    :caption: Core
-
-    decorators/originate.rst
-    decorators/split.rst
-    decorators/transform.rst
-    decorators/merge.rst
-
-.. toctree::
-    :maxdepth: 1
-    :name: advanced_toc
-    :caption: Advanced
-
-    decorators/subdivide.rst
-    decorators/transform_ex.rst
-    decorators/collate.rst
-    decorators/graphviz.rst
-    decorators/mkdir.rst
-    decorators/jobs_limit.rst
-    decorators/posttask.rst
-    decorators/active_if.rst
-    decorators/follows.rst
-
-
-
-.. toctree::
-    :maxdepth: 1
-    :name: combinatorics_toc
-    :caption: Combinatorics
-
-    decorators/product.rst
-    decorators/permutations.rst
-    decorators/combinations.rst
-    decorators/combinations_with_replacement.rst
-
-.. toctree::
-    :maxdepth: 1
-    :name: esoteric_toc
-    :caption: Esoteric
-
-    decorators/files_ex.rst
-    decorators/check_if_uptodate.rst
-    decorators/parallel.rst
-
-.. toctree::
-    :maxdepth: 1
-    :name: deprecated_toc
-    :caption: Deprecated
-
-    decorators/files.rst
-    decorators/files_re.rst
-
-
-==========================================
-Manual
-==========================================
-.. toctree::
-   :maxdepth: 1
-   :caption: Manual / Tutorial
-   :name: manual_toc
-
-   tutorials/new_tutorial/manual_contents.rst
-   tutorials/new_tutorial/introduction.rst
-   tutorials/new_tutorial/transform.rst
-   tutorials/new_tutorial/transform_in_parallel.rst
-   tutorials/new_tutorial/originate.rst
-   tutorials/new_tutorial/pipeline_printout.rst
-   tutorials/new_tutorial/command_line.rst
-   tutorials/new_tutorial/pipeline_printout_graph.rst
-   tutorials/new_tutorial/output_file_names.rst
-   tutorials/new_tutorial/mkdir.rst
-   tutorials/new_tutorial/checkpointing.rst
-   tutorials/new_tutorial/decorators_compendium.rst
-   tutorials/new_tutorial/split.rst
-   tutorials/new_tutorial/merge.rst
-   tutorials/new_tutorial/multiprocessing.rst
-   tutorials/new_tutorial/logging.rst
-   tutorials/new_tutorial/subdivide_collate.rst
-   tutorials/new_tutorial/combinatorics.rst
-   tutorials/new_tutorial/active_if.rst
-   tutorials/new_tutorial/posttask.rst
-   tutorials/new_tutorial/inputs.rst
-   tutorials/new_tutorial/onthefly.rst
-   tutorials/new_tutorial/parallel.rst
-   tutorials/new_tutorial/check_if_uptodate.rst
-   tutorials/new_tutorial/flowchart_colours.rst
-   tutorials/new_tutorial/dependencies.rst
-   tutorials/new_tutorial/exceptions.rst
-   tutorials/new_tutorial/list_of_ruffus_names.rst
-   tutorials/new_tutorial/deprecated_files.rst
-   tutorials/new_tutorial/deprecated_files_re.rst
-
-
 
 
 

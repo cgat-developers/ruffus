@@ -17,6 +17,12 @@ print sys.path
 import ruffus, ruffus.task, ruffus.ruffus_version
 
 
+def setup(app):
+   #app.add_javascript("custom.js")
+   if not on_rtd:
+       app.add_stylesheet("ruffus.css")
+
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -105,8 +111,8 @@ pygments_style = 'sphinx'
 # given in html_static_path.
 import os
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-if not on_rtd:
-    html_style = 'ruffus.css'
+#if not on_rtd:
+#    html_style = 'ruffus.css'
 #html_style = 'ruffus.css'
 
 if not on_rtd:

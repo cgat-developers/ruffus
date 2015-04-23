@@ -309,12 +309,12 @@ Using :ref:`@transform() <decorators.transform>` with :ref:`formatter() <decorat
             #
 
             #   first task
-            @transform(create_initial_file_pairs,                               # Input
+            @transform(create_initial_file_pairs,                        # Input
 
-                        formatter(".+/job(?P<JOBNUMBER>\d+).a.start",           # Extract job number
-                                  ".+/job[123].b.start"),                       # Match only "b" files
+                        formatter(".+/job(?P<JOBNUMBER>\d+).a.start",    # Extract job number
+                                  ".+/job[123].b.start"),                # Match only "b" files
 
-                        ["{path[0]}/jobs{JOBNUMBER[0]}.output.a.1",             # Replacement list
+                        ["{path[0]}/jobs{JOBNUMBER[0]}.output.a.1",      # Replacement list
                          "{path[1]}/jobs{JOBNUMBER[0]}.output.b.1", 45])
             def first_task(input_files, output_parameters):
                 print "input_parameters = ", input_files
@@ -399,12 +399,12 @@ string substitution for "extra" arguments
             #
 
             #   first task
-            @transform(create_initial_file_pairs,                               # Input
+            @transform(create_initial_file_pairs,                        # Input
 
-                        formatter(".+/job(?P<JOBNUMBER>\d+).a.start",           # Extract job number
-                                  ".+/job[123].b.start"),                       # Match only "b" files
+                        formatter(".+/job(?P<JOBNUMBER>\d+).a.start",    # Extract job number
+                                  ".+/job[123].b.start"),                # Match only "b" files
 
-                        ["{path[0]}/jobs{JOBNUMBER[0]}.output.a.1",             # Replacement list
+                        ["{path[0]}/jobs{JOBNUMBER[0]}.output.a.1",      # Replacement list
                          "{path[1]}/jobs{JOBNUMBER[0]}.output.b.1"],
 
                          "{JOBNUMBER[0]}"

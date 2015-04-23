@@ -132,7 +132,7 @@ product
 
 
             .. code-block:: python
-                :emphasize-lines: 4,17,19,22,25,27,28,29,30,32,34,35,36
+                :emphasize-lines: 4,19,21,24,27,29-32,34-35,37-40
 
                 from ruffus import *
                 from ruffus.combinatorics import *
@@ -167,11 +167,13 @@ product
                             "{basename[1][0]}_vs_"          #
                             "{basename[2][0]}.product",     #
 
-                            "{path[0][0]}",                 # Extra parameter: path for 1st set of files, 1st file name
+                                                            # Extra parameter: path for
+                            "{path[0][0]}",                 # 1st set of files, 1st file name
 
-                            ["{basename[0][0]}",            # Extra parameter: basename for 1st set of files, 1st file name
-                             "{basename[1][0]}",            #                               2nd
-                             "{basename[2][0]}",            #                               3rd
+                                                            # Extra parameter: basename for
+                            ["{basename[0][0]}",            # 1st set of files, 1st file name
+                             "{basename[1][0]}",            # 2nd
+                             "{basename[2][0]}",            # 3rd
                              ])
                 def product_task(input_file, output_parameter, shared_path, basenames):
                     print "# basenames      = ", " ".join(basenames)
@@ -192,7 +194,6 @@ product
                 :emphasize-lines: 2,6,10,14,18,22,26,30
 
                 >>> pipeline_run(verbose=0)
-
                 # basenames      =  a p x
                 input_parameter  =  ('a.start', 'p.start', 'x.start')
                 output_parameter =  /home/lg/temp/a_vs_p_vs_x.product

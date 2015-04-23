@@ -40,10 +40,11 @@ combinations_with_replacement
         function of the same name:
 
             .. code-block:: pycon
-                :emphasize-lines: 2
+                :emphasize-lines: 2-3
 
                 >>> from itertools import combinations_with_replacement
-                >>> # combinations_with_replacement('ABCD', 2) --> AA AB AC AD BB BC BD CC CD DD
+                >>> # combinations_with_replacement('ABCD', 2)
+                >>> #   --> AA AB AC AD BB BC BD CC CD DD
                 >>> [ "".join(a) for a in combinations_with_replacement('ABCD', 2)]
                 ['AA', 'AB', 'AC', 'AD', 'BB', 'BC', 'BD', 'CC', 'CD', 'DD']
 
@@ -148,11 +149,12 @@ combinations_with_replacement
                               # Extra parameter: path for 1st set of files, 1st file name
                               "{path[0][0]}",
 
-                              # Extra parameter
-                              ["{basename[0][0]}",  # basename for 1st set of files, 1st file name
-                               "{basename[1][0]}",  #              2rd
+                              # Extra parameter. Basename for:
+                              ["{basename[0][0]}",  # 1st set of files, 1st file name
+                               "{basename[1][0]}",  # 2rd
                                ])
-                def combinations_with_replacement_task(input_file, output_parameter, shared_path, basenames):
+                def combinations_with_replacement_task(input_file, output_parameter,
+                                                       shared_path, basenames):
                     print " - ".join(basenames)
 
 

@@ -3,6 +3,46 @@
 
 .. _new_manual.table_of_contents:
 
+
+==========================================
+Manual
+==========================================
+.. toctree::
+   :maxdepth: 1
+   :caption: Manual / Tutorial
+   :name: manual_toc
+   :hidden:
+
+   introduction.rst
+   transform.rst
+   transform_in_parallel.rst
+   originate.rst
+   pipeline_printout.rst
+   command_line.rst
+   pipeline_printout_graph.rst
+   output_file_names.rst
+   mkdir.rst
+   checkpointing.rst
+   decorators_compendium.rst
+   split.rst
+   merge.rst
+   multiprocessing.rst
+   logging.rst
+   subdivide_collate.rst
+   combinatorics.rst
+   active_if.rst
+   posttask.rst
+   inputs.rst
+   onthefly.rst
+   parallel.rst
+   check_if_uptodate.rst
+   flowchart_colours.rst
+   dependencies.rst
+   exceptions.rst
+   list_of_ruffus_names.rst
+   deprecated_files.rst
+   deprecated_files_re.rst
+
 ####################################################################
 **Ruffus** Manual Table of Contents
 ####################################################################

@@ -145,9 +145,9 @@ permutations
                               # Extra parameter: path for 1st set of files, 1st file name
                               "{path[0][0]}",
 
-                              # Extra parameter
-                              ["{basename[0][0]}",  # basename for 1st set of files, 1st file name
-                               "{basename[1][0]}",  #                                2nd
+                              # Extra parameter: basename for
+                              ["{basename[0][0]}",  # 1st set of files, 1st file name
+                               "{basename[1][0]}",  # 2nd
                                ])
                 def permutations_task(input_file, output_parameter, shared_path, basenames):
                     print " - ".join(basenames)

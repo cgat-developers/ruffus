@@ -265,7 +265,8 @@ Touch files
 
             # see below for how to use get_argparse
             parser = cmdline.get_argparse(  description='WHAT DOES THIS PIPELINE DO?',
-                                            # Exclude the following options: --log_file --key_legend_in_graph
+                                            # Exclude the following options:
+                                            #     --log_file --key_legend_in_graph
                                             ignored_args = ["log_file", "key_legend_in_graph"])
 
 
@@ -329,7 +330,7 @@ Template for `optparse  <http://docs.python.org/2.7/library/optparse.html>`__
     deprecated since python 2.7
 
         .. code-block:: python
-            :emphasize-lines: 8,16
+            :emphasize-lines: 8
 
             #
             #   Using optparse (new in python v 2.6)
@@ -344,7 +345,9 @@ Template for `optparse  <http://docs.python.org/2.7/library/optparse.html>`__
             (options, remaining_args) = parser.parse_args()
 
             #  logger which can be passed to ruffus tasks
-            logger, logger_mutex = cmdline.setup_logging ("this_program", options.log_file, options.verbose)
+            logger, logger_mutex = cmdline.setup_logging ("this_program",
+                                                          options.log_file,
+                                                          options.verbose)
 
             #   <<<----  pipelined functions go here
 

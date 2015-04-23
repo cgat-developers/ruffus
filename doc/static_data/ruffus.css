@@ -318,7 +318,7 @@ div.sphinxsidebar h3 a{
 
 .highlight .nd:nth-of-type(n)   { background-color: #ffff88; color: red; font-weight: bold; outline:red dotted thin}/**/
 .highlight .hll:nth-of-type(n)   { font-weight: bold}
-.highlight .hll .c:nth-of-type(n)    { background-color: #ffffff; color: red; font-weight: bold; font-style: normal;font-size:120%} /* Comment */
+.highlight .hll .c:nth-of-type(n)    { color: red; font-weight: bold; font-style: normal;font-size:120%} /* Comment */
 
 
 div.related a {
@@ -327,3 +327,13 @@ div.related a {
     /*color: #ffffff;     /* orig */
 }
 
+/* override table width restrictions */
+.wy-table-responsive table td, .wy-table-responsive table th {
+    white-space: normal;
+}
+
+.wy-table-responsive {
+    margin-bottom: 24px;
+    max-width: 100%;
+    overflow: visible;
+}
