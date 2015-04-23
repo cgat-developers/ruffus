@@ -41,9 +41,9 @@ Design & Architecture
 Deficiencies of `make` / `gmake`
 ******************************************************
 
-    However, make and `GNU make <http://www.gnu.org/software/make/>`_ use a specialised (domain-specific)
-    language, which has is been much criticised because of poor support for modern
-    programming languages features, such as variable scope, pattern matching, debugging.
+    However, make and `GNU make <http://www.gnu.org/software/make/>`_ use a much criticised
+    specialised (domain-specific) language. The make language has poor support for modern
+    programming languages features such as variable scope, pattern matching, debugging.
     Make scripts require large amounts of often obscure shell scripting
     and makefiles can quickly become unmaintainable.
 
@@ -57,14 +57,14 @@ Deficiencies of `make` / `gmake`
     historical baggage. These include the Java-based `Apache ant <http://ant.apache.org/>`_ which is specified in xml.
 
     More interesting are a new breed of build systems whose scripts are written in modern programming
-    languages, rather than a specially-invented "build" specificiation syntax.
+    languages, rather than a specially-invented "build" specification syntax.
     These include the Python `scons <http://www.scons.org/>`_, Ruby `rake <http://rake.rubyforge.org/>`_ and
     its python port `Smithy <http://packages.python.org/Smithy/>`_.
 
-    The great advantages are that computation pipelines do not need to be artificially parcelled out
-    between (the often second-class) workflow management code, and the logic which does the real computation
+    The great advantages are that computation pipelines do not need to be artificially divided
+    between (the often second-class) workflow management code, and the logic of real calculations and work
     in the pipeline. It also means that workflow management can use all the standard language and library
-    features, for example, to read in directories, match file names using regular expressions and so on.
+    features, for example, to read directories and match file names using regular expressions.
 
     **Ruffus** is much like scons in that the modern dynamic programming language python is used seamlessly
     throughout its pipeline scripts.
@@ -94,10 +94,11 @@ Implicit dependencies: disadvantages of `make` / `scons` / `rake`
      #) The plumbing, such as dependency checking, passing output
         from one stage to another, are handled automatically by the build system. (This is the whole point!)
      #) The same *recipe* can be re-used at different points in the build.
-     #) | Intermediate files do not need to be retained.
-        | Given the automatic inference that ``a->b->c->d``,
-          we don't need to keep ``b`` and ``c`` files around once ``d`` has been produced.
-        |
+     #) Intermediate files do not need to be retained.
+
+        Given the automatic inference that ``a->b->c->d``,
+        we don't need to keep ``b`` and ``c`` files around once ``d`` has been produced.
+
 
 
     The disadvantage is that because stages are specified only indirectly, in terms of
@@ -160,7 +161,7 @@ Static dependencies: What `make` / `scons` / `rake` can't do (easily)
 
 
     **Ruffus** explicitly and straightforwardly handles tasks which produce an indeterminate (i.e. runtime dependent)
-    number of output, using its **@split**, **@transform**, **merge** function annotations.
+    number of output, using a **split** / **transform** / **merge** idiom.
 
 =============================================================================
 Managing pipelines stage-by-stage using **Ruffus**
@@ -180,7 +181,7 @@ Managing pipelines stage-by-stage using **Ruffus**
         #) **Ruffus** makes sure pipeline stage functions are called in the right order,
            with the right parameters, running in parallel using multiprocessing if necessary.
 
-        #) Data file timestamps can be used to automatically determine if all or any parts
+        #) Checkpointing automatically determines if all or any parts
            of the pipeline are out-of-date and need to be rerun.
 
         #) Separate pipeline stages, and operations within each pipeline stage,
