@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 ################################################################################
 #
 #
@@ -383,7 +384,7 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
 
 
 def enqueue_output(out, queue, echo):
-    for line in iter(out.readline, b''):
+    for line in iter(out.readline, ''):
         queue.put(line)
         if echo is not None:
             echo.write(line)
@@ -408,6 +409,7 @@ def run_job_locally (cmd_str, logger = None, job_environment = None, working_dir
                     "stdout"    : subprocess.PIPE,
                     "stderr"    : subprocess.PIPE,
                     "bufsize"   :1,
+                    "universal_newlines" : True,
                     "close_fds" : ON_POSIX}
     if job_environment is not None:
         popen_params["env"] = job_environment
@@ -420,11 +422,14 @@ def run_job_locally (cmd_str, logger = None, job_environment = None, working_dir
     # if daemon = False, sub process cannot be interrupted by Ctrl-C
     stdout_t.daemon = True
     stderr_t.daemon = True
-    stderr_t.start()
     stdout_t.start()
+    stderr_t.start()
     process.wait()
     stdout_t.join()
     stderr_t.join()
+    process.stdin.close()
+    process.stdout.close()
+    process.stderr.close()
 
     stdout, stderr = [], []
     try:
