@@ -2275,6 +2275,7 @@ class Task (node):
                     level 5 : All Jobs in Out-of-date Tasks (include only list
                               of up-to-date tasks)
                     level 6 : All jobs in All Tasks whether out of date or not
+                    level 7 : Show file modification times for All jobs in All Tasks
 
         """
 
@@ -2348,19 +2349,22 @@ class Task (node):
             #
             #   needs update func = None: always needs update
             #
-            if not self.needs_update_func:
+            if self.needs_update_func is None:
                 messages.append(indent_str + "Task needs update: No func to check if up-to-date.")
                 return messages
 
             if self.needs_update_func == needs_update_check_modify_time:
                 needs_update, msg = self.needs_update_func(
                     task=self, job_history=job_history,
-                    verbose_abbreviated_path=verbose_abbreviated_path)
+                    verbose_abbreviated_path=verbose_abbreviated_path,
+                    return_file_dates_when_uptodate = verbose > 6)
             else:
                 needs_update, msg = self.needs_update_func()
 
             if needs_update:
                 messages.append(indent_str + "Task needs update: %s" % msg)
+            elif verbose > 6:
+                messages.append(indent_str + "Task %s" % msg)
             #
             #   Get rid of up-to-date messages:
             #       Superfluous for parts of the pipeline which are up-to-date
@@ -2388,7 +2392,7 @@ class Task (node):
                 #
                 #   needs update func = None: always needs update
                 #
-                if not self.needs_update_func:
+                if self.needs_update_func is None:
                     if verbose >= 5:
                         messages.extend(_get_job_names(unglobbed_params, indent_str))
                         messages.append(indent_str + "  Jobs needs update: No "
@@ -2398,7 +2402,8 @@ class Task (node):
                 if self.needs_update_func == needs_update_check_modify_time:
                     needs_update, msg = self.needs_update_func(
                         *params, task=self, job_history=job_history,
-                        verbose_abbreviated_path=verbose_abbreviated_path)
+                        verbose_abbreviated_path=verbose_abbreviated_path,
+                    return_file_dates_when_uptodate = verbose > 6)
                 else:
                     needs_update, msg = self.needs_update_func(*params)
 
@@ -2424,6 +2429,9 @@ class Task (node):
                         #
                         # if not task_is_out_of_date:
                         #    messages.append(indent_str + "  Job up-to-date")
+                    if verbose > 6:
+                        messages.extend((indent_str + s)
+                                            for s in (msg).split("\n"))
 
             if cnt_jobs == 0:
                 messages.append(indent_str + "!!! No jobs for this task.")
@@ -2491,28 +2499,25 @@ class Task (node):
             #   if no parameters, just return the results of needs update
             #
             if self.param_generator_func is None:
-                if self.needs_update_func:
-                    if self.needs_update_func == needs_update_check_modify_time:
-                        needs_update, msg = self.needs_update_func(
-                            task=self, job_history=job_history,
-                            verbose_abbreviated_path=verbose_abbreviated_path)
-                    else:
-                        needs_update, msg = self.needs_update_func()
-                    log_at_level(logger, 10, verbose, "    Needs update = %s" % needs_update)
-                    return not needs_update
+                if self.needs_update_func == needs_update_check_modify_time:
+                    needs_update, ignore_msg = self.needs_update_func(
+                        task=self, job_history=job_history,
+                        verbose_abbreviated_path=verbose_abbreviated_path)
                 else:
-                    return True
+                    needs_update, ignore_msg = self.needs_update_func()
+                log_at_level(logger, 10, verbose, "    Needs update = %s" % needs_update)
+                return not needs_update
             else:
                 #
                 #   return not up to date if ANY jobs needs update
                 #
                 for params, unglobbed_params in self.param_generator_func(runtime_data):
                     if self.needs_update_func == needs_update_check_modify_time:
-                        needs_update, msg = self.needs_update_func(
+                        needs_update, ignore_msg = self.needs_update_func(
                             *params, task=self, job_history=job_history,
                             verbose_abbreviated_path=verbose_abbreviated_path)
                     else:
-                        needs_update, msg = self.needs_update_func(*params)
+                        needs_update, ignore_msg = self.needs_update_func(*params)
                     if needs_update:
                         log_at_level(logger, 10, verbose, "    Needing update:\n      %s"
                                      % self._get_job_name(unglobbed_params,
@@ -4751,6 +4756,7 @@ def pipeline_printout(output_stream=None,
                     level 4 : Out-of-date Jobs in Out-of-date Tasks, with explanations and warnings
                     level 5 : All Jobs in Out-of-date Tasks,  (include only list of up-to-date tasks)
                     level 6 : All jobs in All Tasks whether out of date or not
+                    level 7 : Show file modification times for All jobs in All Tasks
                     level 10: logs messages useful only for debugging ruffus pipeline code
     :param indent: How much indentation for pretty format.
     :param gnu_make_maximal_rebuild_mode: Defaults to re-running *all*
@@ -4897,6 +4903,11 @@ def job_needs_to_run(task, params, force_rerun, logger, verbose, job_name,
                      job_history, verbose_abbreviated_path):
     """
     Check if job parameters out of date / needs to rerun
+    Also logs why things are up to date or not
+
+    TODO Is this a duplicate of logic in is_up_to_date??
+    TODO Is this a duplicate of logic in _printout??
+    TODO Ignores is_active
     """
 
     #
@@ -4908,7 +4919,7 @@ def job_needs_to_run(task, params, force_rerun, logger, verbose, job_name,
                      % job_name)
         return True
 
-    if not task.needs_update_func:
+    if task.needs_update_func is None:
         # LOGGER: Out-of-date Jobs in Out-of-date Tasks
         log_at_level(logger, 3, verbose, "    %s no function to check "
                      "if up-to-date " % job_name)
@@ -4920,14 +4931,15 @@ def job_needs_to_run(task, params, force_rerun, logger, verbose, job_name,
     if task.needs_update_func == needs_update_check_modify_time:
         needs_update, msg = task.needs_update_func(
             *params, task=task, job_history=job_history,
-            verbose_abbreviated_path=verbose_abbreviated_path)
+            verbose_abbreviated_path=verbose_abbreviated_path,
+            return_file_dates_when_uptodate = verbose > 6)
     else:
         needs_update, msg = task.needs_update_func(*params)
 
     if not needs_update:
         # LOGGER: All Jobs in Out-of-date Tasks
         log_at_level(logger, 5, verbose,
-                     "    %s unnecessary: already up to date " % job_name)
+                     "    %s unnecessary: already %s" % (job_name, msg))
         return False
 
     # LOGGER: Out-of-date Jobs in Out-of-date
@@ -5461,6 +5473,7 @@ def pipeline_run(target_tasks=[],
                     * level 5 : All Jobs in Out-of-date Tasks,  (include only list of up-to-date
                       tasks)
                     * level 6 : All jobs in All Tasks whether out of date or not
+                    * level 7 : Show file modification times for All jobs in All Tasks
                     * level 10: logs messages useful only for debugging ruffus pipeline code
     :param touch_files_only: Create or update input/output files only to
                              simulate running the pipeline. Do not run jobs.

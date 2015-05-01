@@ -693,6 +693,10 @@ def needs_update_check_modify_time (*params, **kwargs):
     #
     if len(file_times[0]) and len (file_times[1]) and max(file_times[0]) >= min(file_times[1]):
         return True, pretty_io_with_date_times(filename_to_times)
+
+    if "return_file_dates_when_uptodate" in kwargs and kwargs["return_file_dates_when_uptodate"]:
+        return False, "Up to date\n" + pretty_io_with_date_times(filename_to_times)
+
     return False, "Up to date"
 
 

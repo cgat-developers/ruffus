@@ -9,6 +9,7 @@ from __future__ import print_function
 import os
 tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
 import sys
+import time
 
 # add grandparent to search path for testing
 grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -105,12 +106,15 @@ def subdivide_start(infile, outfiles, infile_basename):
     #
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     n_to_produce = len(outfiles) + 1
+    output_file_names = []
     for i in range(    n_to_produce):
-        open('{}_{}.subdivided'.format(infile_basename, i), 'a').close()
+        output_file_name = '{}_{}.subdivided'.format(infile_basename, i)
+        open(output_file_name, 'a').close()
+        output_file_names.append(output_file_name)
 
 
 
-
+TEST_VERBOSITY = 0
 class Test_ruffus(unittest.TestCase):
 
     def tearDown(self):
@@ -150,37 +154,37 @@ class Test_ruffus(unittest.TestCase):
         expected_files_after_3_runs = ["2.split", "0_2.subdivided", "1_1.subdivided", "2_0.subdivided"]
         expected_files_after_4_runs = ["3.split", "0_3.subdivided", "1_2.subdivided", "2_1.subdivided", "3_0.subdivided"]
 
-        print("     Run pipeline normally...")
-        test_pipeline.run(multiprocess = 10, verbose=0)
+        print("     1 Run pipeline normally...")
+        test_pipeline.run(multiprocess = 10, verbose = TEST_VERBOSITY)
         self.check_file_exists_or_not_as_expected(expected_files_after_1_runs,
                                                  expected_files_after_2_runs)
-
-        print("     Check that running again does nothing. (All up to date).")
-        test_pipeline.run(multiprocess = 10, verbose=0)
+        print("     2 Check that running again does nothing. (All up to date).")
+        test_pipeline.run(multiprocess = 10, verbose = TEST_VERBOSITY)
         self.check_file_exists_or_not_as_expected(expected_files_after_1_runs,
                                                  expected_files_after_2_runs)
+        time.sleep(2)
 
-        print("     Running again with forced tasks to generate more files...")
-        test_pipeline.run(forcedtorun_tasks = ["test::make_start"], multiprocess = 10, verbose=0)
+        print("     3 Running again with forced tasks to generate more files...")
+        test_pipeline.run(forcedtorun_tasks = ["test::make_start"], multiprocess = 10, verbose = TEST_VERBOSITY)
         self.check_file_exists_or_not_as_expected(expected_files_after_1_runs
                                                  + expected_files_after_2_runs,
                                                  expected_files_after_3_runs)
-
-        print("     Check that running again does nothing. (All up to date).")
-        test_pipeline.run(multiprocess = 10, verbose=0)
+        print("     4 Check that running again does nothing. (All up to date).")
+        test_pipeline.run(multiprocess = 10, verbose = TEST_VERBOSITY)
         self.check_file_exists_or_not_as_expected(expected_files_after_1_runs
                                                  + expected_files_after_2_runs,
                                                  expected_files_after_3_runs)
+        time.sleep(2)
 
 
-        print("     Running again with forced tasks to generate even more files...")
-        test_pipeline.run(forcedtorun_tasks = make_start, multiprocess = 10, verbose=0)
+        print("     5 Running again with forced tasks to generate even more files...")
+        test_pipeline.run(forcedtorun_tasks = make_start, multiprocess = 10, verbose = TEST_VERBOSITY)
         self.check_file_exists_or_not_as_expected(expected_files_after_1_runs
                                                  + expected_files_after_2_runs
                                                  + expected_files_after_3_runs,
                                                  expected_files_after_4_runs)
-        print("     Check that running again does nothing. (All up to date).")
-        test_pipeline.run(multiprocess = 10, verbose=0)
+        print("     6 Check that running again does nothing. (All up to date).")
+        test_pipeline.run(multiprocess = 10, verbose = TEST_VERBOSITY)
         self.check_file_exists_or_not_as_expected(expected_files_after_1_runs
                                                  + expected_files_after_2_runs
                                                  + expected_files_after_3_runs,
@@ -194,37 +198,39 @@ class Test_ruffus(unittest.TestCase):
         expected_files_after_3_runs = ["2.split", "0_2.subdivided", "1_1.subdivided", "2_0.subdivided"]
         expected_files_after_4_runs = ["3.split", "0_3.subdivided", "1_2.subdivided", "2_1.subdivided", "3_0.subdivided"]
 
-        print("     Run pipeline normally...")
-        pipeline_run(multiprocess = 10, verbose=0, pipeline= "main")
+        print("     1 Run pipeline normally...")
+        pipeline_run(multiprocess = 10, verbose=TEST_VERBOSITY, pipeline= "main")
+        self.check_file_exists_or_not_as_expected(expected_files_after_1_runs,
+                                                 expected_files_after_2_runs)
+        print("     2 Check that running again does nothing. (All up to date).")
+        pipeline_run(multiprocess = 10, verbose=TEST_VERBOSITY, pipeline= "main")
         self.check_file_exists_or_not_as_expected(expected_files_after_1_runs,
                                                  expected_files_after_2_runs)
 
-        print("     Check that running again does nothing. (All up to date).")
-        pipeline_run(multiprocess = 10, verbose=0, pipeline= "main")
-        self.check_file_exists_or_not_as_expected(expected_files_after_1_runs,
-                                                 expected_files_after_2_runs)
+        time.sleep(2)
 
-        print("     Running again with forced tasks to generate more files...")
-        pipeline_run(forcedtorun_tasks = [make_start], multiprocess = 10, verbose=0, pipeline= "main")
+        print("     3 Running again with forced tasks to generate more files...")
+        pipeline_run(forcedtorun_tasks = [make_start], multiprocess = 10, verbose=TEST_VERBOSITY, pipeline= "main")
         self.check_file_exists_or_not_as_expected(expected_files_after_1_runs
                                                  + expected_files_after_2_runs,
                                                  expected_files_after_3_runs)
-
-        print("     Check that running again does nothing. (All up to date).")
-        pipeline_run(multiprocess = 10, verbose=0, pipeline= "main")
+        print("     4 Check that running again does nothing. (All up to date).")
+        pipeline_run(multiprocess = 10, verbose=TEST_VERBOSITY, pipeline= "main")
         self.check_file_exists_or_not_as_expected(expected_files_after_1_runs
                                                  + expected_files_after_2_runs,
                                                  expected_files_after_3_runs)
+        time.sleep(2)
 
 
-        print("     Running again with forced tasks to generate even more files...")
-        pipeline_run(forcedtorun_tasks = [make_start], multiprocess = 10, verbose=0, pipeline= "main")
+        print("     5 Running again with forced tasks to generate even more files...")
+        pipeline_run(forcedtorun_tasks = [make_start], multiprocess = 10, verbose=TEST_VERBOSITY, pipeline= "main")
         self.check_file_exists_or_not_as_expected(expected_files_after_1_runs
                                                  + expected_files_after_2_runs
                                                  + expected_files_after_3_runs,
                                                  expected_files_after_4_runs)
-        print("     Check that running again does nothing. (All up to date).")
-        pipeline_run(multiprocess = 10, verbose=0, pipeline= "main")
+        time.sleep(2)
+        print("     6 Check that running again does nothing. (All up to date).")
+        pipeline_run(multiprocess = 10, verbose=TEST_VERBOSITY, pipeline= "main")
         self.check_file_exists_or_not_as_expected(expected_files_after_1_runs
                                                  + expected_files_after_2_runs
                                                  + expected_files_after_3_runs,
@@ -232,6 +238,8 @@ class Test_ruffus(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    if len(sys.argv) > 1 and "-v" == sys.argv.pop():
+        TEST_VERBOSITY = 7
     unittest.main()
 
 
