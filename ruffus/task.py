@@ -4736,7 +4736,7 @@ def pipeline_printout(output_stream=None,
 
     ::
         verbose = 0 : Nothing
-        verbose = 1 : Out-of-date Task names
+        verbose = 1 : All Tasks names
         verbose = 2 : All Tasks (including any task function docstrings)
         verbose = 3 : Out-of-date Jobs in Out-of-date Tasks, no explanation
         verbose = 4 : Out-of-date Jobs in Out-of-date Tasks, with explanations and warnings
@@ -4841,7 +4841,7 @@ def pipeline_printout(output_stream=None,
     #   Get updated nodes as all_nodes - nodes_to_run
     #
     #   LOGGER level 6 : All jobs in All Tasks whether out of date or not
-    if verbose == 2 or verbose >= 5:
+    if verbose in [1,2] or verbose >= 5:
         (all_tasks, ignore_param1, ignore_param2, ignore_param3) = \
             topologically_sorted_nodes(target_tasks, True, gnu_make_maximal_rebuild_mode,
                                        extra_data_for_signal=[
@@ -4867,7 +4867,6 @@ def pipeline_printout(output_stream=None,
     if verbose:
         # LOGGER
         output_stream.write("_" * 40 + "\n")
-
 
 # _____________________________________________________________________________
 
@@ -5226,7 +5225,7 @@ def make_job_parameter_generator(incomplete_tasks, task_parents, logger,
                     errt.specify_task(t, "Exceptions generating parameters")
                     raise errt
 
-            # extra tests incase final tasks do not result in jobs
+            # extra tests in case final tasks do not result in jobs
             if len(incomplete_tasks) and \
                     (not cnt_tasks_processed or cnt_jobs_created_for_all_tasks):
                 log_at_level(logger, 10, verbose, "    incomplete tasks = " +
@@ -5466,8 +5465,8 @@ def pipeline_run(target_tasks=[],
     :param verbose:
 
                     * level 0 : nothing
-                    * level 1 : Out-of-date Task names
-                    * level 2 : All Tasks (including any task function docstrings)
+                    * level 1 : All Task names
+                    * level 2 : All Tasks names any task function docstrings
                     * level 3 : Out-of-date Jobs in Out-of-date Tasks, no explanation
                     * level 4 : Out-of-date Jobs in Out-of-date Tasks, with explanations and warnings
                     * level 5 : All Jobs in Out-of-date Tasks,  (include only list of up-to-date
@@ -5658,7 +5657,7 @@ def pipeline_run(target_tasks=[],
     #   Print Complete tasks
     #
     #   LOGGER level 5 : All jobs in All Tasks whether out of date or not
-    if verbose == 2 or verbose >= 5:
+    if verbose in [1,2] or verbose >= 5:
         (all_tasks, ignore_param1, ignore_param2, ignore_param3) \
             = topologically_sorted_nodes(target_tasks, True,
                                          gnu_make_maximal_rebuild_mode,
