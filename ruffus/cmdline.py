@@ -84,6 +84,19 @@
 """
 
 
+#
+#   print options
+#
+flowchart_formats = ["svg", "svgz", "png", "jpg", "psd", "tif", "eps", "pdf", "dot"]
+                    #  "jpeg", "gif", "plain", "ps", "wbmp", "canon",
+                    #  "cmap", "cmapx", "cmapx_np", "fig", "gd", "gd2",
+                    # "gv", "imap", "imap_np", "ismap", "jpe", "plain-ext",
+                    # "ps2", "tk", "vml", "vmlz", "vrml", "x11", "xdot", "xlib"
+# Replace last comma with " and". Mad funky, unreadable reverse replace code: couldn't resist!
+flowchart_formats_str = ", ".join(["%r" % ss for ss in flowchart_formats])[::-1].replace(" ,", ", or "[::-1], 1)[::-1]
+
+
+
 #_________________________________________________________________________________________
 
 #   get_argparse
@@ -194,10 +207,10 @@ def append_to_argparse (parser, **args_dict):
                                     help="Don't actually run any commands; just print the pipeline.")
     if "touch_files_only" not in ignored_args:
         pipeline_options.add_argument("--touch_files_only", action="store_true",
-                                    help="Don't actually run the pipeline; just 'touch' the output for each task to make them appear up to date.")
+                                    help="Don't actually run any commands; just 'touch' the output for each task to make them appear up to date.")
     if "recreate_database" not in ignored_args:
         pipeline_options.add_argument("--recreate_database", action="store_true",
-                                    help="Don't actually run the pipeline; just recreate the checksum database.")
+                                    help="Don't actually run any commands; just recreate the checksum database.")
     if "checksum_file_name" not in ignored_args:
         pipeline_options.add_argument("--checksum_file_name", dest = "history_file", metavar="FILE", type=str,
                                     help="Path of the checksum file.")
@@ -216,15 +229,10 @@ def append_to_argparse (parser, **args_dict):
                                     help="Draw horizontal dependency graph.")
     if "flowchart_format" not in ignored_args:
         pipeline_options.add_argument("--flowchart_format", metavar="FORMAT",
-                                    type=str, choices = ["svg", "svgz", "png", "jpg", "pdf", "dot"],
-                                    #  "eps", "jpeg", "gif", "plain", "ps", "wbmp", "canon",
-                                    #  "cmap", "cmapx", "cmapx_np", "fig", "gd", "gd2",
-                                    # "gv", "imap", "imap_np", "ismap", "jpe", "plain-ext",
-                                    # "ps2", "tk", "vml", "vmlz", "vrml", "x11", "xdot", "xlib"
+                                    type=str, choices = flowchart_formats,
                                     default = None,
-                                    help="format of dependency graph file. Can be 'pdf', " +
-                                          "'svg', 'svgz' (Structured Vector Graphics), 'pdf', " +
-                                          "'png' 'jpg' (bitmap  graphics) etc ")
+                                    help="format of dependency graph file. Can be %s. Defaults to the "
+                                        "file name extension of --flowchart FILE." % flowchart_formats_str)
     if "forced_tasks" not in ignored_args:
         pipeline_options.add_argument("--forced_tasks", action="append",
                                     metavar="JOBNAME", type=str,
@@ -392,11 +400,11 @@ def append_to_optparse (parser, **args_dict):
     if "touch_files_only" not in ignored_args:
         parser.add_option("--touch_files_only", dest="touch_files_only",
                             action="store_true", default=False,
-                            help="Don't actually run the pipeline; just 'touch' the output for each task to make them appear up to date.")
+                            help="Don't actually run any commands; just 'touch' the output for each task to make them appear up to date.")
     if "recreate_database" not in ignored_args:
         parser.add_option("--recreate_database", dest="recreate_database",
                             action="store_true", default=False,
-                            help="Don't actually run the pipeline; just recreate the checksum database.")
+                            help="Don't actually run any commands; just recreate the checksum database.")
     if "checksum_file_name" not in ignored_args:
         parser.add_option("--checksum_file_name", dest="history_file",
                             metavar="FILE",
@@ -424,10 +432,9 @@ def append_to_optparse (parser, **args_dict):
         parser.add_option("--flowchart_format", dest="flowchart_format",
                             metavar="FORMAT",
                             type="string",
-                            default = 'svg',
-                            help="format of dependency graph file. Can be 'ps' (PostScript), "+
-                                  "'svg' 'svgz' (Structured Vector Graphics), " +
-                                  "'png' 'gif' (bitmap  graphics) etc ")
+                            default = None,
+                            help="format of dependency graph file. Can be %s. Defaults to the "
+                              "file name extension of --flowchart FILE." % flowchart_formats_str)
     if "forced_tasks" not in ignored_args:
         parser.add_option("--forced_tasks", dest="forced_tasks",
                             action="append",

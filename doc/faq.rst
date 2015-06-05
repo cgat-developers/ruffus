@@ -15,6 +15,15 @@ Q. How should *Ruffus* be cited in academic publications?
 
         `Leo Goodstadt (2010) <http://bioinformatics.oxfordjournals.org/content/early/2010/09/16/bioinformatics.btq524>`_ : **Ruffus: a lightweight Python library for computational pipelines.** *Bioinformatics* 26(21): 2778-2779
 
+===============================================================
+Q. How is *Ruffus* licenced?
+===============================================================
+
+    Ruffus is available under the permissive `MIT <http://en.wikipedia.org/wiki/MIT_License>`_ free software license.
+
+    This permits free use and inclusion even within proprietary software.
+
+    However, all derived *source* copies need to include the original License terms and copyright notice.
 
 **********************************************************
 Good practices
