@@ -89,5 +89,7 @@ echo Running test_job_completion_checksums.py                                   
 python  -m unittest test_job_completion_checksums                                   && \
 echo Running test_transform_formatter.py                                            && \
 python  -m unittest test_transform_formatter                                        && \
+echo Running test_check_if_uptodate.py                                              && \
+python  -m unittest test_check_if_uptodate                                          && \
 echo DONE!!!                                                                        
 

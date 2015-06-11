@@ -3781,7 +3781,7 @@ class Task (node):
         self.error_type = error_task_parallel
         self._set_action_type(Task._action_task_parallel)
         self._setup_task_func = Task._do_nothing_setup
-        self.needs_update_func = None
+        #self.needs_update_func = None
         self.job_wrapper = job_wrapper_generic
         self.job_descriptor = io_files_job_descriptor
 
