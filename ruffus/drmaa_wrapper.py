@@ -327,7 +327,7 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
                                    % (job_info.exitStatus, job_info_str + stderr_stdout_to_str (stderr, stdout)))
         elif job_info.hasExited:
             if job_info.exitStatus:
-                raise error_drmaa_job( "The drmaa command was terminated by signal %i:\n%s"
+                raise error_drmaa_job( "The drmaa command exited with status %i:\n%s"
                                          % (job_info.exitStatus, job_info_str + stderr_stdout_to_str (stderr, stdout)))
             #
             #   Decorate normal exit with some resource usage information
