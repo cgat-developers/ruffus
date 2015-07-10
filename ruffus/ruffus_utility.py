@@ -738,12 +738,13 @@ class t_formatter_replace(object):
         try:
             return p.format(*dl, **dd)
         except (KeyError, IndexError):
-            raise error_input_file_does_not_match("Missing key = {%s} in '%s'.\n  input =  %r,\n filter = formatter(%s)."
+            raise error_input_file_does_not_match("Missing key = {%s} in '%s'.\n  input =  %r,\n filter = formatter(%s). Possible substitutions= %s."
                                                   "."
                                                   % (   str(sys.exc_info()[1])[1:-1],
                                                         p,
+                                                        self.filenames,
                                                         self.display_regex_strings,
-                                                        self.filenames))
+                                                        self.path_regex_components))
 
 
 #_________________________________________________________________________________________
