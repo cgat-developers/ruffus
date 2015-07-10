@@ -461,10 +461,10 @@ def swap_doubly_nested_order (orig_coll):
 
 #_________________________________________________________________________________________
 #
-#   regex_match_str
+#   regex_matches_as_dict
 #
 #_________________________________________________________________________________________
-def regex_match_str(test_str, compiled_regex):
+def regex_matches_as_dict(test_str, compiled_regex):
     """
     Returns result of regular expression match in a dictionary
         combining both named and unnamed captures
@@ -484,6 +484,9 @@ def regex_match_str(test_str, compiled_regex):
             else:
                 # no dictionary comprehensions in python 2.6 :-(
                 #matchdicts.append({i : mm.group(i) for i in (range(mm.lastindex) + mm.groupdict().keys())})
+                #   Keys for captures:
+                #       1) unnamed captures = range(mm.lastindex + 1)
+                #       2) named captures   = mm.groupdict().keys()
                 return dict((i, mm.group(i)) for i in (chain(   iter(range(mm.lastindex + 1)),
                                                                 iter(mm.groupdict().keys()))))
 
@@ -563,7 +566,7 @@ def path_decomposition_regex_match (test_str, compiled_regex):
     if compiled_regex is None:
         return pp
 
-    rr = regex_match_str(test_str, compiled_regex)
+    rr = regex_matches_as_dict(test_str, compiled_regex)
 
     # regular expression match failed
     # nothing
@@ -620,12 +623,19 @@ def check_compiled_regexes (compiled_regexes, expected_num):
 def get_all_paths_components(paths, compiled_regexes):
     """
         For each path in a list,
+            If any of the regular expression matches fails, the whole list fails
     """
     #
     #   merge regular expression matches and path decomposition
     #
     compiled_regexes = check_compiled_regexes (compiled_regexes, len(paths))
-    return [path_decomposition_regex_match (pp, rr) for (pp, rr) in zip(paths, compiled_regexes)]
+    results = []
+    for (pp, rr) in zip(paths, compiled_regexes):
+        result = path_decomposition_regex_match (pp, rr)
+        if result == {}:
+            return [{}] * len(paths)
+        results.append(result)
+    return results
 
 
 
