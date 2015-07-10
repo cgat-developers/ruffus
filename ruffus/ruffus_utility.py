@@ -711,6 +711,31 @@ class t_regex_replace(object):
 
         raise error_input_file_does_not_match("File '%s' does not match regex('%s') and pattern '%s'\n%s\n" % (self.filename, self.regex_str, p, err_str))
 
+
+#_________________________________________________________________________________________
+#
+#   raise_formatter_substitution_exception
+#
+#_________________________________________________________________________________________
+def raise_formatter_substitution_exception(exceptionValue, formatter_str, pattern, filenames,
+                                           substitutes_list, substitutes_dict):
+    """
+    Throws an exception when formatter fails to make a substitution
+    """
+    # convert to string to get just the missing key
+    missing_key = str(exceptionValue.args[0])
+    # strip quotes
+    if missing_key[0:1] in '\'"' and missing_key[-1:] in '\'"':
+        missing_key = missing_key[1:-1]
+    raise error_input_file_does_not_match("Unmatched field {%s} in '%s' where\n  input =  %r,\n"
+                                          "  filter = formatter(%s). Possible substitutions= %s, %s."
+                                          % (   missing_key,
+                                                pattern,
+                                                filenames,
+                                                formatter_str,
+                                                substitutes_list, substitutes_dict))
+
+
 #_________________________________________________________________________________________
 #
 #   t_formatter_replace
@@ -726,25 +751,21 @@ class t_formatter_replace(object):
 
 
 
-    def __call__(self, p):
+    def __call__(self, pattern):
         # swapped nesting order makes the syntax easier to explain:
         #   The first level of indirection is always the path component
         #   So basename[0] is the file name for the first file
         #   This looks better than the normal 0[basename]
 
         # some contortions because format decodes {0} as an offset into a list and not not a lookup into a dict...
-        dl, dd = swap_nesting_order(self.path_regex_components)
+        substitutes_list, substitutes_dict = swap_nesting_order(self.path_regex_components)
 
         try:
-            return p.format(*dl, **dd)
+            return pattern.format(*substitutes_list, **substitutes_dict)
         except (KeyError, IndexError):
-            raise error_input_file_does_not_match("Missing key = {%s} in '%s'.\n  input =  %r,\n filter = formatter(%s). Possible substitutions= %s, %s."
-                                                  "."
-                                                  % (   str(sys.exc_info()[1])[1:-1],
-                                                        p,
-                                                        self.filenames,
-                                                        self.display_regex_strings,
-                                                        dl, dd))
+            raise_formatter_substitution_exception(sys.exc_info()[1], self.display_regex_strings,
+                                                   pattern, self.filenames,
+                                                   substitutes_list, substitutes_dict)
 
 
 #_________________________________________________________________________________________
@@ -769,24 +790,20 @@ class t_nested_formatter_replace(object):
         self.display_regex_strs = [parameter_list_as_string(ss) for ss in regex_strings]
 
 
-    def __call__(self, p):
+    def __call__(self, pattern):
         # swapped nesting order makes the syntax easier to explain:
         #   The first level of indirection is always the path component
         #   So basename[0] is the file name for the first file
         #   This looks better than the normal 0[basename]
 
         # some contortions because format decodes {0} as an offset into a list and not not a lookup into a dict...
-        dl, dd = swap_doubly_nested_order(self.path_regex_components)
+        substitutes_list, substitutes_dict = swap_doubly_nested_order(self.path_regex_components)
         try:
-            return p.format(*dl, **dd)
+            return pattern.format(*substitutes_list, **substitutes_dict)
         except (KeyError, IndexError):
             formatter_str = ", ".join("formatter(%s)" % ss for ss in self.display_regex_strs)
-            raise error_input_file_does_not_match("Unmatched field %s in ('%s') using %s fails to match Files '%s'"
-                                                  "."
-                                                  % (   str(sys.exc_info()[1]),
-                                                        p,
-                                                        formatter_str,
-                                                        self.filenames))
+            raise_formatter_substitution_exception(sys.exc_info()[1], formatter_str, pattern, self.filenames,
+                                                   substitutes_list, substitutes_dict)
 
 #_________________________________________________________________________________________
 #
