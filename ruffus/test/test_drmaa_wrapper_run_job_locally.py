@@ -21,7 +21,8 @@ module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 import ruffus
 import ruffus.drmaa_wrapper
-from ruffus.drmaa_wrapper import write_job_script_to_temp_file
+from ruffus.drmaa_wrapper import write_job_script_to_temp_file, read_stdout_stderr_from_files
+
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
@@ -40,6 +41,34 @@ import shutil
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 class Test_ruffus(unittest.TestCase):
+
+    class t_test_logger:
+
+        """
+        Does nothing!
+        """
+        def __init__ (self):
+            self.clear()
+
+        def clear (self):
+            self.info_msg = []
+            self.debug_msg = []
+            self.warning_msg = []
+            self.error_msg = []
+
+        def info(self, message, *args, **kwargs):
+            self.info_msg.append(message) 
+
+        def debug(self, message, *args, **kwargs):
+            self.debug_msg.append(message) 
+
+        def warning(self, message, *args, **kwargs):
+            self.warning_msg.append(message) 
+
+        def error(self, message, *args, **kwargs):
+            self.error_msg.append(message) 
+
+
     #___________________________________________________________________________
     #
     #   setup and cleanup
@@ -51,6 +80,32 @@ class Test_ruffus(unittest.TestCase):
             pass
     def tearDown(self):
         shutil.rmtree(tempdir)
+
+    def test_read_stdout_stderr_from_files(self):
+        # 
+        #   Test missing stdout and stderr files
+        #
+        stdout_path = os.path.join(tempdir, "stdout.txt")
+        stderr_path = os.path.join(tempdir, "stderr.txt")
+        logger = Test_ruffus.t_test_logger()
+        read_stdout_stderr_from_files( stdout_path, stderr_path, logger, cmd_str = "test_cmd", tries=0)
+        self.assertTrue("could not open stdout" in "".join(logger.warning_msg) )
+        self.assertTrue("could not open stderr" in "".join(logger.warning_msg) )
+        logger.clear()
+
+
+        # 
+        #   Test present stdout and stderr files
+        #
+        with open(stdout_path, "w") as so:
+            so.write("STDOUT\nSTDOUT\n")
+        with open(stderr_path, "w") as se:
+            se.write("STDERR\nSTDERR\n")
+
+        stdout_msg, stderr_msg = read_stdout_stderr_from_files( stdout_path, stderr_path, logger, cmd_str = "test_cmd", tries=1)
+        self.assertEqual(logger.warning_msg, [])
+        self.assertEqual(stdout_msg, ["STDOUT\n", "STDOUT\n"])
+        self.assertEqual(stderr_msg, ["STDERR\n", "STDERR\n"])
 
 
     def test_run_job (self):
