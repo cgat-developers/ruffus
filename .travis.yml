@@ -12,9 +12,10 @@ before_install:
 #  - export SGE_CELL=default
 #  - export DRMAA_LIBRARY_PATH=/usr/lib/libdrmaa.so.1.0
 #   Work around for multiprocessing permission bug with Travis
-  - sudo rm -rf /dev/shm
-  - sudo ln -s /run/shm /dev/shm
+#  - sudo rm -rf /dev/shm
+#  - sudo ln -s /run/shm /dev/shm
 
 install:  
     - pip install tox
 script:  tox
+sudo: false
