@@ -449,7 +449,7 @@ def run_job_locally (cmd_str, logger = None, job_environment = None, working_dir
                                "The original command was:\n%s\n"
                                "The stderr was: \n%s\n\n"
                                "The stdout was: \n%s\n\n" %
-                                 (-process.returncode, cmd_str, stderr, stdout) )
+                               (-process.returncode, cmd_str, "".join(stderr), "".join(stdout)) )
 
     return stdout, stderr
 
