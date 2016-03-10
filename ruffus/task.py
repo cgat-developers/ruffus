@@ -4509,9 +4509,8 @@ def _pipeline_prepare_to_run(checksum_level, history_file, pipeline, runtime_dat
     if not target_tasks:
         if pipeline:
             target_tasks.extend(list(pipeline.tasks))
-        if not target_tasks:
-            for pipeline_name in Pipeline.pipelines.keys():
-                target_tasks.extend(list(Pipeline.pipelines[pipeline_name].tasks))
+        for pipeline_name in Pipeline.pipelines.keys():
+            target_tasks.extend(list(Pipeline.pipelines[pipeline_name].tasks))
 
     # make sure pipeline is defined
     pipeline = lookup_pipeline(pipeline)
