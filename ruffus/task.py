@@ -3368,8 +3368,7 @@ class Task (node):
         #   Create a new Task with a unique name to this instance of mkdir
         #
         self.cnt_task_mkdir += 1
-        cnt_task_mkdir_str = (" #%d" % self.cnt_task_mkdir) if self.cnt_task_mkdir > 1 else ""
-        task_name = r"mkdir%r%s   before %s " % (unnamed_args, cnt_task_mkdir_str, self._name)
+        task_name = r"mkdir before %s " % (self._name)
         task_name = task_name.replace(",)", ")").replace(",", ",  ")
         new_task = self.pipeline._create_task(task_func=job_wrapper_mkdir, task_name=task_name)
 
