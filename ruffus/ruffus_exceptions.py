@@ -95,13 +95,13 @@ class RethrownJobError(error_task):
     """
     def __init__(self, job_exceptions=[]):
         error_task.__init__(self)
-        self.args = list(job_exceptions)
+        self.job_exceptions = list(job_exceptions)
 
     def __len__(self):
-        return len(self.args)
+        return len(self.job_exceptions)
 
     def append(self, job_exception):
-        self.args = self.args + (job_exception, )
+        self.job_exceptions.append(job_exception)
 
     def task_to_func_name (self, task_name):
         if "mkdir " in task_name:
@@ -112,8 +112,8 @@ class RethrownJobError(error_task):
 
     def get_nth_exception_str (self, nn = -1):
         if nn == -1:
-            nn = len(self.args) - 1
-        task_name, job_name, exception_name, exception_value, exception_stack = self.args[nn]
+            nn = len(self.job_exceptions) - 1
+        task_name, job_name, exception_name, exception_value, exception_stack = self.job_exceptions[nn]
         message = "\nException #%d\n" % (nn + 1)
         message += "  '%s%s' raised in ...\n" % (exception_name, exception_value)
         if task_name:
@@ -122,8 +122,8 @@ class RethrownJobError(error_task):
         return message.replace("\n", "\n    ")
 
     def __str__(self):
-        message = ["\nOriginal exception%s:\n" % ("s" if len(self.args) > 1 else "")]
-        for ii in range(len(self.args)):
+        message = ["\nOriginal exception%s:\n" % ("s" if len(self.job_exceptions) > 1 else "")]
+        for ii in range(len(self.job_exceptions)):
             message += self.get_nth_exception_str (ii)
         #
         #   For each exception:

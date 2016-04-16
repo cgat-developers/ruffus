@@ -77,7 +77,7 @@ class Test_ruffus(unittest.TestCase):
             log.info(e)
             for exc in e.args:
                 task_name, job_name, exc_name, exc_value, exc_stack = exc
-            log.join()
+            #log.join()
             return
         raise Exception("Missing exception")
 
