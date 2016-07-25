@@ -196,13 +196,15 @@ def write_job_script_to_temp_file( cmd_str, job_script_directory, job_name, job_
     '''
     import sys
     time_stmp_str = "_".join(map(str, datetime.datetime.now().timetuple()[0:6]))
+    if job_name is None:
+        job_name = 'drmaa_script_'
     # create script directory if necessary
     # Ignore errors rather than test for existence to avoid race conditions
     try:
         os.makedirs(job_script_directory)
     except:
         pass
-    tmpfile = tempfile.NamedTemporaryFile(mode='w', prefix='drmaa_script_' + time_stmp_str + "__", dir = job_script_directory,  delete = False)
+    tmpfile = tempfile.NamedTemporaryFile(mode='w', prefix=job_name + "_" + time_stmp_str + "__", dir = job_script_directory,  delete = False)
 
     #
     #   hopefully #!/bin/sh is universally portable among unix-like operating systems
