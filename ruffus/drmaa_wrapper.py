@@ -230,13 +230,38 @@ def write_job_script_to_temp_file( cmd_str, job_script_directory, job_name, job_
     return (job_script_path, stdout_path, stderr_path)
 
 
+#_________________________________________________________________________________________
 
+#   submit_drmaa_job
+
+#_________________________________________________________________________________________
+def submit_drmaa_job(cmd_str, drmaa_session, job_template, logger):
+
+    import drmaa
+
+    jobid = drmaa_session.runJob(job_template)
+    if logger:
+        logger.debug( "job has been submitted with jobid %s" % str(jobid) )
+
+    try:
+        job_info = drmaa_session.wait(jobid, drmaa.Session.TIMEOUT_WAIT_FOREVER)
+    except Exception:
+        exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+        msg = str(exceptionValue)
+        # ignore message 24 in PBS
+        # code 24: drmaa: Job finished but resource usage information and/or termination status could not be provided.":
+        if not msg.startswith("code 24"): raise
+        if logger:
+            logger.debug(msg)
+        job_info = None
+
+    return jobid, job_info
 #_________________________________________________________________________________________
 
 #   run_job_using_drmaa
 
 #_________________________________________________________________________________________
-def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_script_directory = None, job_environment = None, working_directory = None, retain_job_scripts = False, logger = None, drmaa_session = None, verbose = 0):
+def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_script_directory = None, job_environment = None, working_directory = None, retain_job_scripts = False, logger = None, drmaa_session = None, verbose = 0, resubmit = 0):
 
     """
     Runs specified command remotely using drmaa,
@@ -271,24 +296,30 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
     #
     #   Run job and wait
     #
-    jobid = drmaa_session.runJob(job_template)
-    if logger:
-        logger.debug( "job has been submitted with jobid %s" % str(jobid ))
+    if resubmit:
+        exitStatus = 1 
+        jobCount = 0
+        while (exitStatus and jobCount < resubmit):
+            try:
+                jobid, job_info = submit_drmaa_job(cmd_str, drmaa_session, job_template, logger)
+                if job_info:
+                    exitStatus = job_info.exitStatus
+                    if exitStatus:
+                        if logger:
+                            logger.debug("job %s exited with %d" % (str(jobid),  exitStatus))
+                    else:
+                        if logger:
+                            logger.debug("job %s exited normally" % str(jobid))
+            except Exception as err:
+                if logger:
+                    logger.debug(err)
+                exitStatus = 1
 
-    try:
-        job_info = drmaa_session.wait(jobid, drmaa.Session.TIMEOUT_WAIT_FOREVER)
-    except Exception:
-        exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-        msg = str(exceptionValue)
-        # ignore message 24 in PBS
-        # code 24: drmaa: Job finished but resource usage information and/or termination status could not be provided.":
-        if not msg.startswith("code 24"): raise
-        if logger:
-            logger.info("Warning %s\n"
-                        "The original command was:\n%s\njobid=jobid\n"
-                        (msg.message, cmd_str,jobid) )
-        job_info = None
-
+            jobCount += 1
+            if logger and exitStatus:
+                logger.debug("Resubmitting job, resubmission count is %d" %  jobCount)
+    else:
+        jobid, job_info = submit_drmaa_job(cmd_str, drmaa_session, job_template, logger)
 
     #
     #   Read output
@@ -517,7 +548,8 @@ def touch_output_files (cmd_str, output_files, logger = None):
 def run_job(cmd_str, job_name = None, job_other_options = None, job_script_directory = None,
             job_environment = None, working_directory = None, logger = None,
             drmaa_session = None, retain_job_scripts = False,
-            run_locally = False, output_files = None, touch_only = False, verbose = 0, local_echo = False):
+            run_locally = False, output_files = None, touch_only = False, verbose = 0, local_echo = False,
+            resubmit = 0):
     """
     Runs specified command either using drmaa, or locally or only in simulation (touch the output files only)
     """
@@ -529,4 +561,4 @@ def run_job(cmd_str, job_name = None, job_other_options = None, job_script_direc
     if run_locally:
         return run_job_locally (cmd_str, logger, job_environment, working_directory, local_echo)
 
-    return run_job_using_drmaa (cmd_str, job_name, job_other_options, job_script_directory, job_environment, working_directory, retain_job_scripts, logger, drmaa_session, verbose)
+    return run_job_using_drmaa (cmd_str, job_name, job_other_options, job_script_directory, job_environment, working_directory, retain_job_scripts, logger, drmaa_session, verbose, resubmit)
