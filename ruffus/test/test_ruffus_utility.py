@@ -635,41 +635,41 @@ class Test_regex_match_str (unittest.TestCase):
         compiled_regexes = ["aaa.(b+).(?P<CCC>c+)", "ddd.eee.fff"]
         results = [{0: 'aaa.bbb.ccc', 1: 'bbb', 2: 'ccc', 'CCC': 'ccc'}, {0: 'ddd.eee.fff'}]
         for ss, rr, result in zip(test_str_list, compiled_regexes, results):
-            self.assertEqual(regex_match_str(ss, rr), result)
+            self.assertEqual(regex_matches_as_dict(ss, rr), result)
 
         # first string named and unamed captures, second string unnamed captures
         compiled_regexes = ["aaa.(b+).(?P<CCC>c+)", ".+(f)"]
         results = [{0: 'aaa.bbb.ccc', 1: 'bbb', 2: 'ccc', 'CCC': 'ccc'}, {0: 'ddd.eee.fff', 1: 'f'}]
         for ss, rr, result in zip(test_str_list, compiled_regexes, results):
-            self.assertEqual(regex_match_str(ss, rr), result)
+            self.assertEqual(regex_matches_as_dict(ss, rr), result)
 
         # first string named and unamed captures, second string no capture
         compiled_regexes = ["aaa.(b+).(?P<CCC>c+)", ".+"]
         results = [{0: 'aaa.bbb.ccc', 1: 'bbb', 2: 'ccc', 'CCC': 'ccc'}, {0: 'ddd.eee.fff'}]
         for ss, rr, result in zip(test_str_list, compiled_regexes, results):
-            self.assertEqual(regex_match_str(ss, rr), result)
+            self.assertEqual(regex_matches_as_dict(ss, rr), result)
 
         # first string named and unamed captures, second string None
         compiled_regexes = ["aaa.(b+).(?P<CCC>c+)", None]
         results = [{0: 'aaa.bbb.ccc', 1: 'bbb', 2: 'ccc', 'CCC': 'ccc'}, None]
         for ss, rr, result in zip(test_str_list, compiled_regexes, results):
-           self.assertEqual(regex_match_str(ss, rr), result)
+           self.assertEqual(regex_matches_as_dict(ss, rr), result)
 
         # Both None
         compiled_regexes = []
         results = [None, None]
         for ss, rr, result in zip(test_str_list, compiled_regexes, results):
-           self.assertEqual(regex_match_str(ss, rr), result)
+           self.assertEqual(regex_matches_as_dict(ss, rr), result)
 
         # first string named and unamed captures, second string Failed
         compiled_regexes = ["aaa.(b+).(?P<CCC>c+)", "PP"]
         results = [{0: 'aaa.bbb.ccc', 1: 'bbb', 2: 'ccc', 'CCC': 'ccc'}, False]
         for ss, rr, result in zip(test_str_list, compiled_regexes, results):
-           self.assertEqual(regex_match_str(ss, rr), result)
+           self.assertEqual(regex_matches_as_dict(ss, rr), result)
 
 
         # first string named and unamed captures, second parameter number not string
-        self.assertRaises(Exception, regex_match_str, test_str_list[0], 6)
+        self.assertRaises(Exception, regex_matches_as_dict, test_str_list[0], 6)
 
 
 
@@ -737,7 +737,6 @@ class Test_get_all_paths_components (unittest.TestCase):
                      "/test.txt"] ,
                     [
                         r"(.*)(?P<id>\d+)\..+",
-                        r"(.*)(?P<id>\d+)\..+",
                         r"(.*)(?P<id>\d+)\..+"],
                     [   {
                             0:          '/a/b/c/sample1.bam',           # captured by index
@@ -763,8 +762,24 @@ class Test_get_all_paths_components (unittest.TestCase):
                         },
 
                         # no regular expression match
-                        {}
+                        {
+                            'ext': '.txt',
+                            'subdir': ["/"],
+                            'subpath': ["/"],
+                            'path': '/',
+                            'basename': 'test',
+                        },
                     ])
+        # multiple paths : a single regular expression mismatch prevents any matches
+        self.helper(["/a/b/c/sample1.bam",
+                     "dbsnp15.vcf",
+                     "/test.txt"] ,
+                    [   None,
+                        r"(.*)(?P<id>\d+)\..+",
+                        r"(.*)(?P<id>\d+)\..+"],
+                    [   {},{}, {}])
+
+
 
 
 

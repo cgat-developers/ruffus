@@ -2445,6 +2445,7 @@ class Task (node):
                     self.param_generator_func in runtime_data["MATCH_FAILURE"]:
                     for job_msg in runtime_data["MATCH_FAILURE"][self.param_generator_func]:
                         messages.append(indent_str + "Job Warning: Input substitution failed:")
+                        messages.append(indent_str + "             Do your regular expressions match the corresponding Input?")
                         messages.extend("  "+ indent_str + line for line in job_msg.split("\n"))
 
             runtime_data["MATCH_FAILURE"][self.param_generator_func] = set()

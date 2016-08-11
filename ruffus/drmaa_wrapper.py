@@ -127,7 +127,7 @@ def read_stdout_stderr_from_files( stdout_path, stderr_path, retain_stdout, reta
         exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
         msg = str(exceptionValue)
         if logger:
-            logger.warn( "could not open stdout: %s for \n%s" % (msg, cmd_str))
+            logger.warning( "could not open stdout: %s for \n%s" % (msg, cmd_str))
         stdout = []
 
     try:
@@ -136,7 +136,7 @@ def read_stdout_stderr_from_files( stdout_path, stderr_path, retain_stdout, reta
         exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
         msg = str(exceptionValue)
         if logger:
-            logger.warn( "could not open stderr: %s for \n%s" % (msg, cmd_str))
+            logger.warning( "could not open stderr: %s for \n%s" % (msg, cmd_str))
         stderr = []
 
     #
@@ -384,7 +384,7 @@ def run_job_using_drmaa (cmd_str, job_name = None, job_other_options = "", job_s
             os.unlink( job_script_path )
         except OSError:
             if logger:
-                logger.warn( "Temporary job script wrapper '%s' missing (and ignored) at clean-up" % job_script_path )
+                logger.warning( "Temporary job script wrapper '%s' missing (and ignored) at clean-up" % job_script_path )
 
     return stdout, stderr
 
@@ -456,7 +456,7 @@ def run_job_locally (cmd_str, logger = None, job_environment = None, working_dir
                                "The original command was:\n%s\n"
                                "The stderr was: \n%s\n\n"
                                "The stdout was: \n%s\n\n" %
-                                 (-process.returncode, cmd_str, stderr, stdout) )
+                               (-process.returncode, cmd_str, "".join(stderr), "".join(stdout)) )
 
     return stdout, stderr
 

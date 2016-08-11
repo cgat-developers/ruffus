@@ -109,7 +109,7 @@ class Test_ruffus(unittest.TestCase):
     def test_transform_with_missing_formatter_args(self):
         s = StringIO()
         pipeline_printout(s, [transform_with_missing_formatter_args], verbose=4, wrap_width = 10000, pipeline= "main")
-        self.assertIn("Missing key = {dynamic_message}", s.getvalue())
+        self.assertIn("Unmatched field {dynamic_message}", s.getvalue())
         pipeline_run([transform_with_missing_formatter_args], verbose=0, pipeline= "main")
 
 
@@ -129,13 +129,13 @@ class Test_ruffus(unittest.TestCase):
                                 extras      =['echo {dynamic_message} > {some_file}'])
         s = StringIO()
         test_pipeline.printout(s, [transform_with_missing_formatter_args], verbose=4, wrap_width = 10000, pipeline= "test")
-        self.assertIn("Missing key = {dynamic_message}", s.getvalue())
+        self.assertIn("Unmatched field {dynamic_message}", s.getvalue())
 
         #log to stream
         s = StringIO()
         logger = t_stream_logger(s)
         test_pipeline.run([transform_with_missing_formatter_args], verbose=5, pipeline= "test", logger=logger)
-        self.assertIn("Missing key = {dynamic_message}", s.getvalue())
+        self.assertIn("Unmatched field {dynamic_message}", s.getvalue())
 
 
 #

@@ -249,9 +249,9 @@ Filter and parse using regular expressions
         .. code-block:: python
 
             input_string = "/directory/to/a/file.name.ext"
-            formatter(r"/directory/(.+)/(?P<MYFILENAME>)\.ext")
+            formatter(r"/directory/(.+)/(?P<MYFILENAME>.+)\.ext")
 
-        We capture part of the path using ``(.+)``, and the base name using ``(?P<MYFILENAME>)``.
+        We capture part of the path using ``(.+)``, and the base name using ``(?P<MYFILENAME>.+)``.
         These `matching subgroups  <http://docs.python.org/2/library/re.html#re.MatchObject.group>`__ can be referred to by index
         but for greater clarity the second named capture can also be referred to by name, i.e. ``{MYFILENAME}``.
 
