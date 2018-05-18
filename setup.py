@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-from distutils.core import setup
-#from setuptools import find_packages
+import sys
+import os
+from setuptools import setup
 
-import sys, os
-if not sys.version_info[0:2] >= (2,6):
+if not sys.version_info[0:2] >= (2, 6):
     sys.stderr.write("Requires Python later than 2.6\n")
     sys.exit(1)
 
@@ -11,7 +11,6 @@ if not sys.version_info[0:2] >= (2,6):
 sys.path.insert(0, os.path.abspath("."))
 import ruffus.ruffus_version
 sys.path.pop(0)
-
 
 module_dependencies = []
 #module_dependencies = ['multiprocessing>=2.6', 'simplejson']
