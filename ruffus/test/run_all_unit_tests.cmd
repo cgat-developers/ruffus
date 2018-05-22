@@ -91,5 +91,7 @@ echo Running test_transform_formatter.py                                        
 python  -m unittest test_transform_formatter                                        && \
 echo Running test_check_if_uptodate.py                                              && \
 python  -m unittest test_check_if_uptodate                                          && \
+echo Running test_pool_manager.py                                              	    && \
+python  -m unittest test_pool_manager                                          	    && \
 echo DONE!!!                                                                        
 

@@ -5546,6 +5546,10 @@ def pipeline_run(target_tasks=[],
     #   select pool and queue type. Selection is convoluted
     #   for backwards compatibility.
     itr_kwargs = {}
+    if multiprocess is None:
+        multiprocess = 0
+    if multithread is None:
+        multithread = 0
     parallelism = max(multiprocess, multithread)
     if parallelism > 1:
         if pool_manager == "multiprocessing":
@@ -5569,8 +5573,11 @@ def pipeline_run(target_tasks=[],
             queue_t = gevent.queue.Queue
         else:
             raise ValueError("unknown pool manager '{}'".format(pool_manager))
-    pool = pool_t(parallelism)
-
+        pool = pool_t(parallelism)
+    else:
+        pool = None
+        queue_t = queue.Queue
+        
     if verbose == 0:
         logger = black_hole_logger
     elif verbose >= 11:

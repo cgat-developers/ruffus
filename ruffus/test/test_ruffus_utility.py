@@ -259,7 +259,7 @@ class Test_compile_regex (unittest.TestCase):
         try:
             compile_regex("Dummy Task", regex(".*)"), Exception, "test1")
         except Exception as e:
-            self.assertEqual(e.args, ('Dummy Task', "test1: regular expression regex('.*)') is malformed\n[sre_constants.error: (unbalanced parenthesis)]"))
+            self.assertEqual(e.args, ('Dummy Task', "test1: regular expression regex('.*)') is malformed\n[sre_constants.error: (unbalanced parenthesis at position 2)]"))
 
         # bad number of items regex
         self.assertRaises(Exception, compile_regex, "Dummy Task", regex(".*", "o"), Exception, "test1")

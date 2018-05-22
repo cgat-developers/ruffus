@@ -8,6 +8,12 @@ import shutil
 import glob
 import tempfile
 
+try:
+    import gevent
+    HAVE_GEVENT = True
+except ImportError:
+    HAVE_GEVENT = False
+
 ROOT = os.path.abspath(os.path.dirname(__file__))
 TESTS_TEMPDIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "tmp"))
 
@@ -128,6 +134,7 @@ class TestExecutionEngines(BaseTest):
         self.assertEqual(len(set(pids)), 1)
         self.assertEqual(pids[0], os.getpid())
 
+    @unittest.skipIf(HAVE_GEVENT == False, "no gevent installed")
     def test_pipeline_runs_with_gevent_manager(self):
         self.run_pipeline(multithread=NUM_CORES, pool_manager="gevent")
         pids = self.read_pids()

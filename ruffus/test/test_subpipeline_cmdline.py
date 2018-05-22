@@ -165,21 +165,17 @@ pipeline1c.set_output(output = [tempdir + "/" + ss for ss in ("e.1", "f.1")])
 pipeline2 = make_pipeline2()
 pipeline2.set_input(input = [pipeline1a, pipeline1b, pipeline1c])
 
-
 import ruffus.cmdline as cmdline
-parser = cmdline.get_argparse(description='Demonstrates the new Ruffus syntax in version 2.6')
+parser = cmdline.get_argparse(
+    description='Demonstrates the new Ruffus syntax in version 2.6')
 
 parser.add_argument('--cleanup', "-C",
                     action="store_true",
                     help="Cleanup before and after.")
 
-
-options = parser.parse_args()
-
-
-
+options = parser.parse_args(args=[])
 #  standard python logger which can be synchronised across concurrent Ruffus tasks
-logger, logger_mutex = cmdline.setup_logging (__file__, options.log_file, options.verbose)
+logger, logger_mutex = cmdline.setup_logging(__file__, options.log_file, options.verbose)
 
 logger.debug("\tRuffus Version = " + ruffus.__version__)
 
@@ -207,7 +203,7 @@ if  not options.just_print and \
     #
     #   Run
     #
-    cmdline.run (options)
+    cmdline.run(options)
 
     # Check that the output reflecting the pipeline topology is correct.
     correct_output = '{tempdir}/a.1.55={tempdir}/a.1.44+{tempdir}/a.1.33+{tempdir}/a.1.22+{tempdir}/a.1=; {tempdir}/testdir/whatever.txt=; ; ' \

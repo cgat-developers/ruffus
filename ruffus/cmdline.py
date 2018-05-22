@@ -174,18 +174,17 @@ def append_to_argparse (parser, **args_dict):
     else:
         ignored_args = set()
 
-
-
     common_options = parser.add_argument_group('Common options')
     if "verbose" not in ignored_args:
-        common_options.add_argument('--verbose', "-v", const="+", default=[], nargs='?',
-                                    action="append",
-                                    help="Print more verbose messages for each additional verbose level.")
+        common_options.add_argument(
+            '--verbose', "-v", const="+", default=[], nargs='?',
+            action="append",
+            help="Print more verbose messages for each additional verbose level.")
     if "version" not in ignored_args:
         common_options.add_argument('--version', action='version', version=prog_version)
     if "log_file" not in ignored_args:
         common_options.add_argument("-L", "--log_file", metavar="FILE", type=str,
-                                      help="Name and path of log file")
+                                    help="Name and path of log file")
 
 
     #
@@ -357,15 +356,15 @@ def append_to_optparse (parser, **args_dict):
     #   general options: verbosity / logging
     #
     if "verbose" not in ignored_args:
-        parser.add_option("-v", "--verbose", dest = "verbose",
+        parser.add_option("-v", "--verbose", dest="verbose",
                           action="callback", default=[],
-                          #---------------------------------------------------------------
+                          # ---------------------------------------------------------------
                           # hack to get around unreasonable discrimination against
                           # --long_options=with_equals in opt_parse::_process_long_opt()
                           # when using a callback
-                          type = int,
+                          type=int,
                           nargs=0,
-                          #---------------------------------------------------------------
+                          # ---------------------------------------------------------------
                           callback=vararg_callback,
                           help="Print more verbose messages for each additional verbose level.")
     if "log_file" not in ignored_args:
@@ -377,30 +376,30 @@ def append_to_optparse (parser, **args_dict):
     #   pipeline
     #
     if "target_tasks" not in ignored_args:
-            parser.add_option("-t", "--target_tasks", dest="target_tasks",
-                            action="append",
-                            default = list(),
-                            metavar="JOBNAME",
-                            type="string",
-                            help="Target task(s) of pipeline.")
+        parser.add_option("-t", "--target_tasks", dest="target_tasks",
+                          action="append",
+                          default=list(),
+                          metavar="JOBNAME",
+                          type="string",
+                          help="Target task(s) of pipeline.")
     if "jobs" not in ignored_args:
         parser.add_option("-j", "--jobs", dest="jobs",
-                            default=1,
-                            metavar="N",
-                            type="int",
-                            help="Allow N jobs (commands) to run simultaneously.")
+                          default=1,
+                          metavar="N",
+                          type="int",
+                          help="Allow N jobs (commands) to run simultaneously.")
     if "use_threads" not in ignored_args:
         parser.add_option("--use_threads", dest="use_threads",
-                            action="store_true", default=False,
-                            help="Use multiple threads rather than processes. Needs --jobs N with N > 1")
+                          action="store_true", default=False,
+                          help="Use multiple threads rather than processes. Needs --jobs N with N > 1")
     if "just_print" not in ignored_args:
         parser.add_option("-n", "--just_print", dest="just_print",
-                            action="store_true", default=False,
-                            help="Don't actually run any commands; just print the pipeline.")
+                          action="store_true", default=False,
+                          help="Don't actually run any commands; just print the pipeline.")
     if "touch_files_only" not in ignored_args:
         parser.add_option("--touch_files_only", dest="touch_files_only",
-                            action="store_true", default=False,
-                            help="Don't actually run any commands; just 'touch' the output for each task to make them appear up to date.")
+                          action="store_true", default=False,
+                          help="Don't actually run any commands; just 'touch' the output for each task to make them appear up to date.")
     if "recreate_database" not in ignored_args:
         parser.add_option("--recreate_database", dest="recreate_database",
                             action="store_true", default=False,
