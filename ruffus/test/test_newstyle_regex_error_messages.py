@@ -156,12 +156,6 @@ def test_regex_out_of_range_regex_reference_error_task(infiles, outfile,
     raise Exception("Should blow up first")
 
 
-
-
-
-
-
-
 test_pipeline = Pipeline("test")
 
 test_pipeline.originate(task_func = generate_initial_files1,

@@ -82,7 +82,8 @@ Running the pipeline
 import os
 import sys
 import copy
-import multiprocessing
+from multiprocessing import Pool as ProcessPool
+from multiprocessing.pool import ThreadPool
 import collections
 
 # 88888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -94,8 +95,6 @@ import collections
 import logging
 import re
 from collections import defaultdict, deque
-from multiprocessing import Pool
-from multiprocessing.pool import ThreadPool
 import traceback
 import types
 if sys.hexversion >= 0x03000000:
@@ -901,7 +900,11 @@ class Pipeline(dict):
 
         self.command_str_callback = subprocess_checkcall_wrapper
 
-
+    @classmethod
+    def clear_all(cls):
+        """clear all pipelines.
+        """
+        cls.pipelines = dict()
     # _________________________________________________________________________
 
     #   _create_task
@@ -974,7 +977,6 @@ class Pipeline(dict):
         Make sure all tasks in dependency list are linked to real functions
         """
 
-
         processed_pipelines = set([self.name])
         unprocessed_tasks = deque(self.tasks)
         while len(unprocessed_tasks):
@@ -995,7 +997,6 @@ class Pipeline(dict):
             if isinstance(task._is_single_job_single_output, Task):
                 task._is_single_job_single_output = \
                     task._is_single_job_single_output._is_single_job_single_output
-
 
         for pipeline_name in list(processed_pipelines):
             if pipeline_name != self.name:
@@ -4424,12 +4425,8 @@ def lookup_pipeline(pipeline):
     raise error_not_a_pipeline("%s does not name a pipeline." % pipeline)
 
 
-
-
 # _____________________________________________________________________________
-
 #   _pipeline_prepare_to_run
-
 # _____________________________________________________________________________
 def _pipeline_prepare_to_run(checksum_level, history_file, pipeline, runtime_data, target_tasks, forcedtorun_tasks):
     """
@@ -5438,13 +5435,13 @@ def pipeline_run(target_tasks=[],
                  history_file=None,
                  # defaults to 2 if None
                  verbose_abbreviated_path=None,
-                 pipeline=None):
+                 pipeline=None,
+                 pool_manager="multiprocessing"):
     # Remember to add further extra parameters here to
     #   "extra_pipeline_run_options" inside cmdline.py
     # This will forward extra parameters from the command line to
     # pipeline_run
-    """
-    Run pipelines.
+    """Run pipelines.
 
     :param target_tasks: targets task functions which will be run if they are
                          out-of-date
@@ -5459,7 +5456,7 @@ def pipeline_run(target_tasks=[],
                         is particularly useful to manage high performance
                         clusters which otherwise are prone to
                         "processor storms" when large number of cores finish
-                        jobs at the same time. (Thanks Andreas Heger)
+                        jobs at the same time.
     :param logger: Where progress will be logged. Defaults to stderr output.
     :type logger: `logging <http://docs.python.org/library/logging.html>`_
                   objects
@@ -5547,18 +5544,41 @@ def pipeline_run(target_tasks=[],
     syncmanager = multiprocessing.Manager()
 
     #
-    #   whether using multiprocessing or multithreading
-    #
-    if multithread:
-        pool = ThreadPool(multithread)
-        parallelism = multithread
-    elif multiprocess > 1:
-        pool = Pool(multiprocess)
-        parallelism = multiprocess
+    #   select pool and queue type. Selection is convoluted
+    #   for backwards compatibility.
+    itr_kwargs = {}
+    if multiprocess is None:
+        multiprocess = 0
+    if multithread is None:
+        multithread = 0
+    parallelism = max(multiprocess, multithread)
+    if parallelism > 1:
+        if pool_manager == "multiprocessing":
+            if multithread:
+                pool_t = ThreadPool
+                queue_t = queue.Queue
+            elif multiprocess > 1:
+                pool_t = ProcessPool
+                queue_t = queue.Queue
+                #   Use a timeout of 3 years per job..., so that the condition
+                #       we are waiting for in the thread can be interrupted by
+                #       signals... In other words, so that Ctrl-C works
+                #   Yucky part is that timeout is an extra parameter to
+                #       IMapIterator.next(timeout=None) but next() for normal
+                #       iterators do not take any extra parameters.
+                itr_kwargs = dict(timeout=99999999)
+        elif pool_manager == "gevent":
+            import gevent.queue
+            import gevent.pool
+            pool_t = gevent.pool.Pool
+            queue_t = gevent.queue.Queue
+        else:
+            raise ValueError("unknown pool manager '{}'".format(pool_manager))
+        pool = pool_t(parallelism)
     else:
-        parallelism = 1
         pool = None
-
+        queue_t = queue.Queue
+        
     if verbose == 0:
         logger = black_hole_logger
     elif verbose >= 11:
@@ -5568,7 +5588,6 @@ def pipeline_run(target_tasks=[],
         #       are tagged
         if hasattr(logger, "add_unique_prefix"):
             logger.add_unique_prefix()
-
 
     (checksum_level,
      job_history,
@@ -5701,8 +5720,8 @@ def pipeline_run(target_tasks=[],
     # prime queue with initial set of job parameters
     #
     death_event = syncmanager.Event()
-    parameter_q = queue.Queue()
-    task_with_completed_job_q = queue.Queue()
+    parameter_q = queue_t()
+    task_with_completed_job_q = queue_t()
     parameter_generator = make_job_parameter_generator(incomplete_tasks, task_parents,
                                                        logger, forcedtorun_tasks,
                                                        task_with_completed_job_q,
@@ -5751,7 +5770,7 @@ def pipeline_run(target_tasks=[],
     #      except StopIteration:
     #          break
 
-    if pool:
+    if pool is not None:
         pool_func = pool.imap_unordered
     else:
         pool_func = map
@@ -5777,14 +5796,8 @@ def pipeline_run(target_tasks=[],
         # feed_job_params_to_process_pool()):
         ii = iter(pool_func(run_pooled_job_without_exceptions, feed_job_params_to_process_pool()))
         while 1:
-            #   Use a timeout of 3 years per job..., so that the condition
-            #       we are waiting for in the thread can be interrupted by
-            #       signals... In other words, so that Ctrl-C works
-            #   Yucky part is that timeout is an extra parameter to
-            #       IMapIterator.next(timeout=None) but next() for normal
-            #       iterators do not take any extra parameters.
-            if pool:
-                job_result = ii.next(timeout=99999999)
+            if pool is not None:
+                job_result = ii.next(**itr_kwargs)
             else:
                 job_result = next(ii)
             # run next task
@@ -5917,9 +5930,10 @@ def pipeline_run(target_tasks=[],
         except:
             pass
 
-        if pool:
-            log_at_level(logger, 10, verbose, "       pool.close")
-            pool.close()
+        if pool is not None:
+            if hasattr(pool, "close"):
+                log_at_level(logger, 10, verbose, "       pool.close")
+                pool.close()
             log_at_level(logger, 10, verbose, "       pool.terminate")
             try:
                 pool.terminate()
@@ -5931,16 +5945,21 @@ def pipeline_run(target_tasks=[],
     # log_at_level (logger, 10, verbose, "       syncmanager.shutdown")
     # syncmanager.shutdown()
 
-    if pool:
+    if pool is not None:
         log_at_level(logger, 10, verbose, "       pool.close")
         # pool.join()
-        pool.close()
+        try:
+            pool.close()
+        except AttributeError:
+            pass
         log_at_level(logger, 10, verbose, "       pool.terminate")
-        # an exception may be thrown after a signal is caught (Ctrl-C)
-        #   when the EventProxy(s) for death_event might be left hanging
         try:
             pool.terminate()
-        except:
+        except AttributeError:
+            pass
+        except Exception:
+            # an exception may be thrown after a signal is caught (Ctrl-C)
+            #   when the EventProxy(s) for death_event might be left hanging
             pass
         log_at_level(logger, 10, verbose, "       pool.terminated")
 
