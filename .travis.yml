@@ -11,7 +11,7 @@ python:
 
 before_install:
 
-install:
+install: python setup.py install
 
 script: cd ruffus/test && /bin/bash run_all_unit_tests.cmd
 
