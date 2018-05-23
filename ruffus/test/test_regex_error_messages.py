@@ -260,7 +260,7 @@ class Test_regex_error_messages(unittest.TestCase):
         if sys.hexversion < 0x03000000:
             self.assertRaisesRegex = self.assertRaisesRegexp27
 
-        if sys.hexversion < 0x02700000:
+        if sys.hexversion < 0x02070000:
             self.assertIn = self.my_assertIn
 
     def my_assertIn (self, test_string, full_string):
