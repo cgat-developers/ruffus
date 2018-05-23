@@ -82,7 +82,8 @@ Running the pipeline
 import os
 import sys
 import copy
-import multiprocessing
+from multiprocessing import Pool as ProcessPool
+from multiprocessing.pool import ThreadPool
 import collections
 
 # 88888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -5554,10 +5555,10 @@ def pipeline_run(target_tasks=[],
     if parallelism > 1:
         if pool_manager == "multiprocessing":
             if multithread:
-                pool_t = multiprocessing.pool.ThreadPool
+                pool_t = ThreadPool
                 queue_t = queue.Queue
             elif multiprocess > 1:
-                pool_t = multiprocessing.Pool
+                pool_t = ProcessPool
                 queue_t = queue.Queue
                 #   Use a timeout of 3 years per job..., so that the condition
                 #       we are waiting for in the thread can be interrupted by
@@ -5567,7 +5568,7 @@ def pipeline_run(target_tasks=[],
                 #       iterators do not take any extra parameters.
                 itr_kwargs = dict(timeout=99999999)
         elif pool_manager == "gevent":
-            import gevent
+            import gevent.queue
             import gevent.pool
             pool_t = gevent.pool.Pool
             queue_t = gevent.queue.Queue
