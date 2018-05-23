@@ -2,20 +2,17 @@ language: python
 
 # all python versions tested via pip in tox
 python:
+  - "2.6"
   - "2.7"
-
-# Install stuff
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.6"
 
 before_install:
-#  - travis/install_sge.sh
-#  - export SGE_ROOT=/var/lib/gridengine
-#  - export SGE_CELL=default
-#  - export DRMAA_LIBRARY_PATH=/usr/lib/libdrmaa.so.1.0
-#   Work around for multiprocessing permission bug with Travis
-#  - sudo rm -rf /dev/shm
-#  - sudo ln -s /run/shm /dev/shm
 
-install:  
-    - pip install tox
-script:  tox
+install:
+
+script: cd ruffus/test && /bin/bash run_all_unit_tests.cmd
+
 sudo: false
