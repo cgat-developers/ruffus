@@ -1,9 +1,8 @@
-
 import contextlib
+import random
 import unittest
 import ruffus
 import os
-import numpy
 import shutil
 import glob
 import tempfile
@@ -38,7 +37,7 @@ def create_files(outfile):
     with open(outfile, "w") as outf:
         outf.write("\n".join(map(
             str,
-            numpy.random.normal(0.5, 0.1, 100))) + "\n")
+            random.sample(range(0, 1000), 100))) + "\n")
     save_pid(outfile)
 
 
