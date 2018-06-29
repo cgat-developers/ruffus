@@ -710,9 +710,7 @@ t_job_result = namedtuple('t_job_result',
                           'return_value '
                           'exception '
                           'params '
-                          'unglobbed_params ',
-                          verbose=0)
-
+                          'unglobbed_params ')
 
 # _____________________________________________________________________________
 
