@@ -710,8 +710,7 @@ t_job_result = namedtuple('t_job_result',
                           'return_value '
                           'exception '
                           'params '
-                          'unglobbed_params ',
-                          verbose=0)
+                          'unglobbed_params ')
 
 
 # _____________________________________________________________________________
@@ -5968,14 +5967,6 @@ def pipeline_run(target_tasks=[],
 
     if len(job_errors):
         raise job_errors
-
-
-#   use high resolution timestamps where available
-#       default in python 2.5 and greater
-#   N.B. File modify times / stat values have 1 second precision for many file
-#       systems and may not be accurate to boot, especially over the network.
-os.stat_float_times(True)
-
 
 if __name__ == '__main__':
     import unittest
