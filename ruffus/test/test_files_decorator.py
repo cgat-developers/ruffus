@@ -103,7 +103,7 @@ def task1(infiles, outfiles, *extra_params):
 #
 #    task2
 #
-@transform(task1, regex(r".*"), tempdir + 'b.1')
+@transform(task1, regex(r".+"), tempdir + 'b.1')
 def task2(infiles, outfiles, *extra_params):
     """
     Second task
@@ -171,7 +171,7 @@ class Test_task(unittest.TestCase):
             .follows(mkdir(tempdir))
         test_pipeline.transform(task_func   = task2,
                                 input       = task1,
-                                filter      = regex(r".*"),
+                                filter      = regex(r".+"),
                                 output      = tempdir + 'b.1')
         test_pipeline.files(task3, task2, tempdir + 'c.1')
         test_pipeline.files(task4, [[None, tempdir + 'd.1'], [None, tempdir + 'e.1']])\

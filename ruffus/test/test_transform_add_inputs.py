@@ -67,10 +67,10 @@ def task2(i, o):
     touch(o)
 
 
-#@transform(input = task1, filter = regex(r"(.*)"), add_inputs = (task2, "test_transform_inputs.*y"), output = r"\1.output")
-@transform(input = task1, filter = regex(r"(.*)"), add_inputs = add_inputs(task2, "test_transform_inputs.*y"), output = r"\1.output")
-#@transform(input = task1, filter = regex(r"(.*)"), replace_inputs = [task2, "test_transform_inputs.*y"], output = r"\1.output")
-#@transform(input = task1, filter = regex(r"(.*)"), replace_inputs = inputs([task2, "test_transform_inputs.*y"]), output = r"\1.output")
+#@transform(input = task1, filter = regex(r"(.+)"), add_inputs = (task2, "test_transform_inputs.*y"), output = r"\1.output")
+@transform(input = task1, filter = regex(r"(.+)"), add_inputs = add_inputs(task2, "test_transform_inputs.*y"), output = r"\1.output")
+#@transform(input = task1, filter = regex(r"(.+)"), replace_inputs = [task2, "test_transform_inputs.*y"], output = r"\1.output")
+#@transform(input = task1, filter = regex(r"(.+)"), replace_inputs = inputs([task2, "test_transform_inputs.*y"]), output = r"\1.output")
 def task3_add_inputs(i, o):
     names = ",".join(sorted(i))
     with open(o, "w") as oo:
@@ -124,7 +124,7 @@ class Test_task(unittest.TestCase):
             .follows(mkdir(tempdir))
         test_pipeline.transform(task_func   = task3_add_inputs,
                                 input       = task1,
-                                filter      = regex(r"(.*)"),
+                                filter      = regex(r"(.+)"),
                                 add_inputs  = add_inputs(task2, "test_transform_inputs.*y"),
                                 output      = r"\1.output")
         test_pipeline.merge(    task_func   = task4,

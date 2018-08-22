@@ -59,7 +59,7 @@ def task2(i, o):
     touch(o)
 
 
-@transform(task1, regex(r"(.*)"), ruffus.inputs(((r"\1"), task2, "test_transform_inputs.*y")), r"\1.output")
+@transform(task1, regex(r"(.+)"), ruffus.inputs(((r"\1"), task2, "test_transform_inputs.*y")), r"\1.output")
 def task3(i, o):
     names = ",".join(sorted(i))
     for f in o:
@@ -107,7 +107,7 @@ class Test_task(unittest.TestCase):
 
         test_pipeline.transform(task_func = task3,
                                 input = task1,
-                                filter = regex(r"(.*)"),
+                                filter = regex(r"(.+)"),
                                 replace_inputs = ruffus.inputs(((r"\1"), task2, "test_transform_inputs.*y")),
                                 output   = r"\1.output")
         test_pipeline.merge(task4, (task3), tempdir + "final.output")
