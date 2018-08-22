@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from __future__ import print_function
 ################################################################################
 #
@@ -63,9 +62,6 @@ import itertools
 
 from collections import defaultdict
 from time import strftime, gmtime
-if __name__ == '__main__':
-    import sys
-    sys.path.insert(0,".")
 if sys.hexversion >= 0x03000000:
     # everything is unicode in python3
     path_str_type = str

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from __future__ import print_function
 import sys
 import re
@@ -59,9 +58,6 @@ import re
 import types
 import glob
 from functools import reduce
-if __name__ == '__main__':
-    import sys
-    sys.path.insert(0,".")
 from .ruffus_exceptions import *
 #import task
 import collections
