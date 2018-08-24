@@ -60,7 +60,10 @@ import glob
 from functools import reduce
 from .ruffus_exceptions import *
 #import task
-import collections
+try:
+    from collections.abc import Callable
+except ImportError:
+    from collections import Callable
 from collections import defaultdict
 import multiprocessing.managers
 import hashlib
@@ -1075,7 +1078,7 @@ def get_nested_tasks_or_globs(p, treat_strings_as_tasks = False, runtime_data_na
     #
     #   task function
     #
-    if (isinstance(p, collections.Callable)):
+    if isinstance(p, Callable):
         tasks.append(p)
     elif p.__class__.__name__ == 'Task' or p.__class__.__name__ == 'Pipeline':
         tasks.append(p)
@@ -1121,7 +1124,7 @@ def replace_placeholders_with_tasks_in_input_params(p, func_or_name_to_task, tre
     #
     # Expand globs or tasks as a list only if they are top level
     #
-    if isinstance(p, collections.Callable):
+    if isinstance(p, Callable):
     #if type(p) == types.FunctionType:
         return func_or_name_to_task[p]
 
