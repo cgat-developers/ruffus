@@ -85,7 +85,7 @@ def make_pipeline1(pipeline_name,   # Pipelines need to have a unique name
                             # Lookup Task from function name task_originate()
                             #   So long as this is unique in the pipeline
                             input       = task_originate,
-                            filter      = regex(r"(.*)"),
+                            filter      = regex(r"(.+)"),
                             add_inputs  = add_inputs(tempdir + "/testdir/whatever.txt"),
                             output      = r"\1.22")
     test_pipeline.transform(task_func   = task_1_to_1,
