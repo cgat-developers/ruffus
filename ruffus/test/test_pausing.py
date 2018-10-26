@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 from __future__ import print_function
+import shutil
+import unittest
+import json
+from collections import defaultdict
+import re
+from ruffus import *
+import sys
+
 """
 
     test_pausing.py
@@ -10,50 +18,39 @@ from __future__ import print_function
 
 import os
 tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
-import sys
 
 # add grandparent to search path for testing
-grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+grandparent_dir = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, grandparent_dir)
 
 # module name = script name without extension
 module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-from ruffus import  *
-
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   imports
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-import re
-import operator
-import sys,os
-from collections import defaultdict
-import random
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 
-import json
 # use simplejson in place of json for python < 2.6
-#try:
+# try:
 #    import json
-#except ImportError:
+# except ImportError:
 #    import simplejson
 #    json = simplejson
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Functions
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import time
+
 def check_job_io(infiles, outfiles, extra_params):
     """
     cat input files content to output files
@@ -79,17 +76,12 @@ def check_job_io(infiles, outfiles, extra_params):
             ff.write(output_text)
 
 
-
-
-
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Tasks
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 #
 #   1   ->  2   ->  3   ->
 #       ->  4           ->
@@ -99,10 +91,14 @@ def check_job_io(infiles, outfiles, extra_params):
 def do_write(file_name, what):
     with open(file_name, "a") as oo:
         oo.write(what)
+
+
 test_file = tempdir + "task.done"
 #
 #    task1
 #
+
+
 @files(None, [tempdir + d for d in ('a.1', 'b.1', 'c.1')])
 @follows(mkdir(tempdir))
 @posttask(lambda: do_write(test_file, "Task 1 Done\n"))
@@ -134,7 +130,6 @@ def task2(infiles, outfiles, *extra_params):
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
 
-
 #
 #    task3
 #
@@ -149,7 +144,6 @@ def task3(infiles, outfiles, *extra_params):
     check_job_io(infiles, outfiles, extra_params)
     with open(tempdir + "jobs.finish",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
-
 
 
 #
@@ -171,6 +165,8 @@ def task4(infiles, outfiles, *extra_params):
 #
 #    task5
 #
+
+
 @files(None, tempdir + 'a.5')
 @follows(mkdir(tempdir))
 @posttask(lambda: do_write(test_file, "Task 5 Done\n"))
@@ -187,7 +183,9 @@ def task5(infiles, outfiles, *extra_params):
 #
 #    task6
 #
-#@files([[[tempdir + d for d in 'a.3', 'b.3', 'c.3', 'a.4', 'b.4', 'c.4', 'a.5'], tempdir + 'final.6']])
+# @files([[[tempdir + d for d in 'a.3', 'b.3', 'c.3', 'a.4', 'b.4', 'c.4', 'a.5'], tempdir + 'final.6']])
+
+
 @merge([task3, task4, task5], tempdir + "final.6")
 @follows(task3, task4, task5, )
 @posttask(lambda: do_write(test_file, "Task 6 Done\n"))
@@ -200,9 +198,6 @@ def task6(infiles, outfiles, *extra_params):
     check_job_io(infiles, outfiles, extra_params)
     with open(tempdir + "jobs.finish",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
-
-
-
 
 
 def check_job_order_correct(filename):
@@ -236,13 +231,12 @@ def check_job_order_correct(filename):
             raise "Precedence violated for job %d [line %d] and job %d [line %d] of [%s]"
 
 
-
 def check_final_output_correct():
     """
     check if the final output in final.6 is as expected
     """
     expected_output = \
-"""        ["DIR/a.1"] -> ["DIR/a.2"]
+        """        ["DIR/a.1"] -> ["DIR/a.2"]
         ["DIR/a.1"] -> ["DIR/a.4"]
         ["DIR/a.2", "DIR/a.1"] -> ["DIR/a.3"]
         ["DIR/a.3", "DIR/b.3", "DIR/c.3", "DIR/a.4", "DIR/b.4", "DIR/c.4", "DIR/a.5"] -> ["DIR/final.6"]
@@ -262,22 +256,22 @@ def check_final_output_correct():
         [] -> ["DIR/a.1", "DIR/b.1", "DIR/c.1"]
         [] -> ["DIR/a.1", "DIR/b.1", "DIR/c.1"]
         [] -> ["DIR/a.5"]"""
-    expected_output = expected_output.replace("        ", "").replace("DIR/", tempdir).split("\n")
+    expected_output = expected_output.replace(
+        "        ", "").replace("DIR/", tempdir).split("\n")
     with open(tempdir + "final.6", "r") as ii:
         final_6_contents = sorted([l.rstrip() for l in ii.readlines()])
     if final_6_contents != expected_output:
         for i, (l1, l2) in enumerate(zip(final_6_contents, expected_output)):
             if l1 != l2:
                 sys.stderr.write("%d\n  >%s<\n  >%s<\n" % (i, l1, l2))
-        raise Exception ("Final.6 output is not as expected\n")
+        raise Exception("Final.6 output is not as expected\n")
 
 
-
-import unittest, shutil, os
 try:
     from StringIO import StringIO
 except:
     from io import StringIO
+
 
 class Test_ruffus(unittest.TestCase):
     def setUp(self):
@@ -292,14 +286,13 @@ class Test_ruffus(unittest.TestCase):
         except:
             pass
 
-    def test_ruffus (self):
-        pipeline_run(multiprocess = 50, verbose = 0, pipeline= "main")
+    def test_ruffus(self):
+        pipeline_run(multiprocess=50, verbose=0, pipeline="main")
         check_final_output_correct()
         check_job_order_correct(tempdir + "jobs.start")
         check_job_order_correct(tempdir + "jobs.finish")
 
-
-    def test_newstyle_ruffus (self):
+    def test_newstyle_ruffus(self):
         test_pipeline = Pipeline("test")
 
         test_pipeline.files(task1,
@@ -315,10 +308,10 @@ class Test_ruffus(unittest.TestCase):
         test_pipeline.transform(task3, task2, regex('(.*).2'), inputs([r"\1.2", tempdir + "a.1"]), r'\1.3')\
             .posttask(lambda: do_write(test_file, "Task 3 Done\n"))
 
-        test_pipeline.transform(task_func = task4,
-                                input     = tempdir + "*.1",
-                                filter    = suffix(".1"),
-                                output    = ".4")\
+        test_pipeline.transform(task_func=task4,
+                                input=tempdir + "*.1",
+                                filter=suffix(".1"),
+                                output=".4")\
             .follows(task1)\
             .posttask(lambda: do_write(test_file, "Task 4 Done\n"))
 
@@ -326,17 +319,17 @@ class Test_ruffus(unittest.TestCase):
             .follows(mkdir(tempdir))\
             .posttask(lambda: do_write(test_file, "Task 5 Done\n"))
 
-        test_pipeline.merge(task_func = task6,
-                            input     = [task3, task4, task5],
-                            output    = tempdir + "final.6")\
+        test_pipeline.merge(task_func=task6,
+                            input=[task3, task4, task5],
+                            output=tempdir + "final.6")\
             .follows(task3, task4, task5, )\
             .posttask(lambda: do_write(test_file, "Task 6 Done\n"))
 
-        test_pipeline.run(multiprocess = 50, verbose = 0)
+        test_pipeline.run(multiprocess=50, verbose=0)
         check_final_output_correct()
         check_job_order_correct(tempdir + "jobs.start")
         check_job_order_correct(tempdir + "jobs.finish")
 
+
 if __name__ == '__main__':
     unittest.main()
-

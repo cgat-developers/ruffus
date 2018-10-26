@@ -30,8 +30,7 @@ if sys.hexversion < 0x03000000:
 #################################################################################
 
 
-
-def adjacent_pairs_iterate (array, reverse = False):
+def adjacent_pairs_iterate(array, reverse=False):
     """
     returns pairs of iterators to successive positions
     """
@@ -60,9 +59,6 @@ def unit_test():
         print(i, j)
     print(numbers)
 
+
 if __name__ == '__main__':
     unit_test()
-
-
-
-

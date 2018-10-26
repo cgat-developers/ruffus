@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 from __future__ import print_function
-import sys, os, time
-print ("    ", os.getcwd(), file = sys.stderr)
-print ("    ", os.environ, file = sys.stderr)
+import sys
+import os
+import time
+print("    ", os.getcwd(), file=sys.stderr)
+print("    ", os.environ, file=sys.stderr)
 loop_variable = 0
 loop_limit = 4
 while True:
@@ -16,7 +18,7 @@ while True:
         loop_variable += 1
         time.sleep(0.5)
     except:
-        sys.stderr.write("    Ignore Exception. Now you have made me angry: I won't stop till 100\n")
+        sys.stderr.write(
+            "    Ignore Exception. Now you have made me angry: I won't stop till 100\n")
         loop_limit = 100
         pass
-

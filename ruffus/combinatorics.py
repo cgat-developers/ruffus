@@ -71,11 +71,14 @@ from .task import task_decorator
 class product(task_decorator):
     pass
 
+
 class permutations(task_decorator):
     pass
 
+
 class combinations(task_decorator):
     pass
+
 
 class combinations_with_replacement(task_decorator):
     pass

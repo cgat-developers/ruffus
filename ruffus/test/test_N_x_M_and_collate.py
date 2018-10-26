@@ -1,8 +1,13 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
+
 from __future__ import print_function
+import unittest
+import glob
+from ruffus import pipeline_run, Pipeline, follows, posttask, collate, mkdir, regex, files
+import os
 import sys
 if sys.hexversion < 0x03000000:
-    from future_builtins import zip, map
+    from future_builtins import zip
 """
 
     test_N_x_M_and_collate.py
@@ -41,65 +46,50 @@ if sys.hexversion < 0x03000000:
 
 """
 
-CNT_GENE_GWAS_FILES     = 2
-CNT_SIMULATION_FILES    = 3
+CNT_GENE_GWAS_FILES = 2
+CNT_SIMULATION_FILES = 3
 
-
-
-import os
-import sys
 
 # add grandparent to search path for testing
-grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+grandparent_dir = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, grandparent_dir)
 
 # module name = script name without extension
 module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-import ruffus
-from ruffus import pipeline_run, pipeline_printout, Pipeline, follows, merge, posttask, split, collate, mkdir, regex, files
-
-
-import random
-
 tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0]))
-gene_data_dir ="%s/temp_gene_data_for_intermediate_example" % tempdir
-simulation_data_dir =  "%s/temp_simulation_data_for_intermediate_example" % tempdir
-working_dir =  "%s/working_dir_for_intermediate_example" % tempdir
+gene_data_dir = "%s/temp_gene_data_for_intermediate_example" % tempdir
+simulation_data_dir = "%s/temp_simulation_data_for_intermediate_example" % tempdir
+working_dir = "%s/working_dir_for_intermediate_example" % tempdir
 
 
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   imports
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 try:
     import StringIO as io
 except:
     import io as io
 
-import re
-import operator
-import sys
-from collections import defaultdict
-import glob
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Functions
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-#_________________________________________________________________________________________
+# _________________________________________________________________________________________
 #
 #   get gene gwas file pairs
 #
-#_________________________________________________________________________________________
-def get_gene_gwas_file_pairs(  ):
+# _________________________________________________________________________________________
+def get_gene_gwas_file_pairs():
     """
     Helper function to get all *.gene, *.gwas from the direction specified
         in --gene_data_dir
@@ -109,26 +99,31 @@ def get_gene_gwas_file_pairs(  ):
         corresponding roots (no extension) of each file
     """
 
-
     gene_files = glob.glob(os.path.join(gene_data_dir, "*.gene"))
     gwas_files = glob.glob(os.path.join(gene_data_dir, "*.gwas"))
 
-    common_roots = set([os.path.splitext(os.path.split(x)[1])[0] for x in gene_files])
-    common_roots &=set([os.path.splitext(os.path.split(x)[1])[0] for x in gwas_files])
+    common_roots = set([os.path.splitext(os.path.split(x)[1])[0]
+                        for x in gene_files])
+    common_roots &= set([os.path.splitext(os.path.split(x)[1])[0]
+                         for x in gwas_files])
     common_roots = list(common_roots)
 
-    p = os.path; g_dir = gene_data_dir
+    p = os.path
+    g_dir = gene_data_dir
 
-    file_pairs = [[p.join(g_dir, x + ".gene"), p.join(g_dir, x + ".gwas")] for x in common_roots]
+    file_pairs = [[p.join(g_dir, x + ".gene"), p.join(g_dir, x + ".gwas")]
+                  for x in common_roots]
 
     return file_pairs, common_roots
 
-#_________________________________________________________________________________________
+# _________________________________________________________________________________________
 #
 #   get simulation files
 #
-#_________________________________________________________________________________________
-def get_simulation_files(  ):
+# _________________________________________________________________________________________
+
+
+def get_simulation_files():
     """
     Helper function to get all *.simulation from the direction specified
         in --simulation_data_dir
@@ -136,38 +131,32 @@ def get_simulation_files(  ):
             file with .simulation extensions,
             corresponding roots (no extension) of each file
     """
-    simulation_files = glob.glob(os.path.join(simulation_data_dir, "*.simulation"))
-    simulation_roots =[os.path.splitext(os.path.split(x)[1])[0] for x in simulation_files]
+    simulation_files = glob.glob(os.path.join(
+        simulation_data_dir, "*.simulation"))
+    simulation_roots = [os.path.splitext(os.path.split(x)[1])[
+        0] for x in simulation_files]
     return simulation_files, simulation_roots
 
 
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Main logic
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 
-
-
-
-
-
-
-
-#_________________________________________________________________________________________
+# _________________________________________________________________________________________
 #
 #   setup_simulation_data
 #
-#_________________________________________________________________________________________
+# _________________________________________________________________________________________
 
 #
 # mkdir: makes sure output directories exist before task
 #
 @follows(mkdir(gene_data_dir, simulation_data_dir))
-def setup_simulation_data ():
+def setup_simulation_data():
     """
     create simulation files
     """
@@ -184,21 +173,21 @@ def setup_simulation_data ():
         open(os.path.join(simulation_data_dir, "%03d.simulation" % i), "w").close()
 
 
-
-
-#_________________________________________________________________________________________
+# _________________________________________________________________________________________
 #
 #   cleanup_simulation_data
 #
-#_________________________________________________________________________________________
-def try_rmdir (d):
+# _________________________________________________________________________________________
+def try_rmdir(d):
     if os.path.exists(d):
         try:
             os.rmdir(d)
         except OSError:
-            sys.stderr.write("Warning:\t%s is not empty and will not be removed.\n" % d)
+            sys.stderr.write(
+                "Warning:\t%s is not empty and will not be removed.\n" % d)
 
-def cleanup_simulation_data ():
+
+def cleanup_simulation_data():
     """
     cleanup files
     """
@@ -219,7 +208,6 @@ def cleanup_simulation_data ():
         os.unlink(f)
     try_rmdir(simulation_data_dir)
 
-
     #
     #   cleanup working_dir
     #
@@ -234,9 +222,7 @@ def cleanup_simulation_data ():
     try_rmdir(tempdir)
 
 
-
-
-#_________________________________________________________________________________________
+# _________________________________________________________________________________________
 #
 #   Step 1:
 #
@@ -247,27 +233,31 @@ def cleanup_simulation_data ():
 #                 n_file.gwas,
 #                 m_file.simulation] -> working_dir/n_file.m_file.simulation_res
 #
-#_________________________________________________________________________________________
-def generate_simulation_params ():
+# _________________________________________________________________________________________
+def generate_simulation_params():
     """
     Custom function to generate
     file names for gene/gwas simulation study
     """
 
-    simulation_files, simulation_file_roots    = get_simulation_files()
-    gene_gwas_file_pairs, gene_gwas_file_roots =  get_gene_gwas_file_pairs()
+    simulation_files, simulation_file_roots = get_simulation_files()
+    gene_gwas_file_pairs, gene_gwas_file_roots = get_gene_gwas_file_pairs()
 
     for sim_file, sim_file_root in zip(simulation_files, simulation_file_roots):
         for (gene, gwas), gene_file_root in zip(gene_gwas_file_pairs, gene_gwas_file_roots):
 
-            result_file = "%s.%s.simulation_res" % (gene_file_root, sim_file_root)
-            result_file_path = os.path.join(working_dir, "simulation_results", result_file)
+            result_file = "%s.%s.simulation_res" % (
+                gene_file_root, sim_file_root)
+            result_file_path = os.path.join(
+                working_dir, "simulation_results", result_file)
 
             yield [gene, gwas, sim_file], result_file_path, gene_file_root, sim_file_root, result_file
 
 #
 # mkdir: makes sure output directories exist before task
 #
+
+
 @follows(setup_simulation_data)
 @follows(mkdir(working_dir, os.path.join(working_dir, "simulation_results")))
 @files(generate_simulation_params)
@@ -277,15 +267,16 @@ def gwas_simulation(input_files, result_file_path, gene_file_root, sim_file_root
     Normally runs in parallel on a computational cluster
     """
     (gene_file,
-    gwas_file,
-    simulation_data_file) = input_files
+     gwas_file,
+     simulation_data_file) = input_files
 
     simulation_res_file = open(result_file_path, "w")
-    simulation_res_file.write("%s + %s -> %s\n" % (gene_file_root, sim_file_root, result_file))
+    simulation_res_file.write("%s + %s -> %s\n" %
+                              (gene_file_root, sim_file_root, result_file))
     simulation_res_file.close()
 
 
-#_________________________________________________________________________________________
+# _________________________________________________________________________________________
 #
 #   Step 2:
 #
@@ -295,12 +286,12 @@ def gwas_simulation(input_files, result_file_path, gene_file_root, sim_file_root
 #            working_dir/simulation_results/n.*.simulation_res
 #               -> working_dir/n.mean
 #
-#_________________________________________________________________________________________
+# _________________________________________________________________________________________
 
 
 @collate(gwas_simulation, regex(r"simulation_results/(\d+).\d+.simulation_res"), r"\1.mean")
-@posttask(lambda : sys.stdout.write("\nOK\n"))
-def statistical_summary (result_files, summary_file):
+@posttask(lambda: sys.stdout.write("\nOK\n"))
+def statistical_summary(result_files, summary_file):
     """
     Simulate statistical summary
     """
@@ -312,50 +303,48 @@ def statistical_summary (result_files, summary_file):
     summary_file.close()
 
 
-
-
-
-import unittest, shutil
 try:
     from StringIO import StringIO
 except:
     from io import StringIO
 
+
 class Test_ruffus(unittest.TestCase):
 
     def tearDown(self):
         try:
-            cleanup_simulation_data ()
+            cleanup_simulation_data()
             pass
         except:
             pass
 
-    def test_ruffus (self):
-        pipeline_run(multiprocess = 50, verbose = 0, pipeline= "main")
+    def test_ruffus(self):
+        pipeline_run(multiprocess=50, verbose=0, pipeline="main")
         for oo in "000.mean", "001.mean":
             results_file_name = os.path.join(working_dir, oo)
             if not os.path.exists(results_file_name):
                 raise Exception("Missing %s" % results_file_name)
 
-    def test_newstyle_ruffus (self):
+    def test_newstyle_ruffus(self):
 
         test_pipeline = Pipeline("test")
 
-        test_pipeline.follows(setup_simulation_data, mkdir(gene_data_dir, simulation_data_dir))
+        test_pipeline.follows(setup_simulation_data, mkdir(
+            gene_data_dir, simulation_data_dir))
 
         test_pipeline.files(gwas_simulation, generate_simulation_params)\
             .follows(setup_simulation_data)\
             .follows(mkdir(working_dir, os.path.join(working_dir, "simulation_results")))
 
         test_pipeline.collate(statistical_summary, gwas_simulation, regex(r"simulation_results/(\d+).\d+.simulation_res"), r"\1.mean")\
-            .posttask(lambda : sys.stdout.write("\nOK\n"))
+            .posttask(lambda: sys.stdout.write("\nOK\n"))
 
-        test_pipeline.run(multiprocess = 50, verbose = 0)
+        test_pipeline.run(multiprocess=50, verbose=0)
         for oo in "000.mean", "001.mean":
             results_file_name = os.path.join(working_dir, oo)
             if not os.path.exists(results_file_name):
                 raise Exception("Missing %s" % results_file_name)
 
+
 if __name__ == '__main__':
     unittest.main()
-

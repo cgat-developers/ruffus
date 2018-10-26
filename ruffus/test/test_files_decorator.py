@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 from __future__ import print_function
+import unittest
+import json
+from ruffus import transform, follows, pipeline_run, Pipeline, regex, mkdir, files
+import sys
+
 """
 
     test_files_decorator.py
@@ -11,41 +16,38 @@ from __future__ import print_function
 
 import os
 tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
-import sys
 
 # add grandparent to search path for testing
-grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+grandparent_dir = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, grandparent_dir)
 
 # module name = script name without extension
 module_name = os.path.splitext(os.path.basename(__file__))[0]
 
-import ruffus
-from ruffus import transform, follows, pipeline_run, Pipeline, regex, mkdir, files
 
-#from ruffus.file_name_parameters import
+# from ruffus.file_name_parameters import
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   imports
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import json
 # use simplejson in place of json for python < 2.6
-#try:
-#except ImportError:
+# try:
+# except ImportError:
 #    import simplejson
 #    json = simplejson
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Tasks
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 def check_job_io(infiles, outfiles, extra_params):
     """
@@ -67,7 +69,6 @@ def check_job_io(infiles, outfiles, extra_params):
     else:
         outfile_names = outfiles
 
-
     output_text = list()
     for f in infile_names:
         with open(f) as ii:
@@ -79,13 +80,12 @@ def check_job_io(infiles, outfiles, extra_params):
             oo.write(output_text)
 
 
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Tasks
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 @follows(mkdir(tempdir))
 #
@@ -99,7 +99,6 @@ def task1(infiles, outfiles, *extra_params):
     check_job_io(infiles, outfiles, extra_params)
 
 
-
 #
 #    task2
 #
@@ -110,7 +109,6 @@ def task2(infiles, outfiles, *extra_params):
     """
     check_job_io(infiles, outfiles, extra_params)
     assert(infiles == tempdir + "a.1")
-
 
 
 #
@@ -127,6 +125,8 @@ def task3(infiles, outfiles, *extra_params):
 #
 #    task4
 #
+
+
 @follows(task3)
 @files([[None, tempdir + 'd.1'], [None, tempdir + 'e.1']])
 def task4(infiles, outfiles, *extra_params):
@@ -138,6 +138,8 @@ def task4(infiles, outfiles, *extra_params):
 #
 #    task5
 #
+
+
 @files(task4, tempdir + "f.1")
 def task5(infiles, outfiles, *extra_params):
     """
@@ -146,11 +148,10 @@ def task5(infiles, outfiles, *extra_params):
     check_job_io(infiles, outfiles, extra_params)
     assert(infiles == [tempdir + "d.1", tempdir + "e.1"])
 
-import unittest
 
 class Test_task(unittest.TestCase):
 
-    def tearDown (self):
+    def tearDown(self):
         """
         """
         import glob
@@ -158,28 +159,26 @@ class Test_task(unittest.TestCase):
             os.unlink(f)
         os.rmdir(tempdir)
 
+    def test_task(self):
+        pipeline_run(multiprocess=10, verbose=0, pipeline="main")
 
-    def test_task (self):
-        pipeline_run(multiprocess = 10, verbose = 0, pipeline= "main")
-
-    def test_newstyle_task (self):
+    def test_newstyle_task(self):
         """
         Same as above but construct a new pipeline on the fly without decorators
         """
         test_pipeline = Pipeline("test")
         test_pipeline.files(task1, None, tempdir + 'a.1')\
             .follows(mkdir(tempdir))
-        test_pipeline.transform(task_func   = task2,
-                                input       = task1,
-                                filter      = regex(r".+"),
-                                output      = tempdir + 'b.1')
+        test_pipeline.transform(task_func=task2,
+                                input=task1,
+                                filter=regex(r".+"),
+                                output=tempdir + 'b.1')
         test_pipeline.files(task3, task2, tempdir + 'c.1')
         test_pipeline.files(task4, [[None, tempdir + 'd.1'], [None, tempdir + 'e.1']])\
             .follows(task3)
         test_pipeline.files(task5, task4, tempdir + "f.1")
-        test_pipeline.run(multiprocess = 10, verbose = 0)
+        test_pipeline.run(multiprocess=10, verbose=0)
 
 
 if __name__ == '__main__':
     unittest.main()
-

@@ -1,5 +1,16 @@
 #!/usr/bin/env python
 from __future__ import print_function
+import re
+import time
+import shutil
+import unittest
+from ruffus.ruffus_exceptions import RethrownJobError
+from ruffus.ruffus_utility import RUFFUS_HISTORY_FILE, CHECKSUM_FILE_TIMESTAMPS, \
+    CHECKSUM_HISTORY_TIMESTAMPS, CHECKSUM_FUNCTIONS, CHECKSUM_FUNCTIONS_AND_PARAMS
+from ruffus.task import get_default_history_file_name
+from ruffus import pipeline_run, pipeline_printout, suffix, transform, split, merge, dbdict, Pipeline
+import sys
+
 """
 
     test_job_completion_transform.py
@@ -10,10 +21,10 @@ from __future__ import print_function
 
 import os
 tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
-import sys
 
 # add grandparent to search path for testing
-grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+grandparent_dir = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, grandparent_dir)
 
 # module name = script name without extension
@@ -22,48 +33,37 @@ module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 # funky code to import by file name
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-import ruffus
-from ruffus import pipeline_run, pipeline_printout, suffix, transform, split, merge, dbdict, Pipeline
-
-from ruffus.task import get_default_history_file_name
-from ruffus.ruffus_utility import RUFFUS_HISTORY_FILE, CHECKSUM_FILE_TIMESTAMPS, CHECKSUM_HISTORY_TIMESTAMPS, CHECKSUM_FUNCTIONS, CHECKSUM_FUNCTIONS_AND_PARAMS
-from ruffus.ruffus_exceptions import RethrownJobError
 
 
-
-
-#___________________________________________________________________________
+# ___________________________________________________________________________
 #
 #   imports
-#___________________________________________________________________________
+# ___________________________________________________________________________
 
 
-import unittest
-import shutil
 try:
     from StringIO import StringIO
 except:
     from io import StringIO
-import time
-import re
-
 
 
 possible_chksms = list(range(CHECKSUM_FUNCTIONS_AND_PARAMS + 1))
 tempdir = 'tmp_test_job_completion/'
 input_file = os.path.join(tempdir, 'input.txt')
 transform1_out = input_file.replace('.txt', '.output')
-split1_outputs = [ os.path.join(tempdir, 'split.out1.txt'),
-                   os.path.join(tempdir, 'split.out2.txt')]
-merge2_output =  os.path.join(tempdir, 'merged.out')
+split1_outputs = [os.path.join(tempdir, 'split.out1.txt'),
+                  os.path.join(tempdir, 'split.out2.txt')]
+merge2_output = os.path.join(tempdir, 'merged.out')
 
 runtime_data = []
+
 
 @transform(input_file, suffix('.txt'), '.output', runtime_data)
 def transform1(in_name, out_name, how_many):
     with open(out_name, 'w') as outfile:
         with open(in_name) as ii:
             outfile.write(ii.read())
+
 
 @transform(input_file, suffix('.txt'), '.output', runtime_data)
 def transform_raise_error(in_name, out_name, how_many):
@@ -74,12 +74,14 @@ def transform_raise_error(in_name, out_name, how_many):
     if 'okay' not in how_many:
         raise RuntimeError("'okay' wasn't in runtime_data!")
 
+
 @split(input_file, split1_outputs)
 def split1(in_name, out_names):
     for n in out_names:
         with open(n, 'w') as outfile:
             with open(in_name) as ii:
                 outfile.write(ii.read() + '\n')
+
 
 @merge(split1, merge2_output)
 def merge2(in_names, out_name):
@@ -89,16 +91,19 @@ def merge2(in_names, out_name):
                 outfile.write(ii.read() + '\n')
 
 
-#CHECKSUM_FILE_TIMESTAMPS      = 0     # only rerun when the file timestamps are out of date (classic mode)
-#CHECKSUM_HISTORY_TIMESTAMPS   = 1     # also rerun when the history shows a job as being out of date
-#CHECKSUM_FUNCTIONS            = 2     # also rerun when function body has changed
-#CHECKSUM_FUNCTIONS_AND_PARAMS = 3     # also rerun when function parameters have changed
+# CHECKSUM_FILE_TIMESTAMPS      = 0     # only rerun when the file timestamps are out of date (classic mode)
+# CHECKSUM_HISTORY_TIMESTAMPS   = 1     # also rerun when the history shows a job as being out of date
+# CHECKSUM_FUNCTIONS            = 2     # also rerun when function body has changed
+# CHECKSUM_FUNCTIONS_AND_PARAMS = 3     # also rerun when function parameters have changed
 
 
 def cleanup_tmpdir():
-    os.system('rm -f %s %s' % (os.path.join(tempdir, '*'), get_default_history_file_name()))
+    os.system('rm -f %s %s' %
+              (os.path.join(tempdir, '*'), get_default_history_file_name()))
+
 
 count_pipelines = 0
+
 
 class TestJobCompletion(unittest.TestCase):
     def setUp(self):
@@ -107,8 +112,7 @@ class TestJobCompletion(unittest.TestCase):
         except OSError:
             pass
 
-
-    def create_pipeline (self):
+    def create_pipeline(self):
         """
         Create new pipeline on the fly without using decorators
         """
@@ -116,27 +120,26 @@ class TestJobCompletion(unittest.TestCase):
         count_pipelines = count_pipelines + 1
         test_pipeline = Pipeline("test %d" % count_pipelines)
 
-        test_pipeline.transform(task_func   = transform1,
-                                input       = input_file,
-                                filter      = suffix('.txt'),
-                                output      = '.output',
-                                extras      = [runtime_data])
+        test_pipeline.transform(task_func=transform1,
+                                input=input_file,
+                                filter=suffix('.txt'),
+                                output='.output',
+                                extras=[runtime_data])
 
-        test_pipeline.transform(task_func   = transform_raise_error,
-                                input       = input_file,
-                                filter      = suffix('.txt'),
-                                output      = '.output',
-                                extras      = [runtime_data])
+        test_pipeline.transform(task_func=transform_raise_error,
+                                input=input_file,
+                                filter=suffix('.txt'),
+                                output='.output',
+                                extras=[runtime_data])
 
-        test_pipeline.split(    task_func   = split1,
-                                input       = input_file,
-                                output      = split1_outputs)
+        test_pipeline.split(task_func=split1,
+                            input=input_file,
+                            output=split1_outputs)
 
-        test_pipeline.merge(    task_func   = merge2,
-                                input       = split1,
-                                output      = merge2_output)
+        test_pipeline.merge(task_func=merge2,
+                            input=split1,
+                            output=merge2_output)
         return test_pipeline
-
 
     def test_output_doesnt_exist(self):
         """Input file exists, output doesn't exist"""
@@ -148,11 +151,10 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [transform1], verbose=6, checksum_level=chksm, pipeline= "main")
-            self.assertTrue(re.search(r'Job needs update:.*Missing file.*\[tmp_test_job_completion/input.output\]'
-                                      , s.getvalue(), re.DOTALL))
-
-
+            pipeline_printout(s, [transform1], verbose=6,
+                              checksum_level=chksm, pipeline="main")
+            self.assertTrue(re.search(
+                r'Job needs update:.*Missing file.*\[tmp_test_job_completion/input.output\]', s.getvalue(), re.DOTALL))
 
     def test_output_out_of_date(self):
         """Input file exists, output out of date"""
@@ -166,7 +168,8 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [transform1], verbose=6, checksum_level=chksm, pipeline= "main")
+            pipeline_printout(s, [transform1], verbose=6,
+                              checksum_level=chksm, pipeline="main")
             self.assertIn('Job needs update:', s.getvalue())
             if chksm == CHECKSUM_FILE_TIMESTAMPS:
                 self.assertIn('Input files:', s.getvalue())
@@ -186,7 +189,8 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [transform1], verbose=6, checksum_level=chksm, pipeline= "main")
+            pipeline_printout(s, [transform1], verbose=6,
+                              checksum_level=chksm, pipeline="main")
             if chksm == CHECKSUM_FILE_TIMESTAMPS:
                 #self.assertIn('Job up-to-date', s.getvalue())
                 pass
@@ -201,11 +205,13 @@ class TestJobCompletion(unittest.TestCase):
         cleanup_tmpdir()
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
-        pipeline_run([transform1], verbose=0, checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, pipeline= "main")
+        pipeline_run([transform1], verbose=0,
+                     checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, pipeline="main")
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [transform1], verbose=6, checksum_level=chksm, pipeline= "main")
+            pipeline_printout(s, [transform1], verbose=6,
+                              checksum_level=chksm, pipeline="main")
             #self.assertIn('Job up-to-date', s.getvalue())
             pass
 
@@ -215,7 +221,8 @@ class TestJobCompletion(unittest.TestCase):
         cleanup_tmpdir()
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
-        pipeline_run([transform1], verbose=0, checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, pipeline= "main")
+        pipeline_run([transform1], verbose=0,
+                     checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, pipeline="main")
         if sys.hexversion >= 0x03000000:
             transform1.__code__ = split1.__code__  # simulate source change
         else:
@@ -223,7 +230,8 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [transform1], verbose=6, checksum_level=chksm, pipeline= "main")
+            pipeline_printout(s, [transform1], verbose=6,
+                              checksum_level=chksm, pipeline="main")
             if chksm >= CHECKSUM_FUNCTIONS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('Pipeline function has changed',
@@ -238,7 +246,8 @@ class TestJobCompletion(unittest.TestCase):
         cleanup_tmpdir()
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
-        pipeline_run([transform1], verbose=0, checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, pipeline= "main")
+        pipeline_run([transform1], verbose=0,
+                     checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, pipeline="main")
         # simulate source change
         if sys.hexversion >= 0x03000000:
             split1.__code__, transform1.__code__ = transform1.__code__, split1.__code__
@@ -247,7 +256,8 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [transform1], verbose=6, checksum_level=chksm, pipeline= "main")
+            pipeline_printout(s, [transform1], verbose=6,
+                              checksum_level=chksm, pipeline="main")
             if chksm >= CHECKSUM_FUNCTIONS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('Pipeline function has changed',
@@ -261,19 +271,20 @@ class TestJobCompletion(unittest.TestCase):
         else:
             split1.func_code, transform1.func_code = transform1.func_code, split1.func_code
 
-
     def test_output_up_to_date_param_changed(self):
         """Input file exists, output up to date, parameter to function changed"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
-        pipeline_run([transform1], verbose=0, checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, pipeline= "main")
+        pipeline_run([transform1], verbose=0,
+                     checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, pipeline="main")
         runtime_data.append('different')  # simulate change to config file
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [transform1], verbose=6, checksum_level=chksm, pipeline= "main")
+            pipeline_printout(s, [transform1], verbose=6,
+                              checksum_level=chksm, pipeline="main")
             if chksm >= CHECKSUM_FUNCTIONS_AND_PARAMS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('Pipeline parameters have changed',
@@ -288,14 +299,16 @@ class TestJobCompletion(unittest.TestCase):
         cleanup_tmpdir()
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
-        pipeline_run([split1], verbose=0, checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, pipeline= "main")
+        pipeline_run([split1], verbose=0,
+                     checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, pipeline="main")
         time.sleep(.5)
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [split1], verbose=6, checksum_level=chksm, pipeline= "main")
+            pipeline_printout(s, [split1], verbose=6,
+                              checksum_level=chksm, pipeline="main")
             self.assertIn('Job needs update:', s.getvalue())
 
         # all outputs incorrectly generated
@@ -308,7 +321,8 @@ class TestJobCompletion(unittest.TestCase):
                 outfile.write('testme')
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [split1], verbose=6, checksum_level=chksm, pipeline= "main")
+            pipeline_printout(s, [split1], verbose=6,
+                              checksum_level=chksm, pipeline="main")
             if chksm >= CHECKSUM_HISTORY_TIMESTAMPS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('left over from a failed run?',
@@ -321,13 +335,16 @@ class TestJobCompletion(unittest.TestCase):
         cleanup_tmpdir()
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
-        pipeline_run([split1], verbose=0, checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, pipeline= "main")
-        job_history = dbdict.open(get_default_history_file_name(), picklevalues=True)
+        pipeline_run([split1], verbose=0,
+                     checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, pipeline="main")
+        job_history = dbdict.open(
+            get_default_history_file_name(), picklevalues=True)
         del job_history[os.path.relpath(split1_outputs[0])]
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [split1], verbose=6, checksum_level=chksm, pipeline= "main")
+            pipeline_printout(s, [split1], verbose=6,
+                              checksum_level=chksm, pipeline="main")
             if chksm >= CHECKSUM_HISTORY_TIMESTAMPS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('left over from a failed run?',
@@ -342,13 +359,16 @@ class TestJobCompletion(unittest.TestCase):
         cleanup_tmpdir()
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
-        pipeline_run([split1], verbose=0, checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, pipeline= "main")
-        job_history = dbdict.open(get_default_history_file_name(), picklevalues=True)
+        pipeline_run([split1], verbose=0,
+                     checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, pipeline="main")
+        job_history = dbdict.open(
+            get_default_history_file_name(), picklevalues=True)
         del job_history[os.path.relpath(split1_outputs[0])]
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [merge2], verbose=6, checksum_level=chksm, pipeline= "main")
+            pipeline_printout(s, [merge2], verbose=6,
+                              checksum_level=chksm, pipeline="main")
             if chksm >= CHECKSUM_HISTORY_TIMESTAMPS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('left over from a failed run?', s.getvalue())
@@ -360,16 +380,15 @@ class TestJobCompletion(unittest.TestCase):
         cleanup_tmpdir()
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
-        pipeline_run([merge2], verbose=0, checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, pipeline= "main")
+        pipeline_run([merge2], verbose=0,
+                     checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, pipeline="main")
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [merge2], verbose=6, checksum_level=chksm, pipeline= "main")
+            pipeline_printout(s, [merge2], verbose=6,
+                              checksum_level=chksm, pipeline="main")
             #self.assertIn('Job up-to-date', s.getvalue())
             self.assertNotIn('Job needs update:', s.getvalue())
             self.assertNotIn('left over from a failed run?', s.getvalue())
-
-
-
 
     def test_newstyle_output_doesnt_exist(self):
         """Input file exists, output doesn't exist"""
@@ -381,11 +400,10 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            self.create_pipeline().printout(s, [transform1], verbose=6, checksum_level=chksm)
-            self.assertTrue(re.search(r'Job needs update:.*Missing file.*\[tmp_test_job_completion/input.output\]'
-                                      , s.getvalue(), re.DOTALL))
-
-
+            self.create_pipeline().printout(
+                s, [transform1], verbose=6, checksum_level=chksm)
+            self.assertTrue(re.search(
+                r'Job needs update:.*Missing file.*\[tmp_test_job_completion/input.output\]', s.getvalue(), re.DOTALL))
 
     def test_newstyle_output_out_of_date(self):
         """Input file exists, output out of date"""
@@ -399,7 +417,8 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            self.create_pipeline().printout(s, [transform1], verbose=6, checksum_level=chksm)
+            self.create_pipeline().printout(
+                s, [transform1], verbose=6, checksum_level=chksm)
             self.assertIn('Job needs update:', s.getvalue())
             if chksm == CHECKSUM_FILE_TIMESTAMPS:
                 self.assertIn('Input files:', s.getvalue())
@@ -419,7 +438,8 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            self.create_pipeline().printout(s, [transform1], verbose=6, checksum_level=chksm)
+            self.create_pipeline().printout(
+                s, [transform1], verbose=6, checksum_level=chksm)
             if chksm == CHECKSUM_FILE_TIMESTAMPS:
                 #self.assertIn('Job up-to-date', s.getvalue())
                 pass
@@ -435,11 +455,13 @@ class TestJobCompletion(unittest.TestCase):
         cleanup_tmpdir()
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
-        test_pipeline.run([transform1], verbose=0, checksum_level=CHECKSUM_HISTORY_TIMESTAMPS)
+        test_pipeline.run([transform1], verbose=0,
+                          checksum_level=CHECKSUM_HISTORY_TIMESTAMPS)
 
         for chksm in possible_chksms:
             s = StringIO()
-            test_pipeline.printout(s, [transform1], verbose=6, checksum_level=chksm)
+            test_pipeline.printout(
+                s, [transform1], verbose=6, checksum_level=chksm)
             #self.assertIn('Job up-to-date', s.getvalue())
             pass
 
@@ -450,7 +472,8 @@ class TestJobCompletion(unittest.TestCase):
         cleanup_tmpdir()
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
-        test_pipeline.run([transform1], verbose=0, checksum_level=CHECKSUM_HISTORY_TIMESTAMPS)
+        test_pipeline.run([transform1], verbose=0,
+                          checksum_level=CHECKSUM_HISTORY_TIMESTAMPS)
         if sys.hexversion >= 0x03000000:
             transform1.__code__ = split1.__code__  # simulate source change
         else:
@@ -458,7 +481,8 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            test_pipeline.printout(s, [transform1], verbose=6, checksum_level=chksm)
+            test_pipeline.printout(
+                s, [transform1], verbose=6, checksum_level=chksm)
             if chksm >= CHECKSUM_FUNCTIONS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('Pipeline function has changed',
@@ -474,7 +498,8 @@ class TestJobCompletion(unittest.TestCase):
         cleanup_tmpdir()
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
-        test_pipeline.run([transform1], verbose=0, checksum_level=CHECKSUM_HISTORY_TIMESTAMPS)
+        test_pipeline.run([transform1], verbose=0,
+                          checksum_level=CHECKSUM_HISTORY_TIMESTAMPS)
         # simulate source change
         if sys.hexversion >= 0x03000000:
             split1.__code__, transform1.__code__ = transform1.__code__, split1.__code__
@@ -483,7 +508,8 @@ class TestJobCompletion(unittest.TestCase):
 
         for chksm in possible_chksms:
             s = StringIO()
-            test_pipeline.printout(s, [transform1], verbose=6, checksum_level=chksm)
+            test_pipeline.printout(
+                s, [transform1], verbose=6, checksum_level=chksm)
             if chksm >= CHECKSUM_FUNCTIONS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('Pipeline function has changed',
@@ -497,7 +523,6 @@ class TestJobCompletion(unittest.TestCase):
         else:
             split1.func_code, transform1.func_code = transform1.func_code, split1.func_code
 
-
     def test_newstyle_output_up_to_date_param_changed(self):
         """Input file exists, output up to date, parameter to function changed"""
         test_pipeline = self.create_pipeline()
@@ -505,12 +530,14 @@ class TestJobCompletion(unittest.TestCase):
         cleanup_tmpdir()
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
-        test_pipeline.run([transform1], verbose=0, checksum_level=CHECKSUM_HISTORY_TIMESTAMPS)
+        test_pipeline.run([transform1], verbose=0,
+                          checksum_level=CHECKSUM_HISTORY_TIMESTAMPS)
         runtime_data.append('different')  # simulate change to config file
 
         for chksm in possible_chksms:
             s = StringIO()
-            test_pipeline.printout(s, [transform1], verbose=6, checksum_level=chksm)
+            test_pipeline.printout(
+                s, [transform1], verbose=6, checksum_level=chksm)
             if chksm >= CHECKSUM_FUNCTIONS_AND_PARAMS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('Pipeline parameters have changed',
@@ -527,12 +554,16 @@ class TestJobCompletion(unittest.TestCase):
             outfile.write('testme')
         time.sleep(.5)
         del runtime_data[:]
-        with self.assertRaises(RethrownJobError):  # poo. Shouldn't this be RuntimeError?
-            pipeline_run([transform_raise_error], verbose=0, checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, pipeline= "main") # generates output then fails
+        # poo. Shouldn't this be RuntimeError?
+        with self.assertRaises(RethrownJobError):
+            # generates output then fails
+            pipeline_run([transform_raise_error], verbose=0,
+                         checksum_level=CHECKSUM_HISTORY_TIMESTAMPS, pipeline="main")
 
         for chksm in possible_chksms:
             s = StringIO()
-            pipeline_printout(s, [transform_raise_error], verbose=6, checksum_level=chksm, pipeline= "main")
+            pipeline_printout(s, [transform_raise_error],
+                              verbose=6, checksum_level=chksm, pipeline="main")
             if chksm >= CHECKSUM_HISTORY_TIMESTAMPS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('left over from a failed run?',
@@ -550,11 +581,15 @@ class TestJobCompletion(unittest.TestCase):
             outfile.write('testme')
         time.sleep(.5)
         del runtime_data[:]
-        with self.assertRaises(RethrownJobError):  # poo. Shouldn't this be RuntimeError?
-            test_pipeline.run([transform_raise_error], verbose=0, checksum_level=CHECKSUM_HISTORY_TIMESTAMPS) # generates output then fails
+        # poo. Shouldn't this be RuntimeError?
+        with self.assertRaises(RethrownJobError):
+            # generates output then fails
+            test_pipeline.run([transform_raise_error], verbose=0,
+                              checksum_level=CHECKSUM_HISTORY_TIMESTAMPS)
         for chksm in possible_chksms:
             s = StringIO()
-            test_pipeline.printout(s, [transform_raise_error], verbose=6, checksum_level=chksm)
+            test_pipeline.printout(
+                s, [transform_raise_error], verbose=6, checksum_level=chksm)
             if chksm >= CHECKSUM_HISTORY_TIMESTAMPS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('left over from a failed run?',
@@ -563,7 +598,6 @@ class TestJobCompletion(unittest.TestCase):
                 #self.assertIn('Job up-to-date', s.getvalue())
                 pass
 
-
     def test_newstyle_split_output(self):
         """test multiple-output checksums"""
         test_pipeline = self.create_pipeline()
@@ -571,14 +605,16 @@ class TestJobCompletion(unittest.TestCase):
         cleanup_tmpdir()
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
-        test_pipeline.run([split1], verbose=0, checksum_level=CHECKSUM_HISTORY_TIMESTAMPS)
+        test_pipeline.run([split1], verbose=0,
+                          checksum_level=CHECKSUM_HISTORY_TIMESTAMPS)
         time.sleep(.5)
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
 
         for chksm in possible_chksms:
             s = StringIO()
-            test_pipeline.printout(s, [split1], verbose=6, checksum_level=chksm)
+            test_pipeline.printout(
+                s, [split1], verbose=6, checksum_level=chksm)
             self.assertIn('Job needs update:', s.getvalue())
 
         # all outputs incorrectly generated
@@ -591,7 +627,8 @@ class TestJobCompletion(unittest.TestCase):
                 outfile.write('testme')
         for chksm in possible_chksms:
             s = StringIO()
-            test_pipeline.printout(s, [split1], verbose=6, checksum_level=chksm)
+            test_pipeline.printout(
+                s, [split1], verbose=6, checksum_level=chksm)
             if chksm >= CHECKSUM_HISTORY_TIMESTAMPS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('left over from a failed run?',
@@ -604,13 +641,16 @@ class TestJobCompletion(unittest.TestCase):
         cleanup_tmpdir()
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
-        test_pipeline.run([split1], verbose=0, checksum_level=CHECKSUM_HISTORY_TIMESTAMPS)
-        job_history = dbdict.open(get_default_history_file_name(), picklevalues=True)
+        test_pipeline.run([split1], verbose=0,
+                          checksum_level=CHECKSUM_HISTORY_TIMESTAMPS)
+        job_history = dbdict.open(
+            get_default_history_file_name(), picklevalues=True)
         del job_history[os.path.relpath(split1_outputs[0])]
 
         for chksm in possible_chksms:
             s = StringIO()
-            test_pipeline.printout(s, [split1], verbose=6, checksum_level=chksm)
+            test_pipeline.printout(
+                s, [split1], verbose=6, checksum_level=chksm)
             if chksm >= CHECKSUM_HISTORY_TIMESTAMPS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('left over from a failed run?',
@@ -626,13 +666,16 @@ class TestJobCompletion(unittest.TestCase):
         cleanup_tmpdir()
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
-        test_pipeline.run([split1], verbose=0, checksum_level=CHECKSUM_HISTORY_TIMESTAMPS)
-        job_history = dbdict.open(get_default_history_file_name(), picklevalues=True)
+        test_pipeline.run([split1], verbose=0,
+                          checksum_level=CHECKSUM_HISTORY_TIMESTAMPS)
+        job_history = dbdict.open(
+            get_default_history_file_name(), picklevalues=True)
         del job_history[os.path.relpath(split1_outputs[0])]
 
         for chksm in possible_chksms:
             s = StringIO()
-            test_pipeline.printout(s, [merge2], verbose=6, checksum_level=chksm)
+            test_pipeline.printout(
+                s, [merge2], verbose=6, checksum_level=chksm)
             if chksm >= CHECKSUM_HISTORY_TIMESTAMPS:
                 self.assertIn('Job needs update:', s.getvalue())
                 self.assertIn('left over from a failed run?', s.getvalue())
@@ -644,10 +687,12 @@ class TestJobCompletion(unittest.TestCase):
         cleanup_tmpdir()
         with open(input_file, 'w') as outfile:
             outfile.write('testme')
-        test_pipeline.run([merge2], verbose=0, checksum_level=CHECKSUM_HISTORY_TIMESTAMPS)
+        test_pipeline.run([merge2], verbose=0,
+                          checksum_level=CHECKSUM_HISTORY_TIMESTAMPS)
         for chksm in possible_chksms:
             s = StringIO()
-            test_pipeline.printout(s, [merge2], verbose=6, checksum_level=chksm)
+            test_pipeline.printout(
+                s, [merge2], verbose=6, checksum_level=chksm)
             #self.assertIn('Job up-to-date', s.getvalue())
             self.assertNotIn('Job needs update:', s.getvalue())
             self.assertNotIn('left over from a failed run?', s.getvalue())
@@ -655,6 +700,7 @@ class TestJobCompletion(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(tempdir)
         pass
+
 
 if __name__ == '__main__':
     unittest.main()

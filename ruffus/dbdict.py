@@ -103,6 +103,7 @@ except ImportError:
 import itertools
 import sys
 
+
 class DbDict(MutableMapping):
     ''' DbDict, a dictionary-like object with SQLite back-end '''
 
@@ -114,20 +115,19 @@ class DbDict(MutableMapping):
         else:
             self.con = sqlite3.connect(filename)
 
-
-    #_____________________________________________________________________________________
-
+    # _____________________________________________________________________________________
 
     #   Add automatic pickling and unpickling
 
-    def pickle_loads (self, value):
+    def pickle_loads(self, value):
         """
         pickle.load if specified
         """
         if self.picklevalues:
             value = pickle.loads(bytes(value))
         return value
-    def pickle_dumps (self, value):
+
+    def pickle_dumps(self, value):
         """
         pickle.load if specified
         """
@@ -147,14 +147,14 @@ class DbDict(MutableMapping):
             #
             #   Otherwise, to use protocol -1, we need to use the following code:
             #
-            #if sys.hexversion >= 0x03000000:
+            # if sys.hexversion >= 0x03000000:
             #    value = memoryview(pickle.dumps(value, protocol = -1))
-            #else:
+            # else:
             #    value = buffer(pickle.dumps(value, protocol = -1))
             #
-            value = sqlite3.Binary(pickle.dumps(value, protocol = -1))
+            value = sqlite3.Binary(pickle.dumps(value, protocol=-1))
         return value
-    #_____________________________________________________________________________________
+    # _____________________________________________________________________________________
 
     def _create_table(self):
         '''Creates an SQLite table 'data' with the columns 'key' and 'value'
@@ -186,7 +186,7 @@ class DbDict(MutableMapping):
     def __delitem__(self, key):
         '''Delete item (key-value pair) at specified key'''
         if key in self:
-            self.con.execute('delete from data where key=?',(key, ))
+            self.con.execute('delete from data where key=?', (key, ))
             self.con.commit()
         else:
             raise KeyError
@@ -221,13 +221,13 @@ class DbDict(MutableMapping):
     def itervalues(self):
         '''Return iterator of all values in the database'''
         it = self._iterquery(self.con.execute('select value from data'),
-                               single_value=True)
+                             single_value=True)
         return iter(self.pickle_loads(x) for x in it)
 
     def iteritems(self):
         '''Return iterator of all key-value pairs in the database'''
         it = self._iterquery(self.con.execute('select key, value from data'))
-        return iter( (x[0], self.pickle_loads(x[1])) for x in it)
+        return iter((x[0], self.pickle_loads(x[1])) for x in it)
 
     def keys(self):
         '''Return all keys in the database'''
@@ -249,7 +249,7 @@ class DbDict(MutableMapping):
 
     def _update(self, items):
         '''Perform the SQL query of updating items (list of key-value pairs)'''
-        items = [(k, self.pickle_dumps(v)) for k,v in items]
+        items = [(k, self.pickle_dumps(v)) for k, v in items]
         self.con.executemany('insert or replace into data (key, value)'
                              ' values (?, ?)', items)
         self.con.commit()
@@ -269,7 +269,8 @@ class DbDict(MutableMapping):
             try:
                 self._update(list(items))
             except TypeError:
-                raise ValueError('Could not interpret value of parameter `items` as a dict, list/tuple or iterator.')
+                raise ValueError(
+                    'Could not interpret value of parameter `items` as a dict, list/tuple or iterator.')
 
         if kwds:
             self._update(list(kwds.items()))
@@ -315,8 +316,8 @@ class DbDict(MutableMapping):
             # probably a single key (ie not an iterable)
             keys = (keys,)
         values = self.con.execute('select key, value from data where key in '
-                                                '%s' % (keys,)).fetchall()
-        return [(k, self.pickle_loads(v)) for k,v in values]
+                                  '%s' % (keys,)).fetchall()
+        return [(k, self.pickle_loads(v)) for k, v in values]
 
     def remove(self, keys):
         '''Removes item(s) for the specified key or list of keys.
@@ -340,6 +341,7 @@ class DbDict(MutableMapping):
         self.con.execute('reindex sqlite_autoindex_data_1')
         self.con.commit()
 
+
 def dbdict(filename, picklevalues=False):
     '''Open a persistent dictionary for reading and writing.
 
@@ -351,6 +353,7 @@ def dbdict(filename, picklevalues=False):
     '''
     return DbDict(filename, picklevalues)
 
+
 def open(filename, picklevalues=False):
     '''Open a persistent dictionary for reading and writing.
 
@@ -361,6 +364,7 @@ def open(filename, picklevalues=False):
     See the module's __doc__ string for an overview of the interface.
     '''
     return DbDict(filename, picklevalues)
+
 
 if __name__ == '__main__':
 
@@ -416,11 +420,12 @@ if __name__ == '__main__':
     #assert list(d.iteritems()) == items
 
     # test get
-    assert d.get(list(range(8,12))) == items[-2:]
+    assert d.get(list(range(8, 12))) == items[-2:]
 
     # test remove
-    d.remove(list(range(8,10)))
-    assert len(d.get(list(range(8,10)))) == 0, 'Items not removed successfully'
+    d.remove(list(range(8, 10)))
+    assert len(d.get(list(range(8, 10)))
+               ) == 0, 'Items not removed successfully'
 
     d.clear()
 

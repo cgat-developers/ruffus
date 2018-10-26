@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 from __future__ import print_function
+import shutil
+import logging
+import unittest
+from ruffus.proxy_logger import make_shared_logger_and_proxy, setup_std_shared_logger
+from ruffus import originate, transform, suffix, merge, pipeline_run, Pipeline
+import sys
+
 """
 
     test_with_logger.py
@@ -9,7 +16,7 @@ from __future__ import print_function
 
 import os
 tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
-input_file_names = [os.path.join(tempdir, "%d.1"  % fn) for fn in range(20)]
+input_file_names = [os.path.join(tempdir, "%d.1" % fn) for fn in range(20)]
 final_file_name = os.path.join(tempdir, "final.result")
 try:
     os.makedirs(tempdir)
@@ -17,10 +24,9 @@ except:
     pass
 
 
-import sys
-
 # add grandparent to search path for testing
-grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+grandparent_dir = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, grandparent_dir)
 
 # module name = script name without extension
@@ -28,30 +34,20 @@ module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
 # funky code to import by file name
-import ruffus
-from ruffus import originate, transform, suffix, merge, pipeline_run, Pipeline
-from ruffus.proxy_logger import make_shared_logger_and_proxy, setup_std_shared_logger
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   imports
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import unittest
-import re
-import logging
-import sys
-import os
-import json
-import shutil
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Tasks
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 def write_input_output_filenames_to_output(infiles, outfile, logger_proxy, logging_mutex):
     """
@@ -74,7 +70,8 @@ def write_input_output_filenames_to_output(infiles, outfile, logger_proxy, loggi
             with open(infile) as ii:
                 for line in ii:
                     oo.write(line)
-                    max_white_space = max([max_white_space, len(line) - len(line.lstrip())])
+                    max_white_space = max(
+                        [max_white_space, len(line) - len(line.lstrip())])
         # add extra spaces before filenames
         oo.write(" " * (max_white_space + 2) + fn_str + "\n")
 
@@ -82,22 +79,21 @@ def write_input_output_filenames_to_output(infiles, outfile, logger_proxy, loggi
         logger_proxy.info(fn_str)
 
 
-
 #
 #   Make logger
 #
 #import logging
-args=dict()
+args = dict()
 args["file_name"] = os.path.join(tempdir, module_name + ".log")
 args["level"] = logging.DEBUG
 args["rotating"] = True
-args["maxBytes"]=20000
-args["backupCount"]=10
-args["formatter"]="%(asctime)s - %(name)s - %(levelname)6s - %(message)s"
+args["maxBytes"] = 20000
+args["backupCount"] = 10
+args["formatter"] = "%(asctime)s - %(name)s - %(levelname)6s - %(message)s"
 
 if sys.version_info[0] == 3 and sys.version_info[1] == 2 and __name__ != "__main__":
-    print (
-"""
+    print(
+        """
     888888888888888888888888888888888888888888888888888888888888888888888888888
 
         ERROR:
@@ -129,9 +125,8 @@ if sys.version_info[0] == 3 and sys.version_info[1] == 2 and __name__ != "__main
     sys.exit()
 
 (logger_proxy,
- logging_mutex) = make_shared_logger_and_proxy (setup_std_shared_logger,
-                                                "my_logger", args)
-
+ logging_mutex) = make_shared_logger_and_proxy(setup_std_shared_logger,
+                                               "my_logger", args)
 
 
 #
@@ -139,8 +134,8 @@ if sys.version_info[0] == 3 and sys.version_info[1] == 2 and __name__ != "__main
 #
 @originate(input_file_names, logger_proxy, logging_mutex)
 def task1(outfile, logger_proxy, logging_mutex):
-    write_input_output_filenames_to_output(None, outfile, logger_proxy, logging_mutex)
-
+    write_input_output_filenames_to_output(
+        None, outfile, logger_proxy, logging_mutex)
 
 
 #
@@ -148,8 +143,8 @@ def task1(outfile, logger_proxy, logging_mutex):
 #
 @transform(task1, suffix(".1"), ".2", logger_proxy, logging_mutex)
 def task2(infile, outfile, logger_proxy, logging_mutex):
-    write_input_output_filenames_to_output(infile, outfile, logger_proxy, logging_mutex)
-
+    write_input_output_filenames_to_output(
+        infile, outfile, logger_proxy, logging_mutex)
 
 
 #
@@ -160,8 +155,8 @@ def task3(infile, outfile, logger_proxy, logging_mutex):
     """
     Third task
     """
-    write_input_output_filenames_to_output(infile, outfile, logger_proxy, logging_mutex)
-
+    write_input_output_filenames_to_output(
+        infile, outfile, logger_proxy, logging_mutex)
 
 
 #
@@ -172,10 +167,8 @@ def task4(infile, outfile, logger_proxy, logging_mutex):
     """
     Fourth task
     """
-    write_input_output_filenames_to_output(infile, outfile, logger_proxy, logging_mutex)
-
-
-
+    write_input_output_filenames_to_output(
+        infile, outfile, logger_proxy, logging_mutex)
 
 
 class Test_ruffus(unittest.TestCase):
@@ -195,20 +188,22 @@ class Test_ruffus(unittest.TestCase):
         except:
             pass
 
-    def test_simpler (self):
-        pipeline_run(multiprocess = 500, verbose = 0, pipeline= "main")
+    def test_simpler(self):
+        pipeline_run(multiprocess=500, verbose=0, pipeline="main")
 
-    def test_newstyle_simpler (self):
+    def test_newstyle_simpler(self):
         test_pipeline = Pipeline("test")
-        test_pipeline.originate(task1, input_file_names, extras = [logger_proxy, logging_mutex])
-        test_pipeline.transform(task2, task1, suffix(".1"), ".2", extras = [logger_proxy, logging_mutex])
-        test_pipeline.transform(task3, task2, suffix(".2"), ".3", extras = [logger_proxy, logging_mutex])
-        test_pipeline.merge(task4, task3, final_file_name, extras = [logger_proxy, logging_mutex])
+        test_pipeline.originate(task1, input_file_names, extras=[
+                                logger_proxy, logging_mutex])
+        test_pipeline.transform(task2, task1, suffix(
+            ".1"), ".2", extras=[logger_proxy, logging_mutex])
+        test_pipeline.transform(task3, task2, suffix(
+            ".2"), ".3", extras=[logger_proxy, logging_mutex])
+        test_pipeline.merge(task4, task3, final_file_name,
+                            extras=[logger_proxy, logging_mutex])
         #test_pipeline.merge(task4, task3, final_file_name, extras = {"logger_proxy": logger_proxy, "logging_mutex": logging_mutex})
-        test_pipeline.run(multiprocess = 500, verbose = 0)
-
+        test_pipeline.run(multiprocess=500, verbose=0)
 
 
 if __name__ == '__main__':
     unittest.main()
-

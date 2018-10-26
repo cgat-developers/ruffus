@@ -121,25 +121,23 @@ To use:
 """
 
 
-
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   imports
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import sys,os
+import sys
+import os
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Shared logging
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 import multiprocessing
 import multiprocessing.managers
@@ -147,7 +145,6 @@ import multiprocessing.managers
 
 import logging
 import logging.handlers
-
 
 
 #
@@ -226,18 +223,21 @@ def setup_std_shared_logger(logger_name, args):
 
     else:
         if "file_name" not in args:
-            raise Exception("Missing file name for log. Remember to set 'file_name'")
+            raise Exception(
+                "Missing file name for log. Remember to set 'file_name'")
         log_file_name = args["file_name"]
 
         if "rotating" in args:
             rotating_args = {}
             # override default
-            rotating_args["maxBytes"]=args.get("maxBytes", 100000)
-            rotating_args["backupCount"]=args.get("backupCount", 5)
-            handler = logging.handlers.RotatingFileHandler( log_file_name, **rotating_args)
+            rotating_args["maxBytes"] = args.get("maxBytes", 100000)
+            rotating_args["backupCount"] = args.get("backupCount", 5)
+            handler = logging.handlers.RotatingFileHandler(
+                log_file_name, **rotating_args)
         else:
             defer_loggin = "delay" in args
-            handler = logging.handlers.RotatingFileHandler( log_file_name, delay=defer_loggin)
+            handler = logging.handlers.RotatingFileHandler(
+                log_file_name, delay=defer_loggin)
 
         #       %(name)s
         #       %(levelno)s
@@ -278,21 +278,29 @@ def setup_std_shared_logger(logger_name, args):
 class LoggerProxy(multiprocessing.managers.BaseProxy):
     def debug(self, *args, **kwargs):
         return self._callmethod('debug', args, kwargs)
+
     def log(self, *args, **kwargs):
         return self._callmethod('log', args, kwargs)
+
     def info(self, *args, **kwargs):
         return self._callmethod('info', args, kwargs)
+
     def warning(self, *args, **kwargs):
         return self._callmethod('warning', args, kwargs)
+
     def error(self, *args, **kwargs):
         return self._callmethod('error', args, kwargs)
+
     def critical(self, *args, **kwargs):
         return self._callmethod('critical', args, kwargs)
+
     def log(self, *args, **kwargs):
         return self._callmethod('log', args, kwargs)
-    def __str__ (self):
+
+    def __str__(self):
         return "<LoggingProxy>"
-    def __repr__ (self):
+
+    def __repr__(self):
         return 'LoggerProxy()'
 
 #
@@ -301,6 +309,8 @@ class LoggerProxy(multiprocessing.managers.BaseProxy):
 #   We use SyncManager as a base class so we can get a lock proxy for synchronising
 #       logging later on
 #
+
+
 class LoggingManager(multiprocessing.managers.SyncManager):
     """
     Logging manager sets up its own process and will create the real Log object there
@@ -309,9 +319,7 @@ class LoggingManager(multiprocessing.managers.SyncManager):
     pass
 
 
-
-
-def make_shared_logger_and_proxy (logger_factory, logger_name, args):
+def make_shared_logger_and_proxy(logger_factory, logger_name, args):
     """
     Make a `logging <http://docs.python.org/library/logging.html>`_ object
     called "\ ``logger_name``\ " by calling ``logger_factory``\ (``args``\ )
@@ -333,11 +341,11 @@ def make_shared_logger_and_proxy (logger_factory, logger_name, args):
     #   make shared log and proxy
     #
     manager = LoggingManager()
-    manager.register(   'setup_logger',
-                        logger_factory,
-                        proxytype=LoggerProxy,
-                        exposed = ( 'critical', 'log',
-                                    'info', 'debug', 'warning', 'error'))
+    manager.register('setup_logger',
+                     logger_factory,
+                     proxytype=LoggerProxy,
+                     exposed=('critical', 'log',
+                              'info', 'debug', 'warning', 'error'))
     manager.start()
     logger_proxy = manager.setup_logger(logger_name, args)
 
@@ -347,7 +355,3 @@ def make_shared_logger_and_proxy (logger_factory, logger_name, args):
     logging_mutex = manager.Lock()
 
     return logger_proxy, logging_mutex
-
-
-
-

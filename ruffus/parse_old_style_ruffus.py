@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+import logging.handlers
+import logging
+import re
 """
     Parse Ruffus pipelines using old fashioned decorator syntax
 """
@@ -14,7 +17,8 @@
 #
 #################################################################################
 
-import sys, os
+import sys
+import os
 
 # Use import path from ~/python_modules
 if __name__ == '__main__':
@@ -22,13 +26,12 @@ if __name__ == '__main__':
     sys.path.append(os.path.expanduser("~lg/src/python_modules"))
 
 
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   options
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 
 if __name__ == '__main__':
@@ -36,61 +39,57 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description=__doc__)
 
-
     common_group = parser.add_argument_group('Common arguments')
-    common_group.add_argument('--verbose', "-v", const=1, metavar="VERBOSITY", default=0, nargs='?', type= int,
-                                help="Print more verbose messages for each additional verbose level.")
-    common_group.add_argument('--version', action='version', version='%(prog)s 1.0')
+    common_group.add_argument('--verbose', "-v", const=1, metavar="VERBOSITY", default=0, nargs='?', type=int,
+                              help="Print more verbose messages for each additional verbose level.")
+    common_group.add_argument(
+        '--version', action='version', version='%(prog)s 1.0')
     common_group.add_argument("-L", "--log_file", metavar="FILE", type=str,
-                                  help="Name and path of log file")
+                              help="Name and path of log file")
 
     options = parser.parse_args()
 
     if not options.log_file:
-        options.log_file            = os.path.join("parse_old_style_ruffus.log")
+        options.log_file = os.path.join("parse_old_style_ruffus.log")
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   imports
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #from json import dumps
 #from collections import defaultdict
-import re
 
 
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Functions
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Logger
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import logging
-import logging.handlers
 
 MESSAGE = 15
 logging.addLevelName(MESSAGE, "MESSAGE")
 
-def setup_std_logging (module_name, log_file, verbose):
+
+def setup_std_logging(module_name, log_file, verbose):
     """
     set up logging using programme options
     """
 
     logger = logging.getLogger(module_name)
-
 
     # We are interesting in all messages
     logger.setLevel(logging.DEBUG)
@@ -101,6 +100,7 @@ def setup_std_logging (module_name, log_file, verbose):
     #
     if log_file:
         handler = logging.FileHandler(log_file, delay=False)
+
         class stripped_down_formatter(logging.Formatter):
             def format(self, record):
                 prefix = ""
@@ -113,7 +113,8 @@ def setup_std_logging (module_name, log_file, verbose):
                 else:
                     self._fmt = " %(asctime)s - %(levelname)-7s - %(message)s"
                 return prefix + logging.Formatter.format(self, record)
-        handler.setFormatter(stripped_down_formatter("%(asctime)s - %(name)s - %(levelname)6s - %(message)s", "%H:%M:%S"))
+        handler.setFormatter(stripped_down_formatter(
+            "%(asctime)s - %(name)s - %(levelname)6s - %(message)s", "%H:%M:%S"))
         handler.setLevel(MESSAGE)
         logger.addHandler(handler)
         has_handler = True
@@ -130,6 +131,7 @@ def setup_std_logging (module_name, log_file, verbose):
                 """
                 Ignore INFO messages
                 """
+
                 def filter(self, record):
                     return logging.INFO != record.levelno
             stderrhandler.addFilter(debug_filter())
@@ -144,21 +146,21 @@ def setup_std_logging (module_name, log_file, verbose):
             """
             for when there is no logging
             """
+
             def emit(self, record):
                 pass
         logger.addHandler(NullHandler())
 
-
     return logger
+
 
 if __name__ == '__main__':
 
     #
     #   set up log: name = script name sans extension
     #
-    module_name = os.path.splitext(os.path.basename(sys.argv[0]))[0];
+    module_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
     logger = setup_std_logging(module_name, options.log_file, options.verbose)
-
 
     #
     #   log programme parameters
@@ -166,16 +168,16 @@ if __name__ == '__main__':
     logger.info(" ".join(sys.argv))
 
 
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Main logic
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 func_re = re.compile("^\s*def.*\(")
+
+
 def get_decorators(line_num, decorated_lines, all_lines):
     for line in sys.stdin:
         line_num += 1
@@ -190,7 +192,7 @@ def get_decorators(line_num, decorated_lines, all_lines):
     raise Exception("Unterminated decorators %s" % (decorated_lines,))
 
 
-decorator_re      = re.compile("^\s*@")
+decorator_re = re.compile("^\s*@")
 no_white_space_re = re.compile("^[^#\s]")
 if __name__ == '__main__':
     line_num = 1
@@ -211,8 +213,6 @@ if __name__ == '__main__':
                 pipeline_insertion_line_num = len(all_lines)
         all_lines.append(line)
 
-
-
     for line in all_lines[0: pipeline_insertion_line_num]:
         sys.stdout.write(line)
     sys.stdout.write("\n" * 3)
@@ -225,7 +225,6 @@ if __name__ == '__main__':
 
     for line in all_lines[pipeline_insertion_line_num:]:
         sys.stdout.write(line)
-
 
 
 #        for aa in active_if.py \
@@ -265,4 +264,3 @@ if __name__ == '__main__':
 #        unicode_filenames.py \
 #        verbosity.py; \
 #        do echo test_$aa; ../parse_old_style_ruffus.py < test_$aa >| test_newstyle_$aa; done
-

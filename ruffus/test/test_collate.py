@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 from __future__ import print_function
+import json
+from collections import defaultdict
+import shutil
+import unittest
+from ruffus import pipeline_run, Pipeline, follows, posttask, split, collate, mkdir, regex
+import sys
+
 """
 
     test_collate.py
@@ -10,78 +17,59 @@ from __future__ import print_function
 
 import os
 tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
-import sys
 
 # add grandparent to search path for testing
-grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+grandparent_dir = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, grandparent_dir)
 
 # module name = script name without extension
 module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-import ruffus
-from ruffus import pipeline_run, pipeline_printout, Pipeline, follows, posttask, split, collate, mkdir, regex
-
-
-
-
-
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   imports
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-import unittest
-import shutil
 try:
     from StringIO import StringIO
 except:
     from io import StringIO
-from collections import defaultdict
 
 # use simplejson in place of json for python < 2.6
-import json
-#try:
+# try:
 #    import json
-#except ImportError:
+# except ImportError:
 #    import simplejson
 #    json = simplejson
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Main logic
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-
-
-
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 
 species_list = defaultdict(list)
-species_list["mammals"].append("cow"       )
-species_list["mammals"].append("horse"     )
-species_list["mammals"].append("sheep"     )
-species_list["reptiles"].append("snake"     )
-species_list["reptiles"].append("lizard"    )
-species_list["reptiles"].append("crocodile" )
-species_list["fish"   ].append("pufferfish")
+species_list["mammals"].append("cow")
+species_list["mammals"].append("horse")
+species_list["mammals"].append("sheep")
+species_list["reptiles"].append("snake")
+species_list["reptiles"].append("lizard")
+species_list["reptiles"].append("crocodile")
+species_list["fish"].append("pufferfish")
 
 
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Tasks
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 #
 #    task1
 #
@@ -89,13 +77,15 @@ species_list["fish"   ].append("pufferfish")
 def do_write(file_name, what):
     with open(file_name, "a") as oo:
         oo.write(what)
+
+
 test_file = tempdir + "task.done"
 
 
 @follows(mkdir(tempdir, tempdir + "test"))
 @posttask(lambda: do_write(tempdir + "task.done", "Task 1 Done\n"))
 @split(None, tempdir + '*.animal')
-def prepare_files (no_inputs, outputs):
+def prepare_files(no_inputs, outputs):
     # cleanup previous
     for f in outputs:
         os.unlink(f)
@@ -126,11 +116,6 @@ def summarise_by_grouping(infiles, outfile):
         oo.write('job = %s\n' % json.dumps([infiles, outfile]))
 
 
-
-
-
-
-
 def check_species_correct():
     """
     #cow.mammals.animal
@@ -148,12 +133,8 @@ def check_species_correct():
     """
     for grouping in species_list:
         with open(tempdir + grouping + ".results") as oo:
-            assert(oo.read() == "".join(s + "\n" for s in sorted(species_list[grouping])))
-
-
-
-
-
+            assert(oo.read() == "".join(
+                s + "\n" for s in sorted(species_list[grouping])))
 
 
 class Test_ruffus(unittest.TestCase):
@@ -169,29 +150,27 @@ class Test_ruffus(unittest.TestCase):
         except:
             pass
 
-    def test_ruffus (self):
-        pipeline_run(multiprocess = 10, verbose = 0, pipeline= "main")
+    def test_ruffus(self):
+        pipeline_run(multiprocess=10, verbose=0, pipeline="main")
         check_species_correct()
 
-    def test_newstyle_ruffus (self):
+    def test_newstyle_ruffus(self):
         test_pipeline = Pipeline("test")
-        test_pipeline.split(task_func = prepare_files,
-                            input     = None,
-                            output    = tempdir + '*.animal')\
-                .follows(mkdir(tempdir, tempdir + "test"))\
-                .posttask(lambda: do_write(tempdir + "task.done", "Task 1 Done\n"))
+        test_pipeline.split(task_func=prepare_files,
+                            input=None,
+                            output=tempdir + '*.animal')\
+            .follows(mkdir(tempdir, tempdir + "test"))\
+            .posttask(lambda: do_write(tempdir + "task.done", "Task 1 Done\n"))
 
-        test_pipeline.collate(task_func = summarise_by_grouping,
-                              input     = prepare_files,
-                              filter    = regex(r'(.*/).*\.(.*)\.animal'),
-                              output    = r'\1\2.results')\
-                .posttask(lambda: do_write(tempdir + "task.done", "Task 2 Done\n"))
+        test_pipeline.collate(task_func=summarise_by_grouping,
+                              input=prepare_files,
+                              filter=regex(r'(.*/).*\.(.*)\.animal'),
+                              output=r'\1\2.results')\
+            .posttask(lambda: do_write(tempdir + "task.done", "Task 2 Done\n"))
 
-        test_pipeline.run(multiprocess = 10, verbose = 0)
+        test_pipeline.run(multiprocess=10, verbose=0)
         check_species_correct()
-
 
 
 if __name__ == '__main__':
     unittest.main()
-

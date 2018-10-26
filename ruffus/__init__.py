@@ -43,12 +43,10 @@ from .task import files_re, combine
 
 from .task import check_if_uptodate, active_if, jobs_limit, graphviz, mkdir, output_from, posttask
 from .task import stderr_logger, black_hole_logger, JobSignalledBreak, runtime_parameter
-from .graph  import graph_colour_demo_printout
+from .graph import graph_colour_demo_printout
 from .file_name_parameters import needs_update_check_modify_time
 from . import cmdline
 from . import combinatorics
 #output_dependency_tree_in_dot_format, output_dependency_tree_key_in_dot_format
 from . import ruffus_version
-__version__=ruffus_version.__version
-
-
+__version__ = ruffus_version.__version

@@ -1,5 +1,17 @@
 #!/usr/bin/env python
 from __future__ import print_function
+import shutil
+import unittest
+import json
+from collections import defaultdict
+from ruffus.combinatorics import *
+from ruffus.ruffus_utility import CHECKSUM_FILE_TIMESTAMPS
+from ruffus.ruffus_exceptions import RethrownJobError
+from ruffus import pipeline_run, pipeline_printout, Pipeline, follows, merge, posttask, \
+    split, collate, mkdir, regex, files_re, combine
+import ruffus
+import sys
+
 """
 
     branching.py
@@ -10,83 +22,69 @@ from __future__ import print_function
 
 import os
 tempdir = os.path.relpath(os.path.abspath(os.path.splitext(__file__)[0])) + "/"
-import sys
 
 # add grandparent to search path for testing
-grandparent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+grandparent_dir = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, grandparent_dir)
 
 # module name = script name without extension
 module_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
-import ruffus
-from ruffus import pipeline_run, pipeline_printout, Pipeline, follows, merge, posttask, split, collate, mkdir, regex, files_re, combine
-
-from ruffus.ruffus_exceptions import RethrownJobError
-from ruffus.ruffus_utility import CHECKSUM_FILE_TIMESTAMPS
-from ruffus.combinatorics import *
-
-
-
-
-
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   imports
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-from collections import defaultdict
 
-import json
 # use simplejson in place of json for python < 2.6
-#try:
+# try:
 #    import json
-#except ImportError:
+# except ImportError:
 #    import simplejson
 #    json = simplejson
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Main logic
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-
-
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 
 species_list = defaultdict(list)
-species_list["mammals"].append("cow"       )
-species_list["mammals"].append("horse"     )
-species_list["mammals"].append("sheep"     )
-species_list["reptiles"].append("snake"     )
-species_list["reptiles"].append("lizard"    )
-species_list["reptiles"].append("crocodile" )
-species_list["fish"   ].append("pufferfish")
+species_list["mammals"].append("cow")
+species_list["mammals"].append("horse")
+species_list["mammals"].append("sheep")
+species_list["reptiles"].append("snake")
+species_list["reptiles"].append("lizard")
+species_list["reptiles"].append("crocodile")
+species_list["fish"].append("pufferfish")
 
 
 def do_write(file_name, what):
     with open(file_name, "a") as oo:
         oo.write(what)
+
+
 test_file = tempdir + "task.done"
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Tasks
 
 
-#88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 #
 #    task1
 #
 @follows(mkdir(tempdir, tempdir + "test"))
 @posttask(lambda: do_write(test_file, "Task 1 Done\n"))
-def prepare_files ():
+def prepare_files():
     for grouping in species_list.keys():
         for species_name in species_list[grouping]:
             filename = tempdir + "%s.%s.animal" % (species_name, grouping)
@@ -114,11 +112,6 @@ def summarise_by_grouping(infiles, outfile):
         oo.write('job = %s\n' % json.dumps([infiles, outfile]))
 
 
-
-
-
-
-
 def check_species_correct():
     """
     #cow.mammals.animal
@@ -137,13 +130,9 @@ def check_species_correct():
     for grouping in species_list:
         with open(tempdir + grouping + ".results") as ii:
             assert(ii.read() ==
-                    "".join(s + "\n" for s in sorted(species_list[grouping])))
+                   "".join(s + "\n" for s in sorted(species_list[grouping])))
 
 
-
-
-
-import unittest, shutil
 class Test_ruffus(unittest.TestCase):
 
     def tearDown(self):
@@ -151,18 +140,18 @@ class Test_ruffus(unittest.TestCase):
             shutil.rmtree(tempdir)
         except:
             pass
+
     def setUp(self):
         try:
             shutil.rmtree(tempdir)
         except:
             pass
 
-    def test_ruffus (self):
+    def test_ruffus(self):
         ""
-        pipeline_run(multiprocess = 10, verbose = 0, pipeline= "main")
+        pipeline_run(multiprocess=10, verbose=0, pipeline="main")
         check_species_correct()
 
 
 if __name__ == '__main__':
     unittest.main()
-

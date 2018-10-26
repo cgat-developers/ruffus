@@ -70,7 +70,8 @@ class BaseTest(unittest.TestCase):
         except OSError:
             pass
         self.work_dir = tempfile.mkdtemp(suffix="",
-                                         prefix="ruffus_tmp_{}_".format(self.id()),
+                                         prefix="ruffus_tmp_{}_".format(
+                                             self.id()),
                                          dir=TESTS_TEMPDIR)
 
     def tearDown(self):
