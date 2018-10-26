@@ -45,10 +45,10 @@ class Test_Logging(unittest.TestCase):
         args["rotating"] = True
         args["maxBytes"] = 20000
         args["backupCount"] = 10
-        #args["level"]= logging.INFO
-        (my_log,
-         logging_mutex) = make_shared_logger_and_proxy(setup_std_shared_logger,
-                                                       "my_logger", args)
+        args["level"]= logging.INFO
+        (my_log, logging_mutex) = make_shared_logger_and_proxy(
+            setup_std_shared_logger, "my_logger", args)
+
         with logging_mutex:
             my_log.debug('This is a debug message')
             my_log.info('This is an info message')
@@ -56,11 +56,13 @@ class Test_Logging(unittest.TestCase):
             my_log.error('This is an error message')
             my_log.critical('This is a critical error message')
             my_log.log(logging.ERROR, 'This is a debug message')
+
         with open("/tmp/lg.log") as ii:
             data = ii.readlines()
 
             self.assertEqual(data,
-                             ["This is a warning message\n",
+                             ["This is an info message\n",
+                              "This is a warning message\n",
                               "This is an error message\n",
                               "This is a critical error message\n",
                               "This is a debug message\n"])

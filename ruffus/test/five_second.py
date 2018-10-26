@@ -1,17 +1,13 @@
 #!/usr/bin/env python
 from time import sleep
-import random
 import sys
 
 try:
     for i in range(50):
         sleep(1)
-        # if random.randint(5) == 4:
-        #    print >> sys.stderr,  "Throw"
-        #    raise Exception("WWWWW")
-        print >> sys.stderr, i,
+        sys.stderr.write("{}\n".format(i))
     sleep(1)
-    print >> sys.stderr,  "Done"
+    sys.stderr.write("Done\n")
 except:
-    print >> sys.stderr,  "Exception!!!!!!!!!!!!!!!!!!!!!"
+    sys.stderr.write("Exception!!!!!!!!!!!!!!!!!!!!!\n")
     pass

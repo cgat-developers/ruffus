@@ -5761,13 +5761,13 @@ def pipeline_run(target_tasks=[],
     #
     #   LOGGER level 5 : All jobs in All Tasks whether out of date or not
     if verbose in [1, 2] or verbose >= 5:
-        (all_tasks, ignore_param1, ignore_param2, ignore_param3) \
-            = topologically_sorted_nodes(target_tasks, True,
-                                         gnu_make_maximal_rebuild_mode,
-                                         extra_data_for_signal=[t_verbose_logger(0, 0, None,
-                                                                                 runtime_data),
-                                                                job_history],
-                                         signal_callback=is_node_up_to_date)
+        (all_tasks, ignore_param1, ignore_param2, ignore_param3) = topologically_sorted_nodes(
+            target_tasks, True,
+            gnu_make_maximal_rebuild_mode,
+            extra_data_for_signal=[t_verbose_logger(0, 0, None,
+                                                    runtime_data),
+                                   job_history],
+            signal_callback=is_node_up_to_date)
         # indent hardcoded to 4
         for m in get_completed_task_strings(incomplete_tasks, all_tasks,
                                             forcedtorun_tasks, verbose,
