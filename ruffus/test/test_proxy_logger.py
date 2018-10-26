@@ -57,16 +57,14 @@ class Test_Logging(unittest.TestCase):
             my_log.critical('This is a critical error message')
             my_log.log(logging.ERROR, 'This is a debug message')
         with open("/tmp/lg.log") as ii:
-            self.assertTrue(ii.read() ==
-                            """This is a warning message
-This is an error message
-This is a critical error message
-This is a debug message
-""")
+            data = ii.readlines()
+
+            self.assertEqual(data,
+                             ["This is a warning message\n",
+                              "This is an error message\n",
+                              "This is a critical error message\n",
+                              "This is a debug message\n"])
 
 
-#
-#   debug code not run if called as a module
-#
 if __name__ == '__main__':
     unittest.main()
