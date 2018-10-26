@@ -116,12 +116,6 @@ CHECKSUM_REGENERATE = 2     # regenerate checksums
 class t_extra_inputs:
     (ADD_TO_INPUTS, REPLACE_INPUTS, KEEP_INPUTS, KEEP_OUTPUTS) = list(range(4))
 
-# _________________________________________________________________________________________
-
-#   inputs
-
-# _________________________________________________________________________________________
-
 
 class inputs(object):
     def __init__(self, *args):
@@ -130,12 +124,6 @@ class inputs(object):
     def __repr__(self, *args):
         return 'inputs%r' % (self.args,)
 
-# _________________________________________________________________________________________
-
-#   add_inputs
-
-# _________________________________________________________________________________________
-
 
 class add_inputs(object):
     def __init__(self, *args):
@@ -143,12 +131,6 @@ class add_inputs(object):
 
     def __repr__(self, *args):
         return 'add_inputs%r' % (self.args,)
-
-# _________________________________________________________________________________________
-#
-#   get_default_checksum_level
-#
-# _________________________________________________________________________________________
 
 
 def get_default_checksum_level():
@@ -406,6 +388,8 @@ def get_nth_nested_level_of_path(orig_path, n_levels):
         6   /test/this/now/or/not.txt
         7   /test/this/now/or/not.txt
     """
+    # FIXME: consider returning full path to make debugging easier or at least
+    # make it optional
     if not n_levels or n_levels < 0:
         return orig_path
     res = path_decomposition(orig_path)
@@ -1022,7 +1006,7 @@ def shorten_filenames_encoder(obj, n_levels=2):
     #   if < 0, nest by 2
     #
     if n_levels < 0:
-        desired_len = - n_levels
+        desired_len = -n_levels
         prev_encoded_len = 0
         #
         #   try more and more nestedness up to 9 if that fits inside desired length
@@ -1072,7 +1056,7 @@ def shorten_filenames_encoder(obj, n_levels=2):
         return ignore_unknown_encoder(rel_path)
 
     # get last N nested levels
-    #print >>sys.stderr, "full path last N nested level"
+    # print >>sys.stderr, "full path last N nested level"
     return ignore_unknown_encoder(get_nth_nested_level_of_path(obj, n_levels))
 
 
@@ -1579,12 +1563,6 @@ def parse_task_arguments(orig_unnamed_arguments, orig_named_arguments, expected_
     unnamed_result_strs = []
     named_result_strs = []
 
-    # ________________________________________________________________________________________
-    #
-    #   parse_add_inputs()
-    #
-    # ________________________________________________________________________________________
-
     def parse_add_inputs_args(parsed_arg, input_type, arg_name, modify_inputs_mode, result_strs):
         """
         Parse arguments for add_inputs and replace_inputs, i.e. 'inputs()' and 'add_inputs()'
@@ -1602,20 +1580,12 @@ def parse_task_arguments(orig_unnamed_arguments, orig_named_arguments, expected_
                                                             parsed_arg.args)),
                                                         unnamed_result_strs,
                                                         named_result_strs))
-                #print (err_msg, file=sys.stderr)
                 raise error_inputs_multiple_args(err_msg)
-
-        # unpack add_inputs / inputs and save results
+            # unpack add_inputs / inputs and save results
             results["modify_inputs"] = parsed_arg.args[0]
         else:
             results["modify_inputs"] = parsed_arg.args
         result_strs.append("%s=%r" % (arg_name, parsed_arg.args))
-
-    # ________________________________________________________________________________________
-    #
-    #   check_argument_type
-    #
-    # ________________________________________________________________________________________
 
     def check_argument_type(arg_name, parsed_arg, argument_types):
         """
@@ -1635,13 +1605,9 @@ def parse_task_arguments(orig_unnamed_arguments, orig_named_arguments, expected_
             raise TypeError(err_msg)
 
         return parsed_arg
-    # ________________________________________________________________________________________
-    #
-    #   parse_argument
-    #       helper function for parsing a single arguement
-    # ________________________________________________________________________________________
 
-    def parse_argument(arg_name, expected_arguments, unnamed_arguments, named_arguments, results, task_description, mandatory, argument_types=None):
+    def parse_argument(arg_name, expected_arguments, unnamed_arguments, named_arguments,
+                       results, task_description, mandatory, argument_types=None):
         """
         All missing, non-mandatory are empty list
         """
@@ -1654,14 +1620,10 @@ def parse_task_arguments(orig_unnamed_arguments, orig_named_arguments, expected_
         # look among unnamed arguments first
         #
         if len(unnamed_arguments):
-            #
             # check correct type
-            #
             parsed_arg = check_argument_type(
                 arg_name, unnamed_arguments[0], argument_types)
-            #
-            #   Save parsed results
-            #
+            # save parsed results
             results[arg_name] = parsed_arg
             unnamed_result_strs.append("%s=%r" % (arg_name, parsed_arg))
             del unnamed_arguments[0]
@@ -1782,6 +1744,7 @@ def parse_task_arguments(orig_unnamed_arguments, orig_named_arguments, expected_
         results["modify_inputs"] = None
         parse_add_inputs = ((inputs, "inputs", "replace_inputs", t_extra_inputs.REPLACE_INPUTS),
                             (add_inputs, "add_inputs", "add_inputs", t_extra_inputs.ADD_TO_INPUTS))
+
         if len(unnamed_arguments):
             #
             #   Is add_inputs or inputs in unnamed arguments?

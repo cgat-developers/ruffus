@@ -2,6 +2,7 @@ from __future__ import print_function
 import re
 from . import dbdict
 from .ruffus_utility import *
+from .ruffus_utility import shorten_filenames_encoder
 from .ruffus_exceptions import *
 
 ################################################################################
@@ -402,6 +403,7 @@ def check_input_files_exist(*params):
     """
     if len(params):
         input_files = params[0]
+
         for f in get_strings_in_flattened_sequence(input_files):
             if not os.path.exists(f):
                 if os.path.lexists(f):
@@ -887,7 +889,7 @@ def files_param_factory(input_files_task_globs,
     """
     def iterator(runtime_data):
         # substitute inputs
-        #input_params = file_names_from_tasks_globs(input_files_task_globs, runtime_data, False)
+        # input_params = file_names_from_tasks_globs(input_files_task_globs, runtime_data, False)
 
         if input_files_task_globs.params == []:
             if "ruffus_WARNING" not in runtime_data:
@@ -1103,7 +1105,6 @@ def yield_io_params_per_job(input_params,
     no_regular_expression_matches = True
 
     for orig_input_param, filenames in input_params:
-
         try:
 
             #
@@ -1348,8 +1349,7 @@ def transform_param_factory(input_files_task_globs,
         #   Convert input file names, globs, and tasks -> a list of (nested) file names
         #       Each element of the list corresponds to the input parameters of a single job
         #
-        input_params = file_names_from_tasks_globs(
-            input_files_task_globs, runtime_data)
+        input_params = file_names_from_tasks_globs(input_files_task_globs, runtime_data)
 
         if not len(input_params):
             return

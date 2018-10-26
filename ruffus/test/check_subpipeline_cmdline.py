@@ -91,7 +91,9 @@ def make_pipeline1(pipeline_name,   # Pipelines need to have a unique name
                             # Lookup Task from function name task_originate()
                             #   So long as this is unique in the pipeline
                             input=task_originate,
-                            filter=regex(r"(.*)"),
+                            # requires an anchor from 3.7 onwards, see
+                            # https://bugs.python.org/issue34982
+                            filter=regex(r"^(.*)"),
                             add_inputs=add_inputs(
                                 tempdir + "/testdir/whatever.txt"),
                             output=r"\1.22")
@@ -178,7 +180,7 @@ parser.add_argument('--cleanup', "-C",
                     action="store_true",
                     help="Cleanup before and after.")
 
-options = parser.parse_args(args=[])
+options = parser.parse_args(args=["--verbose=10"])
 #  standard python logger which can be synchronised across concurrent Ruffus tasks
 logger, logger_mutex = cmdline.setup_logging(
     __file__, options.log_file, options.verbose)
@@ -194,21 +196,17 @@ if options.cleanup:
 correct = False
 # if we are not printing but running
 if not options.just_print and \
-        not options.flowchart and \
-        not options.touch_files_only:
+   not options.flowchart and \
+   not options.touch_files_only:
 
-    #
     #   Cleanup
-    #
     if options.cleanup:
         try:
             shutil.rmtree(tempdir)
         except:
             pass
 
-    #
     #   Run
-    #
     cmdline.run(options)
 
     # Check that the output reflecting the pipeline topology is correct.
