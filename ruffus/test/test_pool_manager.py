@@ -2,6 +2,7 @@ import contextlib
 import random
 import unittest
 import ruffus
+import ruffus.drmaa_wrapper
 import os
 import shutil
 import glob
@@ -12,6 +13,16 @@ try:
     HAVE_GEVENT = True
 except ImportError:
     HAVE_GEVENT = False
+
+try:
+    import drmaa
+    HAVE_DRMAA = True
+    DRMAA_SESSION = drmaa.Session()
+    DRMAA_SESSION.initialize()
+
+except ImportError:
+    HAVE_DRMAA = False
+
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
 TESTS_TEMPDIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "tmp"))
@@ -51,6 +62,33 @@ def compute_mean(infile, outfile):
     save_pid(outfile)
 
 
+def run_job(infile, outfile, **kwargs):
+    if not kwargs.get("run_locally", False):
+        kwargs["drmaa_session"] = DRMAA_SESSION
+
+    stdout, stderr = ruffus.drmaa_wrapper.run_job(
+        cmd_str="hostname > {}".format(os.path.abspath(outfile)),
+        verbose=1,
+        local_echo=False,
+        **kwargs)
+
+
+def run_local_job1(*args):
+    return run_job(*args, run_locally=True)
+
+
+def run_local_job2(*args):
+    return run_job(*args, run_locally=True)
+
+
+def run_remote_job1(*args):
+    return run_job(*args, run_locally=False)
+
+
+def run_remote_job2(*args):
+    return run_job(*args, run_locally=False)
+
+
 def combine_means(infiles, outfile):
     with open(outfile, "w") as outf:
         for infile in infiles:
@@ -75,7 +113,8 @@ class BaseTest(unittest.TestCase):
                                          dir=TESTS_TEMPDIR)
 
     def tearDown(self):
-        shutil.rmtree(self.work_dir)
+        # shutil.rmtree(self.work_dir)
+        pass
 
     def check_files(self, present=[], absent=[]):
         for fn in present:
@@ -87,7 +126,7 @@ class BaseTest(unittest.TestCase):
             self.assertFalse(os.path.exists(path),
                              "file {} does exist but not expected".format(path))
 
-    def build_pipeline(self, pipeline_name):
+    def build_pipeline(self, pipeline_name, **kwargs):
         # fudge: clear all previous pipelines
         ruffus.Pipeline.clear_all()
         pipeline = ruffus.Pipeline(pipeline_name)
@@ -107,10 +146,41 @@ class BaseTest(unittest.TestCase):
             input=task_compute_mean,
             output="means.txt")
 
+        task_run_local_job1 = pipeline.transform(
+            task_func=run_local_job1,
+            input=task_create_files,
+            filter=ruffus.suffix(".txt"),
+            output=".local1")
+
+        # test jobs_limit with local running
+        task_run_local_job2 = pipeline.transform(
+            task_func=run_local_job2,
+            input=task_create_files,
+            filter=ruffus.suffix(".txt"),
+            output=".local2").jobs_limit(NUM_CORES // 2)
+
+        # multiprocessing and DRMAA do not work at the moment likely
+        # cause is the shared session object.
+        if not HAVE_DRMAA or (kwargs.get("multiprocess", 1) > 1):
+            return
+
+        task_run_remote_job1 = pipeline.transform(
+            task_func=run_remote_job1,
+            input=task_create_files,
+            filter=ruffus.suffix(".txt"),
+            output=".remote1")
+
+        # test jobs_limit with remote running
+        task_run_remote_job2 = pipeline.transform(
+            task_func=run_remote_job2,
+            input=task_create_files,
+            filter=ruffus.suffix(".txt"),
+            output=".remote2").jobs_limit(NUM_CORES // 2)
+
     def run_pipeline(self, **kwargs):
-        pipeline = self.build_pipeline(self.id())
+        pipeline = self.build_pipeline(self.id(), **kwargs)
         with temp_cd(self.work_dir):
-            ruffus.pipeline_run(pipeline=pipeline, **kwargs)
+            ruffus.pipeline_run(pipeline=pipeline, verbose=5, **kwargs)
         self.check_files(self.expected_output_files)
 
     def read_pids(self):
@@ -134,7 +204,7 @@ class TestExecutionEngines(BaseTest):
         self.assertEqual(len(set(pids)), 1)
         self.assertEqual(pids[0], os.getpid())
 
-    @unittest.skipIf(HAVE_GEVENT == False, "no gevent installed")
+    @unittest.skipIf(not HAVE_GEVENT, "no gevent installed")
     def test_pipeline_runs_with_gevent_manager(self):
         self.run_pipeline(multithread=NUM_CORES, pool_manager="gevent")
         pids = self.read_pids()

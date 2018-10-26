@@ -52,17 +52,24 @@ from __future__ import print_function
 import sys
 import os
 import stat
-#
-#   tempfile for drmaa scripts
-#
 import tempfile
 import datetime
 import subprocess
 import time
-
-import sys
-import subprocess
 import threading
+
+try:
+    import gevent
+    HAVE_GEVENT = True
+except ImportError:
+    HAVE_GEVENT = False
+
+
+try:
+    import drmaa
+    HAVE_DRMAA = True
+except ImportError:
+    HAVE_DRMAA = False
 
 try:
     from Queue import Queue, Empty
@@ -70,6 +77,10 @@ except ImportError:
     from queue import Queue, Empty  # python 3.x
 
 ON_POSIX = 'posix' in sys.builtin_module_names
+
+# Timeouts for gevent loop
+GEVENT_TIMEOUT_STARTUP = 5
+GEVENT_TIMEOUT_WAIT = 1
 
 
 if sys.hexversion >= 0x03000000:
@@ -79,11 +90,6 @@ else:
     path_str_type = basestring
 
 
-# _________________________________________________________________________________________
-
-#   error_drmaa_job
-
-# _________________________________________________________________________________________
 class error_drmaa_job(Exception):
     """
     All exceptions throw in this module
@@ -93,11 +99,6 @@ class error_drmaa_job(Exception):
         Exception.__init__(self, *errmsg)
 
 
-# _________________________________________________________________________________________
-
-#   read_stdout_stderr_from_files
-
-# _________________________________________________________________________________________
 def read_stdout_stderr_from_files(stdout_path, stderr_path, logger=None, cmd_str="", tries=5):
     """
     Reads the contents of two specified paths and returns the strings
@@ -113,9 +114,7 @@ def read_stdout_stderr_from_files(stdout_path, stderr_path, logger=None, cmd_str
         Returns tuple of stdout and stderr.
 
     """
-    #
-    #   delay up to 10 seconds until files are ready
-    #
+    # delay up to 10 seconds until files are ready
     for xxx in range(tries):
         if os.path.exists(stdout_path) and os.path.exists(stderr_path):
             break
@@ -141,9 +140,7 @@ def read_stdout_stderr_from_files(stdout_path, stderr_path, logger=None, cmd_str
                            (msg, cmd_str))
         stderr = []
 
-    #
-    #   cleanup ignoring errors
-    #
+    # cleanup ignoring errors
     try:
         os.unlink(stdout_path)
         os.unlink(stderr_path)
@@ -153,53 +150,43 @@ def read_stdout_stderr_from_files(stdout_path, stderr_path, logger=None, cmd_str
     return stdout, stderr
 
 
-# _________________________________________________________________________________________
-
-#   setup_drmaa_job
-
-# _________________________________________________________________________________________
 def setup_drmaa_job(drmaa_session, job_name, job_environment, working_directory, job_other_options):
 
     job_template = drmaa_session.createJobTemplate()
 
     if not working_directory:
-        job_template.workingDirectory = os.getcwd()
-    else:
-        job_template.workingDirectory = working_directory
+        working_directory = os.getcwd()
+
+    job_template.workingDirectory = working_directory
+
     if job_environment:
         # dictionary e.g. { 'BASH_ENV' : '~/.bashrc' }
         job_template.jobEnvironment = job_environment
-    job_template.args = []
-    if job_name:
-        job_template.jobName = job_name
-    else:
-        # nameless jobs sometimes breaks drmaa implementations...
-        job_template.jobName = "ruffus_job_" + \
-            "_".join(map(str, datetime.datetime.now().timetuple()[0:6]))
 
-    #
+    job_template.args = []
+
+    # nameless jobs sometimes break drmaa implementations...
+    if not job_name:
+        job_name = "ruffus_job_" + "_".join(map(str, datetime.datetime.now().timetuple()[0:6]))
+
+    job_template.jobName = job_name
+
     # optional job parameters
-    #
-    job_template.nativeSpecification = job_other_options
+    if job_other_options is not None:
+        job_template.nativeSpecification = job_other_options
 
     # separate stdout and stderr
     job_template.joinFiles = False
 
     return job_template
 
-# _________________________________________________________________________________________
 
-#   write_job_script_to_temp_file
-
-# _________________________________________________________________________________________
-
-
-def write_job_script_to_temp_file(cmd_str, job_script_directory, job_name, job_other_options, job_environment, working_directory):
+def write_job_script_to_temp_file(cmd_str, job_script_directory, job_name, job_other_options,
+                                  job_environment, working_directory):
     '''
         returns (job_script_path, stdout_path, stderr_path)
 
     '''
-    import sys
     time_stmp_str = "_".join(
         map(str, datetime.datetime.now().timetuple()[0:6]))
     if job_name is None:
@@ -239,22 +226,23 @@ def write_job_script_to_temp_file(cmd_str, job_script_directory, job_name, job_o
     return (job_script_path, stdout_path, stderr_path)
 
 
-# _________________________________________________________________________________________
-
-#   submit_drmaa_job
-
-# _________________________________________________________________________________________
 def submit_drmaa_job(cmd_str, drmaa_session, job_template, logger):
 
-    import drmaa
-
     jobid = drmaa_session.runJob(job_template)
-    if logger:
-        logger.debug("job has been submitted with jobid %s" % str(jobid))
+    gevent.sleep(GEVENT_TIMEOUT_STARTUP)
 
+    if logger:
+        logger.debug("job has been submitted with jobid {}".format(jobid))
+
+    job_info = None
     try:
-        job_info = drmaa_session.wait(
-            jobid, drmaa.Session.TIMEOUT_WAIT_FOREVER)
+        while True:
+            status = drmaa_session.jobStatus(jobid)
+            if status == drmaa.JobState.DONE:
+                break
+            elif status == drmaa.JobState.FAILED:
+                raise OSError("job {} failed".format(jobid))
+            gevent.sleep(GEVENT_TIMEOUT_WAIT)
     except Exception:
         exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
         msg = str(exceptionValue)
@@ -264,51 +252,39 @@ def submit_drmaa_job(cmd_str, drmaa_session, job_template, logger):
             raise
         if logger:
             logger.debug(msg)
-        job_info = None
 
     return jobid, job_info
-# _________________________________________________________________________________________
-
-#   run_job_using_drmaa
-
-# _________________________________________________________________________________________
 
 
-def run_job_using_drmaa(cmd_str, job_name=None, job_other_options="", job_script_directory=None, job_environment=None, working_directory=None, retain_job_scripts=False, logger=None, drmaa_session=None, verbose=0, resubmit=0):
+def run_job_using_drmaa(cmd_str, job_name=None, job_other_options=None,
+                        job_script_directory=None, job_environment=None,
+                        working_directory=None, retain_job_scripts=False, logger=None,
+                        drmaa_session=None, verbose=0, resubmit=0):
     """
     Runs specified command remotely using drmaa,
     either with the specified session, or the module shared drmaa session
     """
-    import drmaa
-
-    #
-    #   used specified session else module session
-    #
+    # used specified session else module session
     if drmaa_session is None:
         raise error_drmaa_job("Please specify a drmaa_session in run_job()")
 
-    #
-    #   make job template
-    #
+    # make job template
     job_template = setup_drmaa_job(
         drmaa_session, job_name, job_environment, working_directory, job_other_options)
-
-    #
-    #   make job script
-    #
+    
+    # make job script
     if not job_script_directory:
         job_script_directory = os.getcwd()
     job_script_path, stdout_path, stderr_path = write_job_script_to_temp_file(
         cmd_str, job_script_directory, job_name, job_other_options, job_environment, working_directory)
     job_template.remoteCommand = job_script_path
+
     # drmaa paths specified as [hostname]:file_path.
     # See http://www.ogf.org/Public_Comment_Docs/Documents/2007-12/ggf-drmaa-idl-binding-v1%2000%20RC7.pdf
     job_template.outputPath = ":" + stdout_path
     job_template.errorPath = ":" + stderr_path
 
-    #
-    #   Run job and wait
-    #
+    # Run job and wait
     if resubmit:
         exitStatus = 1
         jobCount = 0
@@ -362,9 +338,7 @@ def run_job_using_drmaa(cmd_str, job_name=None, job_other_options="", job_script
             result += "The stdout was: \n%s\n\n" % ("".join(stdout))
         return result
 
-    #
     #   Throw if failed
-    #
     if job_info:
         job_info_str += "Resources used: %s " % (job_info.resourceUsage)
         if job_info.wasAborted:
@@ -377,9 +351,7 @@ def run_job_using_drmaa(cmd_str, job_name=None, job_other_options="", job_script
             if job_info.exitStatus:
                 raise error_drmaa_job("The drmaa command was terminated by signal %i:\n%s"
                                       % (job_info.exitStatus, job_info_str + stderr_stdout_to_str(stderr, stdout)))
-            #
             #   Decorate normal exit with some resource usage information
-            #
             elif verbose:
                 def nice_mem_str(num):
                     """
@@ -415,14 +387,10 @@ def run_job_using_drmaa(cmd_str, job_name=None, job_other_options="", job_script
                     logger.info("Drmaa command used %s in running %s" %
                                 (job_info.resourceUsage, cmd_str))
 
-    #
     #   clean up job template
-    #
     drmaa_session.deleteJobTemplate(job_template)
 
-    #
     #   Cleanup job script unless retain_job_scripts is set
-    #
     if retain_job_scripts:
         # job scripts have the jobid as an extension
         os.rename(job_script_path, job_script_path + ".%s" % jobid)
@@ -446,11 +414,6 @@ def enqueue_output(out, queue, echo):
     out.close()
 
 
-# _________________________________________________________________________________________
-
-#   run_job_locally
-
-# _________________________________________________________________________________________
 def run_job_locally(cmd_str, logger=None, job_environment=None, working_directory=None, local_echo=False):
     """
     Runs specified command locally instead of drmaa
@@ -510,11 +473,6 @@ def run_job_locally(cmd_str, logger=None, job_environment=None, working_director
     return stdout, stderr
 
 
-# _________________________________________________________________________________________
-
-#   touch_output_files
-
-# _________________________________________________________________________________________
 def touch_output_files(cmd_str, output_files, logger=None):
     """
     Touches output files instead of actually running the command string
@@ -563,11 +521,6 @@ def touch_output_files(cmd_str, output_files, logger=None):
             os.utime(f, None)
 
 
-# _________________________________________________________________________________________
-
-#   run_job
-
-# _________________________________________________________________________________________
 def run_job(cmd_str, job_name=None, job_other_options=None, job_script_directory=None,
             job_environment=None, working_directory=None, logger=None,
             drmaa_session=None, retain_job_scripts=False,
@@ -584,4 +537,6 @@ def run_job(cmd_str, job_name=None, job_other_options=None, job_script_directory
     if run_locally:
         return run_job_locally(cmd_str, logger, job_environment, working_directory, local_echo)
 
-    return run_job_using_drmaa(cmd_str, job_name, job_other_options, job_script_directory, job_environment, working_directory, retain_job_scripts, logger, drmaa_session, verbose, resubmit)
+    return run_job_using_drmaa(cmd_str, job_name, job_other_options,
+                               job_script_directory, job_environment, working_directory,
+                               retain_job_scripts, logger, drmaa_session, verbose, resubmit)

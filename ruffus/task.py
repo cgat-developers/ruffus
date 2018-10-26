@@ -5627,8 +5627,11 @@ def pipeline_run(target_tasks=[],
     if multithread is None:
         multithread = 0
     parallelism = max(multiprocess, multithread)
+
     if parallelism > 1:
         if pool_manager == "multiprocessing":
+            syncmanager = multiprocessing.Manager()
+            death_event = syncmanager.Event()
             if multithread:
                 pool_t = ThreadPool
                 queue_t = queue.Queue
@@ -5642,13 +5645,15 @@ def pipeline_run(target_tasks=[],
                 #       IMapIterator.next(timeout=None) but next() for normal
                 #       iterators do not take any extra parameters.
                 itr_kwargs = dict(timeout=99999999)
-            syncmanager = multiprocessing.Manager()
         elif pool_manager == "gevent":
+            import gevent.event
+            import gevent.coros
             import gevent.queue
             import gevent.pool
+            syncmanager = gevent.coros
+            death_event = gevent.event.Event()
             pool_t = gevent.pool.Pool
             queue_t = gevent.queue.Queue
-            syncmanager = 
         else:
             raise ValueError("unknown pool manager '{}'".format(pool_manager))
         pool = pool_t(parallelism)
@@ -5795,7 +5800,6 @@ def pipeline_run(target_tasks=[],
     #
     # prime queue with initial set of job parameters
     #
-    death_event = syncmanager.Event()
     parameter_q = queue_t()
     task_with_completed_job_q = queue_t()
     parameter_generator = make_job_parameter_generator(incomplete_tasks, task_parents,
