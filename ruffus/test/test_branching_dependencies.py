@@ -64,7 +64,7 @@ import json
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-def test_job_io(infiles, outfiles, extra_params):
+def check_job_io(infiles, outfiles, extra_params):
     """
     cat input files content to output files
         after writing out job parameters
@@ -134,7 +134,7 @@ def task1(outfile, *extra_params):
     """
     with open(tempdir + "jobs.start",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([None, outfile]))
-    test_job_io(None, outfile, extra_params)
+    check_job_io(None, outfile, extra_params)
     with open(tempdir + "jobs.finish",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([None, outfile]))
 
@@ -150,7 +150,7 @@ def task2(infiles, outfiles, *extra_params):
     """
     with open(tempdir + "jobs.start",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
-    test_job_io(infiles, outfiles, extra_params)
+    check_job_io(infiles, outfiles, extra_params)
     with open(tempdir + "jobs.finish",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
@@ -167,7 +167,7 @@ def task3(infiles, outfiles, *extra_params):
     """
     with open(tempdir + "jobs.start",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
-    test_job_io(infiles, outfiles, extra_params)
+    check_job_io(infiles, outfiles, extra_params)
     with open(tempdir + "jobs.finish",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
@@ -187,7 +187,7 @@ def task4(infiles, outfiles, *extra_params):
     with open(tempdir + "jobs.start",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
     time.sleep(0.1)
-    test_job_io(infiles, outfiles, extra_params)
+    check_job_io(infiles, outfiles, extra_params)
     with open(tempdir + "jobs.finish",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
@@ -204,7 +204,7 @@ def task5(infiles, outfiles, *extra_params):
     with open(tempdir + "jobs.start",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
     time.sleep(1)
-    test_job_io(infiles, outfiles, extra_params)
+    check_job_io(infiles, outfiles, extra_params)
     with open(tempdir + "jobs.finish",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
@@ -221,7 +221,7 @@ def task6(infiles, outfiles, *extra_params):
     """
     with open(tempdir + "jobs.start",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
-    test_job_io(infiles, outfiles, extra_params)
+    check_job_io(infiles, outfiles, extra_params)
     with open(tempdir + "jobs.finish",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
@@ -235,7 +235,7 @@ def task6(infiles, outfiles, *extra_params):
 test_pipeline = Pipeline("test")
 
 test_pipeline.originate(task_func = task1,
-                   output    = [tempdir + d for d in ('a.1', 'b.1', 'c.1')])\
+                        output = [tempdir + d for d in ('a.1', 'b.1', 'c.1')])\
     .follows(mkdir(tempdir))\
     .posttask(lambda: do_write(test_file, "Task 1 Done\n"))
 
@@ -432,7 +432,6 @@ class Test_ruffus(unittest.TestCase):
         check_job_order_correct(tempdir + "jobs.start")
         check_job_order_correct(tempdir + "jobs.finish")
 
+
 if __name__ == '__main__':
     unittest.main()
-
-

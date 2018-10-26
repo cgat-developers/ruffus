@@ -78,7 +78,7 @@ def generate_initial_files3(out_name):
 
 #___________________________________________________________________________
 #
-#   test_product_task
+#   check_product_task
 #___________________________________________________________________________
 @follows(generate_initial_files1)
 @product(
@@ -92,7 +92,7 @@ def generate_initial_files3(out_name):
         extras = [  "{basename[0][0][0]}{basename[1][0][0]}{basename[2][0][0]}",       # extra: prefices only (abcd etc)
                     "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
                     "{subdir[0][0][0]}"])
-def test_product_task( infiles, outfile,
+def check_product_task( infiles, outfile,
             prefices,
             subpath,
             subdir):
@@ -102,10 +102,10 @@ def test_product_task( infiles, outfile,
 
 #___________________________________________________________________________
 #
-#   test_product_merged_task
+#   check_product_merged_task
 #___________________________________________________________________________
-@merge(test_product_task, tempdir +  "/merged.results")
-def test_product_merged_task( infiles, outfile):
+@merge(check_product_task, tempdir +  "/merged.results")
+def check_product_merged_task( infiles, outfile):
     with open(outfile, "w") as p:
         for infile in sorted(infiles):
             with open(infile) as ii:
@@ -113,13 +113,13 @@ def test_product_merged_task( infiles, outfile):
 
 #___________________________________________________________________________
 #
-#   test_product_misspelt_capture_error_task
+#   check_product_misspelt_capture_error_task
 #___________________________________________________________________________
 @product(
         generate_initial_files1,
         formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
         "{path[0][0]}/{FILEPART[0][0]}.tmp2")
-def test_product_misspelt_capture_error_task( infiles, outfile):
+def check_product_misspelt_capture_error_task( infiles, outfile):
     """
     FILE_PART mispelt as FILE_PART
     """
@@ -128,14 +128,14 @@ def test_product_misspelt_capture_error_task( infiles, outfile):
 
 #___________________________________________________________________________
 #
-#   test_product_out_of_range_formatter_ref_error_task
+#   check_product_out_of_range_formatter_ref_error_task
 #___________________________________________________________________________
 @product(
         generate_initial_files1,
         formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
         "{path[2][0]}/{basename[0][0]}.tmp2",
         "{FILE_PART[0][0]}")
-def test_product_out_of_range_formatter_ref_error_task( infiles, outfile, ignored_filter):
+def check_product_out_of_range_formatter_ref_error_task( infiles, outfile, ignored_filter):
     """
     {path[2][0]} when len(path) == 1
     """
@@ -143,14 +143,14 @@ def test_product_out_of_range_formatter_ref_error_task( infiles, outfile, ignore
 
 #___________________________________________________________________________
 #
-#   test_product_formatter_ref_index_error_task
+#   check_product_formatter_ref_index_error_task
 #___________________________________________________________________________
 @product(
         generate_initial_files1,
         formatter(".*/(?P<FILE_PART>.+).tmp1$" ),
         "{path[0][0][1000]}/{basename[0][0]}.tmp2",
         "{FILE_PART[0][0]}")
-def test_product_formatter_ref_index_error_task( infiles, outfile, ignored_filter):
+def check_product_formatter_ref_index_error_task( infiles, outfile, ignored_filter):
     """
     {path[0][0][1000} when len of the path string len(path[0][0]) < 1000
     """
@@ -158,7 +158,7 @@ def test_product_formatter_ref_index_error_task( infiles, outfile, ignored_filte
 
 #___________________________________________________________________________
 #
-#   test_combinations2_task
+#   check_combinations2_task
 #___________________________________________________________________________
 @combinations(
         generate_initial_files1,
@@ -168,7 +168,7 @@ def test_product_formatter_ref_index_error_task( infiles, outfile, ignored_filte
         "{basename[0][0][0]}{basename[1][0][0]}",       # extra: prefices
         "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
         "{subdir[0][0][0]}")
-def test_combinations2_task( infiles, outfile,
+def check_combinations2_task( infiles, outfile,
             prefices,
             subpath,
             subdir):
@@ -179,8 +179,8 @@ def test_combinations2_task( infiles, outfile,
         outf.write(prefices + ",")
 
 
-@merge(test_combinations2_task, tempdir +  "/merged.results")
-def test_combinations2_merged_task( infiles, outfile):
+@merge(check_combinations2_task, tempdir +  "/merged.results")
+def check_combinations2_merged_task( infiles, outfile):
     with open(outfile, "w") as p:
         for infile in sorted(infiles):
             with open(infile) as ii:
@@ -188,7 +188,7 @@ def test_combinations2_merged_task( infiles, outfile):
 
 #___________________________________________________________________________
 #
-#   test_combinations3_task
+#   check_combinations3_task
 #___________________________________________________________________________
 @combinations(
         generate_initial_files1,
@@ -198,7 +198,7 @@ def test_combinations2_merged_task( infiles, outfile):
         "{basename[0][0][0]}{basename[1][0][0]}{basename[2][0][0]}",       # extra: prefices
         "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
         "{subdir[0][0][0]}")
-def test_combinations3_task( infiles, outfile,
+def check_combinations3_task( infiles, outfile,
             prefices,
             subpath,
             subdir):
@@ -208,8 +208,8 @@ def test_combinations3_task( infiles, outfile,
     with open(outfile, "w") as outf:
         outf.write(prefices + ",")
 
-@merge(test_combinations3_task, tempdir +  "/merged.results")
-def test_combinations3_merged_task( infiles, outfile):
+@merge(check_combinations3_task, tempdir +  "/merged.results")
+def check_combinations3_merged_task( infiles, outfile):
     with open(outfile, "w") as p:
         for infile in sorted(infiles):
             with open(infile) as ii:
@@ -218,7 +218,7 @@ def test_combinations3_merged_task( infiles, outfile):
 
 #___________________________________________________________________________
 #
-#   test_permutations2_task
+#   check_permutations2_task
 #___________________________________________________________________________
 @permutations(
         generate_initial_files1,
@@ -228,7 +228,7 @@ def test_combinations3_merged_task( infiles, outfile):
         "{basename[0][0][0]}{basename[1][0][0]}",       # extra: prefices
         "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
         "{subdir[0][0][0]}")
-def test_permutations2_task( infiles, outfile,
+def check_permutations2_task( infiles, outfile,
             prefices,
             subpath,
             subdir):
@@ -238,8 +238,8 @@ def test_permutations2_task( infiles, outfile,
     with open(outfile, "w") as outf:
         outf.write(prefices + ",")
 
-@merge(test_permutations2_task, tempdir +  "/merged.results")
-def test_permutations2_merged_task( infiles, outfile):
+@merge(check_permutations2_task, tempdir +  "/merged.results")
+def check_permutations2_merged_task( infiles, outfile):
     with open(outfile, "w") as p:
         for infile in sorted(infiles):
             with open(infile) as ii:
@@ -248,7 +248,7 @@ def test_permutations2_merged_task( infiles, outfile):
 
 #___________________________________________________________________________
 #
-#   test_permutations3_task
+#   check_permutations3_task
 #___________________________________________________________________________
 @permutations(
         generate_initial_files1,
@@ -258,7 +258,7 @@ def test_permutations2_merged_task( infiles, outfile):
         "{basename[0][0][0]}{basename[1][0][0]}{basename[2][0][0]}",       # extra: prefices
         "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
         "{subdir[0][0][0]}")
-def test_permutations3_task( infiles, outfile,
+def check_permutations3_task( infiles, outfile,
             prefices,
             subpath,
             subdir):
@@ -268,8 +268,8 @@ def test_permutations3_task( infiles, outfile,
     with open(outfile, "w") as outf:
         outf.write(prefices + ",")
 
-@merge(test_permutations3_task, tempdir +  "/merged.results")
-def test_permutations3_merged_task( infiles, outfile):
+@merge(check_permutations3_task, tempdir +  "/merged.results")
+def check_permutations3_merged_task( infiles, outfile):
     with open(outfile, "w") as p:
         for infile in sorted(infiles):
             with open(infile) as ii:
@@ -279,7 +279,7 @@ def test_permutations3_merged_task( infiles, outfile):
 
 #___________________________________________________________________________
 #
-#   test_combinations_with_replacement2_task
+#   check_combinations_with_replacement2_task
 #___________________________________________________________________________
 @combinations_with_replacement(
         input = generate_initial_files1,
@@ -289,7 +289,7 @@ def test_permutations3_merged_task( infiles, outfile):
         extras = ["{basename[0][0][0]}{basename[1][0][0]}",       # extra: prefices
         "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
         "{subdir[0][0][0]}"])
-def test_combinations_with_replacement2_task( infiles, outfile,
+def check_combinations_with_replacement2_task( infiles, outfile,
             prefices,
             subpath,
             subdir):
@@ -299,8 +299,8 @@ def test_combinations_with_replacement2_task( infiles, outfile,
     with open(outfile, "w") as outf:
         outf.write(prefices + ",")
 
-@merge(test_combinations_with_replacement2_task, tempdir +  "/merged.results")
-def test_combinations_with_replacement2_merged_task( infiles, outfile):
+@merge(check_combinations_with_replacement2_task, tempdir +  "/merged.results")
+def check_combinations_with_replacement2_merged_task( infiles, outfile):
     with open(outfile, "w") as p:
         for infile in sorted(infiles):
             with open(infile) as ii:
@@ -309,7 +309,7 @@ def test_combinations_with_replacement2_merged_task( infiles, outfile):
 
 #___________________________________________________________________________
 #
-#   test_combinations_with_replacement3_task
+#   check_combinations_with_replacement3_task
 #___________________________________________________________________________
 @combinations_with_replacement(
         generate_initial_files1,
@@ -319,7 +319,7 @@ def test_combinations_with_replacement2_merged_task( infiles, outfile):
         "{basename[0][0][0]}{basename[1][0][0]}{basename[2][0][0]}",       # extra: prefices
         "{subpath[0][0][0]}",      # extra: path for 2nd input, 1st file
         "{subdir[0][0][0]}")
-def test_combinations_with_replacement3_task( infiles, outfile,
+def check_combinations_with_replacement3_task( infiles, outfile,
             prefices,
             subpath,
             subdir):
@@ -329,8 +329,8 @@ def test_combinations_with_replacement3_task( infiles, outfile,
     with open(outfile, "w") as outf:
         outf.write(prefices + ",")
 
-@merge(test_combinations_with_replacement3_task, tempdir +  "/merged.results")
-def test_combinations_with_replacement3_merged_task( infiles, outfile):
+@merge(check_combinations_with_replacement3_task, tempdir +  "/merged.results")
+def check_combinations_with_replacement3_merged_task( infiles, outfile):
     with open(outfile, "w") as p:
         for infile in sorted(infiles):
             with open(infile) as ii:
@@ -357,7 +357,7 @@ class TestCombinatorics(unittest.TestCase):
         """Input file exists, output doesn't exist"""
         cleanup_tmpdir()
         s = StringIO()
-        pipeline_printout(s, [test_product_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
+        pipeline_printout(s, [check_product_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
         self.assertTrue(re.search('Job needs update:.*Missing files.*'
                       '\[.*{tempdir}/a_name.tmp1, '
                       '.*{tempdir}/e_name.tmp1, '
@@ -368,7 +368,7 @@ class TestCombinatorics(unittest.TestCase):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_product_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
+        pipeline_run([check_product_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
         with open(tempdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                          "aeg,aeh,afg,afh,beg,beh,bfg,bfh,ceg,ceh,cfg,cfh,deg,deh,dfg,dfh,")
@@ -386,7 +386,7 @@ class TestCombinatorics(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_product_misspelt_capture_error_task], verbose=3, wrap_width = 10000, pipeline= "main")
+        pipeline_printout(s, [check_product_misspelt_capture_error_task], verbose=3, wrap_width = 10000, pipeline= "main")
         self.assertIn("Warning: Input substitution failed:", s.getvalue())
         self.assertIn("Unmatched field {FILEPART}", s.getvalue())
 
@@ -399,7 +399,7 @@ class TestCombinatorics(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_product_out_of_range_formatter_ref_error_task], verbose=3, wrap_width = 10000, pipeline= "main")
+        pipeline_printout(s, [check_product_out_of_range_formatter_ref_error_task], verbose=3, wrap_width = 10000, pipeline= "main")
         self.assertIn("Warning: Input substitution failed:", s.getvalue())
         self.assertIn("Unmatched field {2}", s.getvalue())
 
@@ -412,7 +412,7 @@ class TestCombinatorics(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_product_formatter_ref_index_error_task], verbose=3, wrap_width = 10000, pipeline= "main")
+        pipeline_printout(s, [check_product_formatter_ref_index_error_task], verbose=3, wrap_width = 10000, pipeline= "main")
         self.assertIn("Warning: Input substitution failed:", s.getvalue())
         self.assertIn("Unmatched field {string index out of range}", s.getvalue())
 
@@ -428,7 +428,7 @@ class TestCombinatorics(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_combinations2_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
+        pipeline_printout(s, [check_combinations2_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
         self.assertTrue(re.search('Job needs update:.*Missing files.*'
                       '\[.*{tempdir}/a_name.tmp1, '
                         '.*{tempdir}/b_name.tmp1, '
@@ -439,7 +439,7 @@ class TestCombinatorics(unittest.TestCase):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_combinations2_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
+        pipeline_run([check_combinations2_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
         with open(tempdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                               'ab,ac,ad,bc,bd,cd,')
@@ -453,7 +453,7 @@ class TestCombinatorics(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_combinations3_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
+        pipeline_printout(s, [check_combinations3_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
         self.assertTrue(re.search(
                        '\[.*{tempdir}/a_name.tmp1, '
                        '.*{tempdir}/b_name.tmp1, '
@@ -464,7 +464,7 @@ class TestCombinatorics(unittest.TestCase):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_combinations3_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
+        pipeline_run([check_combinations3_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
         with open(tempdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                          "abc,abd,acd,bcd,")
@@ -479,7 +479,7 @@ class TestCombinatorics(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_permutations2_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
+        pipeline_printout(s, [check_permutations2_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
         self.assertTrue(re.search('\[.*{tempdir}/a_name.tmp1, '
                       '.*{tempdir}/b_name.tmp1, '
                       '.*{tempdir}/a_name.b_name.tmp2\]'.format(tempdir=tempdir), s.getvalue()))
@@ -488,7 +488,7 @@ class TestCombinatorics(unittest.TestCase):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_permutations2_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
+        pipeline_run([check_permutations2_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
         with open(tempdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                          "ab,ac,ad,ba,bc,bd,ca,cb,cd,da,db,dc,")
@@ -502,7 +502,7 @@ class TestCombinatorics(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_permutations3_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
+        pipeline_printout(s, [check_permutations3_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
         self.assertTrue(re.search('\[.*{tempdir}/a_name.tmp1, '
                        '.*{tempdir}/b_name.tmp1, '
                        '.*{tempdir}/c_name.tmp1, '
@@ -512,7 +512,7 @@ class TestCombinatorics(unittest.TestCase):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_permutations3_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
+        pipeline_run([check_permutations3_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
         with open(tempdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                          'abc,abd,acb,acd,adb,adc,bac,bad,bca,bcd,bda,bdc,cab,cad,cba,cbd,cda,cdb,dab,dac,dba,dbc,dca,dcb,')
@@ -527,7 +527,7 @@ class TestCombinatorics(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_combinations_with_replacement2_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
+        pipeline_printout(s, [check_combinations_with_replacement2_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
         self.assertTrue(re.search('\[.*{tempdir}/a_name.tmp1, '
                       '.*{tempdir}/b_name.tmp1, '
                       '.*{tempdir}/a_name.b_name.tmp2\]'.format(tempdir=tempdir), s.getvalue()))
@@ -536,7 +536,7 @@ class TestCombinatorics(unittest.TestCase):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_combinations_with_replacement2_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
+        pipeline_run([check_combinations_with_replacement2_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
         with open(tempdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                          "aa,ab,ac,ad,bb,bc,bd,cc,cd,dd,")
@@ -550,7 +550,7 @@ class TestCombinatorics(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_combinations_with_replacement3_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
+        pipeline_printout(s, [check_combinations_with_replacement3_merged_task], verbose=5, wrap_width = 10000, pipeline= "main")
         self.assertTrue(re.search('\[.*{tempdir}/a_name.tmp1, '
                        '.*{tempdir}/b_name.tmp1, '
                        '.*{tempdir}/c_name.tmp1, '
@@ -560,7 +560,7 @@ class TestCombinatorics(unittest.TestCase):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_combinations_with_replacement3_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
+        pipeline_run([check_combinations_with_replacement3_merged_task], verbose=0, multiprocess = 100, one_second_per_job = one_second_per_job, pipeline= "main")
         with open(tempdir +  "/merged.results") as oo:
             self.assertEqual(oo.read(),
                          'aaa,aab,aac,aad,abb,abc,abd,acc,acd,add,bbb,bbc,bbd,bcc,bcd,bdd,ccc,ccd,cdd,ddd,')
@@ -580,5 +580,5 @@ class TestCombinatorics(unittest.TestCase):
 #       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 #
 if __name__ == '__main__':
-    #pipeline_printout(sys.stdout, [test_product_task], verbose = 5, pipeline= "main")
+    #pipeline_printout(sys.stdout, [check_product_task], verbose = 5, pipeline= "main")
     unittest.main()

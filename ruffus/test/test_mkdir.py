@@ -53,7 +53,7 @@ def generate_initial_files1(in_name, out_names):
 
 #___________________________________________________________________________
 #
-#   test_product_task
+#   check_product_task
 #___________________________________________________________________________
 @mkdir(tempdir + "/test1")
 @mkdir(tempdir + "/test2")
@@ -62,14 +62,14 @@ def generate_initial_files1(in_name, out_names):
 @transform( generate_initial_files1,
             formatter(),
             "{path[0]}/{basename[0]}.dir/{basename[0]}.tmp2")
-def test_transform( infiles, outfile):
+def check_transform( infiles, outfile):
     with open(outfile, "w") as p: pass
 
 
 @mkdir(tempdir + "/test3")
 @mkdir(generate_initial_files1, formatter(),
             "{path[0]}/{basename[0]}.dir2")
-def test_transform2():
+def check_transform2():
     print("    Loose cannon!", file=sys.stderr)
 
 
@@ -94,7 +94,7 @@ class Testmkdir(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        pipeline_printout(s, [test_transform, test_transform2], verbose=5, wrap_width = 10000, pipeline= "main")
+        pipeline_printout(s, [check_transform, check_transform2], verbose=5, wrap_width = 10000, pipeline= "main")
         #self.assertIn('Job needs update: Missing files '
         #              '[tmp_test_mkdir/a_name.tmp1, '
         #              'tmp_test_mkdir/e_name.tmp1, '
@@ -105,7 +105,7 @@ class Testmkdir(unittest.TestCase):
         """Run mkdir"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([test_transform, test_transform2], verbose=0, multiprocess = 2, pipeline= "main")
+        pipeline_run([check_transform, check_transform2], verbose=0, multiprocess = 2, pipeline= "main")
 
 
     def test_newstyle_mkdir_run(self):
@@ -115,7 +115,7 @@ class Testmkdir(unittest.TestCase):
                             input = 1,
                             output = [tempdir +  "/" + prefix + "_name.tmp1" for prefix in "abcd"])
 
-        test_pipeline.transform( task_func = test_transform,
+        test_pipeline.transform( task_func = check_transform,
                                  input     = generate_initial_files1,
                                  filter    = formatter(),
                                  output    = "{path[0]}/{basename[0]}.dir/{basename[0]}.tmp2")\
@@ -124,11 +124,11 @@ class Testmkdir(unittest.TestCase):
             .mkdir(generate_initial_files1, formatter(),
                         ["{path[0]}/{basename[0]}.dir", 3, "{path[0]}/{basename[0]}.dir2"])
 
-        test_pipeline.mkdir(test_transform2, tempdir + "/test3")\
+        test_pipeline.mkdir(check_transform2, tempdir + "/test3")\
             .mkdir(generate_initial_files1, formatter(),
                     "{path[0]}/{basename[0]}.dir2")
         cleanup_tmpdir()
-        pipeline_run([test_transform, test_transform2], verbose=0, multiprocess = 2, pipeline= "main")
+        pipeline_run([check_transform, check_transform2], verbose=0, multiprocess = 2, pipeline= "main")
 
 
 

@@ -54,7 +54,7 @@ import json
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 import time
-def test_job_io(infiles, outfiles, extra_params):
+def check_job_io(infiles, outfiles, extra_params):
     """
     cat input files content to output files
         after writing out job parameters
@@ -112,7 +112,7 @@ def task1(infiles, outfiles, *extra_params):
     """
     with open(tempdir + "jobs.start",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
-    test_job_io(infiles, outfiles, extra_params)
+    check_job_io(infiles, outfiles, extra_params)
     with open(tempdir + "jobs.finish",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
@@ -129,7 +129,7 @@ def task2(infiles, outfiles, *extra_params):
     """
     with open(tempdir + "jobs.start",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
-    test_job_io(infiles, outfiles, extra_params)
+    check_job_io(infiles, outfiles, extra_params)
     with open(tempdir + "jobs.finish",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
@@ -146,7 +146,7 @@ def task3(infiles, outfiles, *extra_params):
     """
     with open(tempdir + "jobs.start",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
-    test_job_io(infiles, outfiles, extra_params)
+    check_job_io(infiles, outfiles, extra_params)
     with open(tempdir + "jobs.finish",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
@@ -164,7 +164,7 @@ def task4(infiles, outfiles, *extra_params):
     """
     with open(tempdir + "jobs.start",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
-    test_job_io(infiles, outfiles, extra_params)
+    check_job_io(infiles, outfiles, extra_params)
     with open(tempdir + "jobs.finish",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
@@ -180,7 +180,7 @@ def task5(infiles, outfiles, *extra_params):
     """
     with open(tempdir + "jobs.start",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
-    test_job_io(infiles, outfiles, extra_params)
+    check_job_io(infiles, outfiles, extra_params)
     with open(tempdir + "jobs.finish",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 
@@ -197,7 +197,7 @@ def task6(infiles, outfiles, *extra_params):
     """
     with open(tempdir + "jobs.start",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
-    test_job_io(infiles, outfiles, extra_params)
+    check_job_io(infiles, outfiles, extra_params)
     with open(tempdir + "jobs.finish",  "a") as oo:
         oo.write('job = %s\n' % json.dumps([infiles, outfiles]))
 

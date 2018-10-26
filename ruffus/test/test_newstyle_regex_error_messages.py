@@ -73,9 +73,9 @@ def generate_initial_files1(out_name):
 
 #___________________________________________________________________________
 #
-#   test_regex_task
+#   check_regex_task
 #___________________________________________________________________________
-def test_regex_task(infiles, outfile,
+def check_regex_task(infiles, outfile,
                     prefix1,
                     prefix2,
                     extension):
@@ -88,9 +88,9 @@ def test_regex_task(infiles, outfile,
 
 #___________________________________________________________________________
 #
-#   test_regex_unmatched_task
+#   check_regex_unmatched_task
 #___________________________________________________________________________
-def test_regex_unmatched_task(infiles, outfile,
+def check_regex_unmatched_task(infiles, outfile,
                     prefix1,
                     prefix2,
                     extension):
@@ -99,35 +99,35 @@ def test_regex_unmatched_task(infiles, outfile,
 
 #___________________________________________________________________________
 #
-#   test_suffix_task
+#   check_suffix_task
 #___________________________________________________________________________
-def test_suffix_task(infile, outfile,
+def check_suffix_task(infile, outfile,
                     basename):
     with open (outfile, "w") as f: pass
 
 
 #___________________________________________________________________________
 #
-#   test_suffix_unmatched_task
+#   check_suffix_unmatched_task
 #___________________________________________________________________________
-def test_suffix_unmatched_task(infiles, outfile, unknown):
+def check_suffix_unmatched_task(infiles, outfile, unknown):
     raise Exception("Should blow up first")
 
 
 #___________________________________________________________________________
 #
-#   test_suffix_unmatched_task
+#   check_suffix_unmatched_task
 #___________________________________________________________________________
-def test_suffix_unmatched_task2(infiles, outfile):
+def check_suffix_unmatched_task2(infiles, outfile):
     raise Exception("Should blow up first")
 
 
 
 #___________________________________________________________________________
 #
-#   test_product_misspelt_capture_error_task
+#   check_product_misspelt_capture_error_task
 #___________________________________________________________________________
-def test_regex_misspelt_capture_error_task(infiles, outfile,
+def check_regex_misspelt_capture_error_task(infiles, outfile,
                     prefix1,
                     prefix2,
                     extension):
@@ -136,9 +136,9 @@ def test_regex_misspelt_capture_error_task(infiles, outfile,
 
 #___________________________________________________________________________
 #
-#   test_regex_misspelt_capture2_error_task
+#   check_regex_misspelt_capture2_error_task
 #___________________________________________________________________________
-def test_regex_misspelt_capture2_error_task(infiles, outfile,
+def check_regex_misspelt_capture2_error_task(infiles, outfile,
                     prefix1,
                     prefix2,
                     extension):
@@ -147,9 +147,9 @@ def test_regex_misspelt_capture2_error_task(infiles, outfile,
 
 #___________________________________________________________________________
 #
-#   test_regex_out_of_range_regex_reference_error_task
+#   check_regex_out_of_range_regex_reference_error_task
 #___________________________________________________________________________
-def test_regex_out_of_range_regex_reference_error_task(infiles, outfile,
+def check_regex_out_of_range_regex_reference_error_task(infiles, outfile,
                     prefix1,
                     prefix2,
                     extension):
@@ -161,14 +161,14 @@ test_pipeline = Pipeline("test")
 test_pipeline.originate(task_func = generate_initial_files1,
                         output    = [tempdir +  "/" + prefix + "_name.tmp1" for prefix in "abcdefghi"])
 
-test_pipeline.transform(task_func = test_regex_task,
+test_pipeline.transform(task_func = check_regex_task,
                         input     = generate_initial_files1,
                         filter    = regex("(.*)/(?P<PREFIX>[abcd])(_name)(.tmp1)"),
                         output    = r"\1/\g<PREFIX>\3.tmp2",# output file
                         extras    = [ r"\2",                # extra: prefix = \2
                                       r"\g<PREFIX>",        # extra: prefix = \2
                                       r"\4"])               # extra: extension
-test_pipeline.transform(task_func = test_regex_unmatched_task,
+test_pipeline.transform(task_func = check_regex_unmatched_task,
                         input     = generate_initial_files1,
                         filter    = regex("(.*)/(?P<PREFIX>[abcd])(_name)(.xxx)"),
                         output    = r"\1/\g<PREFIXA>\3.tmp2",# output file
@@ -176,31 +176,31 @@ test_pipeline.transform(task_func = test_regex_unmatched_task,
                                       r"\g<PREFIX>",         # extra: prefix = \2
                                       r"\4"])                # extra: extension
 
-test_pipeline.transform(task_func =     test_suffix_task,
+test_pipeline.transform(task_func =     check_suffix_task,
                         input     =     generate_initial_files1,
                         filter    =     suffix(".tmp1"),
                         output    =     r".tmp2",           # output file
                         extras    =     [r"\1"])            # extra: basename
 
-test_pipeline.transform(task_func =     test_suffix_unmatched_task,
+test_pipeline.transform(task_func =     check_suffix_unmatched_task,
                         input     =     generate_initial_files1,
                         filter    =     suffix(".tmp1"),
                         output    =     r".tmp2",           # output file
                         extras    =     [r"\2"])            # extra: unknown
 
-test_pipeline.transform(task_func = test_suffix_unmatched_task2,
+test_pipeline.transform(task_func = check_suffix_unmatched_task2,
                         input     = generate_initial_files1,
                         filter    = suffix(".tmp2"),
                         output    = r".tmp2")           # output file
 
-test_pipeline.transform(    task_func = test_regex_misspelt_capture_error_task,
+test_pipeline.transform(    task_func = check_regex_misspelt_capture_error_task,
                             input     = generate_initial_files1,
                             filter    = regex("(.*)/(?P<PREFIX>[abcd])(_name)(.tmp)"),
                             output    = r"\1/\g<PREFIXA>\3.tmp2",# output file
                             extras    = [r"\2",                  # extra: prefix = \2
                                          r"\g<PREFIX>",          # extra: prefix = \2
                                          r"\4"])                 # extra: extension
-test_pipeline.transform(task_func = test_regex_misspelt_capture2_error_task,
+test_pipeline.transform(task_func = check_regex_misspelt_capture2_error_task,
                         input     = generate_initial_files1,
                         filter    = regex("(.*)/(?P<PREFIX>[abcd])(_name)(.tmp)"),
                         output    = r"\1/\g<PREFIX>\3.tmp2",# output file
@@ -208,7 +208,7 @@ test_pipeline.transform(task_func = test_regex_misspelt_capture2_error_task,
                                      r"\g<PREFIXA>",        # extra: prefix = \2
                                      r"\4"])                # extra: extension
 
-test_pipeline.transform(task_func = test_regex_out_of_range_regex_reference_error_task,
+test_pipeline.transform(task_func = check_regex_out_of_range_regex_reference_error_task,
                         input     = generate_initial_files1,
                         filter    = regex("(.*)/(?P<PREFIX>[abcd])(_name)(.tmp)"),
                         output    = r"\1/\g<PREFIX>\5.tmp2",# output file
@@ -305,7 +305,7 @@ class Test_regex_error_messages(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        test_pipeline.printout(s, [test_regex_task], verbose=5, wrap_width = 10000)
+        test_pipeline.printout(s, [check_regex_task], verbose=5, wrap_width = 10000)
         self.assertTrue(re.search('Missing files.*\[{tempdir}/a_name.tmp1, {tempdir}/a_name.tmp2'.format(tempdir=tempdir), s.getvalue(), re.DOTALL))
 
 
@@ -313,7 +313,7 @@ class Test_regex_error_messages(unittest.TestCase):
         """Run transform(...,regex()...)"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        test_pipeline.run([test_regex_task], verbose=0, multiprocess = parallelism, one_second_per_job = one_second_per_job)
+        test_pipeline.run([check_regex_task], verbose=0, multiprocess = parallelism, one_second_per_job = one_second_per_job)
 
 
     #___________________________________________________________________________
@@ -323,7 +323,7 @@ class Test_regex_error_messages(unittest.TestCase):
     def test_regex_unmatched_printout(self):
         cleanup_tmpdir()
         s = StringIO()
-        test_pipeline.printout(s, [test_regex_unmatched_task], verbose=5, wrap_width = 10000)
+        test_pipeline.printout(s, [check_regex_unmatched_task], verbose=5, wrap_width = 10000)
         self.assertIn("Warning: Input substitution failed:", s.getvalue())
         self.assertIn("File '{tempdir}/a_name.tmp1' does not match regex".format(tempdir=tempdir), s.getvalue())
 
@@ -331,7 +331,7 @@ class Test_regex_error_messages(unittest.TestCase):
         """Run transform(...,regex()...)"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        test_pipeline.run([test_regex_unmatched_task], verbose=0, multiprocess = parallelism, one_second_per_job = one_second_per_job)
+        test_pipeline.run([check_regex_unmatched_task], verbose=0, multiprocess = parallelism, one_second_per_job = one_second_per_job)
 
 
     #___________________________________________________________________________
@@ -342,14 +342,14 @@ class Test_regex_error_messages(unittest.TestCase):
         cleanup_tmpdir()
 
         s = StringIO()
-        test_pipeline.printout(s, [test_suffix_task], verbose=5, wrap_width = 10000)
+        test_pipeline.printout(s, [check_suffix_task], verbose=5, wrap_width = 10000)
         self.assertTrue(re.search('Missing files.*\[{tempdir}/a_name.tmp1, {tempdir}/a_name.tmp2'.format(tempdir=tempdir), s.getvalue(), re.DOTALL))
 
     def test_suffix_run(self):
         """Run transform(...,suffix()...)"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        test_pipeline.run([test_suffix_task], verbose=0, multiprocess = parallelism, one_second_per_job = one_second_per_job)
+        test_pipeline.run([check_suffix_task], verbose=0, multiprocess = parallelism, one_second_per_job = one_second_per_job)
 
 
     #___________________________________________________________________________
@@ -362,12 +362,12 @@ class Test_regex_error_messages(unittest.TestCase):
         self.assertRaisesRegex(fatal_error_input_file_does_not_match,
                                 "File '.*?' does not match regex\('.*?'\) and pattern '.*?':\n.*invalid group reference",
                                 pipeline_printout,
-                                s, [test_suffix_unmatched_task],
+                                s, [check_suffix_unmatched_task],
                                 verbose = 3)
         self.assertRaisesRegex(RethrownJobError,
                                 "File '.*?' does not match regex\('.*?'\) and pattern '.*?':\n.*invalid group reference",
                                 test_pipeline.run,
-                                [test_suffix_unmatched_task], verbose = 0, multiprocess = parallelism)
+                                [check_suffix_unmatched_task], verbose = 0, multiprocess = parallelism)
 
 
     #___________________________________________________________________________
@@ -377,7 +377,7 @@ class Test_regex_error_messages(unittest.TestCase):
     def test_suffix_unmatched_printout2(self):
         cleanup_tmpdir()
         s = StringIO()
-        test_pipeline.printout(s, [test_suffix_unmatched_task2], verbose=5, wrap_width = 10000)
+        test_pipeline.printout(s, [check_suffix_unmatched_task2], verbose=5, wrap_width = 10000)
         self.assertIn("Warning: Input substitution failed:", s.getvalue())
         self.assertIn("File '{tempdir}/a_name.tmp1' does not match suffix".format(tempdir=tempdir), s.getvalue())
 
@@ -385,7 +385,7 @@ class Test_regex_error_messages(unittest.TestCase):
         """Run transform(...,suffix()...)"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        test_pipeline.run([test_suffix_unmatched_task2], verbose=0, multiprocess = parallelism, one_second_per_job = one_second_per_job)
+        test_pipeline.run([check_suffix_unmatched_task2], verbose=0, multiprocess = parallelism, one_second_per_job = one_second_per_job)
 
 
 
@@ -399,12 +399,12 @@ class Test_regex_error_messages(unittest.TestCase):
         self.assertRaisesRegex(fatal_error_input_file_does_not_match,
                                 "File '.*?' does not match regex\('.*?'\) and pattern '.*?':\n.*unknown group name",
                                 test_pipeline.printout,
-                                s, [test_regex_misspelt_capture_error_task],
+                                s, [check_regex_misspelt_capture_error_task],
                                 verbose = 3)
         self.assertRaisesRegex(RethrownJobError,
                                 "File '.*?' does not match regex\('.*?'\) and pattern '.*?':\n.*unknown group name",
                                 test_pipeline.run,
-                                [test_regex_misspelt_capture_error_task], verbose = 0)
+                                [check_regex_misspelt_capture_error_task], verbose = 0)
 
     #___________________________________________________________________________
     #
@@ -416,12 +416,12 @@ class Test_regex_error_messages(unittest.TestCase):
         self.assertRaisesRegex(fatal_error_input_file_does_not_match,
                                 "File '.*?' does not match regex\('.*?'\) and pattern '.*?':\n.*unknown group name",
                                 test_pipeline.printout,
-                                s, [test_regex_misspelt_capture2_error_task],
+                                s, [check_regex_misspelt_capture2_error_task],
                                 verbose = 3)
         self.assertRaisesRegex(RethrownJobError,
                                 "File '.*?' does not match regex\('.*?'\) and pattern '.*?':\n.*unknown group name",
                                 test_pipeline.run,
-                                [test_regex_misspelt_capture2_error_task], verbose = 0, multiprocess = parallelism)
+                                [check_regex_misspelt_capture2_error_task], verbose = 0, multiprocess = parallelism)
 
 
     #___________________________________________________________________________
@@ -434,12 +434,12 @@ class Test_regex_error_messages(unittest.TestCase):
         self.assertRaisesRegex(fatal_error_input_file_does_not_match,
                                 "File '.*?' does not match regex\('.*?'\) and pattern '.*?':\n.*invalid group reference",
                                 test_pipeline.printout,
-                                s, [test_regex_out_of_range_regex_reference_error_task],
+                                s, [check_regex_out_of_range_regex_reference_error_task],
                                 verbose = 3)
         self.assertRaisesRegex(RethrownJobError,
                                 "File '.*?' does not match regex\('.*?'\) and pattern '.*?':\n.*invalid group reference",
                                 test_pipeline.run,
-                                [test_regex_out_of_range_regex_reference_error_task], verbose = 0, multiprocess = parallelism)
+                                [check_regex_out_of_range_regex_reference_error_task], verbose = 0, multiprocess = parallelism)
 
 
     #___________________________________________________________________________
@@ -457,7 +457,7 @@ class Test_regex_error_messages(unittest.TestCase):
 #       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 #
 if __name__ == '__main__':
-    #pipeline_printout(sys.stdout, [test_product_task], verbose = 3, pipeline= "main")
+    #pipeline_printout(sys.stdout, [check_product_task], verbose = 3, pipeline= "main")
     parallelism = 1
     suite = unittest.TestLoader().loadTestsFromTestCase(Test_regex_error_messages)
     unittest.TextTestRunner(verbosity=1).run(suite)

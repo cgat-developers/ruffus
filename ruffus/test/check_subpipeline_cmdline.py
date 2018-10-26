@@ -144,11 +144,6 @@ def make_pipeline2( pipeline_name = "pipeline2"):
     return test_pipeline2
 
 
-
-
-
-
-
 #   First two pipelines are created as separate instances by the make_pipeline1 function
 pipeline1a = make_pipeline1(pipeline_name = "pipeline1a", starting_file_names = [tempdir + "/" + ss for ss in ("a.1", "b.1")])
 pipeline1b = make_pipeline1(pipeline_name = "pipeline1b", starting_file_names = [tempdir + "/" + ss for ss in ("c.1", "d.1")])
@@ -243,7 +238,6 @@ if  not options.just_print and \
 else:
     cmdline.run (options)
     correct = True
-
 
 
 sys.exit(0 if correct else 1)

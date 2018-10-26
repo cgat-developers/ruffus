@@ -87,7 +87,7 @@ def generate_initial_files4(on):
 
 #___________________________________________________________________________
 #
-#   test_task2
+#   check_task2
 #___________________________________________________________________________
 @collate([generate_initial_files1, generate_initial_files2, generate_initial_files3,
             generate_initial_files4],
@@ -97,17 +97,17 @@ def generate_initial_files4(on):
 #            generate_initial_files4],
 #            formatter( ),
 #            "{path[0]}/{basename[0]}.tmp2")
-def test_task2( infiles, outfile):
+def check_task2( infiles, outfile):
     with open(outfile, "w") as p:
         pass
     #print >>sys.stderr, "8" * 80, "\n", "    task2 :%s %s " % (infiles, outfile)
 
 #___________________________________________________________________________
 #
-#   test_task3
+#   check_task3
 #___________________________________________________________________________
-@transform(test_task2, suffix(".tmp2"), ".tmp3")
-def test_task3( infile, outfile):
+@transform(check_task2, suffix(".tmp2"), ".tmp3")
+def check_task3( infile, outfile):
     global throw_exception
     if throw_exception != None:
         throw_exception = not throw_exception
@@ -122,10 +122,10 @@ def test_task3( infile, outfile):
 
 #___________________________________________________________________________
 #
-#   test_task4
+#   check_task4
 #___________________________________________________________________________
-@transform(test_task3, suffix(".tmp3"), ".tmp4")
-def test_task4( infile, outfile):
+@transform(check_task3, suffix(".tmp3"), ".tmp4")
+def check_task4( infile, outfile):
     with open(outfile, "w") as p: pass
     #print >>sys.stderr, "8" * 80, "\n", "    task4 :%s %s " % (infile, outfile)
 
@@ -154,7 +154,7 @@ class Test_job_history_with_exceptions(unittest.TestCase):
     def test_job_history_with_exceptions(self):
         cleanup_tmpdir()
         s = StringIO()
-        pipeline_printout(s, [test_task4], verbose=VERBOSITY, wrap_width = 10000, pipeline= "main")
+        pipeline_printout(s, [check_task4], verbose=VERBOSITY, wrap_width = 10000, pipeline= "main")
         #print s.getvalue()
 
 
@@ -176,7 +176,7 @@ class Test_job_history_with_exceptions(unittest.TestCase):
         test_pipeline.originate(task_func   = generate_initial_files4,
                                 output      = tempdir +  "i_name.tmp1")
 
-        test_pipeline.collate(  task_func   = test_task2,
+        test_pipeline.collate(  task_func   = check_task2,
                                 input       = [generate_initial_files1,
                                                generate_initial_files2,
                                                generate_initial_files3,
@@ -184,13 +184,13 @@ class Test_job_history_with_exceptions(unittest.TestCase):
                                 filter      = formatter(),
                                 output      = "{path[0]}/all.tmp2")
 
-        test_pipeline.transform(task_func   = test_task3,
-                                input       = test_task2,
+        test_pipeline.transform(task_func   = check_task3,
+                                input       = check_task2,
                                 filter      = suffix(".tmp2"),
                                 output      = ".tmp3")
 
-        test_pipeline.transform(task_func   = test_task4,
-                                input       = test_task3,
+        test_pipeline.transform(task_func   = check_task4,
+                                input       = check_task3,
                                 filter      = suffix(".tmp3"),
                                 output      = ".tmp4")
         return test_pipeline
@@ -201,18 +201,18 @@ class Test_job_history_with_exceptions(unittest.TestCase):
         for i in range(1):
             cleanup_tmpdir()
             try:
-                pipeline_run([test_task4], verbose = 0,
+                pipeline_run([check_task4], verbose = 0,
                              #multithread = 2,
                              one_second_per_job = one_second_per_job, pipeline= "main")
             except:
                 pass
             s = StringIO()
-            pipeline_printout(s, [test_task4], verbose=VERBOSITY, wrap_width = 10000, pipeline= "main")
+            pipeline_printout(s, [check_task4], verbose=VERBOSITY, wrap_width = 10000, pipeline= "main")
             #
             # task 2 should be up to date because exception was throw in task 3
             #
             pipeline_printout_str = s.getvalue()
-            correct_order = not re.search('Tasks which will be run:.*\n(.*\n)*Task = test_task2', pipeline_printout_str)
+            correct_order = not re.search('Tasks which will be run:.*\n(.*\n)*Task = check_task2', pipeline_printout_str)
             if not correct_order:
                 print(pipeline_printout_str)
             self.assertTrue(correct_order)
@@ -231,7 +231,7 @@ class Test_job_history_with_exceptions(unittest.TestCase):
         #
         #      print "Initial run without creating sqlite file"
         #
-        test_pipeline.run([test_task4], verbose = 0,
+        test_pipeline.run([check_task4], verbose = 0,
                      checksum_level = CHECKSUM_FILE_TIMESTAMPS,
                      multithread = 10,
                      one_second_per_job = one_second_per_job)
@@ -240,18 +240,18 @@ class Test_job_history_with_exceptions(unittest.TestCase):
         #   print "printout without sqlite"
         #
         s = StringIO()
-        test_pipeline.printout(s, [test_task4], checksum_level = CHECKSUM_FILE_TIMESTAMPS)
+        test_pipeline.printout(s, [check_task4], checksum_level = CHECKSUM_FILE_TIMESTAMPS)
         self.assertTrue(not re.search('Tasks which will be run:.*\n(.*\n)*Task = ', s.getvalue()))
         #
         # print "printout expecting sqlite file"
         #
         s = StringIO()
-        test_pipeline.printout(s, [test_task4])
+        test_pipeline.printout(s, [check_task4])
         self.assertTrue(re.search('Tasks which will be run:.*\n(.*\n)*Task = ', s.getvalue()))
         #
         #   print "Regenerate sqlite file"
         #
-        test_pipeline.run([test_task4],
+        test_pipeline.run([check_task4],
                      checksum_level = CHECKSUM_FILE_TIMESTAMPS,
                      history_file = get_default_history_file_name (),
                      multithread = 1,
@@ -262,7 +262,7 @@ class Test_job_history_with_exceptions(unittest.TestCase):
         # print "printout expecting sqlite file"
         #
         s = StringIO()
-        test_pipeline.printout(s, [test_task4], verbose = VERBOSITY)
+        test_pipeline.printout(s, [check_task4], verbose = VERBOSITY)
         succeed = not re.search('Tasks which will be run:.*\n(.*\n)*Task = ', s.getvalue())
         if not succeed:
             print(s.getvalue(), file=sys.stderr)
@@ -277,18 +277,18 @@ class Test_job_history_with_exceptions(unittest.TestCase):
         for i in range(1):
             cleanup_tmpdir()
             try:
-                test_pipeline.run([test_task4], verbose = 0,
+                test_pipeline.run([check_task4], verbose = 0,
                              #multithread = 2,
                              one_second_per_job = one_second_per_job)
             except:
                 pass
             s = StringIO()
-            test_pipeline.printout(s, [test_task4], verbose=VERBOSITY, wrap_width = 10000)
+            test_pipeline.printout(s, [check_task4], verbose=VERBOSITY, wrap_width = 10000)
             #
             # task 2 should be up to date because exception was throw in task 3
             #
             pipeline_printout_str = s.getvalue()
-            correct_order = not re.search('Tasks which will be run:.*\n(.*\n)*Task = test_task2', pipeline_printout_str)
+            correct_order = not re.search('Tasks which will be run:.*\n(.*\n)*Task = check_task2', pipeline_printout_str)
             if not correct_order:
                 print(pipeline_printout_str)
             self.assertTrue(correct_order)
@@ -306,7 +306,7 @@ class Test_job_history_with_exceptions(unittest.TestCase):
         #
         #      print "Initial run without creating sqlite file"
         #
-        pipeline_run([test_task4], verbose = 0,
+        pipeline_run([check_task4], verbose = 0,
                      checksum_level = CHECKSUM_FILE_TIMESTAMPS,
                      multithread = 10,
                      one_second_per_job = one_second_per_job, pipeline= "main")
@@ -315,18 +315,18 @@ class Test_job_history_with_exceptions(unittest.TestCase):
         #   print "printout without sqlite"
         #
         s = StringIO()
-        pipeline_printout(s, [test_task4], checksum_level = CHECKSUM_FILE_TIMESTAMPS, pipeline= "main")
+        pipeline_printout(s, [check_task4], checksum_level = CHECKSUM_FILE_TIMESTAMPS, pipeline= "main")
         self.assertTrue(not re.search('Tasks which will be run:.*\n(.*\n)*Task = ', s.getvalue()))
         #
         # print "printout expecting sqlite file"
         #
         s = StringIO()
-        pipeline_printout(s, [test_task4], pipeline= "main")
+        pipeline_printout(s, [check_task4], pipeline= "main")
         self.assertTrue(re.search('Tasks which will be run:.*\n(.*\n)*Task = ', s.getvalue()))
         #
         #   print "Regenerate sqlite file"
         #
-        pipeline_run([test_task4],
+        pipeline_run([check_task4],
                      checksum_level = CHECKSUM_FILE_TIMESTAMPS,
                      history_file = get_default_history_file_name (),
                      multithread = 1,
@@ -337,7 +337,7 @@ class Test_job_history_with_exceptions(unittest.TestCase):
         # print "printout expecting sqlite file"
         #
         s = StringIO()
-        pipeline_printout(s, [test_task4], verbose = VERBOSITY, pipeline= "main")
+        pipeline_printout(s, [check_task4], verbose = VERBOSITY, pipeline= "main")
         succeed = not re.search('Tasks which will be run:.*\n(.*\n)*Task = ', s.getvalue())
         if not succeed:
             print(s.getvalue(), file=sys.stderr)
@@ -360,5 +360,5 @@ class Test_job_history_with_exceptions(unittest.TestCase):
 #       see: http://docs.python.org/library/multiprocessing.html#multiprocessing-programming
 #
 if __name__ == '__main__':
-    #pipeline_printout(sys.stdout, [test_product_task], verbose = VERBOSITY, pipeline= "main")
+    #pipeline_printout(sys.stdout, [check_product_task], verbose = VERBOSITY, pipeline= "main")
     unittest.main()

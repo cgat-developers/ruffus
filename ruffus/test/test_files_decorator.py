@@ -47,7 +47,7 @@ import json
 
 #88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-def test_job_io(infiles, outfiles, extra_params):
+def check_job_io(infiles, outfiles, extra_params):
     """
     cat input files content to output files
         after writing out job parameters
@@ -96,7 +96,7 @@ def task1(infiles, outfiles, *extra_params):
     """
     First task
     """
-    test_job_io(infiles, outfiles, extra_params)
+    check_job_io(infiles, outfiles, extra_params)
 
 
 
@@ -108,7 +108,7 @@ def task2(infiles, outfiles, *extra_params):
     """
     Second task
     """
-    test_job_io(infiles, outfiles, extra_params)
+    check_job_io(infiles, outfiles, extra_params)
     assert(infiles == tempdir + "a.1")
 
 
@@ -121,7 +121,7 @@ def task3(infiles, outfiles, *extra_params):
     """
     Second task
     """
-    test_job_io(infiles, outfiles, extra_params)
+    check_job_io(infiles, outfiles, extra_params)
     assert(infiles == tempdir + "b.1")
 
 #
@@ -133,7 +133,7 @@ def task4(infiles, outfiles, *extra_params):
     """
     Second task
     """
-    test_job_io(infiles, outfiles, extra_params)
+    check_job_io(infiles, outfiles, extra_params)
 
 #
 #    task5
@@ -143,7 +143,7 @@ def task5(infiles, outfiles, *extra_params):
     """
     Second task
     """
-    test_job_io(infiles, outfiles, extra_params)
+    check_job_io(infiles, outfiles, extra_params)
     assert(infiles == [tempdir + "d.1", tempdir + "e.1"])
 
 import unittest
