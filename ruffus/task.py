@@ -5658,6 +5658,8 @@ def pipeline_run(target_tasks=[],
             raise ValueError("unknown pool manager '{}'".format(pool_manager))
         pool = pool_t(parallelism)
     else:
+        syncmanager = multiprocessing.Manager()
+        death_event = syncmanager.Event()
         pool = None
         queue_t = queue.Queue
 

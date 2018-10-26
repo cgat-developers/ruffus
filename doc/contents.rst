@@ -20,7 +20,7 @@ Start Here:
    gallery.rst
    why_ruffus.rst
    tutorials/new_tutorial/manual_contents.rst
-
+   release.rst
 
 
 =====================
