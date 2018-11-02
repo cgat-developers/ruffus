@@ -7,7 +7,7 @@ import unittest
 from ruffus.ruffus_exceptions import RethrownJobError
 from ruffus.ruffus_utility import RUFFUS_HISTORY_FILE, CHECKSUM_FILE_TIMESTAMPS, \
     CHECKSUM_HISTORY_TIMESTAMPS, CHECKSUM_FUNCTIONS, CHECKSUM_FUNCTIONS_AND_PARAMS
-from ruffus.task import get_default_history_file_name
+from ruffus.ruffus_utility import get_default_history_file_name
 from ruffus import pipeline_run, pipeline_printout, suffix, transform, split, merge, dbdict, Pipeline
 import sys
 
