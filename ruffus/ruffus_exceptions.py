@@ -118,11 +118,10 @@ class RethrownJobError(error_task):
         task_name, job_name, exception_name, exception_value, exception_stack = self.job_exceptions[
             nn]
         message = "\nException #%d\n" % (nn + 1)
-        message += "  '%s%s' raised in ...\n" % (
-            exception_name, exception_value)
+        message += "  '%s%s' raised in ...\n" % (exception_name, exception_value)
         if task_name:
-            message += "   Task = %s\n   %s\n\n" % (
-                self.task_to_func_name(task_name), job_name)
+            message += "   Task = %s\n   %s\n\n" % (self.task_to_func_name(task_name),
+                                                    job_name)
         message += "%s\n" % (exception_stack, )
         return message.replace("\n", "\n    ")
 
@@ -159,6 +158,18 @@ class MissingInputFileError(error_task):
 
 
 class JobSignalledBreak(error_task):
+    pass
+
+
+class JobSignalledSuspend(error_task):
+    pass
+
+
+class JobSignalledResume(error_task):
+    pass
+
+
+class JobFailed(error_task):
     pass
 
 

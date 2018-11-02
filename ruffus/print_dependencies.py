@@ -25,8 +25,6 @@
 #################################################################################
 from collections import defaultdict
 from .adjacent_pairs_iterate import adjacent_pairs_iterate
-import sys
-import types
 """
     print_dependencies.py
 
@@ -58,12 +56,6 @@ def _get_name(node):
     else:
         raise Exception(
             "Unknown node type [%s] has neither _name or display_name" % str(node))
-
-# _________________________________________________________________________________________
-
-#   Helper functions for dot format
-
-# _________________________________________________________________________________________
 
 
 def attributes_to_str(attributes, name):

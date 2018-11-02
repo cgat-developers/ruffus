@@ -36,17 +36,22 @@ from .task import originate, split, subdivide, transform, merge, collate, follow
 from .task import files, parallel
 
 # filter / indicators
-from .task import suffix, regex, formatter, inputs, add_inputs, touch_file
+from .task import touch_file
+from .file_name_parameters import suffix, regex, formatter, inputs, add_inputs
 
 # deprecated
-from .task import files_re, combine
+from .task import files_re
+from .ruffus_utility import combine
 
-from .task import check_if_uptodate, active_if, jobs_limit, graphviz, mkdir, output_from, posttask
-from .task import stderr_logger, black_hole_logger, JobSignalledBreak, runtime_parameter
+from .task import check_if_uptodate, active_if, jobs_limit, graphviz, mkdir, posttask
+from .ruffus_utility import output_from, runtime_parameter
+from .task import stderr_logger, black_hole_logger
+from .ruffus_exceptions import JobSignalledBreak
 from .graph import graph_colour_demo_printout
 from .file_name_parameters import needs_update_check_modify_time
 from . import cmdline
 from . import combinatorics
-#output_dependency_tree_in_dot_format, output_dependency_tree_key_in_dot_format
+
+# output_dependency_tree_in_dot_format, output_dependency_tree_key_in_dot_format
 from . import ruffus_version
 __version__ = ruffus_version.__version

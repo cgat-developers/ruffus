@@ -2,6 +2,7 @@
 from __future__ import print_function
 import unittest
 from ruffus import task
+from ruffus import ruffus_exceptions
 
 """
     test_task_misc.py
@@ -31,8 +32,8 @@ class Test_needs_update_check_directory_missing(unittest.TestCase):
         """
         import tempfile
 
-        #test_file =tempfile.NamedTemporaryFile(delete=False)
-        #self.tempfile = test_file.name
+        # test_file =tempfile.NamedTemporaryFile(delete=False)
+        # self.tempfile = test_file.name
         # test_file.close()
         fh, self.tempfile = tempfile.mkstemp(suffix='.dot')
         os.fdopen(fh, "w").close()
@@ -54,7 +55,7 @@ class Test_needs_update_check_directory_missing(unittest.TestCase):
             not task.needs_update_check_directory_missing([self.directory])[0])
         self.assertTrue(task.needs_update_check_directory_missing(
             ["missing directory"])[0])
-        self.assertRaises(task.error_not_a_directory,
+        self.assertRaises(ruffus_exceptions.error_not_a_directory,
                           task.needs_update_check_directory_missing, [self.tempfile])
 
 

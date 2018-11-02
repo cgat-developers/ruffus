@@ -90,18 +90,16 @@ __version__ = '1.3.1'
 
 import sqlite3
 try:
+    from collections.abc import MutableMapping
+except ImportError:
     # MutableMapping is new in Python 2.6+
     from collections import MutableMapping
-except ImportError:
-    # DictMixin will be (or is?) deprecated in the Python 3.x series
-    from UserDict import DictMixin as MutableMapping
+
 from os import path
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
-import itertools
-import sys
 
 
 class DbDict(MutableMapping):

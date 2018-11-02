@@ -43,7 +43,6 @@ except ImportError:
     json = simplejson
 
 from collections import defaultdict
-from itertools import chain
 from .print_dependencies import *
 import tempfile
 import subprocess
@@ -803,12 +802,6 @@ def depth_first_search(starting_nodes, visitor, outedges_func=node._get_inward):
                 depth_first_visit(start, visitor, colours, outedges_func)
 
 
-# _________________________________________________________________________________________
-
-#   topologically_sorted_nodes
-
-
-# _________________________________________________________________________________________
 def topologically_sorted_nodes(to_leaves,
                                force_start_from=[],
                                gather_all_non_signalled=True,

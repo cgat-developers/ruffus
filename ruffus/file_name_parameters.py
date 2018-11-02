@@ -54,46 +54,24 @@ from .ruffus_exceptions import *
 
 # 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 import os
-import copy
-import re
 import sys
 import glob
-from operator import itemgetter
 from itertools import groupby
 import itertools
-#from itertools import product
-#from itertools import permutations
-#from itertools import combinations
-#from itertools import combinations_with_replacement
-
 from collections import defaultdict
 from time import strftime, gmtime
+
 if sys.hexversion >= 0x03000000:
     # everything is unicode in python3
     path_str_type = str
 else:
     path_str_type = basestring
 
-#from file_name_parameters import *
-
 
 class t_combinatorics_type:
     (COMBINATORICS_PRODUCT, COMBINATORICS_PERMUTATIONS,
         COMBINATORICS_COMBINATIONS, COMBINATORICS_COMBINATIONS_WITH_REPLACEMENT) = list(range(4))
 
-
-# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-#   Functions
-
-
-# 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
-
-# _________________________________________________________________________________________
-
-#   get_readable_path_str
-
-# _________________________________________________________________________________________
 
 def get_readable_path_str(original_path, max_len):
     """
@@ -109,11 +87,6 @@ def get_readable_path_str(original_path, max_len):
     return "[...]" + re.sub("^[^/]+", "", truncated_name)
 
 
-# _________________________________________________________________________________________
-
-#   epoch_seconds_to_str
-
-# _________________________________________________________________________________________
 def epoch_seconds_to_str(epoch_seconds):
     """
     Converts seconds since epoch into nice string with date and time to 2 significant
@@ -134,11 +107,6 @@ err_msg_empty_files_parameter = ("@files() was empty, i.e. no files were specifi
                                  "Please make sure this is by design.")
 
 
-# _________________________________________________________________________________________
-
-#   t_file_names_transform
-
-# _________________________________________________________________________________________
 class t_file_names_transform(object):
     """
     Does the work for generating output / "extra input" / "extra" filenames
