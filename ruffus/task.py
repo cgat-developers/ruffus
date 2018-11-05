@@ -5026,12 +5026,14 @@ def pipeline_run(target_tasks=[],
             pool = pool_t(parallelism)
         elif pool_manager == "gevent":
             import gevent.event
-            import gevent.coros
             import gevent.queue
             import gevent.pool
             import gevent.signal
-            # from signal import SIGTERM, SIGHUP, SIGINT
-            syncmanager = gevent.coros
+            try:
+                import gevent.lock as gevent_lock
+            except:
+                import gevent.coros as gevent_lock
+            syncmanager = gevent_lock
             death_event = gevent.event.Event()
             pool_t = gevent.pool.Pool
             pool = pool_t(parallelism)
