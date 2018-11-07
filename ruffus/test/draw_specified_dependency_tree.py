@@ -1,11 +1,11 @@
 #!/usr/bin/env python
+from __future__ import print_function
 from adjacent_pairs_iterate import adjacent_pairs_iterate
 from ruffus import *
 from collections import defaultdict
 import sys
 import operator
 import re
-from __future__ import print_function
 """
 
     draw_specified_dependency_tree.py

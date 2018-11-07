@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import glob
 from collections import defaultdict
 import sys
@@ -8,7 +9,6 @@ from optparse import OptionParser
 import random
 from time import sleep
 from ruffus import *
-from __future__ import print_function
 """
 
     complicated_example.py

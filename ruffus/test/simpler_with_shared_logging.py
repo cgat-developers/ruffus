@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import time
 import logging
 from ruffus.proxy_logger import *
@@ -6,7 +7,6 @@ from ruffus import *
 from collections import defaultdict
 import operator
 import re
-from __future__ import print_function
 """
 
     simpler_with_shared_logging.py
