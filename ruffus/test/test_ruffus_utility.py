@@ -973,6 +973,18 @@ class Test_swap_nesting_order (unittest.TestCase):
 # _________________________________________________________________________________________
 class Test_shorten_filenames_encoder (unittest.TestCase):
 
+    def setUp(self):
+        import tempfile
+        import os
+        self.tempdir = tempfile.mkdtemp()
+        subdir = self.tempdir + '/foo/bar/baz/bo'
+        os.makedirs(subdir)
+        os.chdir(subdir)
+
+    def cleanUp(self):
+        from shutil import rmtree
+        rmtree(self.tempdir)
+
     def test_shorten_filenames_encoder(self):
         relative_path = os.path.abspath("../test1/something.py")
         absolute_path = "/a/long/path/to/oss/ruffus/ruffus/test/something.py"
