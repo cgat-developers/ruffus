@@ -1,9 +1,9 @@
 #!/usr/bin/env python
+from __future__ import print_function
 from collections import defaultdict
 from ruffus.ruffus_exceptions import JobSignalledBreak
 from ruffus import *
 from optparse import OptionParser
-from __future__ import print_function
 """
 
     play_with_colours.py

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import time
 from subprocess import Popen, PIPE
 from ruffus import *
-from __future__ import print_function
 import os
 import sys
 # add self to search path for testing

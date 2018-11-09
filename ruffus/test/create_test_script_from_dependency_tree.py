@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 from adjacent_pairs_iterate import adjacent_pairs_iterate
 import random
 from collections import defaultdict
@@ -6,7 +7,6 @@ import sys
 import operator
 import re
 from ruffus import *
-from __future__ import print_function
 """
 
     draw_specified_dependency_tree.py
