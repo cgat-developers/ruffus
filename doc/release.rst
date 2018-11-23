@@ -8,6 +8,7 @@ Release 2.8.1
 
 * [#101] compatibility with gevent >= 1.2
 * add lookup_pipeline to exported functions
+* fix tests (thanks @LocutusOfBorg, @xnox)
 
 =============
 Release 2.8.0
