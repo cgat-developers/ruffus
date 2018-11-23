@@ -27,7 +27,8 @@
 from .task import Pipeline, Task
 
 # pipeline functions
-from .task import pipeline_printout, pipeline_printout_graph, pipeline_run, pipeline_get_task_names, register_cleanup
+from .task import pipeline_printout, pipeline_printout_graph, pipeline_run, pipeline_get_task_names, register_cleanup, \
+	lookup_pipeline
 
 # decorators
 from .task import originate, split, subdivide, transform, merge, collate, follows
