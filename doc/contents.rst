@@ -12,11 +12,12 @@ Start Here:
    :caption: Introduction
    :name: introduction_toc
 
+   _templates/index.html
    installation.rst
    history.rst
    tutorials/new_tutorial/manual_contents.rst
    tutorials/new_syntax.rst
-   Future plans <todo>
+   Future plans
    faq.rst
    gallery.rst
    why_ruffus.rst
