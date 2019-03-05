@@ -12,7 +12,7 @@ Start Here:
    :caption: Introduction
    :name: introduction_toc
 
-   _templates/index.html
+   index.html
    installation.rst
    history.rst
    tutorials/new_tutorial/manual_contents.rst
@@ -62,11 +62,15 @@ Quick Reference:
    print_dependencies.rst
    adjacent_pairs_iterate.rst
 
+.. toctree::
+    :maxdepth: 1
+    :caption: Contributing
+    :name: contributing_toc
 
-=====================
-Indices and tables
-=====================
+    contributing.rst
+
+=======
+Indices
+=======
 
 * :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
