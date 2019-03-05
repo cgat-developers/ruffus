@@ -49,7 +49,7 @@ To create a pull request perform these steps:
 5. If you made the fork a while ago then please make sure you ``git pull upstream`` to keep your repository up to date
 6. Create a new branch to work on! We usually name our branches with capital first and last followed by a dash and something unique. For example: ``git checkout -b AC-new_doc``.
 7. Impliment your fix/enhancement and make sure your code is effectively documented.
-8. Our code has tests and these will be ran when a pull request is submitted, however you can run our tests before you make the pull request, we have a number written in the ``ruffus/test/`` directory. The Makefile will run all tests in parallel.
+8. Our code has tests and these will be ran when a pull request is submitted, however you can run our tests before you make the pull request, we have a number written in the ``ruffus/test/`` directory. To run all test run: `cd ruffus/test && /bin/bash run_all_unit_tests.cmd`.
 9. Add or change our documentation in the ``docs/`` directory.
 10. Squash all of your commits into a single commit with git `interactive rebase <https://help.github.com/articles/about-git-rebase/>`_.
 11. Push your branch to your fork on github ``git push origin``
