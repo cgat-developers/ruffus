@@ -1,3 +1,8 @@
+===========
+CGAT-ruffus
+===========
+
+
 ***************************************
 Overview
 ***************************************
@@ -14,15 +19,20 @@ Each python function can be called in parallel to run multiple **jobs**.
 Ruffus was originally designed for use in bioinformatics to analyse multiple genome
 data sets.
 
+More recently, we have extended the functionality of CGAT-ruffus to incude cluster integration (Currently
+support SGE, SLURM and PBS-pro/Torque), paramaterisation, logging, database integration
+and conda environment switching. `CGAT-core <https://github.com/cgat-developers/cgat-core>`_ code and `documentation <https://cgat-core.readthedocs.io/en/latest/>`_.
+
 ***************************************
 Documentation
 ***************************************
 
-Ruffus documentation can be found `here <http://www.ruffus.org.uk/>`_ ,
-with `installation notes <http://www.ruffus.org.uk/installation.html>`_ ,
-a `short tutorial <http://www.ruffus.org.uk/tutorials/simple_tutorial/simple_tutorial.html>`_ and
-an `in-depth manual <http://www.ruffus.org.uk/tutorials/manual/manual_introduction.html>`_ .
+Ruffus documentation can be found `here <https://cgat-ruffus.readthedocs.io/en/latest/>`_ ,
+with `installation notes <https://cgat-ruffus.readthedocs.io/en/latest/installation.html>`_ , and
+an `in-depth manual <https://cgat-ruffus.readthedocs.io/en/latest/tutorials/new_tutorial/manual_contents.html>`_ .
 
+However, to utilise the full power of this workflow management system we recomend
+using `CGAT-core <https://github.com/cgat-developers/cgat-core>`_ (`documentation <https://cgat-core.readthedocs.io/en/latest/>`_).
 
 ***************************************
 Background
