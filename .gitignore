@@ -7,3 +7,8 @@ _build
 doc/hosted_site.cmd
 .ruffus_history.sqlite
 ruffus_development.*
+
+# Vim auxiliary files
+*~
+*.swp
+
