@@ -9,99 +9,45 @@ Installation
 
 .. note ::
 
-    Ruffus requires Python 2.6 or higher or Python 3.0 or higher
+    Ruffus requires Python 3.0 or higher, python 2 is no longer supported but older versions will still be python 2 compatible.
 
 
 
 ==============================================================================
-The easy way
+conda installation
 ==============================================================================
 
-    *Ruffus* is available as an
-    `easy-install <http://peak.telecommunity.com/DevCenter/EasyInstall>`_ -able package
-    on the `Python Package Index <http://pypi.python.org/pypi/Sphinx>`_.
+The recomended method for installing CGAT-ruffus is to install using `conda <https://conda.io/en/latest/>`_ through
+the `bioconda <https://anaconda.org/bioconda/ruffus>`_ channel. The reson for conda being the prefferred method
+is that the dependancied are taken care of.
 
     ::
 
-        sudo pip install ruffus --upgrade
-
-    This may also work for older installations::
-
-        easy_install -U ruffus
-
-
-    See below if ``eady_install`` is missing
-
+        conda install -c bioconda ruffus
 
 ==============================================================================
-The most up-to-date code:
-==============================================================================
-        * `Download the latest sources <https://pypi.python.org/pypi/ruffus>`_ or
-
-        * Check out the latest code from Google using git::
-
-            git clone https://bunbun68@code.google.com/p/ruffus/ .
-
-        * Bleeding edge Ruffus development takes place on github::
-
-            git clone git@github.com:bunbun/ruffus.git .
-
-
-        * To install after downloading, change to the , type::
-
-             python ./setup.py install
-
-======================
-Prequisites
-======================
-==============================================================================
-Installing easy_install
+pip installation
 ==============================================================================
 
-    If your system doesn't have ``easy_install``, you can `install  <ubuntu/linux mint>`__ one using a package manager, for example::
+    *Ruffus* is also available on `pypi <https://pypi.org/project/ruffus/>`_.
 
-        # ubuntu/linux mint
-        $ sudo apt-get install python-setuptools
-        $ or  sudo yum install python-setuptools
+    ::
 
-    or manually::
-
-        sudo curl http://peak.telecommunity.com/dist/ez_setup.py | python
-
-    or manually::
-
-        wget peak.telecommunity.com/dist/ez_setup.py
-        sudo python ez_setup.py
-
-
+        pip install ruffus
 
 ==============================================================================
-Installing pip
+Manual installation
 ==============================================================================
 
-    If Pip is missing::
+To obtain the latest code, check it out from `github <https://github.com/cgat-developers/ruffus>`_ and activate it.
 
-        $ sudo easy_install -U pip
+    ::
+
+        git clone https://github.com/cgat-developers/ruffus.git
+	cd ruffus
+	python setup.py install
 
 
-==============================================================================
- Graphical flowcharts The most up-to-date code:
-==============================================================================
-
-    **Ruffus** relies on the ``dot`` programme from `Graphviz <http://www.graphviz.org/>`_
-    ("Graph visualisation") to make pretty flowchart representations of your pipelines in multiple
-    graphical formats (e.g. ``png``, ``jpg``). The crossplatform Graphviz package can be
-    `downloaded here <http://www.graphviz.org/Download.php>`_ for Windows,
-
-    Linux, Macs and Solaris.     For Fedora, try
-        ::
-
-            yum list 'graphviz*'
-
-    For ubuntu / Debian, try
-        ::
-
-            sudo apt-get install graphviz
 
 
 

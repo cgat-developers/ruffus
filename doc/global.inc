@@ -6,8 +6,7 @@
    :keywords: python, pipeline, computation, cluster, Ruffus, bioinformatics, parallel' name='keywords
    :Author: Leo Goodstadt
    :Publisher: Leo Goodstadt
-   :Email: ruffus@llew.org.uk
    :robots: index, follow
    :language: en-uk
    :country: United Kingdom
-   :copyright: Leo Goodstadt 2009-2014
+   :copyright: cgat-developers 2009-2019

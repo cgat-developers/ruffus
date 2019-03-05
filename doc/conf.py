@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #
 # ruffus documentation build configuration file, created by
 # sphinx-quickstart on Tue Apr 21 16:55:56 2009.
@@ -52,7 +52,7 @@ master_doc = 'contents'
 
 # General information about the project.
 project = u'ruffus'
-copyright = u'2009-2015 Leo Goodstadt'
+copyright = u'2009-2019 cgat-developers'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
