@@ -3,6 +3,12 @@ Release notes
 *************
 
 =============
+Release 2.8.2
+=============
+
+* implement retry behaviour for input file check.
+
+=============
 Release 2.8.1
 =============
 
