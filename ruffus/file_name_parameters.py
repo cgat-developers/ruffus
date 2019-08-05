@@ -2,7 +2,7 @@ from __future__ import print_function
 import re
 from . import dbdict
 from .ruffus_utility import *
-from .ruffus_utility import shorten_filenames_encoder
+from .ruffus_utility import shorten_filenames_encoder, FILE_CHECK_RETRY, FILE_CHECK_SLEEP
 from .ruffus_exceptions import *
 
 ################################################################################
@@ -354,39 +354,43 @@ def needs_update_check_directory_missing(*params, **kwargs):
             return True, ": Directories %r is missing" % (missing_directories[0])
     return False, "All directories exist"
 
-# _________________________________________________________________________________________
-
-#   check_input_files_exist
-
-# _________________________________________________________________________________________
-
 
 def check_input_files_exist(*params):
-    """
-    If inputs are missing then there is no way a job can run successful.
-    Must throw exception.
-    This extra function is a hack to make sure input files exists right before
-        job is called for better error messages, and to save things from blowing
-        up inside the task function
+    """If inputs are missing then there is no way a job can run
+    successful. Must throw exception.
+
+    This extra function is a hack to make sure input files exists
+    right before job is called for better error messages, and to save
+    things from blowing up inside the task function.
+
+    In practice, we have observed a sporadic time-lag between a task
+    completing on a remote node and an output file appearing in the
+    expected location on the host running the ruffus pipeline. This
+    causes a subsequent task to fail with missing input file even
+    though the file will appear a few seconds later. It is not clear
+    if this is an issue of a poorly configured storage, but a retry
+    behaviour has been implemented to work around such issues.
+
     """
     if len(params):
         input_files = params[0]
 
         for f in get_strings_in_flattened_sequence(input_files):
-            if not os.path.exists(f):
-                if os.path.lexists(f):
-                    raise MissingInputFileError("No way to run job: " +
-                                                "Input file '%s' is a broken symbolic link." % f)
-                else:
-                    raise MissingInputFileError("No way to run job: " +
-                                                "Input file '%s' does not exist" % f)
+            tries = FILE_CHECK_RETRY
+            while tries > 0:
+                if not os.path.exists(f):
+                    if os.path.lexists(f):
+                        raise MissingInputFileError("No way to run job: " +
+                                                    "Input file '%s' is a broken symbolic link." % f)
+                    tries -= 1
+                    time.sleep(FILE_CHECK_SLEEP)
+                    continue
+                break
+            if tries <= 0:
+                raise MissingInputFileError("No way to run job: " +
+                                            "Input file '%s' does not exist" % f)
 
 
-# _________________________________________________________________________________________
-
-#   needs_update_check_exist
-
-# _________________________________________________________________________________________
 def needs_update_check_exist(*params, **kwargs):
     """
     Given input and output files, see if all exist

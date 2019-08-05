@@ -105,6 +105,11 @@ CHECKSUM_FUNCTIONS_AND_PARAMS = 3
 
 CHECKSUM_REGENERATE = 2     # regenerate checksums
 
+
+# number of times to check if an input file exists
+FILE_CHECK_RETRY = 5
+# number of seconds to sleep before retrying a file check
+FILE_CHECK_SLEEP = 10
 # _________________________________________________________________________________________
 
 #   t_extra_inputs
