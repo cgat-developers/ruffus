@@ -3,6 +3,12 @@ Release notes
 *************
 
 =============
+Release 2.8.3
+=============
+
+* add missing import
+
+=============
 Release 2.8.2
 =============
 

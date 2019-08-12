@@ -1,5 +1,6 @@
 from __future__ import print_function
 import re
+import time
 from . import dbdict
 from .ruffus_utility import *
 from .ruffus_utility import shorten_filenames_encoder, FILE_CHECK_RETRY, FILE_CHECK_SLEEP
@@ -94,11 +95,13 @@ def epoch_seconds_to_str(epoch_seconds):
     """
     #   returns 24 char long  25 May 2011 23:37:40.12
     time_str = strftime("%d %b %Y %H:%M:%S", gmtime(epoch_seconds))
+import time
     #
     fraction_of_second_as_str = (
         "%.2f" % (epoch_seconds - int(epoch_seconds)))[1:]
     #   or fraction = ("%.2f" % (divmod(epoch_seconds, 1)[1]))[1:]
     return (time_str + fraction_of_second_as_str)
+import time
 
 
 err_msg_no_regex_match = ("No jobs were run because no file names matched.\n"
