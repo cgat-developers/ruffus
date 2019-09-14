@@ -114,14 +114,14 @@ class Test_ruffus(unittest.TestCase):
         environ = {"RUFFUS_HEEHEE": "what?"}
         home_dir = os.path.expanduser("~")
         sys.stderr.write("    Run echoing to screen...\n")
-        stdout, stderr = ruffus.drmaa_wrapper.run_job(cmd_str="python %s/slow_process_for_testing.py" % script_dir,
+        stdout, stderr = ruffus.drmaa_wrapper.run_job(cmd_str="%s %s/slow_process_for_testing.py" % (sys.executable, script_dir),
                                                       job_environment=environ,
                                                       working_directory=home_dir,
                                                       run_locally=True,
                                                       verbose=1,
                                                       local_echo=True)
         sys.stderr.write("    Run silently...\n")
-        stdout, stderr = ruffus.drmaa_wrapper.run_job(cmd_str="python %s/slow_process_for_testing.py" % script_dir,
+        stdout, stderr = ruffus.drmaa_wrapper.run_job(cmd_str="%s %s/slow_process_for_testing.py" % (sys.executable, script_dir),
                                                       job_environment=environ,
                                                       working_directory=home_dir,
                                                       run_locally=True,
