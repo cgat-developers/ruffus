@@ -152,7 +152,7 @@ Usage
 
 """,
         url='http://www.ruffus.org.uk',
-        download_url = "https://pypi.python.org/pypi/ruffus",
+        download_url = "https://github.com/cgat-developers/ruffus",
 
         install_requires = module_dependencies, #['multiprocessing>=1.0', 'json' ], #, 'python>=2.5'],
         setup_requires   = module_dependencies, #['multiprocessing>=1.0', 'json'],    #, 'python>=2.5'],
