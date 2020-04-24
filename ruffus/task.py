@@ -456,7 +456,8 @@ def generic_job_descriptor(unglobbed_params, verbose_abbreviated_path, runtime_d
 
 
 def io_files_job_descriptor(unglobbed_params, verbose_abbreviated_path, runtime_data):
-    extra_param = ", " + shorten_filenames_encoder(unglobbed_params[2:], verbose_abbreviated_path)[1:-1] \
+    extra_param = ", " + shorten_filenames_encoder(map(str, unglobbed_params[2:]),
+                                                   verbose_abbreviated_path)[1:-1] \
         if len(unglobbed_params) > 2 else ""
     out_param = shorten_filenames_encoder(unglobbed_params[1], verbose_abbreviated_path) \
         if len(unglobbed_params) > 1 else "??"
@@ -873,10 +874,11 @@ class Pipeline(dict):
                     if task_name not in self.task_names:
                         break
                 else:
-                    raise ruffus_exceptions.error_duplicate_task_name("The task string '%s' is ambiguous for "
-                                                    "Pipeline '%s'. You must disambiguate "
-                                                    "explicitly with different task names "
-                                                    % (task_str, self.name))
+                    raise ruffus_exceptions.error_duplicate_task_name(
+                        "The task string '{}' is ambiguous for "
+                        "Pipeline '{}'. You must disambiguate "
+                        "explicitly with different task names ".format(
+                            task_str, self.name))
             return Task(task_func, task_name, self)
 
         #
@@ -2342,7 +2344,7 @@ class Task(node):
             #
             # rethrow exception after adding task name
             #
-            if exceptionType == error_task:
+            if exceptionType == ruffus_exceptions.error_task:
                 exceptionValue.specify
                 inst.specify_task(self, "Exceptions in dependency checking")
                 raise
@@ -5028,7 +5030,10 @@ def pipeline_run(target_tasks=[],
             import gevent.event
             import gevent.queue
             import gevent.pool
-            import gevent.signal
+            try:
+                from gevent.signal import signal as gevent_signal
+            except:
+                import gevent.signal as gevent_signal
             try:
                 import gevent.lock as gevent_lock
             except:
@@ -5038,9 +5043,9 @@ def pipeline_run(target_tasks=[],
             pool_t = gevent.pool.Pool
             pool = pool_t(parallelism)
             queue_t = gevent.queue.Queue
-            gevent.signal(signal.SIGINT, functools.partial(handle_sigint, pool=pool, pipeline=pipeline))
-            gevent.signal(signal.SIGUSR1, functools.partial(handle_sigusr1, pool=pool, pipeline=pipeline))
-            gevent.signal(signal.SIGUSR2, functools.partial(handle_sigusr2, pool=pool, pipeline=pipeline))
+            gevent_signal(signal.SIGINT, functools.partial(handle_sigint, pool=pool, pipeline=pipeline))
+            gevent_signal(signal.SIGUSR1, functools.partial(handle_sigusr1, pool=pool, pipeline=pipeline))
+            gevent_signal(signal.SIGUSR2, functools.partial(handle_sigusr2, pool=pool, pipeline=pipeline))
         else:
             raise ValueError("unknown pool manager '{}'".format(pool_manager))
 

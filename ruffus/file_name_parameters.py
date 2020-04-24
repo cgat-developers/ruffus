@@ -1113,7 +1113,17 @@ def yield_io_params_per_job(input_params,
             else:
                 input_param = orig_input_param
 
-            # extras
+            # extras - this statement applies transformations on the
+            # extra parameters. It traverses nested data
+            # structures. The transformation forces a copy of each
+            # parameter which causes memory duplication. The memory use
+            # can be significant if extras is large.
+            #
+            # For example, if extras contains a list of 10000 files,
+            # there will be one copy for each input parameter. If
+            # there are 1000 input files, this means there will be
+            # 1000 * 100000 filenames (instead of 1000 references to
+            # the same list containing 10000 strings).
             extra_params = tuple(file_names_transform.substitute(
                 filenames, p) for p in extra_specs)
 

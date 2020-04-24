@@ -17,7 +17,7 @@ NOTEST_RUN=$(NOTEST:%.py=%.run)
 all: $(PYTEST_RUN) $(NOTEST_RUN)
 
 %.pytest: %.py
-	pytest $(PYTEST_OPTIONS) $<
+	/usr/bin/time --output=$*.time -v pytest $(PYTEST_OPTIONS) $<
 
 %.run: %.py
-	python $<
+	/usr/bin/time --output=$*.time -v python $<

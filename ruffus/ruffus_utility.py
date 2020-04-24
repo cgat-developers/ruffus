@@ -878,20 +878,29 @@ SUFFIX_SUBSTITUTE = 1
 #
 
 
-def regex_replace(filename, regex_str, compiled_regex, substitution_patterns, regex_or_suffix=REGEX_SUBSTITUTE):
-    return apply_func_to_sequence(substitution_patterns, t_regex_replace(filename, regex_str, compiled_regex, regex_or_suffix))
+def regex_replace(filename, regex_str, compiled_regex, substitution_patterns,
+                  regex_or_suffix=REGEX_SUBSTITUTE):
+    return apply_func_to_sequence(
+        substitution_patterns,
+        t_regex_replace(filename, regex_str, compiled_regex, regex_or_suffix))
 
 
 def formatter_replace(filenames, regex_str, compiled_regex, substitution_patterns):
-    return apply_func_to_sequence(substitution_patterns, t_formatter_replace(filenames, regex_str, compiled_regex))
+    return apply_func_to_sequence(
+        substitution_patterns,
+        t_formatter_replace(filenames, regex_str, compiled_regex))
 
 
 def nested_formatter_replace(filenames, regex_strings, compiled_regexes, substitution_patterns):
-    return apply_func_to_sequence(substitution_patterns, t_nested_formatter_replace(filenames, regex_strings, compiled_regexes))
+    return apply_func_to_sequence(
+        substitution_patterns,
+        t_nested_formatter_replace(filenames, regex_strings, compiled_regexes))
 
 
 def nested_string_replace(prev_str, new_str, substitution_patterns):
-    return apply_func_to_sequence(substitution_patterns, t_nested_string_replace(prev_str, new_str))
+    return apply_func_to_sequence(
+        substitution_patterns,
+        t_nested_string_replace(prev_str, new_str))
 
 
 # _________________________________________________________________________________________
