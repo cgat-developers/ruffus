@@ -19,7 +19,7 @@ Each python function can be called in parallel to run multiple **jobs**.
 Ruffus was originally designed for use in bioinformatics to analyse multiple genome
 data sets.
 
-More recently, we have extended the functionality of CGAT-ruffus to incude cluster integration (Currently
+More recently, we have extended the functionality of CGAT-ruffus to include cluster integration (Currently
 support SGE, SLURM and PBS-pro/Torque), paramaterisation, logging, database integration
 and conda environment switching. `CGAT-core <https://github.com/cgat-developers/cgat-core>`_ code and `documentation <https://cgat-core.readthedocs.io/en/latest/>`_.
 
