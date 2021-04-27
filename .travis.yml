@@ -3,17 +3,10 @@ language: python
 # all python versions tested via pip in tox
 python:
   - "2.7"
-  - "3.4"
   - "3.5"
   - "3.6"
-
-# Travis does not properly support this yet.
-# https://github.com/travis-ci/travis-ci/issues/9815
-matrix:
-  include:
-    - python: 3.7
-      dist: xenial
-      sudo: true
+  - "3.7"
+  - "3.9"
 
 before_install:
 
