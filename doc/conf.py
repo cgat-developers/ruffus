@@ -19,9 +19,9 @@ import ruffus, ruffus.task, ruffus.ruffus_version
 
 
 def setup(app):
-   #app.add_javascript("custom.js")
+   # app.add_js_file("custom.js")
    if not on_rtd:
-       app.add_stylesheet("ruffus.css")
+       app.add_css_file("ruffus.css")
 
 
 # If extensions (or modules to document with autodoc) are in another directory,
