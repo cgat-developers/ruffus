@@ -2840,9 +2840,8 @@ class Task(node):
         #
         #   This is actually @subdivide
         #
-        if isinstance(unnamed_args[1], regex):
-            self._prepare_subdivide(unnamed_args, named_args,
-                                    self.description_with_args_placeholder)
+        if len(unnamed_args) > 1 and isinstance(unnamed_args[1], regex):
+            self._prepare_subdivide(unnamed_args, named_args)
 
         #
         #   This is actually @split
