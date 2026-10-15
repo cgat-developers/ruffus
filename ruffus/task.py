@@ -56,6 +56,7 @@ from .ruffus_utility import shorten_filenames_encoder, \
     replace_placeholders_with_tasks_in_input_params, \
     get_default_checksum_level, \
     open_job_history, \
+    get_history_file_path, \
     non_str_sequence
 import ruffus.ruffus_exceptions as ruffus_exceptions
 from .print_dependencies import attributes_to_str
@@ -4815,9 +4816,9 @@ def get_job_result_output_file_names(job_result):
                 continue
 
             #
-            # use paths relative to working directory
+            # Keep filesystem paths separate from checkpoint keys
             #
-            yield os.path.relpath(o_f_n)
+            yield os.path.abspath(o_f_n)
 
     return
 
@@ -5260,7 +5261,7 @@ def pipeline_run(target_tasks=[],
                     logger, 10, verbose, "   JOB ERROR / JOB_SIGNALLED_BREAK: " + job_result.job_name)
                 # remove outfile from history if it exists
                 for o_f_n in get_job_result_output_file_names(job_result):
-                    job_history.pop(o_f_n, None)
+                    job_history.pop(get_history_file_path(o_f_n, job_history), None)
 
             # only save poolsize number of errors
             if job_result.state == JOB_ERROR:
@@ -5336,9 +5337,10 @@ def pipeline_run(target_tasks=[],
                                     runtime_data["ONE_SECOND_PER_JOB"] = True
                             elif epoch_seconds - mtime < 1.1:
                                 mtime = epoch_seconds
-                            chksum = JobHistoryChecksum(o_f_n, mtime,
+                            history_key = get_history_file_path(o_f_n, job_history)
+                            chksum = JobHistoryChecksum(history_key, mtime,
                                                         job_result.unglobbed_params[2:], t)
-                            job_history[o_f_n] = chksum
+                            job_history[history_key] = chksum
                             log_at_level(logger, 10, verbose,
                                          "   Job History Saved: " + o_f_n)
                         except:
