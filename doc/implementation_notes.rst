@@ -34,7 +34,6 @@ Release
 
     * Upload to repository::
 
-        git push googlecode
         git push
 
 ******************************************************************************

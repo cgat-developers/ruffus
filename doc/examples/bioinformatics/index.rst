@@ -56,7 +56,7 @@ Prerequisites
 
             easy_install -U ruffus
 
-    Otherwise, `download <http://code.google.com/p/ruffus/downloads/list>`_ Ruffus and run:
+    Otherwise, `download <https://pypi.org/project/ruffus/#files>`_ Ruffus and run:
 
         ::
 
