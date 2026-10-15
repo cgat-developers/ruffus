@@ -26,6 +26,10 @@ jobs_limit
         | Overrides the value for ``multiprocess`` in :ref:`pipeline_run <pipeline_functions.pipeline_run>`
         | If an optional ``name`` is given, the same limit is shared across all tasks with the same @job_limit name.
 
+    A limit of one still runs jobs in the configured pool. To execute a task in
+    the pipeline caller, for example to start its own multiprocessing children,
+    use :ref:`run_in_main_process <decorators.run_in_main_process>`.
+
 
     **Parameters:**
 

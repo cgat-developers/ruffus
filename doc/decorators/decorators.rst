@@ -36,6 +36,7 @@ Ruffus Decorators
     graphviz.rst
     mkdir.rst
     jobs_limit.rst
+    run_in_main_process.rst
     posttask.rst
     active_if.rst
     follows.rst

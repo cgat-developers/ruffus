@@ -45,6 +45,7 @@ from .task import files_re
 from .ruffus_utility import combine
 
 from .task import check_if_uptodate, active_if, jobs_limit, graphviz, mkdir, posttask
+from .task import run_in_main_process
 from .ruffus_utility import output_from, runtime_parameter
 from .task import stderr_logger, black_hole_logger
 from .ruffus_exceptions import JobSignalledBreak
