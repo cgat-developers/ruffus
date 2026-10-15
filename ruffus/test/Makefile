@@ -7,6 +7,7 @@
 SHELL=/bin/bash
 
 PYTEST_OPTIONS?=-v
+PYTHON?=python
 
 PYTEST=$(wildcard test_*.py)
 NOTEST=$(wildcard check_*.py)
@@ -17,7 +18,7 @@ NOTEST_RUN=$(NOTEST:%.py=%.run)
 all: $(PYTEST_RUN) $(NOTEST_RUN)
 
 %.pytest: %.py
-	/usr/bin/time --output=$*.time -v pytest $(PYTEST_OPTIONS) $<
+	$(PYTHON) -m pytest $(PYTEST_OPTIONS) $<
 
 %.run: %.py
-	/usr/bin/time --output=$*.time -v python $<
+	$(PYTHON) $<

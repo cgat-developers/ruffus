@@ -6,6 +6,7 @@ from ruffus.drmaa_wrapper import write_job_script_to_temp_file, read_stdout_stde
 import ruffus.drmaa_wrapper
 import ruffus
 import sys
+import shlex
 
 """
 
@@ -114,14 +115,15 @@ class Test_ruffus(unittest.TestCase):
         environ = {"RUFFUS_HEEHEE": "what?"}
         home_dir = os.path.expanduser("~")
         sys.stderr.write("    Run echoing to screen...\n")
-        stdout, stderr = ruffus.drmaa_wrapper.run_job(cmd_str="%s %s/slow_process_for_testing.py" % (sys.executable, script_dir),
+        command = shlex.join([sys.executable, os.path.join(script_dir, "slow_process_for_testing.py")])
+        stdout, stderr = ruffus.drmaa_wrapper.run_job(cmd_str=command,
                                                       job_environment=environ,
                                                       working_directory=home_dir,
                                                       run_locally=True,
                                                       verbose=1,
                                                       local_echo=True)
         sys.stderr.write("    Run silently...\n")
-        stdout, stderr = ruffus.drmaa_wrapper.run_job(cmd_str="%s %s/slow_process_for_testing.py" % (sys.executable, script_dir),
+        stdout, stderr = ruffus.drmaa_wrapper.run_job(cmd_str=command,
                                                       job_environment=environ,
                                                       working_directory=home_dir,
                                                       run_locally=True,
@@ -155,7 +157,7 @@ class Test_ruffus(unittest.TestCase):
         sys.stderr.write("    ls...\n")
         with open(os.path.join(tempdir, "temp.txt"), "w") as oo:
             oo.write("done")
-        stdout, stderr = ruffus.drmaa_wrapper.run_job(cmd_str="ls %s" % tempdir,
+        stdout, stderr = ruffus.drmaa_wrapper.run_job(cmd_str=shlex.join(["ls", tempdir]),
                                                       run_locally=True,
                                                       verbose=1,
                                                       local_echo=True)

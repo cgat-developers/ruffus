@@ -169,7 +169,7 @@ Results recombined
             pass
 
     def test_ruffus(self):
-        pipeline_run(multiprocess=50, verbose=0, pipeline="main")
+        pipeline_run(multiprocess=4, verbose=0, pipeline="main")
         with open(test_file) as ii:
             post_task_text = ii.read()
         self.assertEqual(post_task_text, self.expected_text)
@@ -211,7 +211,7 @@ Results recombined
         test_pipeline.files(post_post_merge_check, post_merge_check, os.path.join(
             tempdir, "check_all_is.weller"))
 
-        test_pipeline.run(multiprocess=50, verbose=0)
+        test_pipeline.run(multiprocess=4, verbose=0)
         with open(test_file) as ii:
             post_task_text = ii.read()
         self.assertEqual(post_task_text, self.expected_text)

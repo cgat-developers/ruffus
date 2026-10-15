@@ -156,7 +156,7 @@ class Test_ruffus(unittest.TestCase):
             pass
 
     def atest_ruffus(self):
-        pipeline_run(multiprocess=50, verbose=0, pipeline="main")
+        pipeline_run(multiprocess=4, verbose=0, pipeline="main")
         output_file = os.path.join(tempdir, "variance.result")
         if not os.path.exists(output_file):
             raise Exception("Missing %s" % output_file)
@@ -181,7 +181,7 @@ class Test_ruffus(unittest.TestCase):
             .posttask(lambda: sys.stdout.write("     hooray\n"))\
             .posttask(print_hooray_again, print_whoppee_again, touch_file(os.path.join(tempdir, "done")))
 
-        test_pipeline.run(multiprocess=50, verbose=0)
+        test_pipeline.run(multiprocess=4, verbose=0)
         output_file = os.path.join(tempdir, "variance.result")
         if not os.path.exists(output_file):
             raise Exception("Missing %s" % output_file)

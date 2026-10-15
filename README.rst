@@ -19,6 +19,18 @@ Each python function can be called in parallel to run multiple **jobs**.
 Ruffus was originally designed for use in bioinformatics to analyse multiple genome
 data sets.
 
+Ruffus requires Python 3.11 or later. GitHub Actions tests Python 3.11–3.14.
+
+To run the tests, install Graphviz (including the ``dot`` command), then run::
+
+    python -m pip install tox
+    python -m tox
+
+Use ``python -m tox -e py`` to test only the current Python interpreter.
+The test runner executes each module in a separate process to isolate global
+pipeline state. Tests requiring optional gevent or a DRMAA cluster are skipped
+when those dependencies are unavailable.
+
 More recently, we have extended the functionality of CGAT-ruffus to include cluster integration (Currently
 support SGE, SLURM and PBS-pro/Torque), paramaterisation, logging, database integration
 and conda environment switching. `CGAT-core <https://github.com/cgat-developers/cgat-core>`_ code and `documentation <https://cgat-core.readthedocs.io/en/latest/>`_.

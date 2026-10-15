@@ -407,7 +407,7 @@ class TestCombinatorics(unittest.TestCase):
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         test_pipeline2.run([check_product_merged_task], verbose=0,
-                           multiprocess=100, one_second_per_job=one_second_per_job)
+                           multiprocess=4, one_second_per_job=one_second_per_job)
         with open(tempdir + "/merged.results") as oo:
             self.assertEqual(oo.read(),
                              "aeg,aeh,afg,afh,beg,beh,bfg,bfh,ceg,ceh,cfg,cfh,deg,deh,dfg,dfh,")
@@ -480,7 +480,7 @@ class TestCombinatorics(unittest.TestCase):
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         test_pipeline2.run([check_combinations2_merged_task], verbose=0,
-                           multiprocess=100, one_second_per_job=one_second_per_job)
+                           multiprocess=4, one_second_per_job=one_second_per_job)
         with open(tempdir + "/merged.results") as oo:
             self.assertEqual(oo.read(),
                              'ab,ac,ad,bc,bd,cd,')
@@ -507,7 +507,7 @@ class TestCombinatorics(unittest.TestCase):
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         test_pipeline2.run([check_combinations3_merged_task], verbose=0,
-                           multiprocess=100, one_second_per_job=one_second_per_job)
+                           multiprocess=4, one_second_per_job=one_second_per_job)
         with open(tempdir + "/merged.results") as oo:
             self.assertEqual(oo.read(),
                              "abc,abd,acd,bcd,")
@@ -533,7 +533,7 @@ class TestCombinatorics(unittest.TestCase):
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         test_pipeline2.run([check_permutations2_merged_task], verbose=0,
-                           multiprocess=100, one_second_per_job=one_second_per_job)
+                           multiprocess=4, one_second_per_job=one_second_per_job)
         with open(tempdir + "/merged.results") as oo:
             self.assertEqual(oo.read(),
                              "ab,ac,ad,ba,bc,bd,ca,cb,cd,da,db,dc,")
@@ -559,7 +559,7 @@ class TestCombinatorics(unittest.TestCase):
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         test_pipeline2.run([check_permutations3_merged_task], verbose=0,
-                           multiprocess=100, one_second_per_job=one_second_per_job)
+                           multiprocess=4, one_second_per_job=one_second_per_job)
         with open(tempdir + "/merged.results") as oo:
             self.assertEqual(oo.read(),
                              'abc,abd,acb,acd,adb,adc,bac,bad,bca,bcd,bda,bdc,cab,cad,cba,cbd,cda,cdb,dab,dac,dba,dbc,dca,dcb,')
@@ -585,7 +585,7 @@ class TestCombinatorics(unittest.TestCase):
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         test_pipeline2.run([check_combinations_with_replacement2_merged_task],
-                           verbose=0, multiprocess=100, one_second_per_job=one_second_per_job)
+                           verbose=0, multiprocess=4, one_second_per_job=one_second_per_job)
         with open(tempdir + "/merged.results") as oo:
             self.assertEqual(oo.read(),
                              "aa,ab,ac,ad,bb,bc,bd,cc,cd,dd,")
@@ -611,7 +611,7 @@ class TestCombinatorics(unittest.TestCase):
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         test_pipeline2.run([check_combinations_with_replacement3_merged_task],
-                           verbose=0, multiprocess=100, one_second_per_job=one_second_per_job)
+                           verbose=0, multiprocess=4, one_second_per_job=one_second_per_job)
         with open(tempdir + "/merged.results") as oo:
             self.assertEqual(oo.read(),
                              'aaa,aab,aac,aad,abb,abc,abd,acc,acd,add,bbb,bbc,bbd,bcc,bcd,bdd,ccc,ccd,cdd,ddd,')

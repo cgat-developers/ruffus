@@ -394,7 +394,7 @@ class TestCombinatorics(unittest.TestCase):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([check_product_merged_task], verbose=0, multiprocess=100,
+        pipeline_run([check_product_merged_task], verbose=0, multiprocess=4,
                      one_second_per_job=one_second_per_job, pipeline="main")
         with open(tempdir + "/merged.results") as oo:
             self.assertEqual(oo.read(),
@@ -468,7 +468,7 @@ class TestCombinatorics(unittest.TestCase):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([check_combinations2_merged_task], verbose=0, multiprocess=100,
+        pipeline_run([check_combinations2_merged_task], verbose=0, multiprocess=4,
                      one_second_per_job=one_second_per_job, pipeline="main")
         with open(tempdir + "/merged.results") as oo:
             self.assertEqual(oo.read(),
@@ -495,7 +495,7 @@ class TestCombinatorics(unittest.TestCase):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([check_combinations3_merged_task], verbose=0, multiprocess=100,
+        pipeline_run([check_combinations3_merged_task], verbose=0, multiprocess=4,
                      one_second_per_job=one_second_per_job, pipeline="main")
         with open(tempdir + "/merged.results") as oo:
             self.assertEqual(oo.read(),
@@ -521,7 +521,7 @@ class TestCombinatorics(unittest.TestCase):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([check_permutations2_merged_task], verbose=0, multiprocess=100,
+        pipeline_run([check_permutations2_merged_task], verbose=0, multiprocess=4,
                      one_second_per_job=one_second_per_job, pipeline="main")
         with open(tempdir + "/merged.results") as oo:
             self.assertEqual(oo.read(),
@@ -547,7 +547,7 @@ class TestCombinatorics(unittest.TestCase):
         """Run product"""
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
-        pipeline_run([check_permutations3_merged_task], verbose=0, multiprocess=100,
+        pipeline_run([check_permutations3_merged_task], verbose=0, multiprocess=4,
                      one_second_per_job=one_second_per_job, pipeline="main")
         with open(tempdir + "/merged.results") as oo:
             self.assertEqual(oo.read(),
@@ -574,7 +574,7 @@ class TestCombinatorics(unittest.TestCase):
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         pipeline_run([check_combinations_with_replacement2_merged_task], verbose=0,
-                     multiprocess=100, one_second_per_job=one_second_per_job, pipeline="main")
+                     multiprocess=4, one_second_per_job=one_second_per_job, pipeline="main")
         with open(tempdir + "/merged.results") as oo:
             self.assertEqual(oo.read(),
                              "aa,ab,ac,ad,bb,bc,bd,cc,cd,dd,")
@@ -600,7 +600,7 @@ class TestCombinatorics(unittest.TestCase):
         # output is up to date, but function body changed (e.g., source different)
         cleanup_tmpdir()
         pipeline_run([check_combinations_with_replacement3_merged_task], verbose=0,
-                     multiprocess=100, one_second_per_job=one_second_per_job, pipeline="main")
+                     multiprocess=4, one_second_per_job=one_second_per_job, pipeline="main")
         with open(tempdir + "/merged.results") as oo:
             self.assertEqual(oo.read(),
                              'aaa,aab,aac,aad,abb,abc,abd,acc,acd,add,bbb,bbc,bbd,bcc,bcd,bdd,ccc,ccd,cdd,ddd,')

@@ -9,7 +9,9 @@ Installation
 
 .. note ::
 
-    Ruffus requires Python 3.0 or higher, python 2 is no longer supported but older versions will still be python 2 compatible.
+    Ruffus requires Python 3.11 or later. The test matrix covers Python 3.11,
+    3.12, 3.13 and 3.14. Older Ruffus releases remain available for older
+    Python versions.
 
 
 

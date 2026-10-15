@@ -168,7 +168,7 @@ class Test_ruffus(unittest.TestCase):
             pass
 
     def test_ruffus(self):
-        pipeline_run(multiprocess=100, verbose=0, pipeline="main")
+        pipeline_run(multiprocess=4, verbose=0, pipeline="main")
 
 
 if __name__ == '__main__':

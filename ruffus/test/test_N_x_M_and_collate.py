@@ -319,7 +319,7 @@ class Test_ruffus(unittest.TestCase):
             pass
 
     def test_ruffus(self):
-        pipeline_run(multiprocess=50, verbose=0, pipeline="main")
+        pipeline_run(multiprocess=4, verbose=0, pipeline="main")
         for oo in "000.mean", "001.mean":
             results_file_name = os.path.join(working_dir, oo)
             if not os.path.exists(results_file_name):
@@ -339,7 +339,7 @@ class Test_ruffus(unittest.TestCase):
         test_pipeline.collate(statistical_summary, gwas_simulation, regex(r"simulation_results/(\d+).\d+.simulation_res"), r"\1.mean")\
             .posttask(lambda: sys.stdout.write("\nOK\n"))
 
-        test_pipeline.run(multiprocess=50, verbose=0)
+        test_pipeline.run(multiprocess=4, verbose=0)
         for oo in "000.mean", "001.mean":
             results_file_name = os.path.join(working_dir, oo)
             if not os.path.exists(results_file_name):

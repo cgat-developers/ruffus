@@ -91,48 +91,9 @@ args["maxBytes"] = 20000
 args["backupCount"] = 10
 args["formatter"] = "%(asctime)s - %(name)s - %(levelname)6s - %(message)s"
 
-if sys.version_info[0] == 3 and sys.version_info[1] == 2 and __name__ != "__main__":
-    print(
-        """
-    888888888888888888888888888888888888888888888888888888888888888888888888888
-
-        ERROR:
-
-    This unit test can not be run as a python module (python -m unittest xxx)
-    due to the interaction of bugs / misfeatures in the multiprocessing module
-    and python3.2
-
-        See http://bugs.python.org/issue15914
-            http://bugs.python.org/issue9573
-
-    In detail:
-
-    Making a shared logger calls code within the multiprocessing module.
-    This in turn tries to import the hmac module inside deliver_challenge().
-    This hangs if it happens after a module fork.
-
-    The only way around this is to only make calls to multiprocessing
-    (i.e. make_shared_logger_and_proxy(...)) after the import phase of
-    module loading.
-
-    This python bug will be triggered if your make_shared_logger_and_proxy()
-    call is at global scope in a module (i.e. not __main__) and only for
-    python version 3.2
-
-    888888888888888888888888888888888888888888888888888888888888888888888888888
-
-""")
-    sys.exit()
-
-(logger_proxy,
- logging_mutex) = make_shared_logger_and_proxy(setup_std_shared_logger,
-                                               "my_logger", args)
-
-
 #
 #    task1
 #
-@originate(input_file_names, logger_proxy, logging_mutex)
 def task1(outfile, logger_proxy, logging_mutex):
     write_input_output_filenames_to_output(
         None, outfile, logger_proxy, logging_mutex)
@@ -141,7 +102,6 @@ def task1(outfile, logger_proxy, logging_mutex):
 #
 #    task2
 #
-@transform(task1, suffix(".1"), ".2", logger_proxy, logging_mutex)
 def task2(infile, outfile, logger_proxy, logging_mutex):
     write_input_output_filenames_to_output(
         infile, outfile, logger_proxy, logging_mutex)
@@ -150,7 +110,6 @@ def task2(infile, outfile, logger_proxy, logging_mutex):
 #
 #    task3
 #
-@transform(task2, suffix(".2"), ".3", logger_proxy, logging_mutex)
 def task3(infile, outfile, logger_proxy, logging_mutex):
     """
     Third task
@@ -162,7 +121,6 @@ def task3(infile, outfile, logger_proxy, logging_mutex):
 #
 #    task4
 #
-@merge(task3, final_file_name, logger_proxy, logging_mutex)
 def task4(infile, outfile, logger_proxy, logging_mutex):
     """
     Fourth task
@@ -172,6 +130,17 @@ def task4(infile, outfile, logger_proxy, logging_mutex):
 
 
 class Test_ruffus(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Do not start a manager while spawn/forkserver workers import this module.
+        global logger_proxy, logging_mutex
+        logger_proxy, logging_mutex = make_shared_logger_and_proxy(
+            setup_std_shared_logger, "my_logger", args)
+        originate(input_file_names, logger_proxy, logging_mutex)(task1)
+        transform(task1, suffix(".1"), ".2", logger_proxy, logging_mutex)(task2)
+        transform(task2, suffix(".2"), ".3", logger_proxy, logging_mutex)(task3)
+        merge(task3, final_file_name, logger_proxy, logging_mutex)(task4)
+
     def setUp(self):
         self.tearDown()
         try:
@@ -189,7 +158,7 @@ class Test_ruffus(unittest.TestCase):
             pass
 
     def test_simpler(self):
-        pipeline_run(multiprocess=500, verbose=0, pipeline="main")
+        pipeline_run(multiprocess=4, verbose=0, pipeline="main")
 
     def test_newstyle_simpler(self):
         test_pipeline = Pipeline("test")
@@ -202,7 +171,7 @@ class Test_ruffus(unittest.TestCase):
         test_pipeline.merge(task4, task3, final_file_name,
                             extras=[logger_proxy, logging_mutex])
         #test_pipeline.merge(task4, task3, final_file_name, extras = {"logger_proxy": logger_proxy, "logging_mutex": logging_mutex})
-        test_pipeline.run(multiprocess=500, verbose=0)
+        test_pipeline.run(multiprocess=4, verbose=0)
 
 
 if __name__ == '__main__':

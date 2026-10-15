@@ -3,8 +3,8 @@ import sys
 import os
 from setuptools import setup
 
-if not sys.version_info[0:2] >= (2, 6):
-    sys.stderr.write("Requires Python later than 2.6\n")
+if sys.version_info < (3, 11):
+    sys.stderr.write("Requires Python 3.11 or later\n")
     sys.exit(1)
 
 # quickly import the latest version of ruffus
@@ -18,6 +18,7 @@ module_dependencies = []
 
 setup(
         name='ruffus',
+        python_requires='>=3.11',
         version=ruffus.ruffus_version.__version, #major.minor[.patch[.sub]]
         description='Light-weight Python Computational Pipeline Management',
         maintainer="Leo Goodstadt",
@@ -166,6 +167,11 @@ Usage
                     'Intended Audience :: Information Technology',
                     'License :: OSI Approved :: MIT License',
                     'Programming Language :: Python',
+                    'Programming Language :: Python :: 3 :: Only',
+                    'Programming Language :: Python :: 3.11',
+                    'Programming Language :: Python :: 3.12',
+                    'Programming Language :: Python :: 3.13',
+                    'Programming Language :: Python :: 3.14',
                     'Topic :: Scientific/Engineering',
                     'Topic :: Scientific/Engineering :: Bio-Informatics',
                     'Topic :: System :: Distributed Computing',
