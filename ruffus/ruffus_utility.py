@@ -259,6 +259,11 @@ class JobHistoryChecksum:
                                 code.co_names,
                                 code.co_nlocals,
                                 code.co_varnames]
+        kwdefaults = getattr(task.user_defined_work_func, "__kwdefaults__", None)
+        if kwdefaults:
+            # Preserve existing checksums for functions without keyword-only
+            # defaults, and ignore dictionary insertion order for those with them.
+            attributes_to_pickle.append(sorted(kwdefaults.items()))
 
         pickle_results = []
         for aa in attributes_to_pickle:
