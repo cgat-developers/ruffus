@@ -2,7 +2,7 @@
 from __future__ import print_function
 import time
 import unittest
-from random import randint
+from itertools import count
 import inspect
 from ruffus.file_name_parameters import needs_update_check_modify_time, check_input_files_exist, \
     args_param_factory, open_job_history
@@ -43,6 +43,7 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 # 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 # print ruffus.__version__
+task_ids = count()
 history_file = ':memory:'
 history_file = None
 
@@ -166,7 +167,6 @@ t4._is_single_job_single_output = t4._single_job_single_output
 t5 = task.Task(list_generator_factory, "module.func5")
 t5.param_generator_func = None
 
-next_task_id = 1
 
 
 class Test_files_re_param_factory(unittest.TestCase):
@@ -201,11 +201,8 @@ class Test_files_re_param_factory(unittest.TestCase):
         #
         # fake virgin task
         # use global incrementing index to avoid name clashes
-        #fake_task = task.Task("module", "func_fake%d" % randint(1, 1000000))
-        global next_task_id
-        next_task_id += 1
         fake_task = task.Task(list_generator_factory,
-                              "module.func_fake%d" % next_task_id)
+                              "module.func_fake%d" % next(task_ids))
         fake_task._decorator_files_re(*unnamed_args, **named_args)
         fake_task._complete_setup()
         return fake_task.param_generator_func, fake_task
@@ -419,7 +416,7 @@ class Test_split_param_factory(unittest.TestCase):
         #
         # fake virgin task
         fake_task = task.Task(list_generator_factory,
-                              "module.func_fake%d" % randint(1, 1000000))
+                              "module.func_fake%d" % next(task_ids))
         fake_task._decorator_split(*unnamed_args, **named_args)
         fake_task._complete_setup()
         return fake_task.param_generator_func
@@ -578,7 +575,7 @@ class Test_merge_param_factory(unittest.TestCase):
         #
         # fake virgin task
         fake_task = task.Task(list_generator_factory,
-                              "module.func_fake%d" % randint(1, 1000000))
+                              "module.func_fake%d" % next(task_ids))
         fake_task._decorator_merge(*unnamed_args, **named_args)
         fake_task._complete_setup()
         return fake_task.param_generator_func
@@ -743,7 +740,7 @@ class Test_transform_param_factory(unittest.TestCase):
         #
         # fake virgin task
         fake_task = task.Task(list_generator_factory,
-                              "module.func_fake%d" % randint(1, 1000000))
+                              "module.func_fake%d" % next(task_ids))
         fake_task._decorator_transform(*unnamed_args, **named_args)
         fake_task._complete_setup()
         return fake_task.param_generator_func
@@ -1035,7 +1032,7 @@ class Test_collate_param_factory(unittest.TestCase):
         #
         # fake virgin task
         fake_task = task.Task(list_generator_factory,
-                              "module.func_fake%d" % randint(1, 1000000))
+                              "module.func_fake%d" % next(task_ids))
         fake_task._decorator_collate(*unnamed_args, **named_args)
         fake_task._complete_setup()
         return fake_task.param_generator_func
@@ -1337,7 +1334,7 @@ class Test_files_param_factory(unittest.TestCase):
         #
         # fake virgin task
         fake_task = task.Task(list_generator_factory,
-                              "module.func_fake%d" % randint(1, 1000000))
+                              "module.func_fake%d" % next(task_ids))
         fake_task._decorator_files(*unnamed_args, **named_args)
         fake_task._complete_setup()
         return fake_task.param_generator_func
@@ -1568,7 +1565,7 @@ class Test_product_param_factory(unittest.TestCase):
         #
         # fake virgin task
         fake_task = task.Task(list_generator_factory,
-                              "module.func_fake%d" % randint(1, 1000000))
+                              "module.func_fake%d" % next(task_ids))
         fake_task._decorator_product(*unnamed_args, **named_args)
         fake_task._complete_setup()
         return fake_task.param_generator_func

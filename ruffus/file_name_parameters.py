@@ -513,7 +513,7 @@ def needs_update_check_modify_time(*params, **kwargs):
                                                          shorten_filenames_encoder(missing_files,
                                                                                    verbose_abbreviated_path))
     #
-    #   N.B. Checkpointing uses relative paths
+    #   Checkpoint paths are relative to the history database directory
     #
 
     # existing files, but from previous interrupted runs
@@ -529,7 +529,7 @@ def needs_update_check_modify_time(*params, **kwargs):
         #        if p not in job_history:
         #            incomplete_files.append(p)
         for p in o:
-            if os.path.relpath(p) not in job_history and p not in set_incomplete_files:
+            if get_history_file_path(p, job_history) not in job_history and p not in set_incomplete_files:
                 incomplete_files.append(p)
                 set_incomplete_files.add(p)
         if len(incomplete_files):
@@ -538,7 +538,7 @@ def needs_update_check_modify_time(*params, **kwargs):
                                                                                                                           verbose_abbreviated_path))
         # check if function that generated our output file has changed
         for o_f_n in o:
-            rel_o_f_n = os.path.relpath(o_f_n)
+            rel_o_f_n = get_history_file_path(o_f_n, job_history)
             old_chksum = job_history[rel_o_f_n]
             new_chksum = JobHistoryChecksum(rel_o_f_n, None, params[2:], task)
             if task.checksum_level >= CHECKSUM_FUNCTIONS_AND_PARAMS and \
@@ -620,7 +620,7 @@ def needs_update_check_modify_time(*params, **kwargs):
     #   Symbolic links followed
     real_input_file_names = set()
     for input_file_name in i:
-        rel_input_file_name = os.path.relpath(input_file_name)
+        rel_input_file_name = get_history_file_path(input_file_name, job_history)
         real_input_file_names.add(os.path.realpath(input_file_name))
         file_timestamp = os.path.getmtime(input_file_name)
         if task.checksum_level >= CHECKSUM_HISTORY_TIMESTAMPS and rel_input_file_name in job_history:
@@ -642,7 +642,7 @@ def needs_update_check_modify_time(*params, **kwargs):
         if real_file_name in real_input_file_names:
             continue
 
-        rel_output_file_name = os.path.relpath(output_file_name)
+        rel_output_file_name = get_history_file_path(output_file_name, job_history)
         file_timestamp = os.path.getmtime(output_file_name)
         if task.checksum_level >= CHECKSUM_HISTORY_TIMESTAMPS:
             old_chksum = job_history[rel_output_file_name]

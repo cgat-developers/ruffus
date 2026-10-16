@@ -173,81 +173,82 @@ pipeline1c.set_output(output=[tempdir + "/" + ss for ss in ("e.1", "f.1")])
 pipeline2 = make_pipeline2()
 pipeline2.set_input(input=[pipeline1a, pipeline1b, pipeline1c])
 
-parser = cmdline.get_argparse(
-    description='Demonstrates the new Ruffus syntax in version 2.6')
+if __name__ == "__main__":
+    parser = cmdline.get_argparse(
+        description='Demonstrates the new Ruffus syntax in version 2.6')
 
-parser.add_argument('--cleanup', "-C",
-                    action="store_true",
-                    help="Cleanup before and after.")
+    parser.add_argument('--cleanup', "-C",
+                        action="store_true",
+                        help="Cleanup before and after.")
 
-options = parser.parse_args(args=["--verbose=10"])
-#  standard python logger which can be synchronised across concurrent Ruffus tasks
-logger, logger_mutex = cmdline.setup_logging(
-    __file__, options.log_file, options.verbose)
+    options = parser.parse_args(args=["--verbose=10"])
+    #  standard python logger which can be synchronised across concurrent Ruffus tasks
+    logger, logger_mutex = cmdline.setup_logging(
+        __file__, options.log_file, options.verbose)
 
-logger.debug("\tRuffus Version = " + ruffus.__version__)
+    logger.debug("\tRuffus Version = " + ruffus.__version__)
 
-if options.cleanup:
-    try:
-        shutil.rmtree(tempdir)
-    except:
-        pass
-
-correct = False
-# if we are not printing but running
-if not options.just_print and \
-   not options.flowchart and \
-   not options.touch_files_only:
-
-    #   Cleanup
     if options.cleanup:
         try:
             shutil.rmtree(tempdir)
         except:
             pass
 
-    #   Run
-    cmdline.run(options)
+    correct = False
+    # if we are not printing but running
+    if not options.just_print and \
+       not options.flowchart and \
+       not options.touch_files_only:
 
-    # Check that the output reflecting the pipeline topology is correct.
-    correct_output = '{tempdir}/a.1.55={tempdir}/a.1.44+{tempdir}/a.1.33+{tempdir}/a.1.22+{tempdir}/a.1=; {tempdir}/testdir/whatever.txt=; ; ' \
-                     '{tempdir}/b.1.55={tempdir}/b.1.44+{tempdir}/b.1.33+{tempdir}/b.1.22+{tempdir}/b.1=; {tempdir}/testdir/whatever.txt=; ; ' \
-                     '{tempdir}/c.1.55={tempdir}/c.1.44+{tempdir}/c.1.33+{tempdir}/c.1.22+{tempdir}/c.1=; {tempdir}/testdir/whatever.txt=; ; ' \
-                     '{tempdir}/d.1.55={tempdir}/d.1.44+{tempdir}/d.1.33+{tempdir}/d.1.22+{tempdir}/d.1=; {tempdir}/testdir/whatever.txt=; ; ' \
-                     '{tempdir}/e.1.55={tempdir}/e.1.44+{tempdir}/e.1.33+{tempdir}/e.1.22+{tempdir}/e.1=; {tempdir}/testdir/whatever.txt=; ; ' \
-                     '{tempdir}/f.1.55={tempdir}/f.1.44+{tempdir}/f.1.33+{tempdir}/f.1.22+{tempdir}/f.1=; {tempdir}/testdir/whatever.txt=; ; '.format(
-                         tempdir=tempdir)
-    try:
-        with open(tempdir + "/final.output") as real_output:
-            real_output_str = real_output.read()
-    except Exception as e:
-        real_output_str = str(e) + "\n"
-    if (correct_output != real_output_str):
-        print("_" * 80 + "\n" +
-              "      " * 25 + "Warning\n" +
-              "_" * 80 + "\n" +
-              "If you had run the whole of pipeline 2, "
-              "you should have obtained:<\n\t%s>\n\n Rather than:<\n\t%s>\n\n"
-              % (correct_output.replace("; ", ";\n\t"),
-                  real_output_str.replace("; ", ";\n\t")) +
-              "_" * 80, "\n",)
+        #   Cleanup
+        if options.cleanup:
+            try:
+                shutil.rmtree(tempdir)
+            except:
+                pass
+
+        #   Run
+        cmdline.run(options)
+
+        # Check that the output reflecting the pipeline topology is correct.
+        correct_output = '{tempdir}/a.1.55={tempdir}/a.1.44+{tempdir}/a.1.33+{tempdir}/a.1.22+{tempdir}/a.1=; {tempdir}/testdir/whatever.txt=; ; ' \
+                         '{tempdir}/b.1.55={tempdir}/b.1.44+{tempdir}/b.1.33+{tempdir}/b.1.22+{tempdir}/b.1=; {tempdir}/testdir/whatever.txt=; ; ' \
+                         '{tempdir}/c.1.55={tempdir}/c.1.44+{tempdir}/c.1.33+{tempdir}/c.1.22+{tempdir}/c.1=; {tempdir}/testdir/whatever.txt=; ; ' \
+                         '{tempdir}/d.1.55={tempdir}/d.1.44+{tempdir}/d.1.33+{tempdir}/d.1.22+{tempdir}/d.1=; {tempdir}/testdir/whatever.txt=; ; ' \
+                         '{tempdir}/e.1.55={tempdir}/e.1.44+{tempdir}/e.1.33+{tempdir}/e.1.22+{tempdir}/e.1=; {tempdir}/testdir/whatever.txt=; ; ' \
+                         '{tempdir}/f.1.55={tempdir}/f.1.44+{tempdir}/f.1.33+{tempdir}/f.1.22+{tempdir}/f.1=; {tempdir}/testdir/whatever.txt=; ; '.format(
+                             tempdir=tempdir)
+        try:
+            with open(tempdir + "/final.output") as real_output:
+                real_output_str = real_output.read()
+        except Exception as e:
+            real_output_str = str(e) + "\n"
+        if (correct_output != real_output_str):
+            print("_" * 80 + "\n" +
+                  "      " * 25 + "Warning\n" +
+                  "_" * 80 + "\n" +
+                  "If you had run the whole of pipeline 2, "
+                  "you should have obtained:<\n\t%s>\n\n Rather than:<\n\t%s>\n\n"
+                  % (correct_output.replace("; ", ";\n\t"),
+                      real_output_str.replace("; ", ";\n\t")) +
+                  "_" * 80, "\n",)
+        else:
+            logger.debug("\tAll Correct.\n")
+            correct = True
+
+        #
+        #   Cleanup
+        #
+        if options.cleanup:
+            try:
+                shutil.rmtree(tempdir)
+            except:
+                pass
+
+
     else:
-        logger.debug("\tAll Correct.\n")
+        cmdline.run(options)
         correct = True
 
-    #
-    #   Cleanup
-    #
-    if options.cleanup:
-        try:
-            shutil.rmtree(tempdir)
-        except:
-            pass
 
-
-else:
-    cmdline.run(options)
-    correct = True
-
-
-sys.exit(0 if correct else 1)
+    sys.exit(0 if correct else 1)

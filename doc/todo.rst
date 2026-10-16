@@ -471,7 +471,6 @@ Planned: Running python code (task functions) transparently on remote cluster no
        * http://zguide.zeromq.org/page:all
        * Christian Widmer <ckwidmer@gmail.com>
        * Cheng Soon Ong <chengsoon.ong@unimelb.edu.au>
-       * https://code.google.com/p/pythongrid/source/browse/#git%2Fpythongrid
        * Probably not good to base Ruffus entirely on libpythongrid to minimise dependencies, the use of sophisticated configuration policies etc.
     #) Start with light-weight file-based protocol
        * specify where the scripts should live

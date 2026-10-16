@@ -138,7 +138,7 @@ class Test_ruffus(unittest.TestCase):
             pass
 
     def test_ruffus(self):
-        pipeline_run(multiprocess=50, verbose=0, pipeline="main")
+        pipeline_run(multiprocess=4, verbose=0, pipeline="main")
         if not os.path.exists(tempdir + "all.combine_results"):
             raise Exception("Missing %s" % (tempdir + "all.combine_results"))
 
@@ -174,7 +174,7 @@ class Test_ruffus(unittest.TestCase):
                                     tempdir + "all.combine_results_success"])\
             .posttask(lambda: verbose_output.write("    Results recombined\n"))
 
-        test_pipeline.run(multiprocess=50, verbose=0)
+        test_pipeline.run(multiprocess=4, verbose=0)
         if not os.path.exists(tempdir + "all.combine_results"):
             raise Exception("Missing %s" % (tempdir + "all.combine_results"))
 

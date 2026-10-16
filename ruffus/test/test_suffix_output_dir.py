@@ -237,7 +237,7 @@ class Test_ruffus(unittest.TestCase):
             pass
 
     def test_ruffus(self):
-        pipeline_run(multiprocess=50, verbose=0, pipeline="main")
+        pipeline_run(multiprocess=4, verbose=0, pipeline="main")
 
         with open(os.path.join(data_dir, "summary.5")) as ii:
             active_text = ii.read()
@@ -269,7 +269,7 @@ class Test_ruffus(unittest.TestCase):
         test_pipeline.transform(task4, task3, suffix(
             ".2"), ".3", output_dir=work_dir)
         test_pipeline.merge(task5, task4, os.path.join(data_dir, "summary.5"))
-        test_pipeline.run(multiprocess=50, verbose=0)
+        test_pipeline.run(multiprocess=4, verbose=0)
 
         with open(os.path.join(data_dir, "summary.5")) as ii:
             active_text = ii.read()

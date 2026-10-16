@@ -327,6 +327,9 @@ def run_job_using_drmaa(cmd_str, job_name=None, job_other_options=None,
             try:
                 jobid, job_info = submit_drmaa_job(
                     cmd_str, drmaa_session, job_template, logger, pipeline)
+                # A normal return means the scheduler reported DONE, even if
+                # it supplied no exit-status/resource information.
+                exitStatus = 0
                 if job_info:
                     exitStatus = job_info.exitStatus
                     if exitStatus:

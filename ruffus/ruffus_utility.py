@@ -204,7 +204,46 @@ def open_job_history(history_file):
     if not history_file:
         history_file = get_default_history_file_name()
 
-    return dbdict.open(history_file, picklevalues=True)
+    history = dbdict.open(history_file, picklevalues=True)
+    history.path_base = (os.getcwd() if history_file == ':memory:' else
+                         os.path.dirname(os.path.abspath(history_file)))
+    # Old histories do not record their original working directory. Never guess
+    # which files their keys describe: preserve them and rebuild checkpoints.
+    with history.con:
+        history.con.execute('BEGIN IMMEDIATE')
+        history.con.execute(
+            'CREATE TABLE IF NOT EXISTS ruffus_metadata '
+            '(key TEXT PRIMARY KEY, value TEXT)')
+        version = history.con.execute(
+            "SELECT value FROM ruffus_metadata WHERE key = 'path_format'").fetchone()
+        if version is None:
+            had_history = bool(len(history))
+            if had_history:
+                history.con.execute('CREATE TABLE ruffus_legacy_history AS SELECT * FROM data')
+                history.con.execute('DELETE FROM data')
+            history.con.execute(
+                "INSERT INTO ruffus_metadata VALUES ('path_format', 'history_relative_v1')")
+        elif version[0] != 'history_relative_v1':
+            raise ValueError("Unsupported Ruffus history path format: %s" % version[0])
+        else:
+            had_history = False
+    if had_history:
+        import warnings
+        warnings.warn(
+            "Ruffus history used working-directory-relative paths. Existing "
+            "records were preserved in the ruffus_legacy_history table; "
+            "tasks will be checkpointed again using paths relative to the "
+            "history database directory.", UserWarning, stacklevel=2)
+    return history
+
+
+def get_history_file_path(filename, job_history):
+    """Return a checkpoint key, retaining symlinks as distinct filenames.
+
+    Plain mappings used by callers/tests retain their working-directory base.
+    In-memory databases use the directory in which they were opened.
+    """
+    return os.path.relpath(filename, getattr(job_history, 'path_base', None))
 
 
 # 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
@@ -259,6 +298,11 @@ class JobHistoryChecksum:
                                 code.co_names,
                                 code.co_nlocals,
                                 code.co_varnames]
+        kwdefaults = getattr(task.user_defined_work_func, "__kwdefaults__", None)
+        if kwdefaults:
+            # Preserve existing checksums for functions without keyword-only
+            # defaults, and ignore dictionary insertion order for those with them.
+            attributes_to_pickle.append(sorted(kwdefaults.items()))
 
         pickle_results = []
         for aa in attributes_to_pickle:

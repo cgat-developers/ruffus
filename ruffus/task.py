@@ -56,6 +56,7 @@ from .ruffus_utility import shorten_filenames_encoder, \
     replace_placeholders_with_tasks_in_input_params, \
     get_default_checksum_level, \
     open_job_history, \
+    get_history_file_path, \
     non_str_sequence
 import ruffus.ruffus_exceptions as ruffus_exceptions
 from .print_dependencies import attributes_to_str
@@ -398,6 +399,11 @@ class posttask(task_decorator):
 
 
 class jobs_limit(task_decorator):
+    pass
+
+
+class run_in_main_process(task_decorator):
+    """Execute a task in the thread/process calling pipeline_run."""
     pass
 
 
@@ -1723,6 +1729,7 @@ class Task(node):
 
         # semaphore name must be unique
         self.semaphore_name = pipeline.name + ":" + task_name
+        self._run_in_main_process = False
 
         # do not test for whether task is active
         self.active_if_checks = None
@@ -1818,6 +1825,7 @@ class Task(node):
         new_task.cnt_task_mkdir = self.cnt_task_mkdir
         new_task.indeterminate_output = self.indeterminate_output
         new_task.semaphore_name = self.semaphore_name
+        new_task._run_in_main_process = self._run_in_main_process
         new_task.is_active = self.is_active
         new_task.created_via_decorator = self.created_via_decorator
         new_task._setup_task_func = self._setup_task_func
@@ -2839,9 +2847,8 @@ class Task(node):
         #
         #   This is actually @subdivide
         #
-        if isinstance(unnamed_args[1], regex):
-            self._prepare_subdivide(unnamed_args, named_args,
-                                    self.description_with_args_placeholder)
+        if len(unnamed_args) > 1 and isinstance(unnamed_args[1], regex):
+            self._prepare_subdivide(unnamed_args, named_args)
 
         #
         #   This is actually @split
@@ -3764,6 +3771,14 @@ class Task(node):
             else:
                 raise ruffus_exceptions.PostTaskArgumentError(
                     description_with_args_placeholder % (arg,))
+
+    def run_in_main_process(self):
+        """Run this task in the pipeline caller, allowing nested multiprocessing."""
+        self._run_in_main_process = True
+        return self
+
+    def _decorator_run_in_main_process(self):
+        self.run_in_main_process()
 
     def jobs_limit(self, maximum_jobs_in_parallel, limit_name=None):
         """
@@ -4751,6 +4766,54 @@ def fill_queue_with_job_parameters(job_parameters, parameter_q, POOL_SIZE,
     log_at_level(logger, 10, verbose, "    fill_queue_with_job_parameters END")
 
 
+def run_jobs_with_main_process_tasks(parameter_q, pool, parallelism):
+    """Dispatch a bounded batch, executing opted-in jobs in the caller.
+
+    Unlike imap_unordered's feeder thread, this iterator is advanced by the
+    pipeline scheduler itself. All results use the ordinary completion/error
+    handling in pipeline_run. Already submitted workers can run while a local
+    task executes, but new dependencies are scheduled only after it returns.
+    """
+    pending = []
+    local_jobs = []
+    exhausted = False
+    failed = False
+    while True:
+        while not exhausted and not failed and len(pending) + len(local_jobs) < parallelism:
+            try:
+                params = parameter_q.get_nowait()
+            except queue.Empty:
+                break
+            if isinstance(params, all_tasks_complete):
+                exhausted = True
+                break
+            task = node._lookup_node_from_index(params[3])
+            if task._run_in_main_process:
+                local_jobs.append(params)
+            else:
+                pending.append(pool.apply_async(run_pooled_job_without_exceptions, (params,)))
+
+        # Deliver completed worker failures before starting another local job.
+        ready = next((result for result in pending if result.ready()), None)
+        if ready is not None:
+            pending.remove(ready)
+            result = ready.get()
+        elif local_jobs and not failed:
+            result = run_pooled_job_without_exceptions(local_jobs.pop(0))
+        elif pending:
+            time.sleep(0.01)
+            continue
+        elif exhausted or failed:
+            return
+        else:
+            # The scheduler refills the parameter queue after each result.
+            raise RuntimeError("No runnable or pending jobs in main-process scheduler")
+
+        if result.state in (JOB_ERROR, JOB_SIGNALLED_BREAK):
+            failed = True
+        yield result
+
+
 def pipeline_get_task_names(pipeline=None):
     """
     Get all task names in a pipeline
@@ -4815,9 +4878,9 @@ def get_job_result_output_file_names(job_result):
                 continue
 
             #
-            # use paths relative to working directory
+            # Keep filesystem paths separate from checkpoint keys
             #
-            yield os.path.relpath(o_f_n)
+            yield os.path.abspath(o_f_n)
 
     return
 
@@ -5007,6 +5070,17 @@ def pipeline_run(target_tasks=[],
     if multithread is None:
         multithread = 0
     parallelism = max(multiprocess, multithread)
+
+    execution_tasks = set()
+    tasks_to_visit = list(target_tasks)
+    while tasks_to_visit:
+        task = tasks_to_visit.pop()
+        if task not in execution_tasks:
+            execution_tasks.add(task)
+            tasks_to_visit.extend(task._get_inward())
+    use_main_process_tasks = any(t._run_in_main_process for t in execution_tasks)
+    if use_main_process_tasks and parallelism > 1 and pool_manager != "multiprocessing":
+        raise ValueError("run_in_main_process requires pool_manager='multiprocessing'")
 
     if parallelism > 1:
         if pool_manager == "multiprocessing":
@@ -5243,10 +5317,13 @@ def pipeline_run(target_tasks=[],
 
         # for job_result in pool_func(run_pooled_job_without_exceptions,
         # feed_job_params_to_process_pool()):
-        ii = iter(pool_func(run_pooled_job_without_exceptions,
-                            feed_job_params_to_process_pool()))
+        if pool is not None and use_main_process_tasks:
+            ii = run_jobs_with_main_process_tasks(parameter_q, pool, parallelism)
+        else:
+            ii = iter(pool_func(run_pooled_job_without_exceptions,
+                                feed_job_params_to_process_pool()))
         while 1:
-            if pool is not None:
+            if pool is not None and not use_main_process_tasks:
                 job_result = ii.next(**itr_kwargs)
             else:
                 job_result = next(ii)
@@ -5260,7 +5337,7 @@ def pipeline_run(target_tasks=[],
                     logger, 10, verbose, "   JOB ERROR / JOB_SIGNALLED_BREAK: " + job_result.job_name)
                 # remove outfile from history if it exists
                 for o_f_n in get_job_result_output_file_names(job_result):
-                    job_history.pop(o_f_n, None)
+                    job_history.pop(get_history_file_path(o_f_n, job_history), None)
 
             # only save poolsize number of errors
             if job_result.state == JOB_ERROR:
@@ -5336,9 +5413,10 @@ def pipeline_run(target_tasks=[],
                                     runtime_data["ONE_SECOND_PER_JOB"] = True
                             elif epoch_seconds - mtime < 1.1:
                                 mtime = epoch_seconds
-                            chksum = JobHistoryChecksum(o_f_n, mtime,
+                            history_key = get_history_file_path(o_f_n, job_history)
+                            chksum = JobHistoryChecksum(history_key, mtime,
                                                         job_result.unglobbed_params[2:], t)
-                            job_history[o_f_n] = chksum
+                            job_history[history_key] = chksum
                             log_at_level(logger, 10, verbose,
                                          "   Job History Saved: " + o_f_n)
                         except:

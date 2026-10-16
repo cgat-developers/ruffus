@@ -202,6 +202,37 @@ Setting the checkpoint file name manually
             pipeline_printout(history_file = "XXX")
             pipeline_printout_graph(history_file = "XXX")
 
+History paths and working directories
+====================================
+
+    Checkpoint keys are relative to the directory containing the history database,
+    rather than the working directory used to launch the pipeline. To launch from
+    different directories, pass the same absolute ``history_file`` path and ensure
+    that task input and output paths still refer to the same files. Using absolute
+    task paths is one way to do this. Apply the same history setting to
+    ``pipeline_run``, ``pipeline_printout`` and ``pipeline_printout_graph``.
+
+    The default history file is still ``.ruffus_history.sqlite`` in the current
+    working directory. Changing directory without specifying ``history_file``
+    therefore selects a different database.
+
+    A project and its history database can be moved together without changing
+    checkpoint keys, provided their relative layout is preserved. Task paths must
+    be updated to the new location. Function and extra-parameter checksum checks
+    still apply; changing paths embedded in extra parameters can trigger reruns.
+    Symbolic links remain distinct paths rather than being resolved to their targets.
+    An in-memory history uses the working directory in which it was opened.
+
+    .. warning::
+
+        Older history databases contain paths relative to an unrecorded working
+        directory. On first opening such a database, Ruffus preserves its records
+        in the SQLite table ``ruffus_legacy_history``, clears the active checkpoints,
+        and emits a warning. History-based checks will rerun jobs once to rebuild
+        trustworthy records. This avoids guessing the old directory and incorrectly
+        skipping work. Do not share the upgraded database with older Ruffus versions,
+        which interpret its keys differently.
+
 
     There is also built in support in ``Ruffus.cmdline``. So if you use this module, you can simply add to your command line:
 

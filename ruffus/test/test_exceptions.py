@@ -38,12 +38,6 @@ def logging_factory(logger_name, listargs):
     handler.setLevel(logging.INFO)
     root_logger.addHandler(handler)
     return root_logger
-
-
-log, log_mutex = proxy_logger.make_shared_logger_and_proxy(
-    logging_factory, __name__, [])
-
-
 # 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
 #   Tasks
@@ -51,8 +45,7 @@ log, log_mutex = proxy_logger.make_shared_logger_and_proxy(
 
 # 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 
-@parallel([['A', 1], ['B', 3], ['C', 3], ['D', 4], ['E', 4], ['F', 4]])
-def parallel_task(name, param1):
+def parallel_task(name, param1, log, log_mutex):
     sys.stderr.write("    Parallel task %s: \n" % name)
     #raise task.JobSignalledBreak("Oops! I did it again!")
     with log_mutex:
@@ -67,29 +60,42 @@ except:
 
 
 class Test_ruffus(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Spawn/forkserver workers import this module: only the parent creates
+        # the manager, and workers receive its proxies as explicit job arguments.
+        global log, log_mutex
+        log, log_mutex = proxy_logger.make_shared_logger_and_proxy(
+            logging_factory, __name__, [])
+        cls.jobs = [[name, value, log, log_mutex] for name, value in
+                    [('A', 1), ('B', 3), ('C', 3), ('D', 4), ('E', 4), ('F', 4)]]
+        parallel(cls.jobs)(parallel_task)
+
     def test_ruffus(self):
         try:
-            pipeline_run(multiprocess=50, verbose=0, pipeline="main")
+            pipeline_run(multiprocess=4, verbose=0, pipeline="main")
         except ruffus.ruffus_exceptions.RethrownJobError:
             return
         raise Exception("Missing exception")
 
     def test_exception_logging(self):
         try:
-            pipeline_run(multiprocess=50, verbose=0, pipeline="main")
+            pipeline_run(multiprocess=4, verbose=0, pipeline="main")
         except ruffus.ruffus_exceptions.RethrownJobError as e:
             log.info(e)
-            for exc in e.args:
+            self.assertTrue(e.job_exceptions)
+            for exc in e.job_exceptions:
                 task_name, job_name, exc_name, exc_value, exc_stack = exc
+                self.assertEqual(exc_name, 'builtins.Exception')
+                self.assertEqual(exc_value, '(new)')
             return
         raise Exception("Missing exception")
 
     def test_newstyle_ruffus(self):
         test_pipeline = Pipeline("test")
-        test_pipeline.parallel(parallel_task, [['A', 1], ['B', 3], [
-                               'C', 3], ['D', 4], ['E', 4], ['F', 4]])
+        test_pipeline.parallel(parallel_task, self.jobs)
         try:
-            test_pipeline.run(multiprocess=50, verbose=0)
+            test_pipeline.run(multiprocess=4, verbose=0)
         except ruffus.ruffus_exceptions.RethrownJobError:
             return
         raise Exception("Missing exception")
