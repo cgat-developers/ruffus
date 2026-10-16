@@ -21,6 +21,7 @@ setup(
         python_requires='>=3.11',
         version=ruffus.ruffus_version.__version, #major.minor[.patch[.sub]]
         description='Light-weight Python Computational Pipeline Management',
+        long_description_content_type='text/x-rst',
         maintainer="Leo Goodstadt",
         maintainer_email="ruffus_lib@llew.org.uk",
         author='Leo Goodstadt',
